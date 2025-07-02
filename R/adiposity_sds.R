@@ -20,21 +20,21 @@
 #’ @export
 #’
 adiposity_sds <- function(data, ref, verbose = FALSE) {
-  # 1) validate ref
+  # — validate ref structure —
   if (!is.list(ref) || is.null(names(ref))) {
     stop("`ref` must be a named list, e.g. list(BMI = c(mean=…, sd=…), …)")
   }
-  for (var in names(ref)) {
-    stats <- ref[[var]]
+  for (nm in names(ref)) {
+    stats <- ref[[nm]]
     if (!(is.numeric(stats) && length(stats) == 2 && all(c("mean","sd") %in% names(stats)))) {
-      stop(sprintf("`ref[[\"%s\"]]` must be a numeric vector c(mean=…, sd=…)", var))
+      stop(sprintf("`ref[[\"%s\"]]` must be a numeric vector c(mean=…, sd=…)", nm))
     }
     if (stats["sd"] <= 0) {
-      stop(sprintf("`ref[[\"%s\"]][\"sd\"]` must be > 0", var))
+      stop(sprintf("`ref[[\"%s\"]][\"sd\"]` must be > 0", nm))
     }
   }
   
-  # 2) check data has each var
+  # — check data has each variable —
   missing_vars <- setdiff(names(ref), names(data))
   if (length(missing_vars)) {
     stop("adiposity_sds(): missing required columns: ",
@@ -42,17 +42,16 @@ adiposity_sds <- function(data, ref, verbose = FALSE) {
   }
   
   if (verbose) {
-    message("→ adiposity_sds: computing SDS for: ", paste(names(ref), collapse = ", "))
+    message("→ computing SDS for: ", paste(names(ref), collapse = ", "))
   }
   
-  # 3) compute SDS
+  # — compute SDS into a named list —
   out_list <- lapply(names(ref), function(var) {
-    m <- ref[[var]]["mean"]
-    s <- ref[[var]]["sd"]
-    (data[[var]] - m) / s
+    stats <- ref[[var]]
+    (data[[var]] - stats["mean"]) / stats["sd"]
   })
   names(out_list) <- paste0(names(ref), "_SDS")
   
-  # 4) assemble tibble
+  # — return tibble, even if length(data)==1 —
   tibble::as_tibble(out_list)
 }

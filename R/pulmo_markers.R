@@ -65,17 +65,23 @@
 #’ @export
 pulmo_markers <- function(data,
                           equation = c("GLI-2022"),
-                          verbose  = FALSE) {
-  # force only-supported choice
+                          verbose = FALSE) {
   equation <- match.arg(equation)
   
-  # 1) Required columns
-  req <- c("age","sex","height","ethnicity","fev1","fvc")
+  # explicit check for these three
+  req <- c("ethnicity", "fev1", "fvc")
   miss <- setdiff(req, names(data))
   if (length(miss)) {
-    stop(sprintf("pulmo_markers(): missing required columns: %s",
-                 paste(miss, collapse = ", ")),
-         call. = FALSE)
+    stop("pulmo_markers(): missing required columns: ",
+         paste(miss, collapse=", "), call.=FALSE)
+  }
+  
+  # then check age, sex, height below...
+  req2 <- c("age","sex","height")
+  miss2 <- setdiff(req2, names(data))
+  if (length(miss2)) {
+    stop("pulmo_markers(): missing required columns: ",
+         paste(miss2, collapse=", "), call.=FALSE)
   }
   if (verbose) message("→ pulmo_markers (", equation, ")")
   
