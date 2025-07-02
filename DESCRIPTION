@@ -1,0 +1,43 @@
+Package: HealthMarkers
+Type: Package
+Title: HealthMarkers: A Toolkit for Clinical, Metabolic, Cardiovascular & Pulmonary Biomarker Calculation
+Version: 0.1.0
+Authors@R: 
+  person(
+    given    = "Sufyan",
+    family   = "Suleman",
+    email    = "sufyansuleman@hotmail.com",
+    role     = c("aut", "cre"),
+    comment  = c(ORCID = "0000-0001-6612-6915")
+  )
+Description: 
+  HealthMarkers is a unified R toolkit for computing a broad suite 
+  of clinical biomarkers from routine data. Out of the box it can calculate:
+  - Metabolic markers: insulin‐sensitivity (fasting, OGTT, adipose, tracer/DXA), 
+    insulin‐resistance, lipid panels, liver steatosis & fibrosis, anthropometric z‐scores
+  - Cardiovascular risk scores and blood pressure indices
+  - Pulmonary function indices (spirometry‐based “lung age”, %predicted FEV1, etc.)
+  - Biomarker panels from alternate biofluids (urine, saliva, sweat)
+  All of these are accessible via a single `health_markers()` dispatcher.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports:
+  dplyr,
+  tibble,
+  tidyr,
+  rlang,
+  stats,
+  magrittr
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    usethis
+VignetteBuilder: knitr
+URL: https://github.com/sufyansuleman/HealthMarkers
+BugReports: https://github.com/sufyansuleman/HealthMarkers/issues
+Config/testthat/edition: 3
+

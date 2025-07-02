@@ -1,0 +1,8 @@
+---
+title: "Getting Started with HealthMarkers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with HealthMarkers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
