@@ -47,12 +47,11 @@ fasting_is <- function(data,
                        verbose   = FALSE) {
   validate_inputs(data,
                   col_map,
-                  fun_name = "fasting_is",
+                  fun_name      = "fasting_is",
                   required_keys = c("G0", "I0"))
-  G0       <- data[[col_map$G0]]
-  I0       <- data[[col_map$I0]]
-  if (verbose)
-    message("→ fasting_is: computing fasting indices")
+  G0 <- data[[ col_map$G0 ]]
+  I0 <- data[[ col_map$I0 ]]
+  if (verbose) message("→ fasting_is: computing fasting indices")
   G0_mg <- G0 * 18
   I0_u  <- I0 / 6
   out <- tibble::tibble(
@@ -67,10 +66,9 @@ fasting_is <- function(data,
     Bennett         =  1 / (log(I0_u) * log(G0_mg)),
     HOMA_IR_rev_inv = -((I0_u * G0_mg) / 405)
   )
-  out <- dplyr::mutate(out,
-                       dplyr::across(
-                         dplyr::everything(),
-                         ~ HealthMarkers::normalize_vec(.x, method = normalize)
-                       ))
-  out
+  dplyr::mutate(out,
+                dplyr::across(dplyr::everything(),
+                              ~ HealthMarkers::normalize_vec(.x, method = normalize)
+                )
+  )
 }

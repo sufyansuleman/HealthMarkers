@@ -19,8 +19,7 @@ validate_inputs <- function(data,
       "%s(): you must supply col_map entries for: %s",
       fun_name,
       paste(missing_map, collapse = ", ")
-    ),
-    call. = FALSE)
+    ), call. = FALSE)
   }
   
   # 2) check that data contains every mapped column for required_keys
@@ -28,11 +27,10 @@ validate_inputs <- function(data,
   miss <- setdiff(req, names(data))
   if (length(miss)) {
     stop(sprintf(
-      "%s(): missing data columns: %s",
+      "%s(): missing required columns: %s",
       fun_name,
       paste(miss, collapse = ", ")
-    ),
-    call. = FALSE)
+    ), call. = FALSE)
   }
   
   invisible(TRUE)

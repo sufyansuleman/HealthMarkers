@@ -42,38 +42,40 @@
 #’ ))
 lipid_markers <- function(data,
                           col_map = list(
-                            TC = "TC",
+                            TC    = "TC",
                             HDL_c = "HDL_c",
-                            TG = "TG",
-                            LDL_c = NULL,
-                            ApoB = NULL,
-                            ApoA1 = NULL
+                            TG    = "TG",
+                            LDL_c = "LDL_c",
+                            ApoB  = "ApoB",
+                            ApoA1 = "ApoA1"
                           ),
-                          verbose = FALSE) {
+                          verbose = FALSE
+) {
   validate_inputs(data,
                   col_map,
-                  fun_name = "lipid_markers",
-                  required_keys = c("TC", "HDL_c", "TG"))
-  if (verbose)
-    message("→ computing lipid markers")
+                  fun_name      = "lipid_markers",
+                  required_keys = c("TC", "HDL_c", "TG")
+  )
+  if (verbose) message("→ computing lipid markers")
   
-  # pull out lipids
   TC  <- data[[col_map$TC]]
   HDL <- data[[col_map$HDL_c]]
   TG  <- data[[col_map$TG]]
   
-  # LDL: from data or Friedewald (assumes mg/dL units)
-  if (!is.null(col_map$LDL_c) && col_map$LDL_c %in% names(data)) {
-    LDL <- data[[col_map$LDL_c]]
+  # LDL: from data or Friedewald
+  LDL <- if (col_map$LDL_c %in% names(data)) {
+    data[[col_map$LDL_c]]
   } else {
     warning("lipid_markers(): estimating LDL_c via Friedewald (LDL = TC - HDL - TG/5)")
-    LDL <- TC - HDL - TG / 5
+    TC - HDL - TG/5
   }
   
-  # apolipoprotein ratio if available
-  has_apo <- !is.null(col_map$ApoB) &&
-    !is.null(col_map$ApoA1) &&
-    all(c(col_map$ApoB, col_map$ApoA1) %in% names(data))
+  # ApoB/ApoA1
+  ApoB_ApoA1 <- if (all(c(col_map$ApoB, col_map$ApoA1) %in% names(data))) {
+    data[[col_map$ApoB]] / data[[col_map$ApoA1]]
+  } else {
+    NA_real_
+  }
   
   tibble::tibble(
     non_HDL_c     = TC - HDL,
@@ -81,10 +83,6 @@ lipid_markers <- function(data,
     ratio_TC_HDL  = TC / HDL,
     ratio_TG_HDL  = TG / HDL,
     ratio_LDL_HDL = LDL / HDL,
-    ApoB_ApoA1    = if (has_apo) {
-      data[[col_map$ApoB]] / data[[col_map$ApoA1]]
-    } else {
-      NA_real_
-    }
+    ApoB_ApoA1    = ApoB_ApoA1
   )
 }

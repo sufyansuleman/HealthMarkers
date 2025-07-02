@@ -1,5 +1,5 @@
 library(tibble)
-test_that("adiposity_sds returns correct SDS columns", {
+test_that("adiposity_sds returns correct SDS", {
   df <- tibble(BMI=22, waist=75, body_fat_pct=18)
   ref <- list(BMI=c(mean=18,sd=4), waist=c(mean=70,sd=10), body_fat_pct=c(mean=20,sd=5))
   out <- adiposity_sds(df, ref, verbose=FALSE)
