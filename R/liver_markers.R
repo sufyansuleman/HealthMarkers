@@ -1,52 +1,52 @@
 # R/liver_markers.R
 
-#’ Calculate a panel of blood‐based liver markers
-#’
-#’ Given routine labs and anthropometry, computes:
-#’  - **FLI**      (Fatty Liver Index)
-#’  - **NFS**      (NAFLD Fibrosis Score)
-#’  - **APRI**     (AST-to-Platelet Ratio Index)
-#’  - **FIB4**     (Fibrosis-4 Index)
-#’  - **BARD**     (BMI–AST/ALT–Diabetes score)
-#’  - **ALBI**     (Albumin–Bilirubin score)
-#’  - **MELD_XI**  (MELD excluding INR)
-#’
-#’ @param data A data.frame or tibble containing your liver & anthropometry data.
-#’ @param col_map Named list mapping these keys → your column names:
-#’   - `BMI`        → body mass index (kg/m²)
-#’   - `waist`      → waist circumference (cm)
-#’   - `triglycerides` → fasting TG (mg/dL)
-#’   - `GGT`        → gamma‐GT (U/L)
-#’   - `age`        → age (years)
-#’   - `AST`        → aspartate aminotransferase (U/L)
-#’   - `ALT`        → alanine aminotransferase (U/L)
-#’   - `platelets`  → platelet count (10^9/L)
-#’   - `albumin`    → serum albumin (g/L)
-#’   - `diabetes`   → diabetes status (0/1 or logical)
-#’   - `bilirubin`  → total bilirubin (mg/dL)
-#’   - `creatinine` → serum creatinine (mg/dL)
-#’ @param verbose Logical; if `TRUE`, prints a message when running.
-#’
-#’ @return A tibble with one column per marker:
-#’   `FLI`, `NFS`, `APRI`, `FIB4`, `BARD`, `ALBI`, `MELD_XI`.
-#’ @importFrom dplyr transmute
-#’ @export
-#’ @examples
-#’ df <- tibble::tibble(
-#’   BMI         = 24,
-#’   waist       = 80,
-#’   triglycerides = 150,   # mg/dL
-#’   GGT         = 30,
-#’   age         = 30,
-#’   AST         = 25,
-#’   ALT         = 20,
-#’   platelets   = 250,
-#’   albumin     = 45,
-#’   diabetes    = FALSE,
-#’   bilirubin   = 1.0,
-#’   creatinine  = 0.8
-#’ )
-#’ liver_markers(df)
+#' Calculate a panel of blood‐based liver markers
+#'
+#' Given routine labs and anthropometry, computes:
+#' **FLI**      (Fatty Liver Index)
+#' **NFS**      (NAFLD Fibrosis Score)
+#' **APRI**     (AST-to-Platelet Ratio Index)
+#' **FIB4**     (Fibrosis-4 Index)
+#' **BARD**     (BMI-AST/ALT-Diabetes score)
+#' **ALBI**     (Albumin-Bilirubin score)
+#' **MELD_XI**  (MELD excluding INR)
+#'
+#' @param data A data.frame or tibble containing your liver & anthropometry data.
+#' @param col_map Named list mapping these keys -> your column names:
+#'  `BMI`        -> body mass index (kg/m^2)
+#'  `waist`      -> waist circumference (cm)
+#'  `triglycerides` -> fasting TG (mg/dL)
+#'  `GGT`        -> gamma‐GT (U/L)
+#'  `age`        -> age (years)
+#'  `AST`        -> aspartate aminotransferase (U/L)
+#'  `ALT`        -> alanine aminotransferase (U/L)
+#'  `platelets`  -> platelet count (10^9/L)
+#'  `albumin`    -> serum albumin (g/L)
+#'  `diabetes`   -> diabetes status (0/1 or logical)
+#'  `bilirubin`  -> total bilirubin (mg/dL)
+#'  `creatinine` -> serum creatinine (mg/dL)
+#' @param verbose Logical; if `TRUE`, prints a message when running.
+#'
+#' @return A tibble with one column per marker:
+#'   `FLI`, `NFS`, `APRI`, `FIB4`, `BARD`, `ALBI`, `MELD_XI`.
+#' @importFrom dplyr transmute
+#' @export
+#' @examples
+#' df <- tibble::tibble(
+#'   BMI         = 24,
+#'   waist       = 80,
+#'   triglycerides = 150,   # mg/dL
+#'   GGT         = 30,
+#'   age         = 30,
+#'   AST         = 25,
+#'   ALT         = 20,
+#'   platelets   = 250,
+#'   albumin     = 45,
+#'   diabetes    = FALSE,
+#'   bilirubin   = 1.0,
+#'   creatinine  = 0.8
+#' )
+#' liver_markers(df)
 liver_markers <- function(data,
                           col_map = list(
                             BMI          = "BMI",
@@ -74,7 +74,7 @@ liver_markers <- function(data,
   # 1) check data contains those columns
   validate_inputs(data, col_map, fun_name = "liver_markers")
   if (verbose)
-    message("→ computing liver markers")
+    message("-> computing liver markers")
   
   # 2) pull out each vector
   BMI         <- data[[col_map$BMI]]

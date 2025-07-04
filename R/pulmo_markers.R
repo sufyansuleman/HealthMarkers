@@ -1,124 +1,113 @@
 # File: R/pulmo_markers.R
 
-#’ Calculate pulmonary function markers (FEV₁/FVC, z-scores, lung age, etc.)
-#’
-#’ Uses the Global Lung Function Initiative reference equations to
-#’ compute predicted values, z-scores, lower limits of normal (LLN),
-#’ and an estimated “lung age” (age at which predicted FEV₁ equals observed).
-#’
-#’ @param data A `data.frame` or tibble containing at least:
-#’   - `age`         (years, numeric)
-#’   - `sex`         (1 = male, 2 = female)
-#’   - `height`      (cm, numeric)
-#’   - `ethnicity`   (character or factor; one of the GLI ethnic groups,
-#’                    e.g. “Caucasian”, “African American”, etc.)
-#’   - `fev1`        (observed FEV₁, L)
-#’   - `fvc`         (observed FVC, L)
-#’ @param equation Character; which reference equations to use.
-#’   Currently only `"GLI-2022"` is supported.  By specifying
-#’   `equation = c("GLI-2022")` and then calling
-#’   `equation <- match.arg(equation)`, we force the only accepted
-#’   value to be `"GLI-2022"`.  Passing anything else throws a clear error.
-#’ @param verbose Logical; if `TRUE`, prints progress messages.
-#’
-#’ @return A tibble with:
-#’   - `fev1_pred`, `fvc_pred`     Predicted FEV₁/FVC (L)
-#’   - `fev1_z`, `fvc_z`           Z-score relative to predicted
-#’   - `fev1_LLN`, `fvc_LLN`       Lower limit of normal (5th percentile)
-#’   - `fev1_fvc_pred`             Predicted FEV₁/FVC ratio
-#’   - `fev1_fvc_z`                Z-score of the ratio
-#’   - `fev1_fvc_LLN`              LLN for the ratio (placeholder NA for now)
-#’   - `lung_age_fev1`             Estimated “lung age” for FEV₁ (years)
-#’   - `lung_age_diff`             Difference `lung_age_fev1 - actual age`
-#’
-#’ @details
-#’ **Reference equations**  
-#’ We draw on the GLI-2022 multi-ethnic spirometry equations
-#’ (Quanjer _et al._, _Eur Respir J_ 2023) via the **rspiro** package’s
-#’ `predict_spiro()` and `inverse_predicted_age()`.  
-#’
-#’ **`equation` & `match.arg()`**  
-#’ Declaring the argument as `equation = c("GLI-2022")` and then
-#’ `equation <- match.arg(equation)` ensures that:
-#’ - If you call `pulmo_markers(df)` (no `equation`), you get `"GLI-2022"`.  
-#’ - If you call `pulmo_markers(df, equation="GLI-2022")`, that’s accepted.  
-#’ - Anything else (e.g. `"GLI-2012"`) throws:  
-#’   `Error in match.arg(equation) : 'arg' should be one of "GLI-2022"`.
-#’
-#’ @references  
-#’ - Quanjer _et al._, “Multi-ethnic reference values for spirometry for the 
-#’   3–95-yr age range: the GLI-2022 equations.” _Eur Respir J_ 2023;61:2201632.  
-#’ - **rspiro** package: <https://github.com/2DegreesInvesting/rspiro>
-#’
-#’ @examples
-#’ library(tibble)
-#’ df <- tibble(
-#’   age       = 45,
-#’   sex       = 1,
-#’   height    = 170,
-#’   ethnicity = "Caucasian",
-#’   fev1      = 3.0,
-#’   fvc       = 4.0
-#’ )
-#’ pulmo_markers(df)
-#’ pulmo_markers(df, equation = "GLI-2022", verbose = TRUE)
-#’ @export
+#' Calculate pulmonary function markers (FEV₁/FVC, z-scores, percent predicted, LLN, etc.)
+#'
+#' Uses the `rspiro` reference equations to compute predicted normals,
+#' z-scores, percent predicted and lower limits of normal (LLN) for FEV₁, FVC,
+#' and the FEV₁/FVC ratio.
+#'
+#' @param data A data.frame or tibble with columns:
+#'   - `age`       (numeric): years
+#'   - `sex`       (character): "male"/"female" (case‐insensitive)
+#'   - `height`    (numeric): cm or m (auto‐detected)
+#'   - `ethnicity` (character): e.g. "Caucasian", "African-American", …
+#'   - `fev1`      (numeric): observed FEV₁ in L
+#'   - `fvc`       (numeric): observed FVC in L
+#' @param equation One of `c("GLI","GLIgl","NHANES3")` (see `rspiro` for more)
+#' @param verbose   Logical; if `TRUE` prints progress messages.
+#'
+#' @return A tibble with:
+#'   - `fev1_pred`, `fev1_z`,   `fev1_pctpred`, `fev1_LLN`
+#'   - `fvc_pred`,  `fvc_z`,    `fvc_pctpred`,  `fvc_LLN`
+#'   - `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`, `fev1_fvc_LLN`
+#' @export
 pulmo_markers <- function(data,
-                          equation = c("GLI-2022"),
-                          verbose = FALSE) {
+                          equation = c("GLI", "GLIgl", "NHANES3"),
+                          verbose  = FALSE) {
   equation <- match.arg(equation)
+  data <- as.data.frame(data, stringsAsFactors = FALSE)
   
-  # explicit check for these three
-  req <- c("ethnicity", "fev1", "fvc")
+  ## 0) Basic coercion & validation
+  req <- c("age","sex","height","ethnicity","fev1","fvc")
   miss <- setdiff(req, names(data))
-  if (length(miss)) {
-    stop("pulmo_markers(): missing required columns: ",
-         paste(miss, collapse=", "), call.=FALSE)
+  if (length(miss)) stop(
+    "pulmo_markers(): missing required columns: ", paste(miss, collapse=", "),
+    call. = FALSE
+  )
+  data$age    <- as.numeric(data$age)
+  data$height <- as.numeric(data$height)
+  data$fev1   <- as.numeric(data$fev1)
+  data$fvc    <- as.numeric(data$fvc)
+  
+  if (verbose) {
+    message("↪ FEV1 class: ", class(data$fev1), " | any NA: ", anyNA(data$fev1))
+    message("↪ FVC class:  ", class(data$fvc),  " | any NA: ", anyNA(data$fvc))
   }
   
-  # then check age, sex, height below...
-  req2 <- c("age","sex","height")
-  miss2 <- setdiff(req2, names(data))
-  if (length(miss2)) {
-    stop("pulmo_markers(): missing required columns: ",
-         paste(miss2, collapse=", "), call.=FALSE)
+  sex_char <- tolower(as.character(data$sex))
+  gender   <- ifelse(sex_char %in% c("male","m"), 1L, 2L)
+  eth_char <- tolower(as.character(data$ethnicity))
+  ethnicity <- ifelse(
+    eth_char %in% c("caucasian","white"),            1L,
+    ifelse(eth_char %in% c("african-american","black"), 2L,
+           ifelse(eth_char %in% c("ne asian","northeast asian"),3L,
+                  ifelse(eth_char %in% c("se asian","southeast asian"),4L, 5L)))
+  )
+  
+  if (any(data$height > 3, na.rm=TRUE)) {
+    if (verbose) message("-> converting height from cm to m")
+    data$height <- data$height / 100
   }
-  if (verbose) message("→ pulmo_markers (", equation, ")")
+  if (verbose) message("-> pulmo_markers[", equation, "] gender=", unique(gender),
+                       " eth=", unique(ethnicity))
   
-  # 2) GLI predictions
-  ref <- rspiro::predict_spiro(
-    age       = data$age,
-    sex       = data$sex,
-    height    = data$height,
-    ethnicity = data$ethnicity,
-    fev1      = data$fev1,
-    fvc       = data$fvc,
-    equation  = equation
+  ## 1) lookup reference functions
+  ns         <- asNamespace("rspiro")
+  pred_fun   <- get(paste0("pred_",   equation), ns)
+  zscore_fun <- get(paste0("zscore_", equation), ns)
+  lln_fun    <- get(paste0("LLN_",    equation), ns)
+  
+  ## 2) compute predicted, z-scores, LLN by equation
+  if (equation == "GLIgl") {
+    fev1_pred <- pred_fun(data$age, data$height, gender, param = "FEV1")
+    fvc_pred  <- pred_fun(data$age, data$height, gender, param = "FVC")
+    fev1_z    <- zscore_fun(data$age, data$height, gender, FEV1 = data$fev1)
+    fvc_z     <- zscore_fun(data$age, data$height, gender, FVC  = data$fvc)
+    fev1_LLN  <- lln_fun(data$age, data$height, gender, param = "FEV1")
+    fvc_LLN   <- lln_fun(data$age, data$height, gender, param = "FVC")
+  } else {
+    fev1_pred <- pred_fun(data$age, data$height, gender, ethnicity, param = "FEV1")
+    fvc_pred  <- pred_fun(data$age, data$height, gender, ethnicity, param = "FVC")
+    fev1_z    <- zscore_fun(data$age, data$height, gender, ethnicity, FEV1 = data$fev1)
+    fvc_z     <- zscore_fun(data$age, data$height, gender, ethnicity, FVC  = data$fvc)
+    fev1_LLN  <- lln_fun(data$age, data$height, gender, ethnicity, param = "FEV1")
+    fvc_LLN   <- lln_fun(data$age, data$height, gender, ethnicity, param = "FVC")
+  }
+  
+  ## 3) percent predicted
+  fev1_pctpred <- 100 * data$fev1 / fev1_pred
+  fvc_pctpred  <- 100 * data$fvc  / fvc_pred
+  
+  ## 4) ratio outputs
+  obs_ratio  <- data$fev1 / data$fvc
+  pred_ratio <- fev1_pred / fvc_pred
+  ratio_z    <- (obs_ratio - mean(pred_ratio, na.rm=TRUE)) / sd(pred_ratio, na.rm=TRUE)
+  ratio_pct  <- 100 * obs_ratio / pred_ratio
+  
+  ## 5) assemble results
+  tibble::tibble(
+    fev1_pred        = fev1_pred,
+    fev1_z           = fev1_z,
+    fev1_pctpred     = fev1_pctpred,
+    fev1_LLN         = fev1_LLN,
+    fvc_pred         = fvc_pred,
+    fvc_z            = fvc_z,
+    fvc_pctpred      = fvc_pctpred,
+    fvc_LLN          = fvc_LLN,
+    fev1_fvc_ratio   = obs_ratio,
+    fev1_fvc_pred    = pred_ratio,
+    fev1_fvc_z       = ratio_z,
+    fev1_fvc_pctpred = ratio_pct,
+    fev1_fvc_LLN     = NA_real_
   )
-  
-  # 3) Lung age (when predicted FEV1 == observed)
-  lung_age <- rspiro::inverse_predicted_age(
-    observed  = data$fev1,
-    sex       = data$sex,
-    height    = data$height,
-    ethnicity = data$ethnicity,
-    equation  = equation
-  )
-  
-  # 4) Assemble all markers
-  ref %>%
-    dplyr::transmute(
-      fev1_pred       = fev1_pred,
-      fev1_z          = fev1_z,
-      fev1_LLN        = fev1_LLN,
-      fvc_pred        = fvc_pred,
-      fvc_z           = fvc_z,
-      fvc_LLN         = fvc_LLN,
-      fev1_fvc_pred   = fev1_pred / fvc_pred,
-      fev1_fvc_z      = (fev1_fvc_pred - mean(fev1_fvc_pred, na.rm = TRUE)) /
-        sd(fev1_fvc_pred, na.rm = TRUE),
-      fev1_fvc_LLN    = NA_real_,        # placeholder; GLI doesn’t yet define LLN for the ratio
-      lung_age_fev1   = lung_age,
-      lung_age_diff   = lung_age - data$age
-    )
 }

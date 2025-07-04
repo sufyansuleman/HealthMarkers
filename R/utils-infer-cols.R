@@ -1,14 +1,14 @@
 # R/utils-infer-cols.R
 
-#’ Infer column names from user data based on flexible patterns,
-#’ record a mapping log, and optionally write it out.
-#’
-#’ @param data     A data.frame whose names we scan.
-#’ @param map      A named list of length-1 NULLs (one for each target var: G0, I0, …).
-#’ @param verbose  If TRUE, message() each mapping as it happens.
-#’ @param log_file Optional file path; if supplied, writes the full log to that path.
-#’ @return A named list exactly like `map`, but with each element filled
-#’         by the matching column name in `data`.
+#' Infer column names from user data based on flexible patterns,
+#' record a mapping log, and optionally write it out.
+#'
+#' @param data     A data.frame whose names we scan.
+#' @param map      A named list of length-1 NULLs (one for each target var: G0, I0, …).
+#' @param verbose  If TRUE, message() each mapping as it happens.
+#' @param log_file Optional file path; if supplied, writes the full log to that path.
+#' @return A named list exactly like `map`, but with each element filled
+#'         by the matching column name in `data`.
 infer_cols <- function(data,
                        map,
                        verbose  = TRUE,
@@ -92,17 +92,17 @@ infer_cols <- function(data,
     }
     pat <- patterns[nm]
     if (is.na(pat)) {
-      stop("health_maRkers::infer_cols – no pattern defined for ‘", nm, "’")
+      stop("health_maRkers::infer_cols - no pattern defined for '", nm, "'")
     }
     hits <- grep(pat, names(data), ignore.case = TRUE, value = TRUE)
     if (length(hits) == 1) {
       map[[nm]] <- hits
       add_log(sprintf("✔︎ %s ← inferred from '%s'", nm, hits))
     } else if (length(hits) > 1) {
-      stop("health_maRkers::infer_cols – multiple candidates for ‘", nm,
-           "’: ", paste(hits, collapse = ", "))
+      stop("health_maRkers::infer_cols - multiple candidates for '", nm,
+           "': ", paste(hits, collapse = ", "))
     } else {
-      stop("health_maRkers::infer_cols – could not find any column matching ‘", nm, "’")
+      stop("health_maRkers::infer_cols - could not find any column matching '", nm, "'")
     }
   }
   

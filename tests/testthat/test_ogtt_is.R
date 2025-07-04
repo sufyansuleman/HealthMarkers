@@ -1,4 +1,6 @@
 library(tibble)
+library(testthat)
+
 test_that("ogtt_is returns expected OGTT indices", {
   df <- tibble(
     G0 = 5.5,
@@ -12,6 +14,7 @@ test_that("ogtt_is returns expected OGTT indices", {
     age = 30,
     sex = 1
   )
+  
   out <- ogtt_is(
     df,
     col_map = list(
@@ -29,10 +32,14 @@ test_that("ogtt_is returns expected OGTT indices", {
     normalize = "none",
     verbose = FALSE
   )
+  
   expect_true(all(c("Matsuda_ISI", "Gutt_index") %in% names(out)))
-  # Simple check: when G0*I0 small, Isi_120 large
   expect_gt(out$Isi_120, 0)
 })
+
 test_that("ogtt_is errors on missing cols", {
-  expect_error(ogtt_is(tibble(), col_map = rep(list("x"), 10)), "missing required columns")
+  expect_error(
+    ogtt_is(tibble(), col_map = rep(list("x"), 10)),
+    "you must supply col_map entries"
+  )
 })

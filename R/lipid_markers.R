@@ -1,45 +1,45 @@
 # R/lipid_markers.R
 
-#’ Calculate lipid–panel markers
-#’
-#’ Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1),
-#’ computes:
-#’  • non_HDL_c
-#’  • remnant_c
-#’  • ratio_TC_HDL
-#’  • ratio_TG_HDL
-#’  • ratio_LDL_HDL
-#’  • ApoB_ApoA1 (if both apolipoproteins are in `data`)
-#’
-#’ @param data A data.frame or tibble containing your lipid data.
-#’ @param col_map Named list mapping the keys below → your column names:
-#’   - `TC`    → total cholesterol
-#’   - `HDL_c` → HDL‐C
-#’   - `TG`    → triglycerides
-#’   - `LDL_c` → (optional) LDL‐C; if missing, estimated via Friedewald
-#’   - `ApoB`, `ApoA1` → (optional) apolipoproteins
-#’ @param verbose Logical; if `TRUE`, prints a message about computing lipid markers.
-#’
-#’ @return A tibble with:
-#’   - `non_HDL_c`, `remnant_c`,
-#’   - `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`,
-#’   - `ApoB_ApoA1` (if both `ApoB` and `ApoA1` are present; otherwise `NA`)
-#’ @importFrom dplyr transmute if_else
-#’ @importFrom tibble tibble
-#’ @export
-#’ @examples
-#’ df <- tibble::tibble(
-#’   TC    = 5.0,
-#’   HDL_c = 1.0,
-#’   TG    = 1.3,
-#’   LDL_c = 3.0,
-#’   ApoB  = 1.1,
-#’   ApoA1 = 1.5
-#’ )
-#’ lipid_markers(df, col_map = list(
-#’   TC="TC", HDL_c="HDL_c", TG="TG",
-#’   LDL_c="LDL_c", ApoB="ApoB", ApoA1="ApoA1"
-#’ ))
+#' Calculate lipid-panel markers
+#'
+#' Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1),
+#' computes:
+#'  non_HDL_c
+#'  remnant_c
+#'  ratio_TC_HDL
+#'  ratio_TG_HDL
+#'  ratio_LDL_HDL
+#'  ApoB_ApoA1 (if both apolipoproteins are in `data`)
+#'
+#' @param data A data.frame or tibble containing your lipid data.
+#' @param col_map Named list mapping the keys below -> your column names:
+#'   `TC`    -> total cholesterol
+#'   `HDL_c` -> HDL‐C
+#'   `TG`    -> triglycerides
+#'   `LDL_c` -> (optional) LDL‐C; if missing, estimated via Friedewald
+#'   `ApoB`, `ApoA1` -> (optional) apolipoproteins
+#' @param verbose Logical; if `TRUE`, prints a message about computing lipid markers.
+#'
+#' @return A tibble with:
+#'   - `non_HDL_c`, `remnant_c`,
+#'   - `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`,
+#'   - `ApoB_ApoA1` (if both `ApoB` and `ApoA1` are present; otherwise `NA`)
+#' @importFrom dplyr transmute if_else
+#' @importFrom tibble tibble
+#' @export
+#' @examples
+#' df <- tibble::tibble(
+#'   TC    = 5.0,
+#'   HDL_c = 1.0,
+#'   TG    = 1.3,
+#'   LDL_c = 3.0,
+#'   ApoB  = 1.1,
+#'   ApoA1 = 1.5
+#' )
+#' lipid_markers(df, col_map = list(
+#'   TC="TC", HDL_c="HDL_c", TG="TG",
+#'   LDL_c="LDL_c", ApoB="ApoB", ApoA1="ApoA1"
+#' ))
 lipid_markers <- function(data,
                           col_map = list(
                             TC    = "TC",
@@ -56,7 +56,7 @@ lipid_markers <- function(data,
                   fun_name      = "lipid_markers",
                   required_keys = c("TC", "HDL_c", "TG")
   )
-  if (verbose) message("→ computing lipid markers")
+  if (verbose) message("-> computing lipid markers")
   
   TC  <- data[[col_map$TC]]
   HDL <- data[[col_map$HDL_c]]

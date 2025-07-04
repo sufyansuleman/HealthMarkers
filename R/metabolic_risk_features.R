@@ -1,38 +1,38 @@
 # R/metabolic_risk_features.R
 
-#’ Calculate metabolic risk feature flags
-#’
-#’ Given routine labs and z‐scores, computes four key binary risk markers:
-#’  - dyslipidemia  
-#’  - insulin_resistance  
-#’  - hyperglycemia  
-#’  - hypertension  
-#’
-#’ @param data A data.frame or tibble containing at least:
-#’   - `chol_total`, `chol_ldl`, `chol_hdl`, `triglycerides` (numeric)  
-#’   - `age_year`     (numeric, years)  
-#’   - `z_HOMA`       (numeric, standardized HOMA‐IR)  
-#’   - `glucose`      (numeric, mmol/L)  
-#’   - `HbA1c`        (numeric, mmol/mol)  
-#’   - `bp_sys_z`, `bp_dia_z` (numeric, systolic/diastolic BP z‐scores)  
-#’
-#’ @return A tibble with one column per marker—each a factor with levels `0`/`1`.
-#’ @importFrom dplyr transmute if_else
-#’ @export
-#’ @examples
-#’ df <- tibble::tibble(
-#’   chol_total   = 6.0,
-#’   chol_ldl     = 3.5,
-#’   chol_hdl     = 1.0,
-#’   triglycerides= 1.2,
-#’   age_year     = 25,
-#’   z_HOMA       = 1.5,
-#’   glucose      = 5.8,
-#’   HbA1c        = 40,
-#’   bp_sys_z     = 1.7,
-#’   bp_dia_z     = 1.0
-#’ )
-#’ metabolic_risk_features(df)
+#' Calculate metabolic risk feature flags
+#'
+#' Given routine labs and z‐scores, computes four key binary risk markers:
+#'  - dyslipidemia  
+#'  - insulin_resistance  
+#'  - hyperglycemia  
+#'  - hypertension  
+#'
+#' @param data A data.frame or tibble containing at least:
+#'   - `chol_total`, `chol_ldl`, `chol_hdl`, `triglycerides` (numeric)  
+#'   - `age_year`     (numeric, years)  
+#'   - `z_HOMA`       (numeric, standardized HOMA‐IR)  
+#'   - `glucose`      (numeric, mmol/L)  
+#'   - `HbA1c`        (numeric, mmol/mol)  
+#'   - `bp_sys_z`, `bp_dia_z` (numeric, systolic/diastolic BP z‐scores)  
+#'
+#' @return A tibble with one column per marker-each a factor with levels `0`/`1`.
+#' @importFrom dplyr transmute if_else
+#' @export
+#' @examples
+#' df <- tibble::tibble(
+#'   chol_total   = 6.0,
+#'   chol_ldl     = 3.5,
+#'   chol_hdl     = 1.0,
+#'   triglycerides= 1.2,
+#'   age_year     = 25,
+#'   z_HOMA       = 1.5,
+#'   glucose      = 5.8,
+#'   HbA1c        = 40,
+#'   bp_sys_z     = 1.7,
+#'   bp_dia_z     = 1.0
+#' )
+#' metabolic_risk_features(df)
 metabolic_risk_features <- function(data) {
   required_cols <- c(
     "chol_total", "chol_ldl", "chol_hdl", "triglycerides",

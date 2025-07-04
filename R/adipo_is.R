@@ -1,55 +1,55 @@
 # R/adipo_is.R
 
-#’ Calculate adipose‐based insulin sensitivity indices
-#’
-#’ Given fasting glucose & insulin plus lipid and adiposity measures,
-#’ computes:
-#’ * Revised_QUICKI
-#’ * VAI_Men_inv
-#’ * VAI_Women_inv
-#’ * TG_HDL_C_inv
-#’ * TyG_inv
-#’ * LAP_Men_inv
-#’ * LAP_Women_inv
-#’ * McAuley_index
-#’ * Adipo_inv
-#’ * Belfiore_inv_FFA
-#’
-#’ @param data A data.frame or tibble containing at least the columns mapped by `col_map`.
-#’ @param col_map Named list mapping:
-#’   * `G0` → fasting glucose (mmol/L)
-#’   * `I0` → fasting insulin (pmol/L)
-#’   * `TG` → triglycerides (mmol/L)
-#’   * `HDL_c` → HDL cholesterol (mmol/L)
-#’   * `FFA` → free fatty acids (mmol/L)
-#’   * `waist` → waist circumference (cm)
-#’   * `bmi` → body‐mass index (kg/m²)
-#’ @param normalize One of `c("none","z","inverse","range","robust")`—method to scale each index.
-#’ @param verbose Logical; if `TRUE`, prints a progress message.
-#’
-#’ @return A tibble with the 10 adipose‐based index columns.
-#’ @importFrom tibble tibble
-#’ @importFrom dplyr mutate across everything
-#’ @export
-#’ @examples
-#’ df <- tibble::tibble(
-#’   G0    = 5.5, I0    = 60,
-#’   TG    = 1.2, HDL_c = 1.0,
-#’   FFA   = 0.45, waist = 80, bmi = 24
-#’ )
-#’ adipo_is(
-#’   df,
-#’   col_map = list(
-#’     G0    = "G0",
-#’     I0    = "I0",
-#’     TG    = "TG",
-#’     HDL_c = "HDL_c",
-#’     FFA   = "FFA",
-#’     waist = "waist",
-#’     bmi   = "bmi"
-#’   ),
-#’   normalize = "none"
-#’ )
+#' Calculate adipose based insulin sensitivity indices
+#'
+#' Given fasting glucose & insulin plus lipid and adiposity measures,
+#' computes:
+#' * Revised_QUICKI
+#' * VAI_Men_inv
+#' * VAI_Women_inv
+#' * TG_HDL_C_inv
+#' * TyG_inv
+#' * LAP_Men_inv
+#' * LAP_Women_inv
+#' * McAuley_index
+#' * Adipo_inv
+#' * Belfiore_inv_FFA
+#'
+#' @param data A data.frame or tibble containing at least the columns mapped by `col_map`.
+#' @param col_map Named list mapping:
+#'   * `G0` -> fasting glucose (mmol/L)
+#'   * `I0` -> fasting insulin (pmol/L)
+#'   * `TG` -> triglycerides (mmol/L)
+#'   * `HDL_c` -> HDL cholesterol (mmol/L)
+#'   * `FFA` -> free fatty acids (mmol/L)
+#'   * `waist` -> waist circumference (cm)
+#'   * `bmi` -> body‐mass index (kg/m^2)
+#' @param normalize One of `c("none","z","inverse","range","robust")`-method to scale each index.
+#' @param verbose Logical; if `TRUE`, prints a progress message.
+#'
+#' @return A tibble with the 10 adipose‐based index columns.
+#' @importFrom tibble tibble
+#' @importFrom dplyr mutate across everything
+#' @export
+#' @examples
+#' df <- tibble::tibble(
+#'   G0    = 5.5, I0    = 60,
+#'   TG    = 1.2, HDL_c = 1.0,
+#'   FFA   = 0.45, waist = 80, bmi = 24
+#' )
+#' adipo_is(
+#'   df,
+#'   col_map = list(
+#'     G0    = "G0",
+#'     I0    = "I0",
+#'     TG    = "TG",
+#'     HDL_c = "HDL_c",
+#'     FFA   = "FFA",
+#'     waist = "waist",
+#'     bmi   = "bmi"
+#'   ),
+#'   normalize = "none"
+#' )
 adipo_is <- function(data,
                      col_map,
                      normalize = "none",
@@ -63,16 +63,16 @@ adipo_is <- function(data,
   )
   
   # 1) extract & convert
-  G0    <- data[[col_map$G0]]    * 18      # → mg/dL
-  I0    <- data[[col_map$I0]]    / 6       # → µU/mL
-  TG    <- data[[col_map$TG]]    * 88.57   # → mg/dL
-  HDL   <- data[[col_map$HDL_c]] * 38.67   # → mg/dL
+  G0    <- data[[col_map$G0]]    * 18      # -> mg/dL
+  I0    <- data[[col_map$I0]]    / 6       # -> µU/mL
+  TG    <- data[[col_map$TG]]    * 88.57   # -> mg/dL
+  HDL   <- data[[col_map$HDL_c]] * 38.67   # -> mg/dL
   FFA   <- data[[col_map$FFA]]              # mmol/L
   waist <- data[[col_map$waist]]            # cm
-  bmi   <- data[[col_map$bmi]]              # kg/m²
+  bmi   <- data[[col_map$bmi]]              # kg/m^2
   
   if (verbose)
-    message("→ adipo_is: computing adipose‐based indices")
+    message("-> adipo_is: computing adipose‐based indices")
   
   # 2) compute
   out <- tibble::tibble(

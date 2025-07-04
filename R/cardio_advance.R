@@ -1,34 +1,34 @@
 # R/calc_cardio_advanced.R
 
-#’ Calculate advanced cardiovascular risk scores & indices
-#’
-#’ Computes:
-#’  • 10-year ASCVD risk via Pooled Cohort Equations  
-#’  • Pulse Pressure (PP) and Pulse-Pressure Index (PPI = PP/SBP)  
-#’  • Atherogenic Index of Plasma (AIP = log10[TG/HDL])  
-#’  • Castelli Risk I (TC/HDL) & II (LDL/HDL)  
-#’
-#’ @param data A data.frame/tibble with at least:
-#’   - age (years), sex (0=female/1=male), race (“white”/“black”/“other”)  
-#’   - total_chol, HDL_c, LDL_c, TG (mg/dL or mmol/L; see units)  
-#’   - sbp (mmHg), bp_treated (logical), smoker (logical), diabetes (logical)  
-#’ @param units One of c("mgdl","mmoll"); if "mmoll", will convert to mg/dL internally  
-#’ @param verbose Logical; if TRUE, messages progress  
-#’ @return A tibble with columns:
-#’   - PCE_risk            (10-year ASCVD %, PCE2013)  
-#’   - PP                  (pulse pressure, mmHg)  
-#’   - PPI                 (PP / SBP)  
-#’   - AIP                 (log10[TG/HDL])  
-#’   - Castelli_I          (TC/HDL)  
-#’   - Castelli_II         (LDL/HDL)  
-#’ @importFrom PooledCohort pce
-#’ @importFrom dplyr transmute if_else
-#’ @export
+#' Calculate advanced cardiovascular risk scores & indices
+#'
+#' Computes:
+#'  • 10-year ASCVD risk via Pooled Cohort Equations  
+#'  • Pulse Pressure (PP) and Pulse-Pressure Index (PPI = PP/SBP)  
+#'  • Atherogenic Index of Plasma (AIP = log10[TG/HDL])  
+#'  • Castelli Risk I (TC/HDL) & II (LDL/HDL)  
+#'
+#' @param data A data.frame/tibble with at least:
+#'   - age (years), sex (0=female/1=male), race ("white"/"black"/"other")  
+#'   - total_chol, HDL_c, LDL_c, TG (mg/dL or mmol/L; see units)  
+#'   - sbp (mmHg), bp_treated (logical), smoker (logical), diabetes (logical)  
+#' @param units One of c("mgdl","mmoll"); if "mmoll", will convert to mg/dL internally  
+#' @param verbose Logical; if TRUE, messages progress  
+#' @return A tibble with columns:
+#'   - PCE_risk            (10-year ASCVD %, PCE2013)  
+#'   - PP                  (pulse pressure, mmHg)  
+#'   - PPI                 (PP / SBP)  
+#'   - AIP                 (log10[TG/HDL])  
+#'   - Castelli_I          (TC/HDL)  
+#'   - Castelli_II         (LDL/HDL)  
+#' @importFrom PooledCohort pce
+#' @importFrom dplyr transmute if_else
+#' @export
 cardio_advance <- function(data,
                                  units   = c("mgdl","mmoll"),
                                  verbose = FALSE) {
   units <- match.arg(units)
-  if (verbose) message("→ calc_cardio_advanced")
+  if (verbose) message("-> calc_cardio_advanced")
   
   # validate
   req <- c("age","sex","race","total_chol","HDL_c","LDL_c","TG",
@@ -39,7 +39,7 @@ cardio_advance <- function(data,
   
   df <- data
   
-  # convert mmol/L → mg/dL if needed
+  # convert mmol/L -> mg/dL if needed
   if (units=="mmoll") {
     df <- df %>%
       mutate(

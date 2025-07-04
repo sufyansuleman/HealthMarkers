@@ -30,12 +30,15 @@ Imports:
   tidyr,
   rlang,
   stats,
-  magrittr
+  magrittr,
+  purrr,
+  rspiro
 Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    usethis
+    usethis,
+    PooledCohort
 VignetteBuilder: knitr
 URL: https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues

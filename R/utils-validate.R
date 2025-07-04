@@ -1,12 +1,12 @@
 # R/utils-validate.R
 
-#’ Validate that col_map is fully specified and data has the mapped columns
-#’
-#’ @param data A data.frame or tibble
-#’ @param col_map Named list of expected keys → column names
-#’ @param fun_name Character; name of the calling function for messages
-#’ @param required_keys Character vector; names in col_map that are required
-#’ @keywords internal
+#' Validate that col_map is fully specified and data has the mapped columns
+#'
+#' @param data A data.frame or tibble
+#' @param col_map Named list of expected keys -> column names
+#' @param fun_name Character; name of the calling function for messages
+#' @param required_keys Character vector; names in col_map that are required
+#' @keywords internal
 validate_inputs <- function(data,
                             col_map,
                             fun_name       = "",

@@ -1,26 +1,26 @@
 # R/adiposity_sds_strat.R
 
-#’ Calculate sex‐stratified standardized‐score (SDS) for adiposity measures
-#’
-#’ Given raw anthropometry and a sex column, compute z‐scores relative to
-#’ sex‐specific reference means & SDs.
-#’
-#’ @param data A data.frame or tibble containing your raw measures *and* a
-#’   `sex` column coded `"M"` or `"F"`.
-#’ @param ref A named list with elements `"M"` and `"F"`. Each is itself a
-#’   named list of numeric vectors `c(mean=…, sd=…)`. E.g.:
-#’   ```r
-#’   list(
-#’     M = list(BMI = c(mean=23, sd=3.5), waist = c(mean=85, sd=10)),
-#’     F = list(BMI = c(mean=21, sd=3  ), waist = c(mean=75, sd= 9))
-#’   )
-#’   ```
-#’ @param sex_col Character; name of the sex column in `data` (values `"M"`/`"F"`).
-#’ @param verbose Logical; if `TRUE`, prints a progress message.
-#’
-#’ @return A tibble with one `<var>_SDS` column per reference variable.
-#’ @export
-#’
+#' Calculate sex‐stratified standardized‐score (SDS) for adiposity measures
+#'
+#' Given raw anthropometry and a sex column, compute z‐scores relative to
+#' sex‐specific reference means & SDs.
+#'
+#' @param data A data.frame or tibble containing your raw measures *and* a
+#'   `sex` column coded `"M"` or `"F"`.
+#' @param ref A named list with elements `"M"` and `"F"`. Each is itself a
+#'   named list of numeric vectors `c(mean=…, sd=…)`. E.g.:
+#'   ```r
+#'   list(
+#'     M = list(BMI = c(mean=23, sd=3.5), waist = c(mean=85, sd=10)),
+#'     F = list(BMI = c(mean=21, sd=3  ), waist = c(mean=75, sd= 9))
+#'   )
+#'   ```
+#' @param sex_col Character; name of the sex column in `data` (values `"M"`/`"F"`).
+#' @param verbose Logical; if `TRUE`, prints a progress message.
+#'
+#' @return A tibble with one `<var>_SDS` column per reference variable.
+#' @export
+#'
 adiposity_sds_strat <- function(data, ref, sex_col = "sex", verbose = FALSE) {
   # 1) validate ref structure
   if (!is.list(ref) || !all(c("M","F") %in% names(ref))) {
@@ -57,7 +57,7 @@ adiposity_sds_strat <- function(data, ref, sex_col = "sex", verbose = FALSE) {
   }
   
   if (verbose) {
-    message("→ adiposity_sds_strat: computing sex‐stratified SDS for: ",
+    message("-> adiposity_sds_strat: computing sex‐stratified SDS for: ",
             paste(vars_M, collapse = ", "))
   }
   

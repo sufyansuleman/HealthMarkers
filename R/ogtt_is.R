@@ -1,57 +1,57 @@
 # R/ogtt_is.R
 
-#’ Calculate OGTT‐based insulin sensitivity indices
-#’
-#’ Given glucose & insulin at 0, 30, 120 min (plus weight, BMI, age, sex),
-#’ computes:
-#’ * Isi_120
-#’ * Cederholm_index
-#’ * Gutt_index
-#’ * Avignon_Si0
-#’ * Avignon_Si120
-#’ * Avignon_Sim
-#’ * Modified_stumvoll
-#’ * Stumvoll_Demographics
-#’ * Matsuda_AUC
-#’ * Matsuda_ISI
-#’ * BigttSi
-#’ * Ifc_inv
-#’ * HIRI_inv
-#’ * Belfiore_isi_gly
-#’
-#’ @param data A data.frame or tibble containing at least the columns mapped by `col_map`.
-#’ @param col_map Named list mapping:
-#’   * `G0`, `G30`, `G120` → glucose at 0, 30, 120 min (mmol/L)
-#’   * `I0`, `I30`, `I120` → insulin at 0, 30, 120 min (pmol/L)
-#’   * `weight` → body weight (kg)
-#’   * `bmi` → body‐mass index (kg/m²)
-#’   * `age` → age (years)
-#’   * `sex` → sex (1 = male, 2 = female)
-#’ @param normalize One of `c("none","z","inverse","range","robust")` — method to scale each index.
-#’ @param verbose Logical; if `TRUE`, prints a progress message.
-#’
-#’ @return A tibble with the OGTT‐based index columns.
-#’ @importFrom tibble tibble
-#’ @importFrom dplyr mutate across everything
-#’ @export
-#’ @examples
-#’ df <- tibble::tibble(
-#’   G0   = 5.5, I0   = 60,
-#’   G30  = 7.8, I30  = 90,
-#’   G120 = 6.2, I120 = 50,
-#’   weight = 70, bmi = 24, age = 30, sex = 1
-#’ )
-#’ ogtt_is(
-#’   df,
-#’   col_map = list(
-#’     G0 = "G0", I0 = "I0",
-#’     G30 = "G30", I30 = "I30",
-#’     G120 = "G120", I120 = "I120",
-#’     weight = "weight", bmi = "bmi",
-#’     age = "age", sex = "sex"
-#’   ),
-#’   normalize = "none"
-#’ )
+#' Calculate OGTT‐based insulin sensitivity indices
+#'
+#' Given glucose & insulin at 0, 30, 120 min (plus weight, BMI, age, sex),
+#' computes:
+#' * Isi_120
+#' * Cederholm_index
+#' * Gutt_index
+#' * Avignon_Si0
+#' * Avignon_Si120
+#' * Avignon_Sim
+#' * Modified_stumvoll
+#' * Stumvoll_Demographics
+#' * Matsuda_AUC
+#' * Matsuda_ISI
+#' * BigttSi
+#' * Ifc_inv
+#' * HIRI_inv
+#' * Belfiore_isi_gly
+#'
+#' @param data A data.frame or tibble containing at least the columns mapped by `col_map`.
+#' @param col_map Named list mapping:
+#'   * `G0`, `G30`, `G120` -> glucose at 0, 30, 120 min (mmol/L)
+#'   * `I0`, `I30`, `I120` -> insulin at 0, 30, 120 min (pmol/L)
+#'   * `weight` -> body weight (kg)
+#'   * `bmi` -> body‐mass index (kg/m^2)
+#'   * `age` -> age (years)
+#'   * `sex` -> sex (1 = male, 2 = female)
+#' @param normalize One of `c("none","z","inverse","range","robust")` - method to scale each index.
+#' @param verbose Logical; if `TRUE`, prints a progress message.
+#'
+#' @return A tibble with the OGTT‐based index columns.
+#' @importFrom tibble tibble
+#' @importFrom dplyr mutate across everything
+#' @export
+#' @examples
+#' df <- tibble::tibble(
+#'   G0   = 5.5, I0   = 60,
+#'   G30  = 7.8, I30  = 90,
+#'   G120 = 6.2, I120 = 50,
+#'   weight = 70, bmi = 24, age = 30, sex = 1
+#' )
+#' ogtt_is(
+#'   df,
+#'   col_map = list(
+#'     G0 = "G0", I0 = "I0",
+#'     G30 = "G30", I30 = "I30",
+#'     G120 = "G120", I120 = "I120",
+#'     weight = "weight", bmi = "bmi",
+#'     age = "age", sex = "sex"
+#'   ),
+#'   normalize = "none"
+#' )
 ogtt_is <- function(data,
                     col_map,
                     normalize = "none",
@@ -63,10 +63,10 @@ ogtt_is <- function(data,
   )
   
   # 1) Extract & convert raw inputs
-  G0   <- data[[col_map$G0]]   * 18  # mmol/L → mg/dL
+  G0   <- data[[col_map$G0]]   * 18  # mmol/L -> mg/dL
   G30  <- data[[col_map$G30]]  * 18
   G120 <- data[[col_map$G120]] * 18
-  I0   <- data[[col_map$I0]]   / 6   # pmol/L  → µU/mL
+  I0   <- data[[col_map$I0]]   / 6   # pmol/L  -> µU/mL
   I30  <- data[[col_map$I30]]  / 6
   I120 <- data[[col_map$I120]] / 6
   
@@ -76,7 +76,7 @@ ogtt_is <- function(data,
   sex  <- data[[col_map$sex]]
   
   if (verbose)
-    message("→ ogtt_is: computing OGTT indices")
+    message("-> ogtt_is: computing OGTT indices")
   
   # 2) Areas under curve & means
   I_AUC  <- 0.5 * ((I0 + I30) * 30  + (I30 + I120) * 90)
