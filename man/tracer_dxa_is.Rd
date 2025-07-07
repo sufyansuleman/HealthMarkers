@@ -11,16 +11,16 @@ tracer_dxa_is(data, col_map, normalize = "none", verbose = FALSE)
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{I0} → fasting insulin (pmol/L)
-\item \code{rate_palmitate} → palmitate tracer rate
-\item \code{rate_glycerol} → glycerol tracer rate
-\item \code{fat_mass} → fat mass (kg)
-\item \code{weight} → body weight (kg)
-\item \code{HDL_c} → HDL cholesterol (mmol/L)
-\item \code{bmi} → body‐mass index (kg/m²)
+\item \code{I0} -> fasting insulin (pmol/L)
+\item \code{rate_palmitate} -> palmitate tracer rate
+\item \code{rate_glycerol} -> glycerol tracer rate
+\item \code{fat_mass} -> fat mass (kg)
+\item \code{weight} -> body weight (kg)
+\item \code{HDL_c} -> HDL cholesterol (mmol/L)
+\item \code{bmi} -> body‐mass index (kg/m^2)
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}—method to scale each index.}
+\item{normalize}{One of \code{c("none","z","inverse","range","robust")}-method to scale each index.}
 
 \item{verbose}{Logical; if TRUE, prints a progress message.}
 }

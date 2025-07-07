@@ -15,10 +15,10 @@ Column names are given in \code{col_map}.
 }}
 
 \item{col_map}{Named list mapping
-\code{G0} → your fasting glucose column,
-\code{I0} → your fasting insulin column}
+\code{G0} -> your fasting glucose column,
+\code{I0} -> your fasting insulin column}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")} — how to scale each index.}
+\item{normalize}{One of \code{c("none","z","inverse","range","robust")} - how to scale each index.}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
 }

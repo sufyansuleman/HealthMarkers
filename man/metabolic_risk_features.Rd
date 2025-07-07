@@ -18,7 +18,7 @@ metabolic_risk_features(data)
 }}
 }
 \value{
-A tibble with one column per marker—each a factor with levels \code{0}/\code{1}.
+A tibble with one column per marker-each a factor with levels \code{0}/\code{1}.
 }
 \description{
 Given routine labs and z‐scores, computes four key binary risk markers:

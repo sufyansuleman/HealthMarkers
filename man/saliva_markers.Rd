@@ -31,7 +31,7 @@ A tibble with columns:
 Computes:
 \itemize{
 \item \strong{log_cortisol_wake} (log‐transformed waking cortisol)
-\item \strong{CAR_AUC}           (Cortisol Awakening Response, trapezoidal AUC over 0–60 min)
+\item \strong{CAR_AUC}           (Cortisol Awakening Response, trapezoidal AUC over 0-60 min)
 \item \strong{log_amylase}       (log‐transformed salivary α-amylase)
 \item \strong{saliva_glucose}    (raw salivary glucose)
 }

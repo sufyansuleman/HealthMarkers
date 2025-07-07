@@ -15,19 +15,19 @@ liver_markers(
 \arguments{
 \item{data}{A data.frame or tibble containing your liver & anthropometry data.}
 
-\item{col_map}{Named list mapping these keys → your column names:
-\code{BMI}        → body mass index (kg/m²)
-\code{waist}      → waist circumference (cm)
-\code{triglycerides} → fasting TG (mg/dL)
-\code{GGT}        → gamma‐GT (U/L)
-\code{age}        → age (years)
-\code{AST}        → aspartate aminotransferase (U/L)
-\code{ALT}        → alanine aminotransferase (U/L)
-\code{platelets}  → platelet count (10^9/L)
-\code{albumin}    → serum albumin (g/L)
-\code{diabetes}   → diabetes status (0/1 or logical)
-\code{bilirubin}  → total bilirubin (mg/dL)
-\code{creatinine} → serum creatinine (mg/dL)}
+\item{col_map}{Named list mapping these keys -> your column names:
+\code{BMI}        -> body mass index (kg/m^2)
+\code{waist}      -> waist circumference (cm)
+\code{triglycerides} -> fasting TG (mg/dL)
+\code{GGT}        -> gamma‐GT (U/L)
+\code{age}        -> age (years)
+\code{AST}        -> aspartate aminotransferase (U/L)
+\code{ALT}        -> alanine aminotransferase (U/L)
+\code{platelets}  -> platelet count (10^9/L)
+\code{albumin}    -> serum albumin (g/L)
+\code{diabetes}   -> diabetes status (0/1 or logical)
+\code{bilirubin}  -> total bilirubin (mg/dL)
+\code{creatinine} -> serum creatinine (mg/dL)}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a message when running.}
 }
@@ -41,8 +41,8 @@ Given routine labs and anthropometry, computes:
 \strong{NFS}      (NAFLD Fibrosis Score)
 \strong{APRI}     (AST-to-Platelet Ratio Index)
 \strong{FIB4}     (Fibrosis-4 Index)
-\strong{BARD}     (BMI–AST/ALT–Diabetes score)
-\strong{ALBI}     (Albumin–Bilirubin score)
+\strong{BARD}     (BMI-AST/ALT-Diabetes score)
+\strong{ALBI}     (Albumin-Bilirubin score)
 \strong{MELD_XI}  (MELD excluding INR)
 }
 \examples{

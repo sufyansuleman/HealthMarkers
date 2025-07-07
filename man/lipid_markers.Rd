@@ -2,7 +2,7 @@
 % Please edit documentation in R/lipid_markers.R
 \name{lipid_markers}
 \alias{lipid_markers}
-\title{Calculate lipid–panel markers}
+\title{Calculate lipid-panel markers}
 \usage{
 lipid_markers(
   data,
@@ -14,12 +14,12 @@ lipid_markers(
 \arguments{
 \item{data}{A data.frame or tibble containing your lipid data.}
 
-\item{col_map}{Named list mapping the keys below → your column names:
-\code{TC}    → total cholesterol
-\code{HDL_c} → HDL‐C
-\code{TG}    → triglycerides
-\code{LDL_c} → (optional) LDL‐C; if missing, estimated via Friedewald
-\code{ApoB}, \code{ApoA1} → (optional) apolipoproteins}
+\item{col_map}{Named list mapping the keys below -> your column names:
+\code{TC}    -> total cholesterol
+\code{HDL_c} -> HDL‐C
+\code{TG}    -> triglycerides
+\code{LDL_c} -> (optional) LDL‐C; if missing, estimated via Friedewald
+\code{ApoB}, \code{ApoA1} -> (optional) apolipoproteins}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a message about computing lipid markers.}
 }

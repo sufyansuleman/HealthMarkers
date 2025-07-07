@@ -11,15 +11,15 @@ ogtt_is(data, col_map, normalize = "none", verbose = FALSE)
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{G0}, \code{G30}, \code{G120} → glucose at 0, 30, 120 min (mmol/L)
-\item \code{I0}, \code{I30}, \code{I120} → insulin at 0, 30, 120 min (pmol/L)
-\item \code{weight} → body weight (kg)
-\item \code{bmi} → body‐mass index (kg/m²)
-\item \code{age} → age (years)
-\item \code{sex} → sex (1 = male, 2 = female)
+\item \code{G0}, \code{G30}, \code{G120} -> glucose at 0, 30, 120 min (mmol/L)
+\item \code{I0}, \code{I30}, \code{I120} -> insulin at 0, 30, 120 min (pmol/L)
+\item \code{weight} -> body weight (kg)
+\item \code{bmi} -> body‐mass index (kg/m^2)
+\item \code{age} -> age (years)
+\item \code{sex} -> sex (1 = male, 2 = female)
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")} — method to scale each index.}
+\item{normalize}{One of \code{c("none","z","inverse","range","robust")} - method to scale each index.}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
 }

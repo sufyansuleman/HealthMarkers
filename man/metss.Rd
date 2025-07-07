@@ -26,7 +26,7 @@ metss(
 \item \code{race}    (character/factor; one of \code{"NHW"}, \code{"NHB"}, \code{"HW"}, \code{"HA"})
 }}
 
-\item{params}{Named list of parameter sets by sex–race, each a list with:
+\item{params}{Named list of parameter sets by sex-race, each a list with:
 \itemize{
 \item \code{intercept}
 \item \code{waist}, \code{TG}, \code{HDL}, \code{glucose}, \code{MAP}: named numeric vectors with

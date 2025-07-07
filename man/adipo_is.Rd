@@ -11,16 +11,16 @@ adipo_is(data, col_map, normalize = "none", verbose = FALSE)
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{G0} → fasting glucose (mmol/L)
-\item \code{I0} → fasting insulin (pmol/L)
-\item \code{TG} → triglycerides (mmol/L)
-\item \code{HDL_c} → HDL cholesterol (mmol/L)
-\item \code{FFA} → free fatty acids (mmol/L)
-\item \code{waist} → waist circumference (cm)
-\item \code{bmi} → body‐mass index (kg/m²)
+\item \code{G0} -> fasting glucose (mmol/L)
+\item \code{I0} -> fasting insulin (pmol/L)
+\item \code{TG} -> triglycerides (mmol/L)
+\item \code{HDL_c} -> HDL cholesterol (mmol/L)
+\item \code{FFA} -> free fatty acids (mmol/L)
+\item \code{waist} -> waist circumference (cm)
+\item \code{bmi} -> body‐mass index (kg/m^2)
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}—method to scale each index.}
+\item{normalize}{One of \code{c("none","z","inverse","range","robust")}-method to scale each index.}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
 }

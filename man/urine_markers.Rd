@@ -28,8 +28,8 @@ A tibble with:
 Computes:
 \itemize{
 \item \strong{UACR} (Albumin-to-Creatinine Ratio, mg/g)
-\item \strong{microalbuminuria} flag (“normal” vs “micro”)
-\item \strong{eGFR_CKD_EPI} (mL/min/1.73 m², race-free CKD-EPI 2021)
+\item \strong{microalbuminuria} flag ("normal" vs "micro")
+\item \strong{eGFR_CKD_EPI} (mL/min/1.73 m^2, race-free CKD-EPI 2021)
 \item \strong{FENa} (Fractional Excretion of Sodium, \%)
 \item \strong{UPCR} (Urine Protein-to-Creatinine Ratio, mg/g)
 }

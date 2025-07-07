@@ -1,24 +1,34 @@
-# tools/fix-nonascii.R
-
-fix_non_ascii <- function(path = "R") {
+fix_non_ascii <- function(path = "R", recursive = FALSE) {
   replacements <- c(
-    "’" = "'",    # curly apostrophe → straight
-    "‘" = "'",    # left single quote
-    "“" = '"',    # left double quote
-    "”" = '"',    # right double quote
-    "–" = "-",    # en-dash
-    "—" = "-",    # em-dash
-    "→" = "->",   # arrow → ->
-    "²" = "^2"    # superscript two → ^2
+    "’" = "'",    "‘" = "'",
+    "“" = '"',    "”" = '"',
+    "–" = "-",    "—" = "-",
+    "→" = "->",   "²" = "^2"
   )
   
-  files <- list.files(path, "\\.R$", full.names = TRUE)
+  # find all .R and .Rmd files under each path
+  files <- unlist(lapply(path, function(p) {
+    if (dir.exists(p)) {
+      list.files(p, "\\.(R|Rmd)$", full.names = TRUE, recursive = recursive)
+    } else if (file.exists(p)) {
+      normalizePath(p)
+    } else {
+      warning("Path not found: ", p); character(0)
+    }
+  }), use.names = FALSE)
+  
+  files <- unique(files)
+  if (!length(files)) {
+    message("No .R or .Rmd files found in: ", paste(path, collapse = ", "))
+    return(invisible(NULL))
+  }
+  
   for (f in files) {
     txt <- readLines(f, encoding = "UTF-8", warn = FALSE)
-    for (pat in names(replacements)) {
-      txt <- gsub(pat, replacements[pat], txt, fixed = TRUE)
+    for (bad in names(replacements)) {
+      txt <- gsub(bad, replacements[bad], txt, fixed = TRUE)
     }
     writeLines(txt, f, useBytes = TRUE)
   }
-  message("Done sweeping ", length(files), " files in ‘", path, "’.")
+  message("Fixed non-ASCII in ", length(files), " file(s).")
 }

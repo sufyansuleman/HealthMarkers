@@ -38,7 +38,12 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     usethis,
-    PooledCohort
+    PooledCohort,
+    QRISK3,
+    CVrisk,
+    RiskScorescvd,
+    r-framingham,
+    whoishRisk
 VignetteBuilder: knitr
 URL: https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues

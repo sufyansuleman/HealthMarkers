@@ -14,7 +14,7 @@ sweat_markers(data, verbose = FALSE)
 \item \code{sweat_lactate}     (mmol/L)
 \item \code{weight_before}, \code{weight_after} (kg)
 \item \code{duration}          (h)
-\item \code{body_surface_area} (m²)
+\item \code{body_surface_area} (m^2)
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
@@ -29,7 +29,7 @@ Computes:
 \item \strong{sweat_chloride} (mmol/L)
 \item \strong{Na_K_ratio}      (sweat Na⁺/K⁺)
 \item \strong{sweat_lactate}   (mmol/L)
-\item \strong{sweat_rate}      (L/m²/h)
+\item \strong{sweat_rate}      (L/m^2/h)
 }
 }
 \examples{
