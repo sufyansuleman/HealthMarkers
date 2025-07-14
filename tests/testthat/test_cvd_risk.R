@@ -1,5 +1,3 @@
-library(testthat)
-suppressPackageStartupMessages(library(tibble))
 
 # Dummy data with minimal columns
 df <- tibble(
@@ -83,3 +81,4 @@ test_that("cvd_risk RiskScorescvd errors on missing data", {
 test_that("cvd_risk errors on invalid model", {
   expect_error(cvd_risk(df, model = "INVALID"), "should be one of")
 })
+

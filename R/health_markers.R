@@ -104,8 +104,8 @@ metabolic_markers <- function(data,
   }
   if ("cardio" %in% which) {
     if (verbose)
-      message("-> cardio markers")
-    out <- dplyr::bind_cols(out, cardio_advance(out))
+      message("-> cvd risk")
+    out <- dplyr::bind_cols(out, cvd_risk(out))
   }
   if ("lipid" %in% which) {
     if (verbose)

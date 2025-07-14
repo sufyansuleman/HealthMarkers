@@ -2,61 +2,31 @@
 % Please edit documentation in R/tracer_dxa_is.R
 \name{tracer_dxa_is}
 \alias{tracer_dxa_is}
-\title{Calculate tracer/DXA‐based insulin sensitivity indices}
+\title{Compute tracer/DXA‐based insulin sensitivity indices}
 \usage{
-tracer_dxa_is(data, col_map, normalize = "none", verbose = FALSE)
+tracer_dxa_is(data, col_map, normalize = NULL, verbose = TRUE)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least the columns mapped in \code{col_map}.}
+\item{data}{A data.frame or tibble containing raw measurements.}
 
-\item{col_map}{Named list mapping:
+\item{col_map}{Named list with entries:
 \itemize{
-\item \code{I0} -> fasting insulin (pmol/L)
-\item \code{rate_palmitate} -> palmitate tracer rate
-\item \code{rate_glycerol} -> glycerol tracer rate
-\item \code{fat_mass} -> fat mass (kg)
-\item \code{weight} -> body weight (kg)
-\item \code{HDL_c} -> HDL cholesterol (mmol/L)
-\item \code{bmi} -> body‐mass index (kg/m^2)
+\item G0, G30, G120: glucose (mmol/L)
+\item I0, I30, I120: insulin (pmol/L)
+\item TG, HDL_c: lipids (mmol/L)
+\item FFA: free fatty acids (mmol/L)
+\item rate_glycerol, rate_palmitate: tracer rates (µmol/min)
+\item fat_mass, weight, bmi: body composition
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}-method to scale each index.}
+\item{normalize}{Ignored}
 
-\item{verbose}{Logical; if TRUE, prints a progress message.}
+\item{verbose}{Logical; if TRUE, messages progress}
 }
 \value{
-A tibble with the three tracer/DXA‐based index columns.
+A tibble of tracer‐ and adipose‐SI indices.
 }
 \description{
-Given fasting insulin, tracer rates, fat mass, weight, HDL, and BMI,
-computes:
-\itemize{
-\item LIRI_inv
-\item Lipo_inv
-\item ATIRI_inv
-}
-}
-\examples{
-df <- tibble::tibble(
-  I0              = 60,
-  rate_palmitate  = 1.5,
-  rate_glycerol   = 2.0,
-  fat_mass        = 20,
-  weight          = 70,
-  HDL_c           = 1.0,
-  bmi             = 24
-)
-tracer_dxa_is(
-  df,
-  col_map = list(
-    I0             = "I0",
-    rate_palmitate = "rate_palmitate",
-    rate_glycerol  = "rate_glycerol",
-    fat_mass       = "fat_mass",
-    weight         = "weight",
-    HDL_c          = "HDL_c",
-    bmi            = "bmi"
-  ),
-  normalize = "none"
-)
+Uses stable isotope tracer infusion rates and DXA‐measured fat mass
+to compute peripheral and adipose insulin sensitivity and related metrics.
 }

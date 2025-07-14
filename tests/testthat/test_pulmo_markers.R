@@ -1,5 +1,3 @@
-library(testthat)
-library(tibble)
 
 
 test_that("pulmo_markers computes expected pulmonary metrics across equations", {

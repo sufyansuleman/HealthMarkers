@@ -76,7 +76,8 @@ ogtt_is <- function(data,
   sex  <- data[[col_map$sex]]
   
   if (verbose)
-    message("-> ogtt_is: computing OGTT indices")
+    cat("-> ogtt_is: computing OGTT indices\n")
+  
   
   # 2) Areas under curve & means
   I_AUC  <- 0.5 * ((I0 + I30) * 30  + (I30 + I120) * 90)

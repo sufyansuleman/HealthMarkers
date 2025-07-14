@@ -2,7 +2,7 @@
 % Please edit documentation in R/liver_markers.R
 \name{liver_markers}
 \alias{liver_markers}
-\title{Calculate a panel of blood‐based liver markers}
+\title{Calculate a panel of blood-based liver markers}
 \usage{
 liver_markers(
   data,
@@ -15,19 +15,21 @@ liver_markers(
 \arguments{
 \item{data}{A data.frame or tibble containing your liver & anthropometry data.}
 
-\item{col_map}{Named list mapping these keys -> your column names:
-\code{BMI}        -> body mass index (kg/m^2)
-\code{waist}      -> waist circumference (cm)
-\code{triglycerides} -> fasting TG (mg/dL)
-\code{GGT}        -> gamma‐GT (U/L)
-\code{age}        -> age (years)
-\code{AST}        -> aspartate aminotransferase (U/L)
-\code{ALT}        -> alanine aminotransferase (U/L)
-\code{platelets}  -> platelet count (10^9/L)
-\code{albumin}    -> serum albumin (g/L)
-\code{diabetes}   -> diabetes status (0/1 or logical)
-\code{bilirubin}  -> total bilirubin (mg/dL)
-\code{creatinine} -> serum creatinine (mg/dL)}
+\item{col_map}{Named list mapping these keys → your column names:
+\itemize{
+\item \code{BMI}        → body mass index (kg/m²)
+\item \code{waist}      → waist circumference (cm)
+\item \code{triglycerides} → fasting TG (mg/dL)
+\item \code{GGT}        → gamma-GT (U/L)
+\item \code{age}        → age (years)
+\item \code{AST}        → aspartate aminotransferase (U/L)
+\item \code{ALT}        → alanine aminotransferase (U/L)
+\item \code{platelets}  → platelet count (10⁹/L)
+\item \code{albumin}    → serum albumin (g/L)
+\item \code{diabetes}   → diabetes status (0/1 or logical)
+\item \code{bilirubin}  → total bilirubin (mg/dL)
+\item \code{creatinine} → serum creatinine (mg/dL)
+}}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a message when running.}
 }
@@ -37,28 +39,30 @@ A tibble with one column per marker:
 }
 \description{
 Given routine labs and anthropometry, computes:
-\strong{FLI}      (Fatty Liver Index)
-\strong{NFS}      (NAFLD Fibrosis Score)
-\strong{APRI}     (AST-to-Platelet Ratio Index)
-\strong{FIB4}     (Fibrosis-4 Index)
-\strong{BARD}     (BMI-AST/ALT-Diabetes score)
-\strong{ALBI}     (Albumin-Bilirubin score)
-\strong{MELD_XI}  (MELD excluding INR)
+\itemize{
+\item \strong{FLI}      — Fatty Liver Index (Bedogni et al. 2006)
+\item \strong{NFS}      — NAFLD Fibrosis Score (Angulo et al. 2007)
+\item \strong{APRI}     — AST-to-Platelet Ratio Index
+\item \strong{FIB4}     — Fibrosis-4 Index
+\item \strong{BARD}     — BMI-AST/ALT-Diabetes score
+\item \strong{ALBI}     — Albumin-Bilirubin score
+\item \strong{MELD_XI}  — MELD excluding INR
+}
 }
 \examples{
 df <- tibble::tibble(
-  BMI         = 24,
-  waist       = 80,
+  BMI           = 24,
+  waist         = 80,
   triglycerides = 150,   # mg/dL
-  GGT         = 30,
-  age         = 30,
-  AST         = 25,
-  ALT         = 20,
-  platelets   = 250,
-  albumin     = 45,
-  diabetes    = FALSE,
-  bilirubin   = 1.0,
-  creatinine  = 0.8
+  GGT           = 30,
+  age           = 30,
+  AST           = 25,
+  ALT           = 20,
+  platelets     = 250,
+  albumin       = 45,
+  diabetes      = FALSE,
+  bilirubin     = 1.0,
+  creatinine    = 0.8
 )
 liver_markers(df)
 }

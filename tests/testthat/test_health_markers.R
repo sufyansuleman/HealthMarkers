@@ -1,7 +1,5 @@
 # tests/test-health-markers.R
 
-library(testthat)
-library(tibble)
 
 # --------------------------
 # 0. Dummy data and col_map

@@ -1,101 +1,80 @@
-# R/adipo_is.R
+# R/tracer_dxa_is.R
 
-#' Calculate adipose based insulin sensitivity indices
+#' Compute tracer/DXA‐based insulin sensitivity indices
 #'
-#' Given fasting glucose & insulin plus lipid and adiposity measures,
-#' computes:
-#' * Revised_QUICKI
-#' * VAI_Men_inv
-#' * VAI_Women_inv
-#' * TG_HDL_C_inv
-#' * TyG_inv
-#' * LAP_Men_inv
-#' * LAP_Women_inv
-#' * McAuley_index
-#' * Adipo_inv
-#' * Belfiore_inv_FFA
+#' Uses stable isotope tracer infusion rates and DXA‐measured fat mass
+#' to compute peripheral and adipose insulin sensitivity and related metrics.
 #'
-#' @param data A data.frame or tibble containing at least the columns mapped by `col_map`.
-#' @param col_map Named list mapping:
-#'   * `G0` -> fasting glucose (mmol/L)
-#'   * `I0` -> fasting insulin (pmol/L)
-#'   * `TG` -> triglycerides (mmol/L)
-#'   * `HDL_c` -> HDL cholesterol (mmol/L)
-#'   * `FFA` -> free fatty acids (mmol/L)
-#'   * `waist` -> waist circumference (cm)
-#'   * `bmi` -> body‐mass index (kg/m^2)
-#' @param normalize One of `c("none","z","inverse","range","robust")`-method to scale each index.
-#' @param verbose Logical; if `TRUE`, prints a progress message.
-#'
-#' @return A tibble with the 10 adipose‐based index columns.
-#' @importFrom tibble tibble
-#' @importFrom dplyr mutate across everything
+#' @param data A data.frame or tibble containing raw measurements.
+#' @param col_map Named list with entries:
+#'   - G0, G30, G120: glucose (mmol/L)
+#'   - I0, I30, I120: insulin (pmol/L)
+#'   - TG, HDL_c: lipids (mmol/L)
+#'   - FFA: free fatty acids (mmol/L)
+#'   - rate_glycerol, rate_palmitate: tracer rates (µmol/min)
+#'   - fat_mass, weight, bmi: body composition
+#' @param normalize Ignored
+#' @param verbose Logical; if TRUE, messages progress
+#' @return A tibble of tracer‐ and adipose‐SI indices.
 #' @export
-#' @examples
-#' df <- tibble::tibble(
-#'   G0    = 5.5, I0    = 60,
-#'   TG    = 1.2, HDL_c = 1.0,
-#'   FFA   = 0.45, waist = 80, bmi = 24
-#' )
-#' adipo_is(
-#'   df,
-#'   col_map = list(
-#'     G0    = "G0",
-#'     I0    = "I0",
-#'     TG    = "TG",
-#'     HDL_c = "HDL_c",
-#'     FFA   = "FFA",
-#'     waist = "waist",
-#'     bmi   = "bmi"
-#'   ),
-#'   normalize = "none"
-#' )
-adipo_is <- function(data,
-                     col_map,
-                     normalize = "none",
-                     verbose   = FALSE) {
-  # 0) validate
-  validate_inputs(
-    data,
-    col_map,
-    fun_name = "adipo_is",
-    required_keys = c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "bmi")
+tracer_dxa_is <- function(data, col_map,
+                          normalize = NULL,
+                          verbose = TRUE) {
+  # adipose-only mode if only core adipose keys present
+  adipose_keys <- c("I0","rate_palmitate","rate_glycerol","fat_mass","weight","HDL_c","bmi")
+  have_adipose <- all(adipose_keys %in% names(col_map)) &&
+    !all(c("G0","I30") %in% names(col_map))
+  if (have_adipose) {
+    if (verbose) message("-> tracer/DXA: adipose-only indices")
+    I0_u <- data[[col_map$I0]]/6
+    Lipo_inv  <- -1 * (data[[col_map$rate_glycerol]]  * I0_u)
+    ATIRI_inv <- -1 * (data[[col_map$rate_palmitate]] * I0_u)
+    LIRI_inv  <- rep(NA_real_, length(I0_u))
+    return(tibble::tibble(
+      LIRI_inv  = LIRI_inv,
+      Lipo_inv  = Lipo_inv,
+      ATIRI_inv = ATIRI_inv
+    ))
+  }
+  # require full set
+  required_keys <- names(col_map)
+  missing_cols <- setdiff(required_keys, names(data))
+  if (length(missing_cols)) stop(
+    "tracer_dxa_is(): missing required columns: ",
+    paste(missing_cols, collapse=", ")
   )
-  
-  # 1) extract & convert
-  G0    <- data[[col_map$G0]]    * 18      # -> mg/dL
-  I0    <- data[[col_map$I0]]    / 6       # -> µU/mL
-  TG    <- data[[col_map$TG]]    * 88.57   # -> mg/dL
-  HDL   <- data[[col_map$HDL_c]] * 38.67   # -> mg/dL
-  FFA   <- data[[col_map$FFA]]              # mmol/L
-  waist <- data[[col_map$waist]]            # cm
-  bmi   <- data[[col_map$bmi]]              # kg/m^2
-  
-  if (verbose)
-    message("-> adipo_is: computing adipose‐based indices")
-  
-  # 2) compute
-  out <- tibble::tibble(
-    Revised_QUICKI   = 1 / (log10(I0) + log10(G0) + log10(FFA)),
-    VAI_Men_inv      = -((waist / 39.68 + 1.88 * bmi) * (TG / 1.03) * (1.31 /
-                                                                         HDL)),
-    VAI_Women_inv    = -((waist / 36.58 + 1.89 * bmi) * (TG / 0.81) * (1.52 /
-                                                                         HDL)),
-    TG_HDL_C_inv     = -(TG / HDL),
-    TyG_inv          = -log(TG * G0 / 2),
-    LAP_Men_inv      = -((waist - 65) * TG),
-    LAP_Women_inv    = -((waist - 58) * TG),
-    McAuley_index    = exp(2.63 - 0.28 * log(I0) - 0.31 * log(TG)),
-    Adipo_inv        = -(FFA * I0),
-    Belfiore_inv_FFA = -(2 / ((I0 * FFA) + 1))
+  if (verbose) message("-> tracer/DXA: computing indices")
+  # unit conversions
+  I0_u    <- data[[col_map$I0]]/6
+  I30_u   <- data[[col_map$I30]]/6
+  I120_u  <- data[[col_map$I120]]/6
+  G0_mg   <- data[[col_map$G0]] * 18
+  G30_mg  <- data[[col_map$G30]] * 18
+  G120_mg <- data[[col_map$G120]] * 18
+  TG_mg   <- data[[col_map$TG]] * 88.57
+  HDL_mg  <- data[[col_map$HDL_c]] * 38.67
+  FFA_val <- data[[col_map$FFA]]
+  # AUCs
+  I_AUC   <- 0.5 * ((I0_u + I30_u)*30 + (I30_u + I120_u)*90)
+  FFA_AUC <- 0.5 * (FFA_val + FFA_val) * 120
+  # tracer SI per fat mass
+  tracer_palmitate_SI <- data[[col_map$rate_palmitate]]/data[[col_map$fat_mass]]
+  tracer_glycerol_SI  <- data[[col_map$rate_glycerol]]/data[[col_map$fat_mass]]
+  # adipose indices
+  LIRI_inv <- -1 * (
+    -0.091 + log10((I0_u+I30_u)/2 * 6)*0.4 +
+      log10((data[[col_map$fat_mass]]/data[[col_map$weight]])*100)*0.346 -
+      log10(HDL_mg)*0.408 + log10(data[[col_map$bmi]])*0.435
   )
-  
-  # 3) normalize
-  out <- dplyr::mutate(out,
-                       dplyr::across(
-                         dplyr::everything(),
-                         ~ HealthMarkers::normalize_vec(.x, method = normalize)
-                       ))
-  
-  out
+  Lipo_inv  <- -1 * (data[[col_map$rate_glycerol]] * I0_u)
+  ATIRI_inv <- -1 * (data[[col_map$rate_palmitate]] * I0_u)
+  tibble::tibble(
+    I_AUC               = I_AUC,
+    FFA_AUC             = FFA_AUC,
+    tracer_palmitate_SI = tracer_palmitate_SI,
+    tracer_glycerol_SI  = tracer_glycerol_SI,
+    LIRI_inv            = LIRI_inv,
+    Lipo_inv            = Lipo_inv,
+    ATIRI_inv           = ATIRI_inv
+  )
 }

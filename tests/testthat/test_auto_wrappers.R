@@ -1,4 +1,3 @@
-library(testthat)
 
 # 1. PooledCohort wrappers
 pooledcohort_fns <- c(
@@ -83,6 +82,7 @@ test_that("RiskScorescvd wrappers exist and forward call", {
   for (fn in riskscores_fns) {
     expect_true(exists(fn, mode = "function"), info = fn)
     wrapper <- get(fn)
-    expect_error(wrapper(), info = fn)
+  # suppressWarnings() hides the “required variables missing” warnings
+      expect_error(suppressWarnings(wrapper()), info = fn)
   }
 })

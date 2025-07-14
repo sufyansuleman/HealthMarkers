@@ -2,44 +2,51 @@
 % Please edit documentation in R/lipid_markers.R
 \name{lipid_markers}
 \alias{lipid_markers}
-\title{Calculate lipid-panel markers}
+\title{Calculate lipid-panel markers and Visceral Adiposity Index (VAI)}
 \usage{
 lipid_markers(
   data,
   col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ApoB = "ApoB",
-    ApoA1 = "ApoA1"),
+    ApoA1 = "ApoA1", waist = NULL, BMI = NULL),
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your lipid data.}
+\item{data}{A data.frame or tibble containing your lipid (and optional anthropometry) data.}
 
-\item{col_map}{Named list mapping the keys below -> your column names:
-\code{TC}    -> total cholesterol
-\code{HDL_c} -> HDL‐C
-\code{TG}    -> triglycerides
-\code{LDL_c} -> (optional) LDL‐C; if missing, estimated via Friedewald
-\code{ApoB}, \code{ApoA1} -> (optional) apolipoproteins}
+\item{col_map}{Named list mapping:
+\itemize{
+\item \code{TC}    -> total cholesterol
+\item \code{HDL_c} -> HDL-C
+\item \code{TG}    -> triglycerides
+\item \code{LDL_c} -> (optional) LDL-C; if missing, estimated via Friedewald
+\item \code{ApoB}, \code{ApoA1} -> (optional) apolipoproteins
+\item \code{waist} -> (optional) waist circumference (cm)
+\item \code{BMI}   -> (optional) body mass index (kg/m^2)
+}}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a message about computing lipid markers.}
+\item{verbose}{Logical; if \code{TRUE}, prints a message about computing markers.}
 }
 \value{
 A tibble with:
 \itemize{
 \item \code{non_HDL_c}, \code{remnant_c},
 \item \code{ratio_TC_HDL}, \code{ratio_TG_HDL}, \code{ratio_LDL_HDL},
-\item \code{ApoB_ApoA1} (if both \code{ApoB} and \code{ApoA1} are present; otherwise \code{NA})
+\item \code{ApoB_ApoA1}, \code{VAI_Men}, \code{VAI_Women}
 }
 }
 \description{
-Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1),
+Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1, waist, BMI),
 computes:
-non_HDL_c
-remnant_c
-ratio_TC_HDL
-ratio_TG_HDL
-ratio_LDL_HDL
-ApoB_ApoA1 (if both apolipoproteins are in \code{data})
+\itemize{
+\item \code{non_HDL_c}
+\item \code{remnant_c}
+\item \code{ratio_TC_HDL}
+\item \code{ratio_TG_HDL}
+\item \code{ratio_LDL_HDL}
+\item \code{ApoB_ApoA1} (if both apolipoproteins present; otherwise \code{NA})
+\item \code{VAI_Men}, \code{VAI_Women} (if \code{waist} and \code{BMI} provided in \code{col_map})
+}
 }
 \examples{
 df <- tibble::tibble(
@@ -48,10 +55,18 @@ df <- tibble::tibble(
   TG    = 1.3,
   LDL_c = 3.0,
   ApoB  = 1.1,
-  ApoA1 = 1.5
+  ApoA1 = 1.5,
+  waist = 85,
+  BMI   = 26
 )
 lipid_markers(df, col_map = list(
-  TC="TC", HDL_c="HDL_c", TG="TG",
-  LDL_c="LDL_c", ApoB="ApoB", ApoA1="ApoA1"
+  TC    = "TC",
+  HDL_c = "HDL_c",
+  TG    = "TG",
+  LDL_c = "LDL_c",
+  ApoB  = "ApoB",
+  ApoA1 = "ApoA1",
+  waist = "waist",
+  BMI   = "BMI"
 ))
 }

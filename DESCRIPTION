@@ -43,7 +43,10 @@ Suggests:
     CVrisk,
     RiskScorescvd,
     r-framingham,
-    whoishRisk
+    whoishRisk,
+    di,
+    methylclock,
+    minfi
 VignetteBuilder: knitr
 URL: https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues

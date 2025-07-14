@@ -41,10 +41,11 @@ HealthMarkers
 
 # 🔍 Overview
 
-**HealthMarkers** is a unified R package that computes a **comprehensive
-suite** of physiological and clinical biomarkers covering metabolic,
-cardiometabolic, cardio vascular, hepatic, renal, pulmonary, and novel
-biofluid derived bimarkers.
+**HealthMarkers** is a powerful, end-to-end R toolkit for deriving and
+standardizing a comprehensive array of physiological biomarkers. From
+core metabolic and cardiometabolic, cardivascular indices to liver,
+kidney, lung, and novel biofluid based markers, it brings best-in-class
+algorithms into one consistent, user-friendly pipeline.
 
 ------------------------------------------------------------------------
 
@@ -131,8 +132,8 @@ computes AUCs and means, index formulas, then optional normalization.
 
 A tibble or data.frame with columns mapped via `col_map`:
 
-- `G0`, `G30`, `G120`: glucose at 0, 30, 120 min (mmol/L)
-- `I0`, `I30`, `I120`: insulin at 0, 30, 120 min (pmol/L)
+- `G0`, `G30`, `G120`: glucose at 0, 30, 120 min (mmol/L)
+- `I0`, `I30`, `I120`: insulin at 0, 30, 120 min (pmol/L)
 - `weight`: body weight (kg)
 - `bmi`: body-mass index (kg/m^2)
 - `age`: years
@@ -298,8 +299,8 @@ function returns:
 
 - **SPISE** (Single‑Point Insulin Sensitivity Estimator)
 - **METS_IR** (Metabolic Score for Insulin Resistance)
-- **prediabetes** flag (`0`/`1`) if HbA1c ≥ 42 mmol/mol
-- **diabetes** flag (`0`/`1`) if HbA1c ≥ 48 mmol/mol
+- **prediabetes** flag (`0`/`1`) if HbA1c ≥ 42 mmol/mol
+- **diabetes** flag (`0`/`1`) if HbA1c ≥ 48 mmol/mol
 - **HOMA_CP** (C‑peptide‑based HOMA‑IR)
 
 ### Input Data
@@ -1201,8 +1202,8 @@ A `data.frame` or `tibble` containing at least the following columns:
 | Column           | Type    | Description                                   |
 |------------------|---------|-----------------------------------------------|
 | `saliva_cort1`   | numeric | Waking saliva cortisol (nmol/L)               |
-| `saliva_cort2`   | numeric | Saliva cortisol ~30 min after waking (nmol/L) |
-| `saliva_cort3`   | numeric | Saliva cortisol ~60 min after waking (nmol/L) |
+| `saliva_cort2`   | numeric | Saliva cortisol ~30 min after waking (nmol/L) |
+| `saliva_cort3`   | numeric | Saliva cortisol ~60 min after waking (nmol/L) |
 | `saliva_amylase` | numeric | Salivary α‑amylase activity (U/mL)            |
 | `saliva_glucose` | numeric | Salivary glucose concentration (mg/dL)        |
 
@@ -1236,7 +1237,7 @@ The function returns a `tibble` with the following columns:
 | Column | Description |
 |----|----|
 | `log_cortisol_wake` | Natural log of waking saliva cortisol (log(saliva_cort1)) |
-| `CAR_AUC` | Cortisol Awakening Response AUC (trapezoidal over 0-60 min) |
+| `CAR_AUC` | Cortisol Awakening Response AUC (trapezoidal over 0-60 min) |
 | `log_amylase` | Natural log of salivary α‑amylase (log(saliva_amylase)) |
 | `saliva_glucose` | Raw salivary glucose concentration (mg/dL) |
 
