@@ -46,30 +46,42 @@ cvd_risk_ascvd <- function(data, year = 10, ...) {
   tibble::tibble(model = "ASCVD", year = year, risk = risk)
 }
 
+# File: R/cvd_risk_qrisk3.R
+
 #' QRISK3 10-year risk (UK QRISK3-2017)
 #'
-#' Wrapper around QRISK3::QRISK3_2017.
+#' Wrapper around QRISK3::QRISK3_2017 that auto-provides a dummy `patid`
+#' if you haven’t already given one.
 #'
-#' @param data A tibble with columns required by QRISK3 (see package documentation).
-#' @param ... Additional arguments for QRISK3_2017.
-#' @return A tibble with columns \code{model}, \code{year} (always 10), and \code{risk}.
+#' @inheritParams cvd_risk
+#' @param col_map Not used here.
+#' @param patid Optional vector of patient IDs; if missing, we auto-generate 1‒n
+#' @return A tibble with columns `model`, `year`, and `risk`.
 #' @importFrom QRISK3 QRISK3_2017
 #' @importFrom tibble tibble
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(tibble)
-#' df <- tibble(age=55, sex=1, sbp=140, HDL_c=50, total_chol=200, smoker=FALSE, diabetes=FALSE)
-#' cvd_risk_qrisk3(df)
-#' }
-cvd_risk_qrisk3 <- function(data, ...) {
+cvd_risk_qrisk3 <- function(data,
+                            ...,
+                            patid = NULL) {
   if (!requireNamespace("QRISK3", quietly = TRUE)) {
     stop("Please install 'QRISK3' to compute QRISK3 risk.")
   }
-  risk <- QRISK3::QRISK3_2017(data = data, ...)
-  tibble::tibble(model = "QRISK3", year = 10, risk = risk)
+  # QRISK3_2017 requires a patid argument
+  if (is.null(patid)) {
+    patid <- seq_len(nrow(data))
+  }
+  risk <- QRISK3::QRISK3_2017(
+    data   = data,
+    patid  = patid,
+    ...
+  )
+  tibble::tibble(
+    model = "QRISK3",
+    year  = 10,
+    risk  = risk
+  )
 }
+
 
 #' MESA 10-year CHD risk
 #'
@@ -167,25 +179,114 @@ cvd_risk_scorescvd <- function(data, ...) {
   RiskScorescvd::calc_scores(data = data, ...)
 }
 
-#' Compute cardiovascular risk by selected model
+#' Atherogenic Index of Plasma (AIP)
 #'
-#' Dispatch to the appropriate risk function
+#' Compute the log‐ratio of triglycerides to HDL‐C, a surrogate of small‐dense LDL.
 #'
-#' @param data A tbl data.frame with required columns.
-#' @param model One of c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd").
-#' @param year Risk horizon for applicable models (10 or 30).
-#' @param ... Additional args passed to underlying wrapper.
+#' @param data A tibble or data.frame containing at least:
+#'   - `TG`   (triglycerides, mg/dL)
+#'   - `HDL_c` (HDL cholesterol, mg/dL)
+#' @param col_map Named list mapping:
+#'   - `TG`    → your TG column
+#'   - `HDL_c` → your HDL‐C column
+#' @param verbose Logical; if `TRUE`, prints a progress message.
+#' @return A tibble with columns:
+#'   - `model` = `"AIP"`
+#'   - `value` = `log10(TG / HDL_c)`
+#' @references
+#' - Dobiásová M (2004). Atherogenic index of plasma [log(TG/HDL-C)]: theoretical and practical implications. *Clin Chem*. **50**(7): 1113–1114.
+#' @export
+cvd_marker_aip <- function(data,
+                           col_map = list(TG = "TG", HDL_c = "HDL_c"),
+                           verbose = FALSE) {
+  validate_inputs(data, col_map, fun_name = "cvd_marker_aip", required_keys = c("TG", "HDL_c"))
+  if (verbose) message("-> computing AIP")
+  tg  <- data[[col_map$TG]]
+  hdl <- data[[col_map$HDL_c]]
+  value <- log10(tg / hdl)
+  tibble::tibble(model = "AIP", value = value)
+}
+
+#' LDL Particle Number Estimate (via ApoB)
+#'
+#' Use circulating ApoB concentration as a proxy for LDL particle number.
+#'
+#' @param data A tibble or data.frame containing at least:
+#'   - `ApoB` (apolipoprotein-B, mg/dL)
+#' @param col_map Named list mapping:
+#'   - `ApoB` → your ApoB column
+#' @param verbose Logical; if `TRUE`, prints a progress message.
+#' @return A tibble with columns:
+#'   - `model` = `"LDL_PN"`
+#'   - `value` = `ApoB` (mg/dL)
+#' @references
+#' - Walldius G, Jungner I (2004). The apoB/apoA-I ratio: a strong, new risk factor for cardiovascular disease and a target for lipid-lowering therapy—a review of the evidence. *J Intern Med*. **255**(2): 188–205.
+#' @export
+cvd_marker_ldl_particle_number <- function(data,
+                                           col_map = list(ApoB = "ApoB"),
+                                           verbose = FALSE) {
+  validate_inputs(data, col_map, fun_name = "cvd_marker_ldl_particle_number", required_keys = "ApoB")
+  if (verbose) message("-> computing LDL particle number estimate")
+  value <- data[[col_map$ApoB]]
+  tibble::tibble(model = "LDL_PN", value = value)
+}
+
+
+
+
+
+#' Compute cardiovascular risk or marker by selected model
+#'
+#' Dispatch to the appropriate risk or marker function, or run *all* of them.
+#'
+#' @param data A tibble or data.frame with the columns required by your chosen `model`
+#' @param model One of:
+#'   * `"ALL"` — run every implemented model/marker
+#'   * Risk calculators: `"ASCVD"`, `"QRISK3"`, `"MESA"`, `"Stroke"`, `"WHO"`, `"RiskScorescvd"`
+#'   * Lipid markers: `"AIP"`, `"LDL_PN"`
+#' @param year Risk horizon (10 or 30) for applicable models; ignored for lipid markers
+#' @param ... Additional arguments passed to the underlying wrapper (e.g. `verbose`, `col_map`)
+#' @return A tibble.  Risk models return columns `model`, `year`, `risk`; lipid markers return `model`, `value`.
+#'   When `model = "ALL"`, you get one row per sub-model and all of the columns (`model`,`year`,`risk`,`value`).
 #' @export
 cvd_risk <- function(data,
-                     model = c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd"),
-                     year  = 10, ...) {
+                     model = c("ALL","ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd","AIP","LDL_PN"),
+                     year  = 10,
+                     ...) {
   model <- match.arg(model)
+  
+  # If the user wants *every* model
+  if (model == "ALL") {
+    all_models <- c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd","AIP","LDL_PN")
+    results <- lapply(all_models, function(m) {
+      # for each one, try to compute or else return a placeholder with NAs
+      tryCatch(
+        cvd_risk(data, model = m, year = year, ...),
+        error = function(e) {
+          # build a one-row tibble with the right columns
+          tibble::tibble(
+            model = m,
+            year  = if (m %in% c("ASCVD","Stroke")) year else if (m %in% c("QRISK3","MESA")) 10 else NA_integer_,
+            risk  = NA_real_,
+            value = NA_real_
+          )
+        }
+      )
+    })
+    # row-bind them all; missing columns will be filled with NA
+    return(dplyr::bind_rows(results))
+  }
+  
+  # Otherwise dispatch normally
   switch(model,
          "ASCVD"         = cvd_risk_ascvd(data, year = year, ...),
          "QRISK3"        = cvd_risk_qrisk3(data, ...),
          "MESA"          = cvd_risk_mesa(data, ...),
          "Stroke"        = cvd_risk_stroke(data, ...),
          "WHO"           = cvd_risk_who(data, ...),
-         "RiskScorescvd" = cvd_risk_scorescvd(data, ...)
+         "RiskScorescvd" = cvd_risk_scorescvd(data, ...),
+         "AIP"           = cvd_marker_aip(data, ...),
+         "LDL_PN"        = cvd_marker_ldl_particle_number(data, ...),
+         stop("Unknown model: ", model)
   )
 }
