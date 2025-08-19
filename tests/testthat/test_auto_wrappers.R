@@ -1,4 +1,3 @@
-
 # 1. PooledCohort wrappers
 pooledcohort_fns <- c(
   "pooledcohort_predict_30yr_stroke_risk",
@@ -82,7 +81,7 @@ test_that("RiskScorescvd wrappers exist and forward call", {
   for (fn in riskscores_fns) {
     expect_true(exists(fn, mode = "function"), info = fn)
     wrapper <- get(fn)
-  # suppressWarnings() hides the “required variables missing” warnings
-      expect_error(suppressWarnings(wrapper()), info = fn)
+    # suppressWarnings() hides the “required variables missing” warnings
+    expect_error(suppressWarnings(wrapper()), info = fn)
   }
 })

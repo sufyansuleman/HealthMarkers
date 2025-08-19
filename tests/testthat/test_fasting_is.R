@@ -17,7 +17,7 @@ test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
     normalize = "none",
     verbose   = FALSE
   )
-  
+
   expected_names <- c(
     "Fasting_inv", "Raynaud", "HOMA_IR_inv", "FIRI", "QUICKI",
     "Belfiore_basal", "Ig_ratio_basal", "Isi_basal",
@@ -25,7 +25,7 @@ test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
   )
   expect_named(out, expected_names, ignore.order = TRUE)
   expect_equal(ncol(out), length(expected_names))
-  
+
   # manual HOMA_IR_inv = -((G0*18)*(I0/6)) / 22.5
   expected_homa <- -((5.5 * 18) * (60 / 6)) / 22.5
   expect_equal(out$HOMA_IR_inv, expected_homa)
@@ -42,11 +42,11 @@ test_that("fasting_is is vectorized over multiple rows", {
 
 test_that("normalize = 'range' and 'z' behave correctly", {
   df2 <- tibble::tibble(G0 = c(5.5, 6), I0 = c(60, 80))
-  
+
   out_r <- fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), normalize = "range")
   for (col in names(out_r)) {
     vals <- out_r[[col]]
-    v2   <- vals[!is.na(vals)]
+    v2 <- vals[!is.na(vals)]
     if (length(unique(v2)) > 1) {
       expect_equal(min(v2), 0)
       expect_equal(max(v2), 1)
@@ -54,7 +54,7 @@ test_that("normalize = 'range' and 'z' behave correctly", {
       expect_true(all(is.na(vals)))
     }
   }
-  
+
   df3 <- tibble::tibble(
     G0 = c(5.5, 6, 7),
     I0 = c(60, 80, 100)
@@ -62,10 +62,10 @@ test_that("normalize = 'range' and 'z' behave correctly", {
   out_z <- fasting_is(df3, col_map = list(G0 = "G0", I0 = "I0"), normalize = "z")
   for (col in names(out_z)) {
     vals <- out_z[[col]]
-    v2   <- vals[!is.na(vals)]
+    v2 <- vals[!is.na(vals)]
     if (length(unique(v2)) > 1) {
       expect_equal(mean(v2), 0, tolerance = 1e-6)
-      expect_equal(sd(v2),   1, tolerance = 1e-6)
+      expect_equal(sd(v2), 1, tolerance = 1e-6)
     } else {
       expect_true(all(is.na(vals)))
     }

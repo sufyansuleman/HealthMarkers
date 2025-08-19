@@ -2,24 +2,34 @@
 % Please edit documentation in R/cvd_risk.R
 \name{cvd_risk}
 \alias{cvd_risk}
-\title{Compute cardiovascular risk by selected model}
+\title{Compute cardiovascular risk or marker by selected model}
 \usage{
 cvd_risk(
   data,
-  model = c("ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd"),
+  model = c("ALL", "ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd", "AIP",
+    "LDL_PN"),
   year = 10,
   ...
 )
 }
 \arguments{
-\item{data}{A tbl data.frame with required columns.}
+\item{data}{A tibble or data.frame with the columns required by your chosen \code{model}}
 
-\item{model}{One of c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd").}
+\item{model}{One of:
+\itemize{
+\item \code{"ALL"} — run every implemented model/marker
+\item Risk calculators: \code{"ASCVD"}, \code{"QRISK3"}, \code{"MESA"}, \code{"Stroke"}, \code{"WHO"}, \code{"RiskScorescvd"}
+\item Lipid markers: \code{"AIP"}, \code{"LDL_PN"}
+}}
 
-\item{year}{Risk horizon for applicable models (10 or 30).}
+\item{year}{Risk horizon (10 or 30) for applicable models; ignored for lipid markers}
 
-\item{...}{Additional args passed to underlying wrapper.}
+\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{verbose}, \code{col_map})}
+}
+\value{
+A tibble.  Risk models return columns \code{model}, \code{year}, \code{risk}; lipid markers return \code{model}, \code{value}.
+When \code{model = "ALL"}, you get one row per sub-model and all of the columns (\code{model},\code{year},\code{risk},\code{value}).
 }
 \description{
-Dispatch to the appropriate risk function
+Dispatch to the appropriate risk or marker function, or run \emph{all} of them.
 }

@@ -98,18 +98,18 @@ test_that("all_insulin_indices returns correct IS and IR columns", {
   oi <- ogtt_is(df_ins, col_map)
   ai <- adipo_is(df_ins, col_map)
   ti <- tracer_dxa_is(df_ins, col_map)
-  
+
   both_tbl <- all_insulin_indices(df_ins, col_map, normalize = "none", mode = "both", verbose = FALSE)
-  expect_true(all(names(fi)  %in% names(both_tbl)))
-  expect_true(all(names(oi)  %in% names(both_tbl)))
-  expect_true(all(names(ai)  %in% names(both_tbl)))
-  expect_true(all(names(ti)  %in% names(both_tbl)))
+  expect_true(all(names(fi) %in% names(both_tbl)))
+  expect_true(all(names(oi) %in% names(both_tbl)))
+  expect_true(all(names(ai) %in% names(both_tbl)))
+  expect_true(all(names(ti) %in% names(both_tbl)))
   ir_names <- grep("^IR_", names(both_tbl), value = TRUE)
   expect_equal(length(ir_names), ncol(fi) + ncol(oi) + ncol(ai) + ncol(ti))
-  
+
   is_tbl <- all_insulin_indices(df_ins, col_map, mode = "IS")
   expect_false(any(grepl("^IR_", names(is_tbl))))
-  
+
   ir_tbl <- all_insulin_indices(df_ins, col_map, mode = "IR")
   expect_true(all(grepl("^IR_", names(ir_tbl))))
 })
@@ -170,7 +170,7 @@ test_that("all_health_markers integration currently skipped", {
 
 test_that("pulmo_markers computes expected pulmonary metrics across equations", {
   df_p <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
-  eqs   <- c("GLI", "GLIgl", "NHANES3")
+  eqs <- c("GLI", "GLIgl", "NHANES3")
   expected_cols <- c(
     "fev1_pred", "fev1_z", "fev1_pctpred", "fev1_LLN",
     "fvc_pred", "fvc_z", "fvc_pctpred", "fvc_LLN",
@@ -184,7 +184,7 @@ test_that("pulmo_markers computes expected pulmonary metrics across equations", 
 })
 
 # ---------------------------------------
-# 5. Excretory marker functions smoke    
+# 5. Excretory marker functions smoke
 # ---------------------------------------
 
 test_that("saliva_markers error-handling and smoke", {
@@ -228,7 +228,7 @@ test_that("urine_markers error-handling and smoke", {
     plasma_Na        = 140,
     urine_Na         = 40,
     age              = 30,
-    sex              = 1  # numeric coding required
+    sex              = 1 # numeric coding required
   )
   out <- urine_markers(df_urine)
   expected_cols <- c("UACR", "microalbuminuria", "eGFR_CKD_EPI", "FENa", "UPCR")

@@ -48,8 +48,8 @@ computes:
 }
 \examples{
 df <- tibble::tibble(
-  G0   = 5.5, I0   = 60,
-  G30  = 7.8, I30  = 90,
+  G0 = 5.5, I0 = 60,
+  G30 = 7.8, I30 = 90,
   G120 = 6.2, I120 = 50,
   weight = 70, bmi = 24, age = 30, sex = 1
 )

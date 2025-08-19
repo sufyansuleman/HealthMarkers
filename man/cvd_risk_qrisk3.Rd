@@ -4,23 +4,21 @@
 \alias{cvd_risk_qrisk3}
 \title{QRISK3 10-year risk (UK QRISK3-2017)}
 \usage{
-cvd_risk_qrisk3(data, ...)
+cvd_risk_qrisk3(data, ..., patid = NULL)
 }
 \arguments{
-\item{data}{A tibble with columns required by QRISK3 (see package documentation).}
+\item{data}{A tibble or data.frame with the columns required by your chosen \code{model}}
 
-\item{...}{Additional arguments for QRISK3_2017.}
+\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{verbose}, \code{col_map})}
+
+\item{patid}{Optional vector of patient IDs; if missing, we auto-generate 1‒n}
+
+\item{col_map}{Not used here.}
 }
 \value{
-A tibble with columns \code{model}, \code{year} (always 10), and \code{risk}.
+A tibble with columns \code{model}, \code{year}, and \code{risk}.
 }
 \description{
-Wrapper around QRISK3::QRISK3_2017.
-}
-\examples{
-\dontrun{
-library(tibble)
-df <- tibble(age=55, sex=1, sbp=140, HDL_c=50, total_chol=200, smoker=FALSE, diabetes=FALSE)
-cvd_risk_qrisk3(df)
-}
+Wrapper around QRISK3::QRISK3_2017 that auto-provides a dummy \code{patid}
+if you haven’t already given one.
 }

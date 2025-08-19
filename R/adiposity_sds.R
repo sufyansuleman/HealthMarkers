@@ -26,34 +26,35 @@ adiposity_sds <- function(data, ref, verbose = FALSE) {
   }
   for (nm in names(ref)) {
     stats <- ref[[nm]]
-    if (!(is.numeric(stats) && length(stats) == 2 && all(c("mean","sd") %in% names(stats)))) {
+    if (!(is.numeric(stats) && length(stats) == 2 && all(c("mean", "sd") %in% names(stats)))) {
       stop(sprintf("ref[[\"%s\"]] must be a numeric vector with names 'mean' and 'sd'", nm))
     }
     if (stats["sd"] <= 0) {
       stop(sprintf("`ref[[\"%s\"]][\"sd\"]` must be > 0", nm))
     }
   }
-  
+
   # - check data has each variable -
   missing_vars <- setdiff(names(ref), names(data))
   if (length(missing_vars)) {
-    stop("adiposity_sds(): missing required columns: ",
-         paste(missing_vars, collapse = ", "))
+    stop(
+      "adiposity_sds(): missing required columns: ",
+      paste(missing_vars, collapse = ", ")
+    )
   }
-  
+
   if (verbose) {
     message("-> computing SDS for: ", paste(names(ref), collapse = ", "))
   }
-  
+
   # - compute SDS into a named list -
   out_list <- lapply(names(ref), function(var) {
     stats <- ref[[var]]
-    
+
     unname((data[[var]] - stats["mean"]) / stats["sd"])
-    
   })
   names(out_list) <- paste0(names(ref), "_SDS")
-  
+
   # - return tibble, even if length(data)==1 -
   tibble::as_tibble(out_list)
 }

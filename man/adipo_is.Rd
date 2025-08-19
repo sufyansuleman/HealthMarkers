@@ -45,9 +45,9 @@ computes:
 }
 \examples{
 df <- tibble::tibble(
-  G0    = 5.5, I0    = 60,
-  TG    = 1.2, HDL_c = 1.0,
-  FFA   = 0.45, waist = 80, bmi = 24
+  G0 = 5.5, I0 = 60,
+  TG = 1.2, HDL_c = 1.0,
+  FFA = 0.45, waist = 80, bmi = 24
 )
 adipo_is(
   df,

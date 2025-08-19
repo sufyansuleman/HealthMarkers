@@ -29,13 +29,13 @@
 #' @examples
 #' library(tibble)
 #' df <- tibble(
-#'   CRP  = c(1.2, 3.5, 0.8),  # mg/L
-#'   IL6  = c(2.0, 4.1, 1.5),  # pg/mL
-#'   TNFa = c(1.0, 1.8, 0.9)   # pg/mL
+#'   CRP  = c(1.2, 3.5, 0.8), # mg/L
+#'   IL6  = c(2.0, 4.1, 1.5), # pg/mL
+#'   TNFa = c(1.0, 1.8, 0.9) # pg/mL
 #' )
 #' iAge(
 #'   df,
-#'   col_map = list(CRP = 'CRP', IL6 = 'IL6', TNFa = 'TNFa'),
+#'   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
 #'   weights = c(CRP = 0.3, IL6 = 0.4, TNFa = 0.3)
 #' )
 #'
@@ -60,11 +60,11 @@ iAge <- function(data,
   }
   # Validate weights: numeric, non-negative, named correctly, sum to 1
   if (!is.numeric(weights) || any(weights < 0) ||
-      !all(markers %in% names(weights)) || abs(sum(weights) - 1) > 1e-6) {
+    !all(markers %in% names(weights)) || abs(sum(weights) - 1) > 1e-6) {
     stop("weights must be a named numeric vector (CRP, IL6, TNFa) summing to 1.")
   }
   if (verbose) message("-> iAge: computing weighted sum of inflammatory markers")
-  
+
   # Compute weighted contributions
   vals <- lapply(markers, function(m) {
     col <- col_map[[m]]
@@ -80,6 +80,6 @@ iAge <- function(data,
   mat <- do.call(cbind, vals)
   iage_vec <- rowSums(mat, na.rm = TRUE)
   iage_vec <- unname(iage_vec)
-  
+
   tibble::tibble(iAge = iage_vec)
 }

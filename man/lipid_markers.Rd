@@ -2,7 +2,8 @@
 % Please edit documentation in R/lipid_markers.R
 \name{lipid_markers}
 \alias{lipid_markers}
-\title{Calculate lipid-panel markers and Visceral Adiposity Index (VAI)}
+\title{Calculate lipid-panel markers, Visceral Adiposity Index (VAI),
+Lipid Accumulation Product (LAP), and TyG–BMI index}
 \usage{
 lipid_markers(
   data,
@@ -12,17 +13,18 @@ lipid_markers(
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your lipid (and optional anthropometry) data.}
+\item{data}{A \code{data.frame} or \code{tibble} containing your lipid
+(and optional anthropometry/glucose) data.}
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{TC}    -> total cholesterol
-\item \code{HDL_c} -> HDL-C
-\item \code{TG}    -> triglycerides
-\item \code{LDL_c} -> (optional) LDL-C; if missing, estimated via Friedewald
-\item \code{ApoB}, \code{ApoA1} -> (optional) apolipoproteins
-\item \code{waist} -> (optional) waist circumference (cm)
-\item \code{BMI}   -> (optional) body mass index (kg/m^2)
+\item \code{TC}    → total cholesterol
+\item \code{HDL_c} → HDL-C
+\item \code{TG}    → triglycerides
+\item \code{LDL_c} → (optional) LDL-C; if missing, estimated via Friedewald
+\item \code{ApoB}, \code{ApoA1} → (optional) apolipoproteins
+\item \code{waist} → (optional) waist circumference (cm)
+\item \code{BMI}   → (optional) body mass index (kg/m²)
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a message about computing markers.}
@@ -30,43 +32,39 @@ lipid_markers(
 \value{
 A tibble with:
 \itemize{
-\item \code{non_HDL_c}, \code{remnant_c},
-\item \code{ratio_TC_HDL}, \code{ratio_TG_HDL}, \code{ratio_LDL_HDL},
-\item \code{ApoB_ApoA1}, \code{VAI_Men}, \code{VAI_Women}
+\item \code{non_HDL_c}, \code{remnant_c}
+\item \code{ratio_TC_HDL}, \code{ratio_TG_HDL}, \code{ratio_LDL_HDL}
+\item \code{ApoB_ApoA1}
+\item \code{VAI_Men}, \code{VAI_Women}
+\item \code{LAP_Men}, \code{LAP_Women}
+\item \code{TyG_BMI}
 }
 }
 \description{
-Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1, waist, BMI),
-computes:
+Given total cholesterol, HDL, TG (and optionally LDL, ApoB/ApoA1,
+waist, BMI, glucose), computes:
 \itemize{
-\item \code{non_HDL_c}
-\item \code{remnant_c}
-\item \code{ratio_TC_HDL}
-\item \code{ratio_TG_HDL}
-\item \code{ratio_LDL_HDL}
-\item \code{ApoB_ApoA1} (if both apolipoproteins present; otherwise \code{NA})
-\item \code{VAI_Men}, \code{VAI_Women} (if \code{waist} and \code{BMI} provided in \code{col_map})
+\item \code{non_HDL_c}, \code{remnant_c}
+\item \code{ratio_TC_HDL}, \code{ratio_TG_HDL}, \code{ratio_LDL_HDL}
+\item \code{ApoB_ApoA1}
+\item \code{VAI_Men}, \code{VAI_Women}
+\item \code{LAP_Men}, \code{LAP_Women}
+\item \code{TyG_BMI}
 }
 }
-\examples{
-df <- tibble::tibble(
-  TC    = 5.0,
-  HDL_c = 1.0,
-  TG    = 1.3,
-  LDL_c = 3.0,
-  ApoB  = 1.1,
-  ApoA1 = 1.5,
-  waist = 85,
-  BMI   = 26
-)
-lipid_markers(df, col_map = list(
-  TC    = "TC",
-  HDL_c = "HDL_c",
-  TG    = "TG",
-  LDL_c = "LDL_c",
-  ApoB  = "ApoB",
-  ApoA1 = "ApoA1",
-  waist = "waist",
-  BMI   = "BMI"
-))
+\references{
+\itemize{
+\item Friedewald WT, Levy RI, Fredrickson DS. Estimation of the
+concentration of LDL cholesterol in plasma, without use of
+preparative ultracentrifuge. \emph{Clin Chem}. 1972;18(6):499–502.
+\item Amato MC, Giordano C, Galia M, et al. Visceral adiposity index:
+a reliable indicator of visceral fat function associated with
+cardiometabolic risk. \emph{Diabetes Care}. 2010;33(4):920–922.
+\item Kahn HS. Lipid accumulation product performs better than BMI as
+a marker of cardiovascular risk. \emph{J Clin Endocrinol Metab}.
+2005;90(11):6292–6298.
+\item Lee YH, Kim JE, et al. Triglyceride-glucose-body mass index
+(TyG-BMI) predicts nonalcoholic fatty liver disease. \emph{Int J Obes}.
+2020;44(9):2101–2110.
+}
 }

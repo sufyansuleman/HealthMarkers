@@ -9,11 +9,12 @@
 #' @keywords internal
 validate_inputs <- function(data,
                             col_map,
-                            fun_name       = "",
-                            required_keys  = names(col_map)) {
+                            fun_name = "",
+                            required_keys = names(col_map)) {
   # 1) ensure the user provided a non-NULL name for every key in required_keys
-  missing_map <- required_keys[vapply(required_keys, function(k)
-    is.null(col_map[[k]]), logical(1))]
+  missing_map <- required_keys[vapply(required_keys, function(k) {
+    is.null(col_map[[k]])
+  }, logical(1))]
   if (length(missing_map)) {
     stop(sprintf(
       "%s(): you must supply col_map entries for: %s",
@@ -21,7 +22,7 @@ validate_inputs <- function(data,
       paste(missing_map, collapse = ", ")
     ), call. = FALSE)
   }
-  
+
   # 2) check that data contains every mapped column for required_keys
   req <- unname(unlist(col_map[required_keys]))
   miss <- setdiff(req, names(data))
@@ -32,6 +33,6 @@ validate_inputs <- function(data,
       paste(miss, collapse = ", ")
     ), call. = FALSE)
   }
-  
+
   invisible(TRUE)
 }

@@ -14,7 +14,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(tibble)
 #' df <- tibble(
 #'   age = 55, sex = 1, race = "white", smoker = FALSE,
 #'   total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
@@ -27,8 +26,11 @@ cvd_risk_ascvd <- function(data, year = 10, ...) {
   if (!requireNamespace("PooledCohort", quietly = TRUE)) {
     stop("Please install 'PooledCohort' to compute ASCVD risk.")
   }
-  fn <- if (year == 10) PooledCohort::predict_10yr_ascvd_risk
-  else               PooledCohort::predict_30yr_ascvd_risk
+  fn <- if (year == 10) {
+    PooledCohort::predict_10yr_ascvd_risk
+  } else {
+    PooledCohort::predict_30yr_ascvd_risk
+  }
   risk <- fn(
     age_years       = data$age,
     race            = data$race,
@@ -97,8 +99,10 @@ cvd_risk_qrisk3 <- function(data,
 #' @examples
 #' \dontrun{
 #' library(tibble)
-#' df <- tibble(race="white", sex=1, age=55, totchol=200, HDL_c=50,
-#' sbp=140, bp_treated=FALSE, smoker=FALSE, diabetes=FALSE)
+#' df <- tibble(
+#'   race = "white", sex = 1, age = 55, totchol = 200, HDL_c = 50,
+#'   sbp = 140, bp_treated = FALSE, smoker = FALSE, diabetes = FALSE
+#' )
 #' cvd_risk_mesa(df)
 #' }
 cvd_risk_mesa <- function(data, ...) {
@@ -134,9 +138,11 @@ cvd_risk_mesa <- function(data, ...) {
 #' @examples
 #' \dontrun{
 #' library(tibble)
-#' df <- tibble(age=55, sex=1, race="white", smoker=FALSE,
-#' total_chol=200, HDL_c=50, sbp=140, bp_treated=FALSE,
-#' diabetes=FALSE, bmi=27)
+#' df <- tibble(
+#'   age = 55, sex = 1, race = "white", smoker = FALSE,
+#'   total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
+#'   diabetes = FALSE, bmi = 27
+#' )
 #' cvd_risk_stroke(df)
 #' }
 cvd_risk_stroke <- function(data, ...) {
@@ -201,7 +207,7 @@ cvd_marker_aip <- function(data,
                            verbose = FALSE) {
   validate_inputs(data, col_map, fun_name = "cvd_marker_aip", required_keys = c("TG", "HDL_c"))
   if (verbose) message("-> computing AIP")
-  tg  <- data[[col_map$TG]]
+  tg <- data[[col_map$TG]]
   hdl <- data[[col_map$HDL_c]]
   value <- log10(tg / hdl)
   tibble::tibble(model = "AIP", value = value)
@@ -250,14 +256,14 @@ cvd_marker_ldl_particle_number <- function(data,
 #'   When `model = "ALL"`, you get one row per sub-model and all of the columns (`model`,`year`,`risk`,`value`).
 #' @export
 cvd_risk <- function(data,
-                     model = c("ALL","ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd","AIP","LDL_PN"),
-                     year  = 10,
+                     model = c("ALL", "ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd", "AIP", "LDL_PN"),
+                     year = 10,
                      ...) {
   model <- match.arg(model)
-  
+
   # If the user wants *every* model
   if (model == "ALL") {
-    all_models <- c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd","AIP","LDL_PN")
+    all_models <- c("ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd", "AIP", "LDL_PN")
     results <- lapply(all_models, function(m) {
       # for each one, try to compute or else return a placeholder with NAs
       tryCatch(
@@ -266,7 +272,7 @@ cvd_risk <- function(data,
           # build a one-row tibble with the right columns
           tibble::tibble(
             model = m,
-            year  = if (m %in% c("ASCVD","Stroke")) year else if (m %in% c("QRISK3","MESA")) 10 else NA_integer_,
+            year  = if (m %in% c("ASCVD", "Stroke")) year else if (m %in% c("QRISK3", "MESA")) 10 else NA_integer_,
             risk  = NA_real_,
             value = NA_real_
           )
@@ -276,17 +282,17 @@ cvd_risk <- function(data,
     # row-bind them all; missing columns will be filled with NA
     return(dplyr::bind_rows(results))
   }
-  
+
   # Otherwise dispatch normally
   switch(model,
-         "ASCVD"         = cvd_risk_ascvd(data, year = year, ...),
-         "QRISK3"        = cvd_risk_qrisk3(data, ...),
-         "MESA"          = cvd_risk_mesa(data, ...),
-         "Stroke"        = cvd_risk_stroke(data, ...),
-         "WHO"           = cvd_risk_who(data, ...),
-         "RiskScorescvd" = cvd_risk_scorescvd(data, ...),
-         "AIP"           = cvd_marker_aip(data, ...),
-         "LDL_PN"        = cvd_marker_ldl_particle_number(data, ...),
-         stop("Unknown model: ", model)
+    "ASCVD"         = cvd_risk_ascvd(data, year = year, ...),
+    "QRISK3"        = cvd_risk_qrisk3(data, ...),
+    "MESA"          = cvd_risk_mesa(data, ...),
+    "Stroke"        = cvd_risk_stroke(data, ...),
+    "WHO"           = cvd_risk_who(data, ...),
+    "RiskScorescvd" = cvd_risk_scorescvd(data, ...),
+    "AIP"           = cvd_marker_aip(data, ...),
+    "LDL_PN"        = cvd_marker_ldl_particle_number(data, ...),
+    stop("Unknown model: ", model)
   )
 }

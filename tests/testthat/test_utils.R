@@ -28,8 +28,8 @@ test_that("infer_cols() can map provided columns by name", {
 
 test_that("validate_inputs() errors when col_map is missing required entries for lipid_markers", {
   df <- tibble::tibble(
-    TG    = c(1,2),
-    HDL_c = c(1,2)
+    TG    = c(1, 2),
+    HDL_c = c(1, 2)
   )
   # simulate a lipid_markers call: needs TG, HDL_c, LDL_c, TC
   col_map <- list(
@@ -40,8 +40,8 @@ test_that("validate_inputs() errors when col_map is missing required entries for
   )
   test_that("validate_inputs() errors when col_map is missing required entries for lipid_markers", {
     df <- tibble::tibble(
-      TG    = c(1,2),
-      HDL_c = c(1,2)
+      TG    = c(1, 2),
+      HDL_c = c(1, 2)
     )
     # simulate a lipid_markers call: needs TG, HDL_c, LDL_c, TC
     col_map <- list(
@@ -56,16 +56,15 @@ test_that("validate_inputs() errors when col_map is missing required entries for
     )
   })
   "missing required columns: LDL_c, TC"
-
 })
 
 
 test_that("validate_inputs() passes when all required columns are present for lipid_markers", {
   df <- tibble::tibble(
-    TG    = c(1,2),
-    HDL_c = c(1,2),
-    LDL_c = c(1,2),
-    TC    = c(1,2)
+    TG    = c(1, 2),
+    HDL_c = c(1, 2),
+    LDL_c = c(1, 2),
+    TC    = c(1, 2)
   )
   col_map <- list(
     TG    = "TG",

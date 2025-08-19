@@ -11,7 +11,7 @@ test_that("saliva_markers errors if missing required columns", {
     saliva_markers(df1),
     "missing columns: saliva_cort1"
   )
-  
+
   df2 <- tibble::tibble(
     saliva_cort1    = 10,
     saliva_cort3    = 12,
@@ -33,25 +33,25 @@ test_that("saliva_markers computes log transforms, CAR_AUC, and passes through g
     saliva_glucose  = 5.0
   )
   out <- saliva_markers(df)
-  
+
   # Check column names and length
   expect_named(
     out,
-    c("log_cortisol_wake","CAR_AUC","log_amylase","saliva_glucose")
+    c("log_cortisol_wake", "CAR_AUC", "log_amylase", "saliva_glucose")
   )
   expect_equal(nrow(out), 1)
-  
+
   # Manual calculations
   expected_log_cort <- log(10)
   # trapezoidal AUC: (10+20)/2*30 + (20+10)/2*30 = 15*30 + 15*30 = 900
-  expected_auc      <- (10 + 20)/2 * 30 + (20 + 10)/2 * 30
-  expected_log_amy  <- log(100)
-  expected_gluc     <- 5.0
-  
+  expected_auc <- (10 + 20) / 2 * 30 + (20 + 10) / 2 * 30
+  expected_log_amy <- log(100)
+  expected_gluc <- 5.0
+
   expect_equal(out$log_cortisol_wake, expected_log_cort)
-  expect_equal(out$CAR_AUC,           expected_auc)
-  expect_equal(out$log_amylase,       expected_log_amy)
-  expect_equal(out$saliva_glucose,    expected_gluc)
+  expect_equal(out$CAR_AUC, expected_auc)
+  expect_equal(out$log_amylase, expected_log_amy)
+  expect_equal(out$saliva_glucose, expected_gluc)
 })
 
 test_that("saliva_markers is vectorized over multiple rows", {

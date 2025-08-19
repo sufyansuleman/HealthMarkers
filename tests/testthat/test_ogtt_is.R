@@ -1,5 +1,3 @@
-
-
 # helper to run ogtt_is more concisely
 run_ogtt <- function(df, normalize = "none", verbose = FALSE) {
   ogtt_is(
@@ -12,7 +10,7 @@ run_ogtt <- function(df, normalize = "none", verbose = FALSE) {
       age    = "age",    sex     = "sex"
     ),
     normalize = normalize,
-    verbose   = verbose
+    verbose = verbose
   )
 }
 
@@ -78,7 +76,7 @@ test_that("normalize = 'z' gives mean ≈ 0 & sd ≈ 1 on variable indices, NA o
     v2 <- vals[!is.na(vals)]
     if (length(unique(v2)) > 1) {
       expect_equal(mean(v2), 0, tolerance = 1e-6)
-      expect_equal(sd(v2),   1, tolerance = 1e-6)
+      expect_equal(sd(v2), 1, tolerance = 1e-6)
     } else {
       expect_true(all(is.na(vals)))
     }
@@ -104,7 +102,7 @@ test_that("verbose = TRUE prints a progress message", {
 })
 
 test_that("error if col_map missing required keys", {
-  bad_map <- list(G0="G0", I0="I0")  # too few entries
+  bad_map <- list(G0 = "G0", I0 = "I0") # too few entries
   expect_error(
     ogtt_is(base_df, col_map = bad_map),
     "you must supply col_map entries"

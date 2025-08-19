@@ -15,7 +15,7 @@ test_that("sweat_markers errors if missing required columns", {
     sweat_markers(df1),
     "missing columns: sweat_chloride"
   )
-  
+
   # Missing multiple columns
   df2 <- tibble::tibble(
     sweat_chloride    = 30,
@@ -43,16 +43,16 @@ test_that("sweat_markers computes ionic and rate metrics correctly", {
     body_surface_area = 1.8
   )
   out <- sweat_markers(df)
-  
+
   # Check column names
   expect_named(
     out,
-    c("sweat_chloride","Na_K_ratio","sweat_lactate","sweat_rate")
+    c("sweat_chloride", "Na_K_ratio", "sweat_lactate", "sweat_rate")
   )
   # Na/K ratio = 50/5
-  expect_equal(out$Na_K_ratio, 50/5)
+  expect_equal(out$Na_K_ratio, 50 / 5)
   # sweat_rate = (70-69.5)/1 /1.8 = 0.5/1.8
-  expect_equal(out$sweat_rate, 0.5/1.8)
+  expect_equal(out$sweat_rate, 0.5 / 1.8)
   # other columns passed through
   expect_equal(out$sweat_chloride, 30)
   expect_equal(out$sweat_lactate, 10)
@@ -72,8 +72,8 @@ test_that("sweat_markers is vectorized over multiple rows", {
   out <- sweat_markers(df)
   expect_equal(nrow(out), 2)
   # Second row: Na/K = 60/6 =10, rate = (80-79)/2/2 =1/2/2 =0.25
-  expect_equal(out$Na_K_ratio[2], 60/6)
-  expect_equal(out$sweat_rate[2], (80-79)/2/2)
+  expect_equal(out$Na_K_ratio[2], 60 / 6)
+  expect_equal(out$sweat_rate[2], (80 - 79) / 2 / 2)
 })
 
 test_that("verbose = TRUE prints a progress message", {

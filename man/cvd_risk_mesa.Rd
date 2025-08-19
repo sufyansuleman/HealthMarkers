@@ -20,8 +20,10 @@ Wrapper around CVrisk::chd_10y_mesa.
 \examples{
 \dontrun{
 library(tibble)
-df <- tibble(race="white", sex=1, age=55, totchol=200, HDL_c=50,
-sbp=140, bp_treated=FALSE, smoker=FALSE, diabetes=FALSE)
+df <- tibble(
+  race = "white", sex = 1, age = 55, totchol = 200, HDL_c = 50,
+  sbp = 140, bp_treated = FALSE, smoker = FALSE, diabetes = FALSE
+)
 cvd_risk_mesa(df)
 }
 }

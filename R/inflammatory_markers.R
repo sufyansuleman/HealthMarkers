@@ -41,16 +41,16 @@
 #' innate vs adaptive immunity, acute‐phase reactants, and nutritional status.
 #'
 #' @references
-#' - Zahorec R (2001). *Ratio of neutrophil to lymphocyte counts…* Intensive Care Med 27:88–92  
-#' - Smith J, Doe A (2019). *Platelet–lymphocyte ratio…* J Cardiol 74:123–130  
-#' - Okugawa Y *et al.* (2015). *Lymphocyte–monocyte ratio…* J Clin Oncol 33:3192–3199  
-#' - Şahin TK *et al.* (2018). *Neutrophil–eosinophil ratio…* Respir Med 141:1–7  
-#' - Hu B *et al.* (2014). *Systemic immune-inflammation index…* J Hepatol 61:648–656  
-#' - Qi Q *et al.* (2016). *Systemic inflammation response index…* Clin Cancer Res 22:2965–2972  
-#' - Fuca G *et al.* (2020). *Pan-immune-inflammation value…* Br J Cancer 123:1348–1352  
-#' - Graham BB *et al.* (2019). *CRP–lymphocyte ratio…* Crit Care 23:387  
-#' - Ranzani OT *et al.* (2013). *CRP/albumin ratio…* Crit Care 17:R290  
-#' - Zhang Z *et al.* (2020). *Platelet–CRP ratio…* Stroke 51:17–23  
+#' - Zahorec R (2001). *Ratio of neutrophil to lymphocyte counts…* Intensive Care Med 27:88–92
+#' - Smith J, Doe A (2019). *Platelet–lymphocyte ratio…* J Cardiol 74:123–130
+#' - Okugawa Y *et al.* (2015). *Lymphocyte–monocyte ratio…* J Clin Oncol 33:3192–3199
+#' - Şahin TK *et al.* (2018). *Neutrophil–eosinophil ratio…* Respir Med 141:1–7
+#' - Hu B *et al.* (2014). *Systemic immune-inflammation index…* J Hepatol 61:648–656
+#' - Qi Q *et al.* (2016). *Systemic inflammation response index…* Clin Cancer Res 22:2965–2972
+#' - Fuca G *et al.* (2020). *Pan-immune-inflammation value…* Br J Cancer 123:1348–1352
+#' - Graham BB *et al.* (2019). *CRP–lymphocyte ratio…* Crit Care 23:387
+#' - Ranzani OT *et al.* (2013). *CRP/albumin ratio…* Crit Care 17:R290
+#' - Zhang Z *et al.* (2020). *Platelet–CRP ratio…* Stroke 51:17–23
 #' - McMillan DC *et al.* (2003). *modified Glasgow Prognostic Score…* Clin Nutr 22:215–219
 #'
 #' @importFrom dplyr "%>%"
@@ -60,16 +60,20 @@ inflammatory_markers <- function(data, col_map, verbose = FALSE) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame or tibble")
   }
-  
+
   # 1) ensure all required keys are in col_map
-  required <- c("neutrophils","lymphocytes","monocytes",
-                "eosinophils","platelets","CRP","albumin")
+  required <- c(
+    "neutrophils", "lymphocytes", "monocytes",
+    "eosinophils", "platelets", "CRP", "albumin"
+  )
   missing_map <- setdiff(required, names(col_map))
   if (length(missing_map)) {
-    stop("inflammatory_markers(): missing col_map entries for: ",
-         paste(missing_map, collapse = ", "))
+    stop(
+      "inflammatory_markers(): missing col_map entries for: ",
+      paste(missing_map, collapse = ", ")
+    )
   }
-  
+
   # 2) ensure those columns actually exist in data
   validate_inputs(
     data,
@@ -77,45 +81,45 @@ inflammatory_markers <- function(data, col_map, verbose = FALSE) {
     fun_name      = "inflammatory_markers",
     required_keys = required
   )
-  
+
   # 3) no NAs allowed in any required column
   for (key in required) {
-    vals <- data[[ col_map[[key]] ]]
+    vals <- data[[col_map[[key]]]]
     if (any(is.na(vals))) {
       stop("inflammatory_markers(): required columns contain missing values")
     }
   }
-  
+
   # 4) verbose message
   if (verbose) message("-> computing inflammatory markers")
-  
+
   # 5) extract
-  N   <- data[[col_map$neutrophils]]
-  L   <- data[[col_map$lymphocytes]]
-  M   <- data[[col_map$monocytes]]
-  E   <- data[[col_map$eosinophils]]
-  P   <- data[[col_map$platelets]]
-  C   <- data[[col_map$CRP]]
-  A   <- data[[col_map$albumin]]
+  N <- data[[col_map$neutrophils]]
+  L <- data[[col_map$lymphocytes]]
+  M <- data[[col_map$monocytes]]
+  E <- data[[col_map$eosinophils]]
+  P <- data[[col_map$platelets]]
+  C <- data[[col_map$CRP]]
+  A <- data[[col_map$albumin]]
   ESR <- if ("ESR" %in% names(col_map)) data[[col_map$ESR]] else NULL
-  
+
   # 6) compute ratios/indices
-  NLR  <- N / L
-  PLR  <- P / L
-  LMR  <- L / M
-  NER  <- N / E
-  SII  <- (P * N) / L
+  NLR <- N / L
+  PLR <- P / L
+  LMR <- L / M
+  NER <- N / E
+  SII <- (P * N) / L
   SIRI <- (N * M) / L
-  PIV  <- (N * P * M) / L
-  CLR  <- C / L
-  CAR  <- C / A
-  PCR  <- P / C
-  
+  PIV <- (N * P * M) / L
+  CLR <- C / L
+  CAR <- C / A
+  PCR <- P / C
+
   # 7) modified Glasgow Prognostic Score
   mGPS <- integer(length(C))
-  mGPS[C > 10 & A < 35]  <- 2L
+  mGPS[C > 10 & A < 35] <- 2L
   mGPS[C > 10 & A >= 35] <- 1L
-  
+
   # 8) assemble result
   out <- tibble::tibble(
     NLR, PLR, LMR, NER,

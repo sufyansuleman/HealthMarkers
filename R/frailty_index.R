@@ -24,29 +24,29 @@
 #'
 #' @export
 frailty_index <- function(data,
-                          cols            = NULL,
-                          invert          = NULL,
-                          rescale         = TRUE,
-                          age             = NULL,
-                          rescale.custom  = NULL,
-                          rescale.avoid   = NULL,
-                          bins            = 7,
-                          visible         = FALSE) {
+                          cols = NULL,
+                          invert = NULL,
+                          rescale = TRUE,
+                          age = NULL,
+                          rescale.custom = NULL,
+                          rescale.avoid = NULL,
+                          bins = 7,
+                          visible = FALSE) {
   # 1) ensure di is available
   if (!requireNamespace("di", quietly = TRUE)) {
     stop("Please install the 'di' package to use frailty_index().")
   }
-  
+
   # 2) coerce to pure data.frame so di()'s class(dat) check passes
   df <- as.data.frame(data, stringsAsFactors = FALSE)
-  
+
   # 3) auto‐select deficit columns if none given
   if (is.null(cols)) {
     num_cols <- names(df)[vapply(df, is.numeric, logical(1))]
     if (!is.null(age)) num_cols <- setdiff(num_cols, age)
     cols <- num_cols
   }
-  
+
   # 4) call into di::di()
   di::di(
     dat             = df,
@@ -64,13 +64,13 @@ frailty_index <- function(data,
 #' @rdname frailty_index
 #' @export
 plot_frailty_age <- function(data,
-                             cols            = NULL,
-                             invert          = NULL,
-                             rescale         = TRUE,
-                             age             = NULL,
-                             rescale.custom  = NULL,
-                             rescale.avoid   = NULL,
-                             bins            = 7) {
+                             cols = NULL,
+                             invert = NULL,
+                             rescale = TRUE,
+                             age = NULL,
+                             rescale.custom = NULL,
+                             rescale.avoid = NULL,
+                             bins = 7) {
   # simply call frailty_index with visible = TRUE
   frailty_index(
     data            = data,

@@ -12,7 +12,7 @@
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_30yr_stroke_risk <- function(...){
+pooledcohort_predict_30yr_stroke_risk <- function(...) {
   PooledCohort::predict_30yr_stroke_risk(...)
 }
 
@@ -24,7 +24,7 @@ pooledcohort_predict_30yr_stroke_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_30yr_hf_risk <- function(...){
+pooledcohort_predict_30yr_hf_risk <- function(...) {
   PooledCohort::predict_30yr_hf_risk(...)
 }
 
@@ -36,7 +36,7 @@ pooledcohort_predict_30yr_hf_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_30yr_chd_risk <- function(...){
+pooledcohort_predict_30yr_chd_risk <- function(...) {
   PooledCohort::predict_30yr_chd_risk(...)
 }
 
@@ -48,7 +48,7 @@ pooledcohort_predict_30yr_chd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_30yr_ascvd_risk <- function(...){
+pooledcohort_predict_30yr_ascvd_risk <- function(...) {
   PooledCohort::predict_30yr_ascvd_risk(...)
 }
 
@@ -60,7 +60,7 @@ pooledcohort_predict_30yr_ascvd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_30yr_cvd_risk <- function(...){
+pooledcohort_predict_30yr_cvd_risk <- function(...) {
   PooledCohort::predict_30yr_cvd_risk(...)
 }
 
@@ -72,7 +72,7 @@ pooledcohort_predict_30yr_cvd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_10yr_stroke_risk <- function(...){
+pooledcohort_predict_10yr_stroke_risk <- function(...) {
   PooledCohort::predict_10yr_stroke_risk(...)
 }
 
@@ -84,7 +84,7 @@ pooledcohort_predict_10yr_stroke_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_10yr_hf_risk <- function(...){
+pooledcohort_predict_10yr_hf_risk <- function(...) {
   PooledCohort::predict_10yr_hf_risk(...)
 }
 
@@ -96,7 +96,7 @@ pooledcohort_predict_10yr_hf_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_10yr_cvd_risk <- function(...){
+pooledcohort_predict_10yr_cvd_risk <- function(...) {
   PooledCohort::predict_10yr_cvd_risk(...)
 }
 
@@ -108,7 +108,7 @@ pooledcohort_predict_10yr_cvd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_5yr_ascvd_risk <- function(...){
+pooledcohort_predict_5yr_ascvd_risk <- function(...) {
   PooledCohort::predict_5yr_ascvd_risk(...)
 }
 
@@ -120,7 +120,7 @@ pooledcohort_predict_5yr_ascvd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_10yr_chd_risk <- function(...){
+pooledcohort_predict_10yr_chd_risk <- function(...) {
   PooledCohort::predict_10yr_chd_risk(...)
 }
 
@@ -132,7 +132,7 @@ pooledcohort_predict_10yr_chd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-pooledcohort_predict_10yr_ascvd_risk <- function(...){
+pooledcohort_predict_10yr_ascvd_risk <- function(...) {
   PooledCohort::predict_10yr_ascvd_risk(...)
 }
 
@@ -144,7 +144,7 @@ pooledcohort_predict_10yr_ascvd_risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-qrisk3_QRISK3_2017 <- function(...){
+qrisk3_QRISK3_2017 <- function(...) {
   QRISK3::QRISK3_2017(...)
 }
 
@@ -156,7 +156,7 @@ qrisk3_QRISK3_2017 <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_chd_10y_mesa <- function(...){
+cvrisk_chd_10y_mesa <- function(...) {
   CVrisk::chd_10y_mesa(...)
 }
 
@@ -168,7 +168,7 @@ cvrisk_chd_10y_mesa <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_ascvd_10y_accaha <- function(...){
+cvrisk_ascvd_10y_accaha <- function(...) {
   CVrisk::ascvd_10y_accaha(...)
 }
 
@@ -180,7 +180,7 @@ cvrisk_ascvd_10y_accaha <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_compute_CVrisk <- function(...){
+cvrisk_compute_CVrisk <- function(...) {
   CVrisk::compute_CVrisk(...)
 }
 
@@ -192,7 +192,7 @@ cvrisk_compute_CVrisk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_ascvd_10y_frs_simple <- function(...){
+cvrisk_ascvd_10y_frs_simple <- function(...) {
   CVrisk::ascvd_10y_frs_simple(...)
 }
 
@@ -204,7 +204,7 @@ cvrisk_ascvd_10y_frs_simple <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_ascvd_10y_frs <- function(...){
+cvrisk_ascvd_10y_frs <- function(...) {
   CVrisk::ascvd_10y_frs(...)
 }
 
@@ -216,7 +216,7 @@ cvrisk_ascvd_10y_frs <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-cvrisk_chd_10y_mesa_cac <- function(...){
+cvrisk_chd_10y_mesa_cac <- function(...) {
   CVrisk::chd_10y_mesa_cac(...)
 }
 
@@ -228,7 +228,7 @@ cvrisk_chd_10y_mesa_cac <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-whoishrisk_WHO_ISH_Risk <- function(...){
+whoishrisk_WHO_ISH_Risk <- function(...) {
   whoishRisk::WHO_ISH_Risk(...)
 }
 
@@ -240,7 +240,7 @@ whoishrisk_WHO_ISH_Risk <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_round_to_nearest_digit <- function(...){
+riskscorescvd_round_to_nearest_digit <- function(...) {
   RiskScorescvd::round_to_nearest_digit(...)
 }
 
@@ -252,7 +252,7 @@ riskscorescvd_round_to_nearest_digit <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_HEART_scores <- function(...){
+riskscorescvd_HEART_scores <- function(...) {
   RiskScorescvd::HEART_scores(...)
 }
 
@@ -264,7 +264,7 @@ riskscorescvd_HEART_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_GRACE <- function(...){
+riskscorescvd_GRACE <- function(...) {
   RiskScorescvd::GRACE(...)
 }
 
@@ -276,7 +276,7 @@ riskscorescvd_GRACE <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_GRACE_scores <- function(...){
+riskscorescvd_GRACE_scores <- function(...) {
   RiskScorescvd::GRACE_scores(...)
 }
 
@@ -288,7 +288,7 @@ riskscorescvd_GRACE_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_SCORE2 <- function(...){
+riskscorescvd_SCORE2 <- function(...) {
   RiskScorescvd::SCORE2(...)
 }
 
@@ -300,7 +300,7 @@ riskscorescvd_SCORE2 <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_ASCVD <- function(...){
+riskscorescvd_ASCVD <- function(...) {
   RiskScorescvd::ASCVD(...)
 }
 
@@ -312,7 +312,7 @@ riskscorescvd_ASCVD <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_calc_scores <- function(...){
+riskscorescvd_calc_scores <- function(...) {
   RiskScorescvd::calc_scores(...)
 }
 
@@ -324,7 +324,7 @@ riskscorescvd_calc_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_SCORE2_Diabetes <- function(...){
+riskscorescvd_SCORE2_Diabetes <- function(...) {
   RiskScorescvd::SCORE2_Diabetes(...)
 }
 
@@ -336,7 +336,7 @@ riskscorescvd_SCORE2_Diabetes <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_TIMI_scores <- function(...){
+riskscorescvd_TIMI_scores <- function(...) {
   RiskScorescvd::TIMI_scores(...)
 }
 
@@ -348,7 +348,7 @@ riskscorescvd_TIMI_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_EDACS <- function(...){
+riskscorescvd_EDACS <- function(...) {
   RiskScorescvd::EDACS(...)
 }
 
@@ -360,7 +360,7 @@ riskscorescvd_EDACS <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_SCORE2_CKD <- function(...){
+riskscorescvd_SCORE2_CKD <- function(...) {
   RiskScorescvd::SCORE2_CKD(...)
 }
 
@@ -372,7 +372,7 @@ riskscorescvd_SCORE2_CKD <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_HEART <- function(...){
+riskscorescvd_HEART <- function(...) {
   RiskScorescvd::HEART(...)
 }
 
@@ -384,7 +384,7 @@ riskscorescvd_HEART <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_ASCVD_scores <- function(...){
+riskscorescvd_ASCVD_scores <- function(...) {
   RiskScorescvd::ASCVD_scores(...)
 }
 
@@ -396,7 +396,7 @@ riskscorescvd_ASCVD_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_TIMI <- function(...){
+riskscorescvd_TIMI <- function(...) {
   RiskScorescvd::TIMI(...)
 }
 
@@ -408,7 +408,7 @@ riskscorescvd_TIMI <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_EDACS_scores <- function(...){
+riskscorescvd_EDACS_scores <- function(...) {
   RiskScorescvd::EDACS_scores(...)
 }
 
@@ -420,7 +420,7 @@ riskscorescvd_EDACS_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_SCORE2_CKD_scores <- function(...){
+riskscorescvd_SCORE2_CKD_scores <- function(...) {
   RiskScorescvd::SCORE2_CKD_scores(...)
 }
 
@@ -432,6 +432,6 @@ riskscorescvd_SCORE2_CKD_scores <- function(...){
 #' @param ... Arguments passed to the underlying function.
 #' @return A numeric vector or data.frame as returned by the original function.
 #' @export
-riskscorescvd_SCORE2_scores <- function(...){
+riskscorescvd_SCORE2_scores <- function(...) {
   RiskScorescvd::SCORE2_scores(...)
 }

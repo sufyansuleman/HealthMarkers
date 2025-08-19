@@ -39,7 +39,7 @@ thr <- list(A = 4, B = 2, C = 30)
 allostatic_load(df, thr)
 
 # Single‐marker inclusive logic
-df2 <- tibble(X = c(5,10))
+df2 <- tibble(X = c(5, 10))
 allostatic_load(df2, list(X = 10))
 
 }

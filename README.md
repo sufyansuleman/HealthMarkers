@@ -14,15 +14,15 @@ HealthMarkers
     Indices](#4-tracerdxa-insulin-sensitivity-indices)
   - [5. Glycemic and C‑peptide Insulin Sensitivity
     Markers](#5-glycemic-and-cpeptide-insulin-sensitivity-markers)
-  - [6. Metabolic Risk Feature Flags](#6-metabolic-risk-feature-flags)
+  - [6. Metabolic Risk Features](#6-metabolic-risk-features)
   - [7. Metabolic Syndrome Severity
     Score](#7-metabolic-syndrome-severity-score)
   - [8. Standardized‑Score (SDS) for Adiposity
     Measures](#8-standardizedscore-sds-for-adiposity-measures)
   - [9. Stratified Adiposity Standard Deviation
     Scores](#9-stratified-adiposity-standard-deviation-scores)
-  - [10. Lipid Panel Markers](#10-lipid-panel-markers)
-  - [11. Liver Panel Markers](#11-liver-panel-markers)
+  - [10. Lipid Markers](#10-lipid-markers)
+  - [11. Liver Markers](#11-liver-markers)
   - [12. Pulmonary Function Markers](#12-pulmonary-function-markers)
   - [13. Cardiovascular Risk Features](#13-cardiovascular-risk-features)
   - [14. Saliva-Based Stress & Glycemic
@@ -37,6 +37,8 @@ HealthMarkers
   - [📜 License](#-license)
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 # 🔍 Overview
@@ -115,7 +117,7 @@ print(res_fast)
 - `Bennett`
 - `HOMA_IR_rev_inv`
 
-### Note: For IS indices **formulas** look [here](https://academic.oup.com/jcem/article/109/11/2754/7650976?login=true#487293469)
+### Note: For IS indices detialed **formulas** click [here](https://academic.oup.com/jcem/article/109/11/2754/7650976?login=true#487293469)
 
 ------------------------------------------------------------------------
 
@@ -182,7 +184,7 @@ print(res_ogtt)
 - `HIRI_inv`
 - `Belfiore_isi_gly` *Note: glucose×18 -\> mg/dL; insulin/6 -\> µU/mL*
 
-### For IS indices **formulas** look [here](https://academic.oup.com/jcem/article/109/11/2754/7650976?login=true#487293469)
+### For IS indices detailed **formulas** click [here](https://academic.oup.com/jcem/article/109/11/2754/7650976?login=true#487293469)
 
 ------------------------------------------------------------------------
 
@@ -308,14 +310,17 @@ function returns:
 A `data.frame` or `tibble` containing at minimum:
 
 - `HDL_c` (HDL cholesterol, mmol/L)
+
 - `TG` (triglycerides, mmol/L)
+
 - `BMI` (body mass index, kg/m^2)
 
-**Optional** for additional markers:
-
 - `glucose` (fasting glucose, mmol/L) - required for `METS_IR`
+
 - `HbA1c` (mmol/mol) - required for `prediabetes`/`diabetes`
+
 - `C_peptide` (pmol/L) - with `G0` for `HOMA_CP`
+
 - `G0` (glucose, mmol/L)
 
 **Example input:**
@@ -360,7 +365,7 @@ A tibble with columns:
 
 ------------------------------------------------------------------------
 
-## 6. Metabolic Risk Feature Flags
+## 6. Metabolic Risk Features
 
 **Function:**
 
@@ -368,8 +373,8 @@ A tibble with columns:
 metabolic_risk_features(data)
 ```
 
-**Purpose:** Compute binary flags for four key metabolic risk features
-using routine labs and z‑scores:
+**Purpose:** Compute binary features for four key metabolic risk
+features using routine labs measuremnets and z‑scores:
 
 - **dyslipidemia** - based on cholesterol and triglyceride thresholds
   (age‑specific)
@@ -417,10 +422,10 @@ df <- tibble(
 ### Usage
 
 ``` r
-res_flags <- metabolic_risk_features(
+res <- metabolic_risk_features(
   data = df
 )
-print(res_flags)
+print(res)
 ```
 
 ### Output Columns
@@ -713,7 +718,7 @@ named `<var>_SDS`:
 
 ------------------------------------------------------------------------
 
-## 10. Lipid Panel Markers
+## 10. Lipid Markers
 
 **Function:**
 
@@ -732,8 +737,8 @@ lipid_markers(
 )
 ```
 
-**Purpose:** Derive key lipid-panel metrics from total cholesterol, HDL,
-and triglycerides, with optional LDL and apolipoproteins:
+**Purpose:** Derive key lipid metrics from total cholesterol, HDL, and
+triglycerides, with optional LDL and apolipoproteins:
 
 - `non_HDL_c` - non-HDL cholesterol
 - `remnant_c` - cholesterol in remnant lipoproteins
@@ -808,7 +813,7 @@ The returned `tibble` contains:
 
 ------------------------------------------------------------------------
 
-## 11. Liver Panel Markers
+## 11. Liver Markers
 
 **Function:**
 
@@ -833,8 +838,8 @@ liver_markers(
 )
 ```
 
-**Purpose:** Compute a panel of blood-based liver function and fibrosis
-markers using routine labs and anthropometry, including:
+**Purpose:** Compute blood-based liver function and fibrosis markers
+using routine labs and anthropometry, including:
 
 - **FLI** - Fatty Liver Index
 - **NFS** - NAFLD Fibrosis Score

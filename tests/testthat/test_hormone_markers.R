@@ -1,4 +1,3 @@
-
 test_that("errors if any col_map entries missing", {
   df <- tibble(x = 1)
   expect_error(
@@ -22,26 +21,26 @@ test_that("computes all nine ratios correctly", {
   cm <- setNames(names(df), names(df))
   out <- hormone_markers(df, col_map = cm)
   expect_named(out, c(
-    "FAI","LH_FSH","E2_P","T3_T4","ARR",
-    "Ins_Glu","GH_IGF1","PRL_T","CAR_slope"
+    "FAI", "LH_FSH", "E2_P", "T3_T4", "ARR",
+    "Ins_Glu", "GH_IGF1", "PRL_T", "CAR_slope"
   ))
-  expect_equal(out$FAI,      (10/2)*100)
-  expect_equal(out$LH_FSH,   8/4)
-  expect_equal(out$E2_P,     100/50)
-  expect_equal(out$T3_T4,    5/10)
-  expect_equal(out$ARR,      20/4)
-  expect_equal(out$Ins_Glu,  20/10)
-  expect_equal(out$GH_IGF1,  2/4)
-  expect_equal(out$PRL_T,    12/10)
-  expect_equal(out$CAR_slope,(260-200)/30)
+  expect_equal(out$FAI, (10 / 2) * 100)
+  expect_equal(out$LH_FSH, 8 / 4)
+  expect_equal(out$E2_P, 100 / 50)
+  expect_equal(out$T3_T4, 5 / 10)
+  expect_equal(out$ARR, 20 / 4)
+  expect_equal(out$Ins_Glu, 20 / 10)
+  expect_equal(out$GH_IGF1, 2 / 4)
+  expect_equal(out$PRL_T, 12 / 10)
+  expect_equal(out$CAR_slope, (260 - 200) / 30)
 })
 
 test_that("verbose = TRUE prints a message", {
   df <- as.list(rep(1, 17))
   names(df) <- c(
-    "total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
-    "free_T3","free_T4","aldosterone","renin","insulin","glucagon",
-    "GH","IGF1","prolactin","cortisol_0","cortisol_30"
+    "total_testosterone", "SHBG", "LH", "FSH", "estradiol", "progesterone",
+    "free_T3", "free_T4", "aldosterone", "renin", "insulin", "glucagon",
+    "GH", "IGF1", "prolactin", "cortisol_0", "cortisol_30"
   )
   df <- as_tibble(df)
   expect_message(
@@ -65,5 +64,5 @@ test_that("handles NA inputs gracefully", {
   cm <- setNames(names(df), names(df))
   out <- hormone_markers(df, col_map = cm)
   expect_true(is.na(out$FAI))
-  expect_equal(out$LH_FSH, 1/1)
+  expect_equal(out$LH_FSH, 1 / 1)
 })

@@ -65,10 +65,10 @@ Calculates a comprehensive set of body shape and adiposity indices:
 \examples{
 library(tibble)
 df <- tibble(
-  wt     = c(70, 80),    # kg
-  ht     = c(175, 165),  # cm
-  waist  = c(80, 90),     # cm
-  hip    = c(100, 95),    # cm
+  wt     = c(70, 80), # kg
+  ht     = c(175, 165), # cm
+  waist  = c(80, 90), # cm
+  hip    = c(100, 95), # cm
   sex    = c(0, 1)
 )
 obesity_indices(

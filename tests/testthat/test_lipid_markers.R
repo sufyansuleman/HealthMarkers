@@ -1,4 +1,3 @@
-
 test_that("lipid_markers computes core lipid markers", {
   df <- tibble(
     TC    = 5,
@@ -8,7 +7,7 @@ test_that("lipid_markers computes core lipid markers", {
     ApoB  = 1.1,
     ApoA1 = 1.5
   )
-  
+
   out <- lipid_markers(df, col_map = list(
     TC    = "TC",
     HDL_c = "HDL_c",
@@ -17,7 +16,7 @@ test_that("lipid_markers computes core lipid markers", {
     ApoB  = "ApoB",
     ApoA1 = "ApoA1"
   ))
-  
+
   expect_named(out, c(
     "non_HDL_c", "remnant_c", "ratio_TC_HDL",
     "ratio_TG_HDL", "ratio_LDL_HDL", "ApoB_ApoA1"
@@ -42,7 +41,7 @@ test_that("lipid_markers estimates LDL via Friedewald when LDL_c missing", {
 
 test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provided", {
   df3 <- tibble(
-    TC    = 5, HDL_c = 1, TG = 1.3,
+    TC = 5, HDL_c = 1, TG = 1.3,
     LDL_c = 3, ApoB = 1.1, ApoA1 = 1.5,
     waist = 85, BMI = 26
   )
@@ -64,7 +63,7 @@ test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provide
 })
 
 test_that("lipid_markers omits VAI when waist or BMI missing", {
-  df4a <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 85)  # BMI missing
+  df4a <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 85) # BMI missing
   expect_warning(
     out4a <- lipid_markers(df4a, col_map = list(
       TC    = "TC",
@@ -76,8 +75,8 @@ test_that("lipid_markers omits VAI when waist or BMI missing", {
   )
   expect_false("VAI_Men" %in% names(out4a))
   expect_false("VAI_Women" %in% names(out4a))
-  
-  df4b <- tibble(TC = 5, HDL_c = 1, TG = 1.3, BMI = 26)  # waist missing
+
+  df4b <- tibble(TC = 5, HDL_c = 1, TG = 1.3, BMI = 26) # waist missing
   expect_warning(
     out4b <- lipid_markers(df4b, col_map = list(
       TC    = "TC",
@@ -107,7 +106,7 @@ test_that("lipid_markers computes LAP_Men and LAP_Women when waist provided", {
     "estimating LDL_c via Friedewald"
   )
   expect_true(all(c("LAP_Men", "LAP_Women") %in% names(out_lap)))
-  
+
   exp_lap_men <- (100 - 65) * 1.3
   exp_lap_wom <- (100 - 58) * 1.3
   expect_equal(out_lap$LAP_Men, exp_lap_men)

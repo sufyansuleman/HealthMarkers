@@ -14,42 +14,50 @@
 all_insulin_indices <- function(data,
                                 col_map,
                                 normalize = c("none", "z", "inverse", "range", "robust"),
-                                mode      = c("both", "IS", "IR"),
-                                verbose   = TRUE) {
+                                mode = c("both", "IS", "IR"),
+                                verbose = TRUE) {
   normalize <- match.arg(normalize)
-  mode      <- match.arg(mode)
-  
+  mode <- match.arg(mode)
+
   # 1) compute all four IS sets
   out <- data
-  if (verbose)
+  if (verbose) {
     message("-> fasting")
+  }
   out_is1 <- fasting_is(out, col_map, normalize, verbose)
-  if (verbose)
+  if (verbose) {
     message("-> OGTT")
+  }
   out_is2 <- ogtt_is(out, col_map, normalize, verbose)
-  if (verbose)
+  if (verbose) {
     message("-> adipose")
+  }
   out_is3 <- adipo_is(out, col_map, normalize, verbose)
-  if (verbose)
+  if (verbose) {
     message("-> tracer/DXA")
+  }
   out_is4 <- tracer_dxa_is(out, col_map, normalize, verbose)
-  
+
   is_tbl <- dplyr::bind_cols(out_is1, out_is2, out_is3, out_is4)
-  
+
   # 2) optionally invert to IR
-  if (mode == "IS")
+  if (mode == "IS") {
     return(is_tbl)
-  
+  }
+
   # pick all numeric IS columns
   is_cols <- names(is_tbl)
-  ir_tbl <- purrr::set_names(is_cols, function(col)
-    paste0("IR_", col)) %>%
-    purrr::imap_dfr(function(new_nm, old_nm)
-      1 / is_tbl[[old_nm]])
-  
-  if (mode == "IR")
+  ir_tbl <- purrr::set_names(is_cols, function(col) {
+    paste0("IR_", col)
+  }) %>%
+    purrr::imap_dfr(function(new_nm, old_nm) {
+      1 / is_tbl[[old_nm]]
+    })
+
+  if (mode == "IR") {
     return(ir_tbl)
-  
+  }
+
   # both
   dplyr::bind_cols(is_tbl, ir_tbl)
 }
@@ -75,59 +83,70 @@ all_insulin_indices <- function(data,
 #' @export
 metabolic_markers <- function(data,
                               col_map,
-                              which     = c("insulin",
-                                            "adiposity_sds",
-                                            "cardio",
-                                            "lipid",
-                                            "liver",
-                                            "glycemic",
-                                            "mets"),
+                              which = c(
+                                "insulin",
+                                "adiposity_sds",
+                                "cardio",
+                                "lipid",
+                                "liver",
+                                "glycemic",
+                                "mets"
+                              ),
                               normalize = c("none", "z", "inverse", "range", "robust"),
-                              mode      = c("both", "IS", "IR"),
-                              verbose   = TRUE) {
+                              mode = c("both", "IS", "IR"),
+                              verbose = TRUE) {
   normalize <- match.arg(normalize)
-  mode      <- match.arg(mode)
-  which     <- match.arg(which, several.ok = TRUE)
-  
+  mode <- match.arg(mode)
+  which <- match.arg(which, several.ok = TRUE)
+
   out <- data
-  
+
   if ("insulin" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> insulin indices")
-    out <- dplyr::bind_cols(out,
-                            all_insulin_indices(out, col_map, normalize, mode, verbose))
+    }
+    out <- dplyr::bind_cols(
+      out,
+      all_insulin_indices(out, col_map, normalize, mode, verbose)
+    )
   }
   if ("adiposity_sds" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> adiposity SDS")
+    }
     out <- dplyr::bind_cols(out, adiposity_sds(out, verbose = verbose))
   }
   if ("cardio" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> cvd risk")
+    }
     out <- dplyr::bind_cols(out, cvd_risk(out))
   }
   if ("lipid" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> lipid markers")
+    }
     out <- dplyr::bind_cols(out, lipid_markers(out, verbose = verbose))
   }
   if ("liver" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> liver markers")
+    }
     out <- dplyr::bind_cols(out, liver_markers(out))
   }
   if ("glycemic" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> glycemic markers")
+    }
     out <- dplyr::bind_cols(out, glycemic_markers(out, verbose = verbose))
   }
   if ("mets" %in% which) {
-    if (verbose)
+    if (verbose) {
       message("-> MetS severity score")
+    }
     out <- dplyr::bind_cols(out, metss(out, verbose = verbose))
   }
-  
+
   out
 }
 
@@ -147,10 +166,10 @@ metabolic_markers <- function(data,
 all_health_markers <- function(data,
                                col_map,
                                normalize = c("none", "z", "inverse", "range", "robust"),
-                               mode      = c("both", "IS", "IR"),
-                               verbose   = TRUE) {
+                               mode = c("both", "IS", "IR"),
+                               verbose = TRUE) {
   normalize <- match.arg(normalize)
-  mode      <- match.arg(mode)
+  mode <- match.arg(mode)
   out <- metabolic_markers(
     data,
     col_map,
@@ -167,22 +186,26 @@ all_health_markers <- function(data,
     mode,
     verbose
   )
-  
-  if (verbose)
+
+  if (verbose) {
     message("-> pulmonary markers")
+  }
   out <- dplyr::bind_cols(out, pulmo_markers(out))
-  
-  if (verbose)
+
+  if (verbose) {
     message("-> salivary markers")
+  }
   out <- dplyr::bind_cols(out, saliva_markers(out))
-  
-  if (verbose)
+
+  if (verbose) {
     message("-> sweat markers")
+  }
   out <- dplyr::bind_cols(out, sweat_markers(out))
-  
-  if (verbose)
+
+  if (verbose) {
     message("-> urine markers")
+  }
   out <- dplyr::bind_cols(out, urine_markers(out))
-  
+
   out
 }

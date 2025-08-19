@@ -2,19 +2,20 @@
 % Please edit documentation in R/glycemic_markers.R
 \name{glycemic_markers}
 \alias{glycemic_markers}
-\title{Calculate glycemic‐ and C-peptide‐based insulin sensitivity/resistance markers}
+\title{Calculate glycemic‐, C‐peptide‐, and additional metabolic markers}
 \usage{
 glycemic_markers(data, verbose = FALSE)
 }
 \arguments{
 \item{data}{A \code{data.frame} or \code{tibble} containing at least:
 \itemize{
-\item \code{HDL_c}     (HDL cholesterol, mmol/L)
-\item \code{TG}        (triglycerides, mmol/L)
-\item \code{BMI}       (body mass index, kg/m^2)
-\item optionally \code{glucose}    (fasting glucose, mmol/L)
-\item optionally \code{HbA1c}      (mmol/mol)
-\item optionally \code{C_peptide}  (pmol/L), \code{G0} (glucose, mmol/L), \code{I0} (insulin, pmol/L)
+\item \code{HDL_c}       (HDL cholesterol, mmol/L)
+\item \code{TG}          (triglycerides, mmol/L)
+\item \code{BMI}         (body mass index, kg/m^2)
+\item optionally \code{glucose}     (fasting glucose, mmol/L)
+\item optionally \code{HbA1c}       (mmol/mol)
+\item optionally \code{C_peptide}   (pmol/L), \code{G0} (glucose, mmol/L), \code{I0} (insulin, pmol/L)
+\item optionally \code{leptin}      (ng/mL), \code{adiponectin} (ng/mL)
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
@@ -24,32 +25,49 @@ A tibble with columns:
 \itemize{
 \item \code{SPISE}
 \item \code{METS_IR}
-\item \code{prediabetes} (0/1)
-\item \code{diabetes}    (0/1)
-\item \code{HOMA_CP}     (numeric or \code{NA})
+\item \code{prediabetes}
+\item \code{diabetes}
+\item \code{HOMA_CP}
+\item \code{LAR}
+\item \code{ASI}
+\item \code{TyG_index}
 }
 }
 \description{
 Given fasting labs and anthropometry, computes:
 \itemize{
-\item \strong{SPISE}      (Single‐Point Insulin Sensitivity Estimator)
-\item \strong{METS_IR}    (Metabolic Score for Insulin Resistance)
+\item \strong{SPISE}            (Single‐Point Insulin Sensitivity Estimator; Paulmichl \emph{et al.} 2015)
+\item \strong{METS_IR}          (Metabolic Score for Insulin Resistance; Bello-Chavolla \emph{et al.} 2018 )
 \item \strong{prediabetes} flag (HbA1c ≥ 42 mmol/mol)
 \item \strong{diabetes}    flag (HbA1c ≥ 48 mmol/mol)
-\item \strong{HOMA_CP}     (C-peptide‐based HOMA-IR)
+\item \strong{HOMA_CP}         (C‐peptide‐based HOMA-IR)
+\item \strong{LAR}             (Leptin/Adiponectin Ratio; Frühbeck \emph{et al.} 2013)
+\item \strong{ASI}             (Adiponectin Sensitivity Index; Yang \emph{et al.} 2006)
+\item \strong{TyG_index}       (Triglyceride-Glucose Index; Simental-Mendía \emph{et al.} 2008)
 }
 }
 \examples{
 library(tibble)
 df <- tibble(
-  HDL_c     = 1.0,
-  TG        = 1.3,
-  BMI       = 24,
-  glucose   = 5.6,
-  HbA1c     = 44,
-  C_peptide = 300,
-  G0        = 5.5,
-  I0        = 60
+  HDL_c       = 1.0,
+  TG          = 1.3,
+  BMI         = 24,
+  glucose     = 5.6,
+  HbA1c       = 44,
+  C_peptide   = 300,
+  G0          = 5.5,
+  I0          = 60,
+  leptin      = 10,
+  adiponectin = 8
 )
-glycemic_markers(df)
+glycemic_markers(df, verbose = TRUE)
+}
+\references{
+\itemize{
+\item Paulmichl F, Schneditz D, et al. A Single-Point Insulin Sensitivity Estimator (SPISE): a novel index for assessing insulin sensitivity in clinical practice. \emph{J Clin Endocrinol Metab}. 2015;100(5):E536–E541.
+\item Bello-Chavolla OY, Almeda-Valdés P, et al. METS-IR, a novel score to evaluate insulin sensitivity, is predictive of visceral adiposity and incident type 2 diabetes. \emph{Eur J Endocrinol}. 2018;178(3):235–245.
+\item Frühbeck G, Gómez-Ambrosi J, et al. Role of the leptin/adiponectin ratio in insulin resistance. \emph{Int J Obes}. 2013;37(4):510–514.
+\item Yang X, Zhang L, et al. Adiponectin Sensitivity Index (ASI): adiponectin/insulin ratio as a marker of adipocyte insulin sensitivity in type 2 diabetes. \emph{Diabetes Res Clin Pract}. 2006;71(1):28–36.
+\item Simental-Mendía LE, Rodríguez-Morán M, Guerrero-Romero F. The triglyceride-glucose (TyG) index is a simple and accurate surrogate marker of insulin sensitivity. \emph{Eur J Clin Invest}. 2008;38(7):331–336.
+}
 }

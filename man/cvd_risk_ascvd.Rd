@@ -23,7 +23,6 @@ Wrapper around PooledCohort's ASCVD risk calculators.
 }
 \examples{
 \dontrun{
-library(tibble)
 df <- tibble(
   age = 55, sex = 1, race = "white", smoker = FALSE,
   total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,

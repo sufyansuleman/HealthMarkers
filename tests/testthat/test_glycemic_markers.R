@@ -31,7 +31,7 @@ test_that("METS_IR returns Inf/finite when glucose present, NA otherwise", {
   out1 <- glycemic_markers(df_with)
   # log(1) = 0, so may be Inf
   expect_true(is.finite(out1$METS_IR) || is.infinite(out1$METS_IR))
-  
+
   df_without <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   out2 <- glycemic_markers(df_without)
   expect_true(is.na(out2$METS_IR))
@@ -44,8 +44,8 @@ test_that("prediabetes and diabetes flags handle HbA1c correctly and propagate N
   )
   out <- glycemic_markers(df)
   expect_equal(out$prediabetes, c(0L, 1L, 1L))
-  expect_equal(out$diabetes,    c(0L, 0L, 1L))
-  
+  expect_equal(out$diabetes, c(0L, 0L, 1L))
+
   df2 <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   out2 <- glycemic_markers(df2)
   expect_true(all(is.na(out2$prediabetes)))
@@ -54,13 +54,13 @@ test_that("prediabetes and diabetes flags handle HbA1c correctly and propagate N
 
 test_that("HOMA_CP computed when C_peptide & G0 present, NA otherwise", {
   df_ok <- tibble(
-    HDL_c     = 1, TG = 1.3, BMI = 24,
+    HDL_c = 1, TG = 1.3, BMI = 24,
     C_peptide = 300, G0 = 5.5
   )
-  expected <- (5.5 * (300/6)) / 22.5
+  expected <- (5.5 * (300 / 6)) / 22.5
   out_ok <- glycemic_markers(df_ok)
   expect_equal(out_ok$HOMA_CP, expected, tolerance = 1e-8)
-  
+
   df_bad <- tibble(HDL_c = 1, TG = 1.3, BMI = 24, C_peptide = 300)
   out_bad <- glycemic_markers(df_bad)
   expect_true(is.na(out_bad$HOMA_CP))
@@ -69,18 +69,18 @@ test_that("HOMA_CP computed when C_peptide & G0 present, NA otherwise", {
 test_that("LAR, ASI, and TyG_index compute correctly when inputs present", {
   # set up a row where everything is present
   df <- tibble(
-    HDL_c       = 1, TG = 1.3, BMI = 24,
-    leptin      = 10, adiponectin = 5,
-    I0          = 50,
-    glucose     = 5.6
+    HDL_c = 1, TG = 1.3, BMI = 24,
+    leptin = 10, adiponectin = 5,
+    I0 = 50,
+    glucose = 5.6
   )
   out <- glycemic_markers(df)
   # Leptin/Adiponectin Ratio
-  expect_equal(out$LAR, 10/5)
+  expect_equal(out$LAR, 10 / 5)
   # Adiponectin Sensitivity Index = adiponectin / I0
-  expect_equal(out$ASI, 5/50)
+  expect_equal(out$ASI, 5 / 50)
   # TyG_index: ln((TG*88.57) * (glucose*18) / 2)
-  TG_mgdl  <- 1.3 * 88.57
+  TG_mgdl <- 1.3 * 88.57
   Glu_mgdl <- 5.6 * 18
   expect_equal(out$TyG_index, log(TG_mgdl * Glu_mgdl / 2), tolerance = 1e-8)
 })
@@ -91,9 +91,9 @@ test_that("LAR, ASI, TyG_index are NA when their inputs are missing", {
   expect_true(is.na(out1$LAR))
   expect_true(is.na(out1$ASI))
   expect_true(is.na(out1$TyG_index))
-  
+
   df2 <- tibble(
-    HDL_c  = 1, TG = 1.3, BMI = 24,
+    HDL_c = 1, TG = 1.3, BMI = 24,
     leptin = 10
   )
   out2 <- glycemic_markers(df2)

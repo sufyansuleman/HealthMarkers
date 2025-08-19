@@ -1,4 +1,3 @@
-
 # Dummy data with minimal columns
 df <- tibble(
   age        = 55,
@@ -85,7 +84,7 @@ test_that("cvd_risk AIP returns log10(TG/HDL_c)", {
   expect_s3_class(out, "tbl_df")
   expect_equal(out$model, "AIP")
   # TG=150, HDL_c=50 → log10(150/50) = log10(3)
-  expect_equal(out$value, log10(150/50))
+  expect_equal(out$value, log10(150 / 50))
 })
 
 # 9. LDL_PN (LDL Particle Number Estimate)
@@ -98,10 +97,9 @@ test_that("cvd_risk LDL_PN returns the ApoB value", {
 })
 
 test_that("cvd_risk ALL returns every model", {
-  skip_if_not_installed(c("PooledCohort","QRISK3","CVrisk","whoishRisk","RiskScorescvd"))
+  skip_if_not_installed(c("PooledCohort", "QRISK3", "CVrisk", "whoishRisk", "RiskScorescvd"))
   out_all <- cvd_risk(df, model = "ALL", year = 10)
   # Expect one row per model
-  expect_setequal(out_all$model, c("ASCVD","QRISK3","MESA","Stroke","WHO","RiskScorescvd","AIP","LDL_PN"))
-  expect_true(all(c("year","risk","value") %in% names(out_all)))
+  expect_setequal(out_all$model, c("ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd", "AIP", "LDL_PN"))
+  expect_true(all(c("year", "risk", "value") %in% names(out_all)))
 })
-

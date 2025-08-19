@@ -43,8 +43,10 @@ test_that("iAge NA handling gives zero for all-NA row", {
 
 # 4) Verbose message
 test_that("iAge verbose prints message", {
-  expect_message(iAge(df, col_map = col_map, verbose = TRUE),
-                 "-> iAge: computing weighted sum of inflammatory markers")
+  expect_message(
+    iAge(df, col_map = col_map, verbose = TRUE),
+    "-> iAge: computing weighted sum of inflammatory markers"
+  )
 })
 
 # 5) Errors on invalid inputs
@@ -58,14 +60,18 @@ test_that("iAge errors on missing col_map entries", {
 })
 
 test_that("iAge errors on non-numeric weights", {
-  expect_error(iAge(df, col_map = col_map, weights = c(CRP = "a", IL6 = 0.5, TNFa = 0.5)),
-               "weights must be a named numeric vector")
+  expect_error(
+    iAge(df, col_map = col_map, weights = c(CRP = "a", IL6 = 0.5, TNFa = 0.5)),
+    "weights must be a named numeric vector"
+  )
 })
 
 test_that("iAge errors on weights not summing to 1", {
   w2 <- c(CRP = 0.2, IL6 = 0.2, TNFa = 0.2)
-  expect_error(iAge(df, col_map = col_map, weights = w2),
-               "weights must be a named numeric vector.*summing to 1")
+  expect_error(
+    iAge(df, col_map = col_map, weights = w2),
+    "weights must be a named numeric vector.*summing to 1"
+  )
 })
 
 # 6) Errors on missing columns in data

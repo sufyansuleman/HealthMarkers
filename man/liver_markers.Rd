@@ -53,7 +53,7 @@ Given routine labs and anthropometry, computes:
 df <- tibble::tibble(
   BMI           = 24,
   waist         = 80,
-  triglycerides = 150,   # mg/dL
+  triglycerides = 150, # mg/dL
   GGT           = 30,
   age           = 30,
   AST           = 25,

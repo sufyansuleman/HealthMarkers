@@ -16,7 +16,7 @@ run_adipo <- function(df, normalize = "none", verbose = FALSE) {
       bmi   = "bmi"
     ),
     normalize = normalize,
-    verbose   = verbose
+    verbose = verbose
   )
 }
 
@@ -58,11 +58,11 @@ test_that("vectorized input: two rows gives two outputs", {
 
 test_that("Revised_QUICKI matches manual computation", {
   # internal conversions: I0_u <- I0/6, G0_mgdL <- G0*18, FFA stays
-  I0_u   <- base_df$I0 / 6
+  I0_u <- base_df$I0 / 6
   G0_mgdL <- base_df$G0 * 18
-  FFA_v  <- base_df$FFA
+  FFA_v <- base_df$FFA
   manual <- 1 / (log10(I0_u) + log10(G0_mgdL) + log10(FFA_v))
-  out    <- run_adipo(base_df)
+  out <- run_adipo(base_df)
   expect_equal(out$Revised_QUICKI, manual, tolerance = 1e-8)
 })
 
@@ -71,7 +71,7 @@ test_that("normalize = 'range' scales variable indices to [0,1], constants to NA
   out_r <- run_adipo(df2, normalize = "range")
   for (col in names(out_r)) {
     vals <- out_r[[col]]
-    v2   <- vals[!is.na(vals)]
+    v2 <- vals[!is.na(vals)]
     if (length(unique(v2)) > 1) {
       expect_equal(min(v2), 0)
       expect_equal(max(v2), 1)
@@ -90,10 +90,10 @@ test_that("normalize = 'z' yields mean ≈ 0 and sd ≈ 1 on variable indices", 
   out_z <- run_adipo(df3, normalize = "z")
   for (col in names(out_z)) {
     vals <- out_z[[col]]
-    v2   <- vals[!is.na(vals)]
+    v2 <- vals[!is.na(vals)]
     if (length(unique(v2)) > 1) {
       expect_equal(mean(v2), 0, tolerance = 1e-6)
-      expect_equal(sd(v2),   1, tolerance = 1e-6)
+      expect_equal(sd(v2), 1, tolerance = 1e-6)
     } else {
       expect_true(all(is.na(vals)))
     }
@@ -114,8 +114,8 @@ test_that("invalid normalize argument errors", {
 })
 
 test_that("verbose = TRUE prints a progress message", {
-    expect_message(
-        run_adipo(base_df, verbose = TRUE),
-        "-> adipo_is: computing adipose"
-      )
+  expect_message(
+    run_adipo(base_df, verbose = TRUE),
+    "-> adipo_is: computing adipose"
+  )
 })

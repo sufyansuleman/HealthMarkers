@@ -31,8 +31,10 @@ test_that("allostatic_load errors on bad inputs", {
 test_that("verbose message prints biomarkers used", {
   df <- tibble(A = 1:2, B = 3:4)
   thr <- list(A = 1, B = 3)
-  expect_message(allostatic_load(df, thr, verbose = TRUE),
-                 "Computing Allostatic Load for biomarkers: A, B")
+  expect_message(
+    allostatic_load(df, thr, verbose = TRUE),
+    "Computing Allostatic Load for biomarkers: A, B"
+  )
 })
 
 
@@ -49,7 +51,7 @@ test_that(">= threshold counts as high risk if you switch to >= logic", {
   df <- tibble::tibble(X = c(5, 10))
   thr <- list(X = 10)
   out <- allostatic_load(df, thr)
-  # if >=, row2 should be 1; if >, it'd be 0. 
+  # if >=, row2 should be 1; if >, it'd be 0.
   expect_equal(out$AllostaticLoad, c(0L, 1L))
 })
 
@@ -58,5 +60,5 @@ test_that("empty data or empty thresholds returns zeros or errors", {
   # Option A: zero‐row data ⇒ zero‐row output
   expect_equal(nrow(allostatic_load(df0, list())), 0)
   # Option B: empty thresholds ⇒ error
-  expect_error(allostatic_load(tibble::tibble(A=1), list()), "must be a named list of numeric cutoffs")
+  expect_error(allostatic_load(tibble::tibble(A = 1), list()), "must be a named list of numeric cutoffs")
 })

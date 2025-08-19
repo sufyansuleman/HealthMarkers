@@ -36,13 +36,13 @@ Computes:
 }
 \examples{
 df <- tibble::tibble(
-  urine_albumin    = 30,  
-  urine_creatinine = 1.2,  
-  serum_creatinine = 0.9,  
-  plasma_Na        = 140,  
-  urine_Na         = 100,  
-  age              = 55,  
-  sex              = 2,  
+  urine_albumin    = 30,
+  urine_creatinine = 1.2,
+  serum_creatinine = 0.9,
+  plasma_Na        = 140,
+  urine_Na         = 100,
+  age              = 55,
+  sex              = 2,
   urine_protein    = 150
 )
 urine_markers(df)

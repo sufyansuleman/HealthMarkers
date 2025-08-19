@@ -4,8 +4,8 @@
 #'
 #' Given a data frame of numeric biomarkers and a named list of high‐risk
 #' thresholds, scores each marker as 1 if it is above the cutoff:
-#' - **strictly greater** when you supply **multiple** thresholds  
-#' - **greater‐or‐equal** when you supply **exactly one** threshold  
+#' - **strictly greater** when you supply **multiple** thresholds
+#' - **greater‐or‐equal** when you supply **exactly one** threshold
 #' (so single‐marker ≥‐logic tests pass).  Missing values count as 0.
 #'
 #' @param data A `data.frame` or tibble of biomarker columns.
@@ -26,7 +26,7 @@
 #' allostatic_load(df, thr)
 #'
 #' # Single‐marker inclusive logic
-#' df2 <- tibble(X = c(5,10))
+#' df2 <- tibble(X = c(5, 10))
 #' allostatic_load(df2, list(X = 10))
 #'
 #' @export
@@ -49,8 +49,10 @@ allostatic_load <- function(data, thresholds, verbose = FALSE) {
   # columns exist?
   missing <- setdiff(vars, names(data))
   if (length(missing)) {
-    stop("allostatic_load(): data is missing columns: ",
-         paste(missing, collapse = ", "))
+    stop(
+      "allostatic_load(): data is missing columns: ",
+      paste(missing, collapse = ", ")
+    )
   }
   # numeric?
   for (vn in vars) {
@@ -65,7 +67,7 @@ allostatic_load <- function(data, thresholds, verbose = FALSE) {
   use_inclusive <- length(vars) == 1L
   # build flag matrix
   flag_mat <- vapply(vars, function(vn) {
-    x  <- data[[vn]]
+    x <- data[[vn]]
     th <- thresholds[[vn]]
     cmp <- if (use_inclusive) x >= th else x > th
     as.integer(ifelse(is.na(x), 0L, cmp))

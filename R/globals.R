@@ -5,9 +5,11 @@
 #' @return Numeric vector of same length as x
 #' @keywords internal
 #' @export
-normalize_vec <- function(x, method = c("none","z","inverse","range","robust")) {
+normalize_vec <- function(x, method = c("none", "z", "inverse", "range", "robust")) {
   method <- match.arg(method)
-  if (method == "none") return(x)
+  if (method == "none") {
+    return(x)
+  }
   if (method == "z") {
     (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
   } else if (method == "range") {

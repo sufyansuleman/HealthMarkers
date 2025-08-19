@@ -1,4 +1,3 @@
-
 test_that("vitamin_markers computes each index correctly", {
   df <- tibble(
     VitD = 50, VitD_ref_mean = 40, VitD_ref_sd = 5,
@@ -15,23 +14,24 @@ test_that("vitamin_markers computes each index correctly", {
     MMA = 0.3,
     Magnesium = 0.8, Zinc = 15, Copper = 15
   )
-  cm <- as.list(names(df)); names(cm) <- names(df)
+  cm <- as.list(names(df))
+  names(cm) <- names(df)
   out <- vitamin_markers(df, col_map = cm)
-  
-  expect_equal(out$VitD_Z,       (50 - 40)  / 5)
+
+  expect_equal(out$VitD_Z, (50 - 40) / 5)
   expect_equal(out$B12_Fol_Ratio, 300 / 15)
-  expect_equal(out$Ferr_TSat_R,   100 / 0.25)
-  expect_equal(out$Cort_DHEA_R,   200 / 100)
-  expect_equal(out$T_E2_Ratio,    12  / 120)
-  expect_equal(out$TSH_fT4_R,     2   / 14)
-  expect_equal(out$Retinol_Z,    (0.8 - 0.9) / 0.2)
-  expect_equal(out$Toco_Lip_R,    30  / 3)
-  expect_equal(out$PIVKA_II,      5)
-  expect_equal(out$VitC,         60)
+  expect_equal(out$Ferr_TSat_R, 100 / 0.25)
+  expect_equal(out$Cort_DHEA_R, 200 / 100)
+  expect_equal(out$T_E2_Ratio, 12 / 120)
+  expect_equal(out$TSH_fT4_R, 2 / 14)
+  expect_equal(out$Retinol_Z, (0.8 - 0.9) / 0.2)
+  expect_equal(out$Toco_Lip_R, 30 / 3)
+  expect_equal(out$PIVKA_II, 5)
+  expect_equal(out$VitC, 60)
   expect_equal(out$Homocysteine, 10)
-  expect_equal(out$MMA,           0.3)
-  expect_equal(out$Mg_Zn_R,       0.8 / 15)
-  expect_equal(out$Cu_Zn_R,      15   / 15)
+  expect_equal(out$MMA, 0.3)
+  expect_equal(out$Mg_Zn_R, 0.8 / 15)
+  expect_equal(out$Cu_Zn_R, 15 / 15)
 })
 
 test_that("errors if any col_map key is missing", {
@@ -59,7 +59,8 @@ test_that("verbose = TRUE prints a message", {
     MMA = 1,
     Magnesium = 1, Zinc = 1, Copper = 1
   )
-  cm <- as.list(names(df)); names(cm) <- names(df)
+  cm <- as.list(names(df))
+  names(cm) <- names(df)
   expect_message(
     vitamin_markers(df, col_map = cm, verbose = TRUE),
     "computing vitamin & nutrient indices"

@@ -32,13 +32,13 @@ test_that("metss computes correct score for default NHW male", {
     race    = "NHW"
   )
   out <- metss(df)
-  
+
   # Manual MAP and z-score
-  
-  MAP      <- (2 * 80 + 120) / 3
-  z_MAP    <- (MAP - 97) / 11
+
+  MAP <- (2 * 80 + 120) / 3
+  z_MAP <- (MAP - 97) / 11
   expected <- -2.344 + 0.466 * z_MAP
-  
+
   expect_named(out, "MetSSS")
   expect_type(out$MetSSS, "double")
   expect_equal(unname(out$MetSSS), expected, tolerance = 1e-6)
@@ -59,9 +59,9 @@ test_that("metss is vectorized over multiple rows", {
   )
   out <- metss(df)
   expect_equal(nrow(out), 2)
-  
+
   # First value matches single-row result
-  
+
   single_out <- metss(df[1, ])
   expect_equal(
     unname(out$MetSSS[1]),

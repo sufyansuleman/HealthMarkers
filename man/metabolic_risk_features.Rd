@@ -31,16 +31,16 @@ Given routine labs and z‐scores, computes four key binary risk markers:
 }
 \examples{
 df <- tibble::tibble(
-  chol_total   = 6.0,
-  chol_ldl     = 3.5,
-  chol_hdl     = 1.0,
-  triglycerides= 1.2,
-  age_year     = 25,
-  z_HOMA       = 1.5,
-  glucose      = 5.8,
-  HbA1c        = 40,
-  bp_sys_z     = 1.7,
-  bp_dia_z     = 1.0
+  chol_total = 6.0,
+  chol_ldl = 3.5,
+  chol_hdl = 1.0,
+  triglycerides = 1.2,
+  age_year = 25,
+  z_HOMA = 1.5,
+  glucose = 5.8,
+  HbA1c = 40,
+  bp_sys_z = 1.7,
+  bp_dia_z = 1.0
 )
 metabolic_risk_features(df)
 }

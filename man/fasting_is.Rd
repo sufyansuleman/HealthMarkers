@@ -44,8 +44,8 @@ Given a data.frame with fasting glucose & insulin, compute:
 library(dplyr)
 
 df <- tibble::tibble(
-  G0 = 5.5,    # fasting glucose (mmol/L)
-  I0 = 60      # fasting insulin (pmol/L)
+  G0 = 5.5, # fasting glucose (mmol/L)
+  I0 = 60 # fasting insulin (pmol/L)
 )
 
 fasting_is(

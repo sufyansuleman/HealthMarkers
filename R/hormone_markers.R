@@ -67,41 +67,50 @@
 #' @export
 hormone_markers <- function(data, col_map, verbose = FALSE) {
   required <- c(
-    "total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
-    "free_T3","free_T4","aldosterone","renin","insulin","glucagon",
-    "GH","IGF1","prolactin","cortisol_0","cortisol_30"
+    "total_testosterone", "SHBG", "LH", "FSH", "estradiol", "progesterone",
+    "free_T3", "free_T4", "aldosterone", "renin", "insulin", "glucagon",
+    "GH", "IGF1", "prolactin", "cortisol_0", "cortisol_30"
   )
   missing_map <- setdiff(required, names(col_map))
   if (length(missing_map)) {
-    stop("hormone_markers(): missing col_map entries for: ",
-         paste(missing_map, collapse = ", "))
+    stop(
+      "hormone_markers(): missing col_map entries for: ",
+      paste(missing_map, collapse = ", ")
+    )
   }
   if (verbose) message("-> computing hormone ratios")
-  
+
   # extract vectors
-  get <- function(key) data[[ col_map[[key]] ]]
-  T   <- get("total_testosterone")
-  S   <- get("SHBG")
-  LHv <- get("LH"); FSHv <- get("FSH")
-  E2  <- get("estradiol"); P4 <- get("progesterone")
-  fT3 <- get("free_T3"); fT4 <- get("free_T4")
-  Ald <- get("aldosterone"); Ren <- get("renin")
-  Ins <- get("insulin"); Glu <- get("glucagon")
-  GHv <- get("GH"); IGF <- get("IGF1")
+  get <- function(key) data[[col_map[[key]]]]
+  T <- get("total_testosterone")
+  S <- get("SHBG")
+  LHv <- get("LH")
+  FSHv <- get("FSH")
+  E2 <- get("estradiol")
+  P4 <- get("progesterone")
+  fT3 <- get("free_T3")
+  fT4 <- get("free_T4")
+  Ald <- get("aldosterone")
+  Ren <- get("renin")
+  Ins <- get("insulin")
+  Glu <- get("glucagon")
+  GHv <- get("GH")
+  IGF <- get("IGF1")
   PRL <- get("prolactin")
-  C0  <- get("cortisol_0"); C30 <- get("cortisol_30")
-  
+  C0 <- get("cortisol_0")
+  C30 <- get("cortisol_30")
+
   # compute ratios
-  FAI       <- (T / S) * 100
-  LH_FSH    <- LHv / FSHv
-  E2_P      <- E2 / P4
-  T3_T4     <- fT3 / fT4
-  ARR       <- Ald / Ren
-  Ins_Glu   <- Ins / Glu
-  GH_IGF1   <- GHv / IGF
-  PRL_T     <- PRL / T
+  FAI <- (T / S) * 100
+  LH_FSH <- LHv / FSHv
+  E2_P <- E2 / P4
+  T3_T4 <- fT3 / fT4
+  ARR <- Ald / Ren
+  Ins_Glu <- Ins / Glu
+  GH_IGF1 <- GHv / IGF
+  PRL_T <- PRL / T
   CAR_slope <- (C30 - C0) / 30
-  
+
   tibble::tibble(
     FAI, LH_FSH, E2_P, T3_T4, ARR,
     Ins_Glu, GH_IGF1, PRL_T, CAR_slope
