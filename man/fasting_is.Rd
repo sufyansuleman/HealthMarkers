@@ -2,55 +2,121 @@
 % Please edit documentation in R/fasting_is.R
 \name{fasting_is}
 \alias{fasting_is}
-\title{Calculate fasting‐based insulin sensitivity indices}
+\title{Calculate fasting-based insulin sensitivity indices}
 \usage{
-fasting_is(data, col_map, normalize = "none", verbose = FALSE)
+fasting_is(
+  data,
+  col_map,
+  normalize = c("none", "z", "inverse", "range", "robust"),
+  na_action = c("zero", "warn_zero", "error", "keep"),
+  verbose = FALSE,
+  check_extreme = FALSE,
+  extreme_limit = 1000,
+  extreme_action = c("warn", "cap", "error", "ignore")
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble containing at least two columns:
 \itemize{
-\item fasting glucose at time 0
-\item fasting insulin at time 0
-Column names are given in \code{col_map}.
+\item fasting glucose at time 0 (mmol/L), mapped by \code{col_map$G0}
+\item fasting insulin at time 0 (pmol/L), mapped by \code{col_map$I0}
 }}
 
-\item{col_map}{Named list mapping
-\code{G0} -> your fasting glucose column,
-\code{I0} -> your fasting insulin column}
+\item{col_map}{Named list mapping:
+\itemize{
+\item \code{G0} -> your fasting glucose column name
+\item \code{I0} -> your fasting insulin column name
+}}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")} - how to scale each index.}
+\item{normalize}{One of \code{c("none","z","inverse","range","robust")} controlling
+post-hoc scaling of each index via \code{HealthMarkers::normalize_vec()}. Default "none".}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_action}{One of \code{c("ignore","warn","error")} controlling behavior when
+required inputs are missing or non-finite. Default "ignore".}
+
+\item{verbose}{Logical; if \code{TRUE}, prints step-by-step progress and a completion summary.}
+
+\item{check_extreme}{Logical; if \code{TRUE}, scan computed indices for absolute values
+exceeding \code{extreme_limit}. Default \code{FALSE}.}
+
+\item{extreme_limit}{Positive numeric; magnitude limit for \code{check_extreme}. Default 1e3.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do
+when extreme values are detected. If "cap", values are truncated to ±\code{extreme_limit}.
+Default "warn".}
+
+\item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings when
+\code{na_action = "warn"}. Default 0.2.}
 }
 \value{
-A tibble with the 10 fasting‐index columns.
+A tibble with the 10 fasting-index columns listed above (order preserved).
 }
 \description{
-Given a data.frame with fasting glucose & insulin, compute:
+Given a data.frame with fasting glucose and insulin, compute the following
+fasting-based indices (directionality preserved as in the original code):
 \itemize{
-\item Fasting_inv
-\item Raynaud
-\item HOMA_IR_inv
-\item FIRI
-\item QUICKI
-\item Belfiore_basal
-\item Ig_ratio_basal
-\item Isi_basal
-\item Bennett
-\item HOMA_IR_rev_inv
+\item Fasting_inv = -I0_u
+\item Raynaud = 40 / I0_u
+\item HOMA_IR_inv = -((G0_mg * I0_u) / 22.5)
+\item FIRI = (G0_mg * I0_u) / 25
+\item QUICKI = 1 / (log(G0_mg) + log(I0_u))
+\item Belfiore_basal = 2 / ((I0_u * G0_mg) + 1)
+\item Ig_ratio_basal = -(I0_u / G0_mg)
+\item Isi_basal = 10000 / (G0_mg * I0_u)
+\item Bennett = 1 / (log(I0_u) * log(G0_mg))
+\item HOMA_IR_rev_inv = -((I0_u * G0_mg) / 405)
+}
+}
+\details{
+Units assumed:
+\itemize{
+\item Fasting glucose G0 in mmol/L (converted internally to mg/dL via G0_mg = G0 * 18).
+\item Fasting insulin I0 in pmol/L (converted internally to µU/mL via I0_u = I0 / 6).
+}
+
+Quality controls and options:
+\itemize{
+\item Input validation ensures required mappings exist and columns are present.
+\item Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).
+\item Missing or non-finite inputs are handled via \code{na_action}.
+\item Logs are safely computed (log(x) returns NA for x <= 0).
+\item Optional detection/handling of extreme output values via \code{check_extreme}.
+\item Verbose mode prints step-by-step progress and a completion summary.
 }
 }
 \examples{
-library(dplyr)
-
 df <- tibble::tibble(
-  G0 = 5.5, # fasting glucose (mmol/L)
-  I0 = 60 # fasting insulin (pmol/L)
+  G0 = c(5.5, 6.1),   # mmol/L
+  I0 = c(60, 120)     # pmol/L
 )
 
+# Defaults (quiet, no normalization), tidy tibble returned
 fasting_is(
   df,
-  col_map   = list(G0 = "G0", I0 = "I0"),
-  normalize = "none"
+  col_map   = list(G0 = "G0", I0 = "I0")
 )
+
+# Verbose with warnings for high missingness, and extreme checking
+fasting_is(
+  df,
+  col_map        = list(G0 = "G0", I0 = "I0"),
+  na_action      = "warn",
+  na_warn_prop   = 0.1,
+  check_extreme  = TRUE,
+  extreme_limit  = 1e3,
+  extreme_action = "warn",
+  verbose        = TRUE
+)
+
+}
+\references{
+Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985). Homeostasis model assessment (HOMA): insulin resistance and β-cell function. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
+Katz A, Nambi S, Mather K, Baron AD, Follmann DA, Sullivan G, Quon MJ (2000). Quantitative insulin sensitivity check index (QUICKI). J Clin Endocrinol Metab, 85(7):2402–2410. \doi{10.1210/jcem.85.7.6661}
+Raynaud E, Pérez-Martin A, Brun JF, Benhaddad AA, Mercier J (1999). Fasting plasma insulin and insulin resistance indices. Diabetes Metab, 25(6):524–532.
+Avignon A, Boegner C, Sultan A (1999). Simple assessment of insulin sensitivity from fasting insulin and glucose. Int J Obes Relat Metab Disord, 23(5):512–517.
+Belfiore F, Iannello S, Volpicelli G (1998). Insulin sensitivity indices from basal insulin and glucose. Mol Genet Metab, 63(2):134–141.
+Sluiter et al. Glucose tolerance and insulin release a mathematical approach. Diabetes. 1976;25:245–249.
+(Early use of fasting insulin/glucose ratios and log-products; background for Bennett/FIRI-type indices)
+Hanson RL et al. Evaluation of simple indices of insulin sensitivity and insulin secretion for use in epidemiologic studies. Am J Epidemiol. 2000;151(2):190–198.
+Anderson RL et al. Exploration of simple measures of insulin resistance. Am J Epidemiol. 1995;142(7):724–732.
 }

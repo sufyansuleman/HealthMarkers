@@ -1,121 +1,264 @@
 # File: R/pulmo_markers.R
 
-#' Calculate pulmonary function markers (FEV₁/FVC, z-scores, percent predicted, LLN, etc.)
+#' Calculate pulmonary function markers (FEV1/FVC, z-scores, percent predicted, LLN, etc.)
 #'
 #' Uses the `rspiro` reference equations to compute predicted normals,
-#' z-scores, percent predicted and lower limits of normal (LLN) for FEV₁, FVC,
-#' and the FEV₁/FVC ratio.
+#' z-scores, percent predicted and lower limits of normal (LLN) for FEV1, FVC,
+#' and the FEV1/FVC ratio.
+#'
+#' Inputs are validated, missingness is handled via `na_action`, and heights are
+#' auto-detected as cm when any height > 3; otherwise interpreted as metres (no
+#' automatic unit conversion beyond that heuristic, preserving prior behavior).
 #'
 #' @param data A data.frame or tibble with columns:
 #'   - `age`       (numeric): years
-#'   - `sex`       (character): "male"/"female" (case‐insensitive)
-#'   - `height`    (numeric): cm or m (auto‐detected)
-#'   - `ethnicity` (character): e.g. "Caucasian", "African-American", …
-#'   - `fev1`      (numeric): observed FEV₁ in L
+#'   - `sex`       (character or numeric): "male"/"female" (case-insensitive) or {1,2}, {0,1}
+#'   - `height`    (numeric): cm or m (auto-detected)
+#'   - `ethnicity` (character): e.g. "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"
+#'   - `fev1`      (numeric): observed FEV1 in L
 #'   - `fvc`       (numeric): observed FVC in L
-#' @param equation One of `c("GLI","GLIgl","NHANES3")` (see `rspiro` for more)
-#' @param verbose   Logical; if `TRUE` prints progress messages.
+#' @param equation One of `c("GLI","GLIgl","NHANES3")` (see `rspiro` for details).
+#'   GLIgl ignores ethnicity.
+#' @param na_action One of `c("keep","omit","error")` for handling missing values in
+#'   required inputs. Default "keep".
+#' @param na_warn_prop Proportion [0,1] to trigger high-missingness warnings on
+#'   required inputs. Default 0.2.
+#' @param verbose Logical; if `TRUE` prints progress messages and a completion summary.
 #'
-#' @return A tibble with:
+#' @return A tibble with columns:
 #'   - `fev1_pred`, `fev1_z`,   `fev1_pctpred`, `fev1_LLN`
 #'   - `fvc_pred`,  `fvc_z`,    `fvc_pctpred`,  `fvc_LLN`
 #'   - `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`, `fev1_fvc_LLN`
+#'
+#' @seealso rspiro
+#'
+#' @references
+#' Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3–95-yr age range: the GLI equations. Eur Respir J, 40:1324–1343. \doi{10.1183/09031936.00162412}
+#' Hankinson JL, Odencrantz JR, Fedan KB (1999). Spirometric reference values from a sample of the general U.S. population. Am J Respir Crit Care Med, 159:179–187. \doi{10.1164/ajrccm.159.1.9712108}
+#' Bowerman SD, Quanjer PH, et al. (2023). GLI-Global update. Eur Respir J, 61:2201632. \doi{10.1183/13993003.01632-2023}
+#'
+#' @importFrom tibble tibble
+#' @importFrom rlang abort warn inform
 #' @export
 pulmo_markers <- function(data,
                           equation = c("GLI", "GLIgl", "NHANES3"),
+                          na_action = c("keep","omit","error"),
+                          na_warn_prop = 0.2,
                           verbose = FALSE) {
   equation <- match.arg(equation)
-  data <- as.data.frame(data, stringsAsFactors = FALSE)
+  na_action <- match.arg(na_action)
 
-  ## 0) Basic coercion & validation
+  if (isTRUE(verbose)) rlang::inform(sprintf("-> pulmo_markers[%s]: validating inputs", equation))
+  t0 <- Sys.time()
+
+  # Basic validation and coercion
+  .pm_validate_df(data)
   req <- c("age", "sex", "height", "ethnicity", "fev1", "fvc")
   miss <- setdiff(req, names(data))
   if (length(miss)) {
-    stop(
-      "pulmo_markers(): missing required columns: ", paste(miss, collapse = ", "),
-      call. = FALSE
+    rlang::abort(
+      paste0("pulmo_markers(): missing required columns: ", paste(miss, collapse = ", ")),
+      class = "healthmarkers_pulmo_error_missing_columns"
     )
   }
-  data$age <- as.numeric(data$age)
-  data$height <- as.numeric(data$height)
-  data$fev1 <- as.numeric(data$fev1)
-  data$fvc <- as.numeric(data$fvc)
 
-  if (verbose) {
-    message("↪ FEV1 class: ", class(data$fev1), " | any NA: ", anyNA(data$fev1))
-    message("↪ FVC class:  ", class(data$fvc), " | any NA: ", anyNA(data$fvc))
+  data <- .pm_coerce_numeric(data, cols = c("age","height","fev1","fvc"))
+
+  # High-missingness warnings on required inputs
+  .pm_warn_high_missing(data, req, na_warn_prop = na_warn_prop)
+
+  # NA policy on required inputs
+  if (na_action == "error") {
+    has_na <- Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
+    if (any(has_na)) {
+      rlang::abort("pulmo_markers(): required inputs contain missing values (na_action='error').",
+                   class = "healthmarkers_pulmo_error_missing_values")
+    }
+  } else if (na_action == "omit") {
+    keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose)) rlang::inform(sprintf("-> pulmo_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    data <- data[keep, , drop = FALSE]
   }
 
-  sex_char <- tolower(as.character(data$sex))
-  gender <- ifelse(sex_char %in% c("male", "m"), 1L, 2L)
-  eth_char <- tolower(as.character(data$ethnicity))
-  ethnicity <- ifelse(
-    eth_char %in% c("caucasian", "white"), 1L,
-    ifelse(eth_char %in% c("african-american", "black"), 2L,
-      ifelse(eth_char %in% c("ne asian", "northeast asian"), 3L,
-        ifelse(eth_char %in% c("se asian", "southeast asian"), 4L, 5L)
+  # Early return if empty
+  if (nrow(data) == 0L) {
+    return(tibble::tibble(
+      fev1_pred = numeric(), fev1_z = numeric(), fev1_pctpred = numeric(), fev1_LLN = numeric(),
+      fvc_pred  = numeric(), fvc_z  = numeric(), fvc_pctpred  = numeric(), fvc_LLN  = numeric(),
+      fev1_fvc_ratio = numeric(), fev1_fvc_pred = numeric(), fev1_fvc_z = numeric(),
+      fev1_fvc_pctpred = numeric(), fev1_fvc_LLN = numeric()
+    ))
+  }
+
+  # Map sex and ethnicity to rspiro codes (male=1, female=2; GLI: 1-5 ethnic groups)
+  sex_code <- .pm_map_sex(data$sex)
+  eth_code <- .pm_map_ethnicity(data$ethnicity)
+
+  # Height auto-detection: any height > 3 -> cm
+  height_m <- data$height
+  if (any(height_m > 3, na.rm = TRUE)) {
+    if (isTRUE(verbose)) rlang::inform("-> pulmo_markers: converting height from cm to m")
+    height_m <- height_m / 100
+  }
+  # Basic plausibility on height
+  if (any(is.finite(height_m) & height_m <= 0, na.rm = TRUE)) {
+    rlang::warn("pulmo_markers(): non-positive heights detected; outputs will be NA for those rows.")
+  }
+
+  age <- data$age
+  fev1 <- data$fev1
+  fvc  <- data$fvc
+
+  if (isTRUE(verbose)) {
+    rlang::inform(sprintf("-> pulmo_markers[%s]: sex=%s; eth=%s",
+                          equation,
+                          paste(sort(unique(sex_code)), collapse = ","),
+                          paste(sort(unique(eth_code)), collapse = ",")))
+  }
+
+  # Lookup reference functions from rspiro
+  ns <- tryCatch(asNamespace("rspiro"), error = function(e) NULL)
+  if (is.null(ns)) {
+    rlang::abort("pulmo_markers(): package 'rspiro' is required but not installed.",
+                 class = "healthmarkers_pulmo_error_missing_pkg")
+  }
+  pred_fun   <- get(paste0("pred_",   equation), envir = ns)
+  zscore_fun <- get(paste0("zscore_", equation), envir = ns)
+  lln_fun    <- get(paste0("LLN_",    equation), envir = ns)
+
+  # Compute predicted, z-scores, LLN by equation
+  if (equation == "GLIgl") {
+    fev1_pred <- pred_fun(age, height_m, sex_code, param = "FEV1")
+    fvc_pred  <- pred_fun(age, height_m, sex_code, param = "FVC")
+    fev1_z    <- zscore_fun(age, height_m, sex_code, FEV1 = fev1)
+    fvc_z     <- zscore_fun(age, height_m, sex_code, FVC = fvc)
+    fev1_LLN  <- lln_fun(age, height_m, sex_code, param = "FEV1")
+    fvc_LLN   <- lln_fun(age, height_m, sex_code, param = "FVC")
+  } else {
+    fev1_pred <- pred_fun(age, height_m, sex_code, eth_code, param = "FEV1")
+    fvc_pred  <- pred_fun(age, height_m, sex_code, eth_code, param = "FVC")
+    fev1_z    <- zscore_fun(age, height_m, sex_code, eth_code, FEV1 = fev1)
+    fvc_z     <- zscore_fun(age, height_m, sex_code, eth_code, FVC = fvc)
+    fev1_LLN  <- lln_fun(age, height_m, sex_code, eth_code, param = "FEV1")
+    fvc_LLN   <- lln_fun(age, height_m, sex_code, eth_code, param = "FVC")
+  }
+
+  # Safe division helper
+  safe_div <- function(num, den) {
+    out <- num / den
+    out[!is.finite(out)] <- NA_real_
+    out
+  }
+
+  # Percent predicted
+  fev1_pctpred <- 100 * safe_div(fev1, fev1_pred)
+  fvc_pctpred  <- 100 * safe_div(fvc,  fvc_pred)
+
+  # Ratio outputs (preserve prior behavior)
+  obs_ratio  <- safe_div(fev1, fvc)
+  pred_ratio <- safe_div(fev1_pred, fvc_pred)
+  # z-score: standardized by distribution of predicted ratio (fallback to NA if sd==0)
+  pr_sd <- stats::sd(pred_ratio, na.rm = TRUE)
+  pr_mu <- base::mean(pred_ratio, na.rm = TRUE)
+  ratio_z <- if (is.finite(pr_sd) && pr_sd > 0) (obs_ratio - pr_mu) / pr_sd else rep(NA_real_, length(obs_ratio))
+  ratio_pct <- 100 * safe_div(obs_ratio, pred_ratio)
+
+  out <- tibble::tibble(
+    fev1_pred        = as.numeric(fev1_pred),
+    fev1_z           = as.numeric(fev1_z),
+    fev1_pctpred     = as.numeric(fev1_pctpred),
+    fev1_LLN         = as.numeric(fev1_LLN),
+    fvc_pred         = as.numeric(fvc_pred),
+    fvc_z            = as.numeric(fvc_z),
+    fvc_pctpred      = as.numeric(fvc_pctpred),
+    fvc_LLN          = as.numeric(fvc_LLN),
+    fev1_fvc_ratio   = as.numeric(obs_ratio),
+    fev1_fvc_pred    = as.numeric(pred_ratio),
+    fev1_fvc_z       = as.numeric(ratio_z),
+    fev1_fvc_pctpred = as.numeric(ratio_pct),
+    fev1_fvc_LLN     = NA_real_
+  )
+
+  if (isTRUE(verbose)) {
+    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
+    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    rlang::inform(sprintf(
+      "Completed pulmo_markers[%s]: %d rows; NA/Inf -> %s; elapsed=%.2fs",
+      equation, nrow(out),
+      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
+      elapsed
+    ))
+  }
+
+  out
+}
+
+# ---- internal helpers ---------------------------------------------------------
+
+.pm_validate_df <- function(df) {
+  if (!is.data.frame(df)) {
+    rlang::abort("pulmo_markers(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_pulmo_error_data_type")
+  }
+  invisible(TRUE)
+}
+
+.pm_coerce_numeric <- function(df, cols) {
+  for (cn in cols) {
+    if (!is.numeric(df[[cn]])) {
+      old <- df[[cn]]
+      suppressWarnings(df[[cn]] <- as.numeric(old))
+      introduced_na <- sum(is.na(df[[cn]]) & !is.na(old))
+      if (introduced_na > 0) {
+        rlang::warn(sprintf("pulmo_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
+      }
+    }
+  }
+  df
+}
+
+.pm_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
+  for (cn in cols) {
+    x <- df[[cn]]
+    if (length(x) == 0L) next
+    pna <- sum(is.na(x)) / length(x)
+    if (pna >= na_warn_prop && pna > 0) {
+      rlang::warn(sprintf("pulmo_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+    }
+  }
+  invisible(TRUE)
+}
+
+.pm_map_sex <- function(sex) {
+  s <- tolower(as.character(sex))
+  # Prefer explicit numeric codes if provided
+  is_num <- suppressWarnings(!is.na(as.numeric(s)))
+  out <- rep(NA_integer_, length(s))
+  # numeric interpretations: 1/2 or 0/1
+  out[is_num & s %in% c("1","male","m")] <- 1L
+  out[is_num & s %in% c("2","female","f")] <- 2L
+  # character mappings
+  out[s %in% c("male","m")] <- 1L
+  out[s %in% c("female","f")] <- 2L
+  bad <- sum(is.na(out))
+  if (bad > 0) rlang::warn(sprintf("pulmo_markers(): 'sex' has %d unmapped values; set to NA.", bad))
+  out
+}
+
+.pm_map_ethnicity <- function(eth) {
+  e <- tolower(as.character(eth))
+  out <- ifelse(
+    e %in% c("caucasian","white","european","non-hispanic white"), 1L,
+    ifelse(e %in% c("african-american","black","african american"), 2L,
+      ifelse(e %in% c("ne asian","northeast asian","east asian"), 3L,
+        ifelse(e %in% c("se asian","southeast asian"), 4L, 5L)
       )
     )
   )
-
-  if (any(data$height > 3, na.rm = TRUE)) {
-    if (verbose) message("-> converting height from cm to m")
-    data$height <- data$height / 100
-  }
-  if (verbose) {
-    message(
-      "-> pulmo_markers[", equation, "] gender=", unique(gender),
-      " eth=", unique(ethnicity)
-    )
-  }
-
-  ## 1) lookup reference functions
-  ns <- asNamespace("rspiro")
-  pred_fun <- get(paste0("pred_", equation), ns)
-  zscore_fun <- get(paste0("zscore_", equation), ns)
-  lln_fun <- get(paste0("LLN_", equation), ns)
-
-  ## 2) compute predicted, z-scores, LLN by equation
-  if (equation == "GLIgl") {
-    fev1_pred <- pred_fun(data$age, data$height, gender, param = "FEV1")
-    fvc_pred <- pred_fun(data$age, data$height, gender, param = "FVC")
-    fev1_z <- zscore_fun(data$age, data$height, gender, FEV1 = data$fev1)
-    fvc_z <- zscore_fun(data$age, data$height, gender, FVC = data$fvc)
-    fev1_LLN <- lln_fun(data$age, data$height, gender, param = "FEV1")
-    fvc_LLN <- lln_fun(data$age, data$height, gender, param = "FVC")
-  } else {
-    fev1_pred <- pred_fun(data$age, data$height, gender, ethnicity, param = "FEV1")
-    fvc_pred <- pred_fun(data$age, data$height, gender, ethnicity, param = "FVC")
-    fev1_z <- zscore_fun(data$age, data$height, gender, ethnicity, FEV1 = data$fev1)
-    fvc_z <- zscore_fun(data$age, data$height, gender, ethnicity, FVC = data$fvc)
-    fev1_LLN <- lln_fun(data$age, data$height, gender, ethnicity, param = "FEV1")
-    fvc_LLN <- lln_fun(data$age, data$height, gender, ethnicity, param = "FVC")
-  }
-
-  ## 3) percent predicted
-  fev1_pctpred <- 100 * data$fev1 / fev1_pred
-  fvc_pctpred <- 100 * data$fvc / fvc_pred
-
-  ## 4) ratio outputs
-  obs_ratio <- data$fev1 / data$fvc
-  pred_ratio <- fev1_pred / fvc_pred
-  ratio_z <- (obs_ratio - mean(pred_ratio, na.rm = TRUE)) / sd(pred_ratio, na.rm = TRUE)
-  ratio_pct <- 100 * obs_ratio / pred_ratio
-
-  ## 5) assemble results
-  tibble::tibble(
-    fev1_pred        = fev1_pred,
-    fev1_z           = fev1_z,
-    fev1_pctpred     = fev1_pctpred,
-    fev1_LLN         = fev1_LLN,
-    fvc_pred         = fvc_pred,
-    fvc_z            = fvc_z,
-    fvc_pctpred      = fvc_pctpred,
-    fvc_LLN          = fvc_LLN,
-    fev1_fvc_ratio   = obs_ratio,
-    fev1_fvc_pred    = pred_ratio,
-    fev1_fvc_z       = ratio_z,
-    fev1_fvc_pctpred = ratio_pct,
-    fev1_fvc_LLN     = NA_real_
-  )
+  # Treat obviously "other"/"mixed"/"hispanic" as code 5
+  out[e %in% c("other","mixed","other/mixed","hispanic","latino","south asian","indian")] <- 5L
+  bad <- sum(is.na(out))
+  if (bad > 0) rlang::warn(sprintf("pulmo_markers(): 'ethnicity' has %d unmapped values; set to 'Other/Mixed' (5).", bad))
+  out[is.na(out)] <- 5L
+  out
 }

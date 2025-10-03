@@ -4,21 +4,36 @@
 \alias{cvd_risk_qrisk3}
 \title{QRISK3 10-year risk (UK QRISK3-2017)}
 \usage{
-cvd_risk_qrisk3(data, ..., patid = NULL)
+cvd_risk_qrisk3(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE)
 }
 \arguments{
-\item{data}{A tibble or data.frame with the columns required by your chosen \code{model}}
+\item{data}{A data frame with variables required by \code{QRISK3::QRISK3_2017()}.}
 
-\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{verbose}, \code{col_map})}
+\item{...}{Passed to \code{QRISK3::QRISK3_2017()}.}
 
-\item{patid}{Optional vector of patient IDs; if missing, we auto-generate 1‒n}
+\item{patid}{Optional vector of patient IDs (default: \code{1:nrow(data)}).}
 
-\item{col_map}{Not used here.}
+\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+Only used when \code{verbose = TRUE}.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a short summary.}
 }
 \value{
-A tibble with columns \code{model}, \code{year}, and \code{risk}.
+A tibble with columns \code{model}, \code{year}, \code{risk}.
 }
 \description{
-Wrapper around QRISK3::QRISK3_2017 that auto-provides a dummy \code{patid}
-if you haven’t already given one.
+Wrapper around \code{QRISK3::QRISK3_2017()} that auto-generates a \code{patid}
+if one is not supplied. Adds input validation and quiet failure to NA on backend error.
+}
+\examples{
+if (requireNamespace("QRISK3", quietly = TRUE)) {
+  # cvd_risk_qrisk3(your_data_frame, verbose = TRUE)
+}
+
+}
+\references{
+\itemize{
+\item Hippisley-Cox J, Coupland C, Brindle P. Development and validation of QRISK3
+risk prediction algorithms. BMJ. 2017;357:j2099.
+}
 }

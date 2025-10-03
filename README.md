@@ -12,13 +12,13 @@ HealthMarkers
     Indices](#3-adipose-based-insulin-sensitivity-indices)
   - [4. Tracer‐DXA Insulin Sensitivity
     Indices](#4-tracerdxa-insulin-sensitivity-indices)
-  - [5. Glycemic and C‑peptide Insulin Sensitivity
-    Markers](#5-glycemic-and-cpeptide-insulin-sensitivity-markers)
+  - [5. Glycemic and C-peptide Insulin Sensitivity
+    Markers](#5-glycemic-and-c-peptide-insulin-sensitivity-markers)
   - [6. Metabolic Risk Features](#6-metabolic-risk-features)
   - [7. Metabolic Syndrome Severity
     Score](#7-metabolic-syndrome-severity-score)
-  - [8. Standardized‑Score (SDS) for Adiposity
-    Measures](#8-standardizedscore-sds-for-adiposity-measures)
+  - [8. Standardized-Score (SDS) for Adiposity
+    Measures](#8-standardized-score-sds-for-adiposity-measures)
   - [9. Stratified Adiposity Standard Deviation
     Scores](#9-stratified-adiposity-standard-deviation-scores)
   - [10. Lipid Markers](#10-lipid-markers)
@@ -75,7 +75,7 @@ install.packages("HealthMarkers")
 **Purpose:** Compute ten fasting‐based insulin sensitivity and
 resistance indices from glucose and insulin measurements. Internally,
 `validate_inputs()` checks for `G0` and `I0`, unit conversions
-(G0-\>mg/dL, I0-\>µU/mL), then applies `normalize_vec()` per
+(G0-\>mg/dL, I0-\>uU/mL), then applies `normalize_vec()` per
 `normalize`.
 
 ### Input Data
@@ -127,7 +127,7 @@ print(res_fast)
 `ogtt_is(data, col_map, normalize = "none", verbose = FALSE)`
 
 **Purpose:** Calculate OGTT-based insulin sensitivity indices. Uses
-`validate_inputs()`, converts glucose to mg/dL and insulin to µU/mL,
+`validate_inputs()`, converts glucose to mg/dL and insulin to uU/mL,
 computes AUCs and means, index formulas, then optional normalization.
 
 ### Input Data
@@ -182,7 +182,7 @@ print(res_ogtt)
 - `BigttSi`
 - `Ifc_inv`
 - `HIRI_inv`
-- `Belfiore_isi_gly` *Note: glucose×18 -\> mg/dL; insulin/6 -\> µU/mL*
+- `Belfiore_isi_gly` *Note: glucosex18 -\> mg/dL; insulin/6 -\> uU/mL*
 
 ### For IS indices detailed **formulas** click [here](https://academic.oup.com/jcem/article/109/11/2754/7650976?login=true#487293469)
 
@@ -195,7 +195,7 @@ print(res_ogtt)
 
 **Purpose:** Compute ten adipose-based insulin sensitivity and
 resistance indices. `validate_inputs()`, unit conversions (G0-\>mg/dL,
-I0-\>µU/mL, TG-\>mg/dL, HDL_c-\>mg/dL), then normalization.
+I0-\>uU/mL, TG-\>mg/dL, HDL_c-\>mg/dL), then normalization.
 
 ### Input Data
 
@@ -287,7 +287,7 @@ print(res_tracer)
 
 ------------------------------------------------------------------------
 
-## 5. Glycemic and C‑peptide Insulin Sensitivity Markers
+## 5. Glycemic and C-peptide Insulin Sensitivity Markers
 
 **Function:**
 
@@ -295,15 +295,15 @@ print(res_tracer)
 glycemic_markers(data, verbose = FALSE)
 ```
 
-**Purpose:** Compute glycemic‑ and C‑peptide‑based insulin sensitivity
+**Purpose:** Compute glycemic- and C-peptide-based insulin sensitivity
 and resistance markers from routine fasting labs and anthropometry. The
 function returns:
 
-- **SPISE** (Single‑Point Insulin Sensitivity Estimator)
+- **SPISE** (Single-Point Insulin Sensitivity Estimator)
 - **METS_IR** (Metabolic Score for Insulin Resistance)
-- **prediabetes** flag (`0`/`1`) if HbA1c ≥ 42 mmol/mol
-- **diabetes** flag (`0`/`1`) if HbA1c ≥ 48 mmol/mol
-- **HOMA_CP** (C‑peptide‑based HOMA‑IR)
+- **prediabetes** flag (`0`/`1`) if HbA1c \>= 42 mmol/mol
+- **diabetes** flag (`0`/`1`) if HbA1c \>= 48 mmol/mol
+- **HOMA_CP** (C-peptide-based HOMA-IR)
 
 ### Input Data
 
@@ -353,11 +353,11 @@ print(res)
 
 A tibble with columns:
 
-- `SPISE` — Single‑Point Insulin Sensitivity Estimator
-- `METS_IR` — Metabolic Score for Insulin Resistance
-- `prediabetes` — `0/1` flag if `HbA1c ≥ 42`
-- `diabetes` — `0/1` flag if `HbA1c ≥ 48`
-- `HOMA_CP` — C‑peptide–based HOMA‑IR (or `NA` if inputs missing)
+- `SPISE` - Single-Point Insulin Sensitivity Estimator
+- `METS_IR` - Metabolic Score for Insulin Resistance
+- `prediabetes` - `0/1` flag if `HbA1c >= 42`
+- `diabetes` - `0/1` flag if `HbA1c >= 48`
+- `HOMA_CP` - C-peptide-based HOMA-IR (or `NA` if inputs missing)
 
 *For full details, see `?glycemic_markers` in R.*
 
@@ -374,11 +374,11 @@ metabolic_risk_features(data)
 ```
 
 **Purpose:** Compute binary features for four key metabolic risk
-features using routine labs measuremnets and z‑scores:
+features using routine labs measuremnets and z-scores:
 
 - **dyslipidemia** - based on cholesterol and triglyceride thresholds
-  (age‑specific)
-- **insulin_resistance** - HOMA‑IR z-score \> 1.28
+  (age-specific)
+- **insulin_resistance** - HOMA-IR z-score \> 1.28
 - **hyperglycemia** - fasting glucose 5.6-6.9 mmol/L or HbA1c 39-47
   mmol/mol
 - **hypertension** - systolic or diastolic BP z-score \> 1.64
@@ -394,7 +394,7 @@ A `data.frame` or `tibble` containing at least:
 | `chol_hdl`      | numeric | HDL cholesterol (mmol/L)       |
 | `triglycerides` | numeric | Triglycerides (mmol/L)         |
 | `age_year`      | numeric | Age in years                   |
-| `z_HOMA`        | numeric | Standardized HOMA‑IR score     |
+| `z_HOMA`        | numeric | Standardized HOMA-IR score     |
 | `glucose`       | numeric | Fasting glucose (mmol/L)       |
 | `HbA1c`         | numeric | Glycated hemoglobin (mmol/mol) |
 | `bp_sys_z`      | numeric | Systolic BP z-score            |
@@ -435,7 +435,7 @@ per feature:
 
 | Column | Criteria |
 |----|----|
-| `dyslipidemia` | `1` if any: total cholesterol \> 5.2, LDL \> 3.4, HDL \< 1.0, or age‑adjusted triglycerides thresholds, else `0` |
+| `dyslipidemia` | `1` if any: total cholesterol \> 5.2, LDL \> 3.4, HDL \< 1.0, or age-adjusted triglycerides thresholds, else `0` |
 | `insulin_resistance` | `1` if `z_HOMA` \> 1.28, else `0` |
 | `hyperglycemia` | `1` if (5.6 \< glucose \< 6.9) or (39 \< HbA1c \< 47), else `0` |
 | `hypertension` | `1` if `bp_sys_z` \> 1.64 or `bp_dia_z` \> 1.64, else `0` |
@@ -451,7 +451,7 @@ metss(data, params = <default>, verbose = FALSE)
 ```
 
 **Purpose:** Compute a continuous Metabolic Syndrome Severity Score
-(MetSSS), a z‑score representing syndrome severity, based on Wiley &
+(MetSSS), a z-score representing syndrome severity, based on Wiley &
 Carrington (2016) equations. The score integrates waist circumference,
 blood pressure, triglycerides, HDL cholesterol, fasting glucose, sex,
 and race.
@@ -473,7 +473,7 @@ A `data.frame` or `tibble` with the following columns:
 
 **Optional Parameters** (via `params` list):
 
-- A named list mapping each sex‑race group (e.g. “NHW_M”, “NHB_F”) to a
+- A named list mapping each sex-race group (e.g. “NHW_M”, “NHB_F”) to a
   parameter list containing:
 
   - `intercept` (numeric)
@@ -539,7 +539,7 @@ The function returns a `tibble` with a single column:
 
 ------------------------------------------------------------------------
 
-## 8. Standardized‑Score (SDS) for Adiposity Measures
+## 8. Standardized-Score (SDS) for Adiposity Measures
 
 **Function:**
 
@@ -553,7 +553,7 @@ adiposity_sds(
 
 **Purpose:**
 
-- Validate and compute z‑scores (standard deviation scores) for each
+- Validate and compute z-scores (standard deviation scores) for each
   specified anthropometric variable.
 - Allows you to compare individual measures (e.g., BMI, waist
   circumference) to an external reference distribution.
@@ -572,8 +572,8 @@ adiposity_sds(
 
     - Each element is a numeric vector of length 2, with names:
 
-      - `mean` — the reference population mean
-      - `sd` — the reference population standard deviation (must be \>
+      - `mean` - the reference population mean
+      - `sd` - the reference population standard deviation (must be \>
         0)
 
     - **Example:**
@@ -624,7 +624,7 @@ ref <- list(
 # Compute SDS
 out <- adiposity_sds(df, ref, verbose = TRUE)
 print(out)
-#> # A tibble: 2 × 2
+#> # A tibble: 2 x 2
 #>   BMI_SDS waist_SDS
 #>     <dbl>     <dbl>
 #> 1   1.31       0.5 
@@ -652,8 +652,8 @@ A tibble with columns:
 adiposity_sds_strat(data, ref, sex_col = "sex", verbose = FALSE)
 ```
 
-**Purpose:** Compute sex‑stratified standard deviation scores (SDS) for
-adiposity measures, using sex‑specific reference means and standard
+**Purpose:** Compute sex-stratified standard deviation scores (SDS) for
+adiposity measures, using sex-specific reference means and standard
 deviations.
 
 ### Input Data
@@ -711,8 +711,8 @@ named `<var>_SDS`:
 
 | Column      | Description                                   |
 |-------------|-----------------------------------------------|
-| `BMI_SDS`   | (BMI - mean) / sd, using sex‑specific stats   |
-| `waist_SDS` | (waist - mean) / sd, using sex‑specific stats |
+| `BMI_SDS`   | (BMI - mean) / sd, using sex-specific stats   |
+| `waist_SDS` | (waist - mean) / sd, using sex-specific stats |
 
 *For detailed usage, see the `?adiposity_sds_strat` help page.*
 
@@ -762,7 +762,7 @@ mappings via `col_map`:
 | `ApoA1` | Apolipoprotein A1 | No | Apolipoprotein A1 (mg/dL or specified units) |
 
 **Note:** If `LDL_c` is missing, it is estimated by Friedewald formula:
-LDL = TC − HDL_c − TG/5.
+LDL = TC - HDL_c - TG/5.
 
 **Example input:**
 
@@ -863,7 +863,7 @@ column names via `col_map`:
 | `age`           | Age           | Yes       | Age in years                        |
 | `AST`           | AST           | Yes       | Aspartate aminotransferase (U/L)    |
 | `ALT`           | ALT           | Yes       | Alanine aminotransferase (U/L)      |
-| `platelets`     | Platelets     | Yes       | Platelet count (10⁹/L)              |
+| `platelets`     | Platelets     | Yes       | Platelet count (109/L)              |
 | `albumin`       | Albumin       | Yes       | Serum albumin (g/L)                 |
 | `diabetes`      | Diabetes      | Yes       | Diabetes status (0/1 or TRUE/FALSE) |
 | `bilirubin`     | Bilirubin     | Yes       | Total bilirubin (mg/dL)             |
@@ -935,7 +935,7 @@ The returned `tibble` includes:
 
 The `pulmo_markers()` function generates key pulmonary function
 outputs-predicted normals, z-scores, percent predicted, and lower limits
-of normal (LLN)-for FEV₁, FVC, and their ratio using reference equations
+of normal (LLN)-for FEV1, FVC, and their ratio using reference equations
 from the **rspiro** package.
 
 ### Installation of Dependencies
@@ -986,19 +986,19 @@ The resulting tibble contains:
 
 | Column             | Description                          |
 |--------------------|--------------------------------------|
-| `fev1_pred`        | Predicted FEV₁ (L)                   |
-| `fev1_z`           | FEV₁ z-score                         |
-| `fev1_pctpred`     | FEV₁ percent predicted (%)           |
-| `fev1_LLN`         | FEV₁ lower limit of normal (L)       |
+| `fev1_pred`        | Predicted FEV1 (L)                   |
+| `fev1_z`           | FEV1 z-score                         |
+| `fev1_pctpred`     | FEV1 percent predicted (%)           |
+| `fev1_LLN`         | FEV1 lower limit of normal (L)       |
 | `fvc_pred`         | Predicted FVC (L)                    |
 | `fvc_z`            | FVC z-score                          |
 | `fvc_pctpred`      | FVC percent predicted (%)            |
 | `fvc_LLN`          | FVC lower limit of normal (L)        |
-| `fev1_fvc_ratio`   | Observed FEV₁/FVC ratio              |
-| `fev1_fvc_pred`    | Predicted FEV₁/FVC ratio             |
-| `fev1_fvc_z`       | FEV₁/FVC ratio z-score               |
-| `fev1_fvc_pctpred` | FEV₁/FVC percent predicted (%)       |
-| `fev1_fvc_LLN`     | FEV₁/FVC ratio lower limit of normal |
+| `fev1_fvc_ratio`   | Observed FEV1/FVC ratio              |
+| `fev1_fvc_pred`    | Predicted FEV1/FVC ratio             |
+| `fev1_fvc_z`       | FEV1/FVC ratio z-score               |
+| `fev1_fvc_pctpred` | FEV1/FVC percent predicted (%)       |
+| `fev1_fvc_LLN`     | FEV1/FVC ratio lower limit of normal |
 
 ### Equations Supported
 
@@ -1010,14 +1010,14 @@ The resulting tibble contains:
 
 ## 13. Cardiovascular Risk Features
 
-This section covers the installation of the required CVD‑risk packages
+This section covers the installation of the required CVD-risk packages
 and demonstrates how to compute risk estimates using the suite of
 `cvd_risk_*()` wrapper functions and the unified `cvd_risk()`
 dispatcher.
 
 ### Installation of Dependencies
 
-Install the CRAN-hosted CVD‑risk packages:
+Install the CRAN-hosted CVD-risk packages:
 
 ``` r
 install.packages(c(
@@ -1088,20 +1088,20 @@ cvd_risk_ascvd(df, year = 30)
 cvd_risk_qrisk3(df)
 ```
 
-### 3. MESA 10‑year CHD risk
+### 3. MESA 10-year CHD risk
 
 ``` r
 # Data must include: race, gender (or sex), age, total_chol, HDL_c, sbp, bp_treated, smoker, diabetes
 cvd_risk_mesa(df)
 ```
 
-### 4. Stroke 10‑year risk (Pooled Cohort)
+### 4. Stroke 10-year risk (Pooled Cohort)
 
 ``` r
 cvd_risk_stroke(df)
 ```
 
-### 5. WHO/ISH 10‑year CVD risk
+### 5. WHO/ISH 10-year CVD risk
 
 ``` r
 # Region argument defaults to SEAR_D; adjust via `region = "..."`
@@ -1131,61 +1131,6 @@ Each function returns a tibble with columns:
 - `year` - risk horizon in years
 - `risk` - numeric percentage estimate
 
-### Low-level Wrapper Functions
-
-In addition to the high-level `cvd_risk_*()` and `cvd_risk()`
-dispatcher, HealthMarkers provides thin, auto-generated wrappers for
-each underlying package function. These allow direct access to specific
-risk calculations if you need more fine-grained control:
-
-- **Pooled Cohort** wrappers:
-
-  - `pooledcohort_predict_10yr_ascvd_risk(...)`
-  - `pooledcohort_predict_10yr_cvd_risk(...)`
-  - `pooledcohort_predict_10yr_chd_risk(...)`
-  - `pooledcohort_predict_10yr_stroke_risk(...)`
-  - `pooledcohort_predict_10yr_hf_risk(...)`
-  - `pooledcohort_predict_30yr_ascvd_risk(...)`
-  - `pooledcohort_predict_30yr_cvd_risk(...)`
-  - `pooledcohort_predict_30yr_chd_risk(...)`
-  - `pooledcohort_predict_30yr_stroke_risk(...)`
-  - `pooledcohort_predict_30yr_hf_risk(...)`
-  - `pooledcohort_predict_5yr_ascvd_risk(...)`
-
-- **QRISK3** wrapper:
-
-  - `qrisk3_QRISK3_2017(...)`
-
-- **CVrisk / MESA** wrappers:
-
-  - `cvrisk_chd_10y_mesa(...)`
-  - `cvrisk_ascvd_10y_accaha(...)`
-  - `cvrisk_compute_CVrisk(...)`
-  - `cvrisk_ascvd_10y_frs_simple(...)`
-  - `cvrisk_ascvd_10y_frs(...)`
-  - `cvrisk_chd_10y_mesa_cac(...)`
-
-- **WHO/ISH** wrapper:
-
-  - `whoishrisk_WHO_ISH_Risk(...)`
-
-- **RiskScorescvd** wrappers (ED‐based and SCORE2 family):
-
-  - `riskscorescvd_round_to_nearest_digit(...)`
-  - `riskscorescvd_HEART_scores(...)`
-  - `riskscorescvd_HEART(...)`
-  - `riskscorescvd_TIMI_scores(...)`
-  - `riskscorescvd_TIMI(...)`
-  - `riskscorescvd_EDACS_scores(...)`
-  - `riskscorescvd_EDACS(...)`
-  - `riskscorescvd_GRACE_scores(...)`
-  - `riskscorescvd_GRACE(...)`
-  - `riskscorescvd_SCORE2_scores(...)`
-  - `riskscorescvd_SCORE2(...)`
-  - `riskscorescvd_SCORE2_CKD_scores(...)`
-  - `riskscorescvd_SCORE2_CKD(...)`
-  - `riskscorescvd_SCORE2_Diabetes(...)`
-
 ------------------------------------------------------------------------
 
 ## 14. Saliva-Based Stress & Glycemic Markers
@@ -1198,7 +1143,7 @@ saliva_markers(data, verbose = FALSE)
 
 **Purpose:** Compute salivary biomarkers reflecting stress response and
 glycemic status using waking cortisol, cortisol awakening response
-(CAR), salivary α‑amylase, and salivary glucose.
+(CAR), salivary α-amylase, and salivary glucose.
 
 ### Input Data
 
@@ -1209,7 +1154,7 @@ A `data.frame` or `tibble` containing at least the following columns:
 | `saliva_cort1`   | numeric | Waking saliva cortisol (nmol/L)               |
 | `saliva_cort2`   | numeric | Saliva cortisol ~30 min after waking (nmol/L) |
 | `saliva_cort3`   | numeric | Saliva cortisol ~60 min after waking (nmol/L) |
-| `saliva_amylase` | numeric | Salivary α‑amylase activity (U/mL)            |
+| `saliva_amylase` | numeric | Salivary α-amylase activity (U/mL)            |
 | `saliva_glucose` | numeric | Salivary glucose concentration (mg/dL)        |
 
 **Example input:**
@@ -1243,7 +1188,7 @@ The function returns a `tibble` with the following columns:
 |----|----|
 | `log_cortisol_wake` | Natural log of waking saliva cortisol (log(saliva_cort1)) |
 | `CAR_AUC` | Cortisol Awakening Response AUC (trapezoidal over 0-60 min) |
-| `log_amylase` | Natural log of salivary α‑amylase (log(saliva_amylase)) |
+| `log_amylase` | Natural log of salivary α-amylase (log(saliva_amylase)) |
 | `saliva_glucose` | Raw salivary glucose concentration (mg/dL) |
 
 *For more information, see the `?saliva_markers` help page in R.*
@@ -1316,7 +1261,7 @@ The function returns a `tibble` with:
 | `sweat_chloride` | Input sweat chloride (mmol/L) |
 | `Na_K_ratio` | Sodium-to-potassium ratio (`sweat_Na / sweat_K`) |
 | `sweat_lactate` | Input sweat lactate (mmol/L) |
-| `sweat_rate` | Calculated sweat rate: (weight_before − weight_after) / duration / body_surface_area |
+| `sweat_rate` | Calculated sweat rate: (weight_before - weight_after) / duration / body_surface_area |
 
 ------------------------------------------------------------------------
 
@@ -1390,11 +1335,11 @@ The returned `tibble` contains:
 
 | Column | Description |
 |----|----|
-| `UACR` | Albumin (mg/L) / Creatinine (mg/dL) × 1000 -\> mg/g |
+| `UACR` | Albumin (mg/L) / Creatinine (mg/dL) x 1000 -\> mg/g |
 | `microalbuminuria` | Factor with levels `"normal"`, `"micro"` based on UACR (30-300 mg/g) |
 | `eGFR_CKD_EPI` | eGFR using CKD-EPI 2021 race-free equation (mL/min/1.73 m^2) |
-| `FENa` | (urine_Na × serum_creatinine) / (plasma_Na × urine_creatinine) × 100 (%) |
-| `UPCR` | Urine protein (mg/L) / (urine_creatinine (mg/dL) × 0.01) -\> mg/g (or `NA` if missing) |
+| `FENa` | (urine_Na x serum_creatinine) / (plasma_Na x urine_creatinine) x 100 (%) |
+| `UPCR` | Urine protein (mg/L) / (urine_creatinine (mg/dL) x 0.01) -\> mg/g (or `NA` if missing) |
 
 *For full details, see the `?urine_markers` help page in R.*
 
@@ -1416,11 +1361,13 @@ Full citation list [here](inst/REFERENCES.md)
 
 ## 🤝 Contributing
 
-Please follow the established style and add tests/examples. Submit via
-GitHub PR.
+If you know of additional markers that should be incorporated into the
+package, please reach out or open a GitHub issue. Be sure to follow the
+established style and include tests/examples. Contributions can be
+submitted via a GitHub pull request.
 
 ------------------------------------------------------------------------
 
 ## 📜 License
 
-MIT © [Sufyan Suleman](https://github.com/sufyansuleman)
+MIT (C) [Sufyan Suleman](https://github.com/sufyansuleman)

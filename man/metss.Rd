@@ -2,7 +2,7 @@
 % Please edit documentation in R/metss.R
 \name{metss}
 \alias{metss}
-\title{Calculate Metabolic Syndrome Severity Score (MetSSS)}
+\title{Metabolic Syndrome Severity Score (MetSSS)}
 \usage{
 metss(
   data,
@@ -10,49 +10,72 @@ metss(
     0.846), TG = c(mean = 1.5, sd = 0.6, coef = 0.701), HDL = c(mean = 1.1, sd = 0.3,
     coef = -0.663), glucose = c(mean = 5.3, sd = 0.6, coef = 0.658), MAP = c(mean = 97,
     sd = 11, coef = 0.466))),
-  verbose = FALSE
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  diagnostics = TRUE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble with columns:
-\itemize{
-\item \code{waist}   (cm)
-\item \code{bp_sys}  (systolic BP, mmHg)
-\item \code{bp_dia}  (diastolic BP, mmHg)
-\item \code{TG}      (triglycerides, mmol/L)
-\item \code{HDL_c}   (HDL cholesterol, mmol/L)
-\item \code{glucose} (fasting glucose, mmol/L)
-\item \code{sex}     (1 = male, 2 = female)
-\item \code{race}    (character/factor; one of \code{"NHW"}, \code{"NHB"}, \code{"HW"}, \code{"HA"})
-}}
+\item{data}{data.frame / tibble.}
 
-\item{params}{Named list of parameter sets by sex-race, each a list with:
-\itemize{
-\item \code{intercept}
-\item \code{waist}, \code{TG}, \code{HDL}, \code{glucose}, \code{MAP}: named numeric vectors with
-\code{mean}, \code{sd}, and \code{coef}.
-Defaults to the NHW-male set from Wiley & Carrington (2016).
-}}
+\item{params}{Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
+list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
+is a named numeric vector c(mean=, sd=, coef=).}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a startup message.}
+\item{verbose}{Logical; print progress.}
+
+\item{na_action}{One of c("keep","omit","error") for required-input NAs. Default "keep".}
+
+\item{na_warn_prop}{Proportion (0–1) above which high-missingness warning fires. Default 0.2.}
+
+\item{check_extreme}{Logical; scan for extreme values if TRUE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia, TG, HDL_c, glucose).}
+
+\item{diagnostics}{Logical; if TRUE (default) emit value/range diagnostic warnings
+(negative, out-of-range checks). Set FALSE to suppress these (e.g., in tests when
+also using check_extreme).}
 }
 \value{
-A tibble with one column, \code{MetSSS}, the continuous severity z-score.
+tibble with one numeric column: MetSSS
 }
 \description{
-Computes the continuous MetS severity z-score per Wiley & Carrington (2016).
+Computes a continuous metabolic syndrome severity z-score using sex- and
+race-specific standardized components and coefficients (factor-loading style).
+
+Behavior note:
+\itemize{
+\item Parameters are selected using ONLY the first row's (race, sex) key
+(for backward compatibility). A warning is issued if multiple keys present.
+}
+
+Required columns (no unit conversion performed):
+\itemize{
+\item waist (cm), bp_sys (mmHg), bp_dia (mmHg)
+\item TG, HDL_c, glucose (mmol/L)
+\item sex (1=male, 2=female)
+\item race (one of "NHW","NHB","HW","HA" or accepted synonyms)
+}
+}
+\details{
+Calculate Metabolic Syndrome Severity Score (MetSSS)
 }
 \examples{
-library(tibble)
-df <- tibble(
-  waist   = 94,
-  bp_sys  = 120,
-  bp_dia  =  80,
-  TG      = 1.5,
-  HDL_c   = 1.1,
-  glucose = 5.3,
-  sex     = 1,
-  race    = "NHW"
+df <- data.frame(
+  waist = 95, bp_sys = 120, bp_dia = 80, TG = 1.5, HDL = 1.2
 )
 metss(df)
+
+}
+\references{
+Gurka MJ, Lilly CL, Oliver MN, DeBoer MD (2014). Metabolic syndrome severity score and cardiovascular disease risk. J Clin Endocrinol Metab, 99(3):1073–1081. \doi{10.1210/jc.2013-3735}
+DeBoer MD, Gurka MJ, Woo JG, Morrison JA (2015). Severity of metabolic syndrome and its association with risk for type 2 diabetes and cardiovascular disease. Diabetologia, 58(12):2745–2752. \doi{10.1007/s00125-015-3759-2}
+Gurka MJ, Filipp SL, Musani SK, Sims M, DeBoer MD (2017). Independent associations between metabolic syndrome severity and future coronary heart disease by sex and race. Diabetes Care, 40(11):1693–1701. \doi{10.2337/dc17-0537}
+DeBoer MD, Filipp SL, Gurka MJ (2018). Longitudinal metabolic syndrome severity score and risk for cardiovascular disease and type 2 diabetes: the Atherosclerosis Risk in Communities study. J Am Heart Assoc, 7(14):e008232. \doi{10.1161/JAHA.117.008232}
 }

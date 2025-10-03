@@ -2,32 +2,52 @@
 % Please edit documentation in R/ogtt_is.R
 \name{ogtt_is}
 \alias{ogtt_is}
-\title{Calculate OGTT‐based insulin sensitivity indices}
+\title{Calculate OGTT-based insulin sensitivity indices}
 \usage{
-ogtt_is(data, col_map, normalize = "none", verbose = FALSE)
+ogtt_is(
+  data,
+  col_map,
+  normalize = "none",
+  verbose = FALSE,
+  na_action = c("ignore", "warn", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_limit = 1000,
+  extreme_action = c("warn", "cap", "error", "ignore")
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble containing at least the columns mapped by \code{col_map}.}
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{G0}, \code{G30}, \code{G120} -> glucose at 0, 30, 120 min (mmol/L)
-\item \code{I0}, \code{I30}, \code{I120} -> insulin at 0, 30, 120 min (pmol/L)
-\item \code{weight} -> body weight (kg)
-\item \code{bmi} -> body‐mass index (kg/m^2)
-\item \code{age} -> age (years)
-\item \code{sex} -> sex (1 = male, 2 = female)
+\item G0, G30, G120 -> glucose at 0, 30, 120 min (mmol/L)
+\item I0, I30, I120 -> insulin at 0, 30, 120 min (pmol/L)
+\item weight -> body weight (kg)
+\item bmi -> body-mass index (kg/m^2)
+\item age -> age (years)
+\item sex -> sex (1 = male, 2 = female)
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")} - method to scale each index.}
+\item{normalize}{One of c("none","z","inverse","range","robust") used by normalize_vec().}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{verbose}{Logical; if TRUE, prints progress messages.}
+
+\item{na_action}{One of c("ignore","warn","error") for missing/non-finite required inputs. Default "ignore".}
+
+\item{na_warn_prop}{Proportion (0–1) to flag high missingness when na_action="warn". Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan outputs for |value| > extreme_limit. Default FALSE.}
+
+\item{extreme_limit}{Positive numeric magnitude threshold for extremes. Default 1e3.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
 }
 \value{
-A tibble with the OGTT‐based index columns.
+A tibble with the OGTT-based index columns listed above.
 }
 \description{
-Given glucose & insulin at 0, 30, 120 min (plus weight, BMI, age, sex),
+Given glucose & insulin at 0, 30, 120 min (plus weight, BMI, age, sex),
 computes:
 \itemize{
 \item Isi_120
@@ -46,6 +66,21 @@ computes:
 \item Belfiore_isi_gly
 }
 }
+\details{
+Units assumed:
+\itemize{
+\item OGTT glucose in mmol/L (internally converted to mg/dL via *18 for select indices)
+\item OGTT insulin in pmol/L (internally converted to µU/mL via /6 for select indices)
+\item weight in kg; BMI in kg/m^2; age in years; sex coded 1 = male, 2 = female
+}
+
+Notes
+\itemize{
+\item Conversions mirror existing implementation to preserve outputs. Some
+formulas intentionally use unconverted inputs (as in prior code).
+\item Logs are safe: log(x) becomes NA when x <= 0 or non-finite.
+}
+}
 \examples{
 df <- tibble::tibble(
   G0 = 5.5, I0 = 60,
@@ -62,6 +97,27 @@ ogtt_is(
     weight = "weight", bmi = "bmi",
     age = "age", sex = "sex"
   ),
-  normalize = "none"
+  normalize = "none",
+  verbose = TRUE
 )
+}
+\references{
+Original derivations of OGTT- and fasting-based indices
+Matsuda M, DeFronzo RA. Insulin sensitivity indices obtained from oral glucose tolerance testing.
+Diabetes Care. 1999;22(9):1462–1470. \doi{10.2337/diacare.22.9.1462} (Matsuda index, ISI-OGTT)
+Gutt M, Davis CL, Spitzer SB, et al. Validation of the insulin sensitivity index (ISI₀,₁₂₀) derived from oral glucose tolerance testing.
+Diabetes Res Clin Pract. 2000;47(3):177–184. \doi{10.1016/S0168-8227(99)00116-3} (Gutt index)
+Stumvoll M, Mitrakou A, Pimenta W, et al. Use of the oral glucose tolerance test to assess insulin release and sensitivity.
+Diabetes Care. 2000;23(3):295–301. \doi{10.2337/diacare.23.3.295} (Stumvoll indices)
+Hansen T, Drivsholm T, Urhammer SA, et al. The BIGTT test: a novel test for simultaneous measurement of pancreatic beta-cell function, insulin sensitivity, and glucose tolerance.
+Diabetes Care. 2007;30(2):257–262. \doi{10.2337/dc06-1240} (BIGTT-Si index)
+Avignon A, Charles MA, Rabasa-Lhoret R, et al. Assessment of insulin sensitivity from oral glucose tolerance test in normal subjects and in insulin-resistant patients.
+Int J Obes Relat Metab Disord. 1999;23(5):512–517. \doi{10.1038/sj.ijo.0800860} (Avignon index)
+Belfiore F, Iannello S, Volpicelli G. Insulin sensitivity indices calculated from fasting plasma insulin and glucose concentrations.
+Mol Genet Metab. 1998;63(2):134–141. \doi{10.1006/mgme.1997.2719} (Fasting indices from glycemia–insulinemia)
+Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC. Homeostasis model assessment: insulin resistance and beta-cell function from fasting plasma glucose and insulin concentrations in man.
+Diabetologia. 1985;28(7):412–419. \doi{10.1007/BF00280883} (HOMA-IR, HOMA-β)
+}
+\seealso{
+\code{\link[=fasting_is]{fasting_is()}}, \code{\link[=normalize_vec]{normalize_vec()}}
 }

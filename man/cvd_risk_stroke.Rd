@@ -4,27 +4,29 @@
 \alias{cvd_risk_stroke}
 \title{Stroke 10-year risk}
 \usage{
-cvd_risk_stroke(data, ...)
+cvd_risk_stroke(data, na_warn_prop = 0.2, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{A tibble with columns: \code{age}, \code{sex}, \code{race}, \code{smoker}, \code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.}
+\item{data}{Data frame with: \code{age}, \code{sex}, \code{race}, \code{smoker},
+\code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.}
 
-\item{...}{Additional arguments for predict_10yr_stroke_risk.}
+\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+Only used when \code{verbose = TRUE}.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a short summary.}
+
+\item{...}{Passed to \code{PooledCohort::predict_10yr_stroke_risk()}.}
 }
 \value{
-A tibble with columns \code{model}, \code{year} (10), and \code{risk}.
+A tibble with \code{model}, \code{year}, \code{risk}.
 }
 \description{
-Wrapper around PooledCohort::predict_10yr_stroke_risk.
+Wrapper around \code{PooledCohort::predict_10yr_stroke_risk()} with quiet
+fallback to NA if the backend errors.
 }
-\examples{
-\dontrun{
-library(tibble)
-df <- tibble(
-  age = 55, sex = 1, race = "white", smoker = FALSE,
-  total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
-  diabetes = FALSE, bmi = 27
-)
-cvd_risk_stroke(df)
+\references{
+\itemize{
+\item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline
+(Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49–S73.
 }
 }

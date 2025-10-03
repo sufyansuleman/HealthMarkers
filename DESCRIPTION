@@ -2,16 +2,11 @@ Package: HealthMarkers
 Type: Package
 Title: HealthMarkers: A Toolkit for Clinical, Metabolic, Cardiovascular & Pulmonary Biomarker Calculation
 Version: 0.1.0
-Depends:  
-  R (>= 4.0)
 Authors@R:
-  person(
-    given    = "Sufyan",
-    family   = "Suleman",
-    email    = "sufyansuleman@hotmail.com",
-    role     = c("aut", "cre"),
-    comment  = c(ORCID = "0000-0001-6612-6915")
-  )
+    person(given = "Sufyan", family = "Suleman",
+           email = "sufyansuleman@hotmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6612-6915"))
 Description: Provides functions to compute a broad suite of clinical and
     research biomarkers from routine data. Implemented measures include
     metabolic indices of insulin sensitivity and resistance (fasting, oral
@@ -23,35 +18,37 @@ Description: Provides functions to compute a broad suite of clinical and
     bone markers derived from DXA scans. All calculations can be accessed
     through a unified 'health_markers()' dispatcher function.
 License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
-Imports:
-  dplyr       (>= 1.0.0),
-  magrittr    (>= 2.0.0),
-  mice        (>= 3.14.0),
-  missForest  (>= 1.5.0),
-  purrr       (>= 0.3.0),
-  rlang       (>= 1.0.0),
-  rspiro      (>= 0.3.0),
-  stats,
-  tibble      (>= 3.0.0),
-  tidyr       (>= 1.1.0)
-Suggests:
-  knitr,
-  rmarkdown,
-  testthat   (>= 3.0.0),
-  CVrisk,
-  di,
-  methylclock,
-  minfi,
-  PooledCohort,
-  QRISK3,
-  RiskScorescvd,
-  whoishRisk,
-  usethis
-VignetteBuilder: knitr
 URL: https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues
-Config/testthat/edition: 1
+Depends:
+    R (>= 4.0)
+Imports:
+    dplyr (>= 1.0.0),
+    magrittr (>= 2.0.0),
+    mice (>= 3.14.0),
+    missForest (>= 1.5.0),
+    purrr (>= 0.3.0),
+    rlang (>= 1.0.0),
+    rspiro (>= 0.3.0),
+    stats,
+    tibble (>= 3.0.0),
+    tidyr (>= 1.1.0)
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    CVrisk,
+    di,
+    methylclock,
+    minfi,
+    PooledCohort,
+    QRISK3,
+    RiskScorescvd,
+    whoishRisk,
+    usethis,
+    withr
+VignetteBuilder: knitr
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Config/testthat/edition: 3

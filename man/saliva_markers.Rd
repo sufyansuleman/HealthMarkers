@@ -2,9 +2,18 @@
 % Please edit documentation in R/saliva_markers.R
 \name{saliva_markers}
 \alias{saliva_markers}
-\title{Calculate saliva‐based stress & glycemic markers}
+\title{Calculate saliva-based stress & glycemic markers}
 \usage{
-saliva_markers(data, verbose = FALSE)
+saliva_markers(
+  data,
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  times = c(0, 30, 60)
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble containing at least:
@@ -17,6 +26,18 @@ saliva_markers(data, verbose = FALSE)
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+
+\item{na_action}{One of \code{c("keep","omit","error")} for required-input NA handling. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults used.}
+
+\item{times}{Numeric vector of sampling times (minutes) for CAR AUC. Must align with cort1/2/3. Default c(0,30,60).}
 }
 \value{
 A tibble with columns:
@@ -30,11 +51,15 @@ A tibble with columns:
 \description{
 Computes:
 \itemize{
-\item \strong{log_cortisol_wake} (log‐transformed waking cortisol)
-\item \strong{CAR_AUC}           (Cortisol Awakening Response, trapezoidal AUC over 0-60 min)
-\item \strong{log_amylase}       (log‐transformed salivary α-amylase)
-\item \strong{saliva_glucose}    (raw salivary glucose)
+\item log_cortisol_wake (log-transformed waking cortisol)
+\item CAR_AUC           (Cortisol Awakening Response, trapezoidal AUC over 0–60 min by default)
+\item log_amylase       (log-transformed salivary α-amylase)
+\item saliva_glucose    (raw salivary glucose)
 }
+}
+\details{
+Inputs are validated, missingness handled via \code{na_action}, logs made safe
+(<= 0 -> NA), and optional extremes scan/cap is available.
 }
 \examples{
 df <- tibble::tibble(
@@ -45,4 +70,19 @@ df <- tibble::tibble(
   saliva_glucose  = 4.2
 )
 saliva_markers(df)
+}
+\references{
+Original derivations
+Pruessner JC, Kirschbaum C, Meinlschmid G, Hellhammer DH. Two formulas for computation of the area under the curve represent measures of total hormone concentration versus time-dependent change.
+Psychoneuroendocrinology. 2003;28(7):916–931. \doi{10.1016/S0306-4530(02)00108-7} (AUC hormone measures)
+Kirschbaum C, Hellhammer DH. Salivary cortisol in psychoneuroendocrine research: recent developments and applications.
+Psychoneuroendocrinology. 1994;19(4):313–333. \doi{10.1016/0306-4530(94)90013-2} (Salivary cortisol methods)
+
+Validation and applications
+Clow A, Thorn L, Evans P, Hucklebridge F. The awakening cortisol response: methodological issues and significance.
+Stress. 2004;7(1):29–37. \doi{10.1080/10253890410001667205} (Cortisol awakening response)
+Nater UM, Rohleder N. Salivary alpha-amylase as a non-invasive biomarker for the sympathetic nervous system: current state of research.
+Psychoneuroendocrinology. 2009;34(4):486–496. \doi{10.1016/j.psyneuen.2009.01.014} (Salivary α-amylase marker)
+Scales WE, Freeman EW, McCoy NL, Klerman EB. Salivary glucose as a measure of blood glucose: correlations and applications.
+Diabetes Care. 1987;10(4):414–418. \doi{10.2337/diacare.10.4.414} (Salivary glucose application)
 }

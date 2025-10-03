@@ -1,126 +1,107 @@
 # tests/testthat/test_urine_markers.R
+library(testthat)
+library(tibble)
 
 test_that("errors if any required column is missing", {
   # Missing urine_albumin
-  df1 <- tibble::tibble(
-    urine_creatinine  = 1,
-    serum_creatinine  = 1,
-    plasma_Na         = 140,
-    urine_Na          = 100,
-    age               = 40,
-    sex               = 1
+  df1 <- tibble(
+    urine_creatinine = 1
   )
   expect_error(
     urine_markers(df1),
     "missing columns: urine_albumin"
   )
 
-  # Missing multiple
-  df2 <- tibble::tibble(
-    urine_albumin     = 30,
-    urine_creatinine  = 2,
-    plasma_Na         = 140,
-    age               = 40
-    # missing serum_creatinine, urine_Na, sex
+  # Missing urine_creatinine
+  df2 <- tibble(
+    urine_albumin = 30
   )
   expect_error(
     urine_markers(df2),
-    "missing columns: serum_creatinine, urine_Na, sex"
+    "missing columns: urine_creatinine"
   )
 })
 
-test_that("computes UACR correctly and includes all five outputs", {
-  df <- tibble::tibble(
-    urine_albumin     = 30,
-    urine_creatinine  = 2,
-    serum_creatinine  = 1,
-    plasma_Na         = 140,
-    urine_Na          = 70,
-    age               = 40,
-    sex               = 1
+test_that("computes UACR, UPCR, Na/K ratio, and normalized tubular markers; names match", {
+  df <- tibble(
+    urine_albumin    = 30,    # mg/L
+    urine_creatinine = 2,     # mg/dL
+    urine_protein    = 150,   # mg/L
+    urine_Na         = 60,    # mmol/L
+    urine_K          = 20,    # mmol/L
+    NGAL             = 100,   # mg/L
+    KIM1             = 10,
+    NAG              = 5,
+    beta2_micro      = 2,
+    a1_micro         = 3,
+    IL18             = 1,
+    L_FABP           = 0.5
   )
   out <- urine_markers(df)
 
   expect_named(
     out,
-    c("UACR", "microalbuminuria", "eGFR_CKD_EPI", "FENa", "UPCR")
+    c("UACR", "albuminuria_stage", "microalbuminuria",
+      "UPCR", "U_Na_K_ratio",
+      "NGAL_per_gCr", "KIM1_per_gCr", "NAG_per_gCr",
+      "Beta2Micro_per_gCr", "A1Micro_per_gCr", "IL18_per_gCr", "L_FABP_per_gCr")
   )
-  # UACR = (30/2)*1000 = 15000
+
+  # UACR = (30/2)*1000 = 15000 mg/g
   expect_equal(out$UACR, 15000)
+
+  # UPCR = urine_protein / (urine_creatinine*0.01) = 150/0.02 = 7500
+  expect_equal(out$UPCR, 150 / (2 * 0.01))
+
+  # Na/K = 60/20 = 3
+  expect_equal(out$U_Na_K_ratio, 60 / 20)
+
+  # Creatinine-normalized markers per g creatinine: denom gCr_den = 2*0.01 = 0.02 g/L
+  gCr_den <- 2 * 0.01
+  expect_equal(out$NGAL_per_gCr,       100 / gCr_den)
+  expect_equal(out$KIM1_per_gCr,        10 / gCr_den)
+  expect_equal(out$NAG_per_gCr,          5 / gCr_den)
+  expect_equal(out$Beta2Micro_per_gCr,   2 / gCr_den)
+  expect_equal(out$A1Micro_per_gCr,      3 / gCr_den)
+  expect_equal(out$IL18_per_gCr,         1 / gCr_den)
+  expect_equal(out$L_FABP_per_gCr,     0.5 / gCr_den)
 })
 
-test_that("microalbuminuria flag is a factor with correct levels & values", {
-  df <- tibble::tibble(
-    urine_albumin     = c(20, 50, 400),
-    urine_creatinine  = c(1, 1000, 1),
-    serum_creatinine  = 1,
-    plasma_Na         = 140,
-    urine_Na          = 70,
-    age               = 40,
-    sex               = 1
+test_that("albuminuria_stage and microalbuminuria factors have correct levels and values", {
+  df <- tibble(
+    # A1: UACR < 30 -> set 10
+    urine_albumin    = c(1, 30, 400),
+    urine_creatinine = c(100, 1000, 1),
+    # optional fields omitted
   )
   out <- urine_markers(df)
+
+  expect_true(is.factor(out$albuminuria_stage))
+  expect_equal(levels(out$albuminuria_stage), c("A1","A2","A3"))
+  expect_equal(as.character(out$albuminuria_stage), c("A1","A2","A3"))
+
   expect_true(is.factor(out$microalbuminuria))
-  expect_equal(levels(out$microalbuminuria), c("normal", "micro"))
-  # Values: 20<30 → normal; 50→micro; 400>300→normal
-  expect_equal(as.character(out$microalbuminuria), c("normal", "micro", "normal"))
+  expect_equal(levels(out$microalbuminuria), c("normal","micro"))
+  # UACR: 1/100*1000=10 -> normal; 30/1000*1000=30 -> micro; 400/1*1000=400000 -> normal
+  expect_equal(as.character(out$microalbuminuria), c("normal","micro","normal"))
 })
 
-test_that("eGFR_CKD_EPI matches the race‐free CKD‐EPI 2021 formula", {
-  df <- tibble::tibble(
-    urine_albumin = 30, urine_creatinine = 1,
-    serum_creatinine = 1, plasma_Na = 140,
-    urine_Na = 70, age = c(50, 50),
-    sex = c(1, 2)
+test_that("UPCR and U_Na_K_ratio are NA when inputs are missing", {
+  df <- tibble(
+    urine_albumin    = 30,
+    urine_creatinine = 2
+    # no urine_protein, no urine_Na/urine_K
   )
   out <- urine_markers(df)
-
-  kappa <- ifelse(df$sex == 1, 0.9, 0.7)
-  alpha <- ifelse(df$sex == 1, -0.302, -0.241)
-  sex_mult <- ifelse(df$sex == 1, 1.0, 1.012)
-  Scr_k <- df$serum_creatinine / kappa
-  expected <- 142 *
-    pmin(Scr_k, 1)^alpha *
-    pmax(Scr_k, 1)^(-1.200) *
-    (0.9938^df$age) *
-    sex_mult
-
-  expect_equal(out$eGFR_CKD_EPI, expected, tolerance = 1e-8)
-})
-
-test_that("FENa and UPCR compute correctly, and UPCR is NA without urine_protein", {
-  df_with <- tibble::tibble(
-    urine_albumin = 30, urine_creatinine = 2,
-    serum_creatinine = 1, plasma_Na = 140,
-    urine_Na = 70, age = 40,
-    sex = 1, urine_protein = 150
-  )
-  out_with <- urine_markers(df_with)
-  # FENa = (urine_Na * serum_creatinine)/(plasma_Na * urine_creatinine)*100
-  expect_equal(out_with$FENa, (70 * 1) / (140 * 2) * 100)
-  # UPCR = urine_protein / (urine_creatinine * 0.01) = 150/(2*0.01)=150/0.02=7500
-  expect_equal(out_with$UPCR, 150 / (2 * 0.01))
-
-  df_without <- tibble::tibble(
-    urine_albumin = 30, urine_creatinine = 2,
-    serum_creatinine = 1, plasma_Na = 140,
-    urine_Na = 70, age = 40,
-    sex = 1
-  )
-  out_without <- urine_markers(df_without)
-  expect_true(is.na(out_without$UPCR))
+  expect_true(is.na(out$UPCR))
+  expect_true(is.na(out$U_Na_K_ratio))
 })
 
 test_that("is vectorized over multiple rows", {
-  df <- tibble::tibble(
-    urine_albumin     = c(30, 40),
-    urine_creatinine  = c(2, 4),
-    serum_creatinine  = c(1, 0.8),
-    plasma_Na         = c(140, 138),
-    urine_Na          = c(70, 60),
-    age               = c(40, 60),
-    sex               = c(1, 2),
-    urine_protein     = c(150, NA_real_)
+  df <- tibble(
+    urine_albumin    = c(30, 40),
+    urine_creatinine = c(2, 4),
+    urine_protein    = c(150, NA_real_)
   )
   out <- urine_markers(df)
   expect_equal(nrow(out), 2)
@@ -128,18 +109,67 @@ test_that("is vectorized over multiple rows", {
   expect_true(is.na(out$UPCR[2]))
 })
 
+test_that("na_action policies: error and omit behave as expected", {
+  df_na <- tibble(
+    urine_albumin    = c(30, NA_real_),
+    urine_creatinine = c(2, 2)
+  )
+  # error -> abort (suppress high-missingness warning)
+  expect_error(
+    suppressWarnings(urine_markers(df_na, na_action = "error")),
+    "required inputs contain missing values"
+  )
+  # omit -> drops NA row
+  out_omit <- suppressWarnings(urine_markers(df_na, na_action = "omit"))
+  expect_equal(nrow(out_omit), 1L)
+})
+
+test_that("extreme input detection and capping warn as expected", {
+  df_ext <- tibble(
+    urine_albumin    = 1e6,  # > default bound
+    urine_creatinine = 1e-6, # < default bound
+    urine_protein    = 1e6
+  )
+  # warn: detect but do not alter
+  expect_warning(
+    out_warn <- urine_markers(df_ext, check_extreme = TRUE, extreme_action = "warn"),
+    "detected .* extreme input values \\(not altered\\)"
+  )
+  # cap: detect and cap
+  expect_warning(
+    out_cap <- urine_markers(df_ext, check_extreme = TRUE, extreme_action = "cap"),
+    "capped .* extreme input values into allowed ranges"
+  )
+  # Outputs likely differ after capping
+  expect_false(isTRUE(all.equal(out_warn$UACR, out_cap$UACR)))
+  expect_false(isTRUE(all.equal(out_warn$UPCR, out_cap$UPCR)))
+})
+
+test_that("zero denominators emit a consolidated warning and yield NA in ratios", {
+  df_zero <- tibble(
+    urine_albumin    = 30,
+    urine_creatinine = 0,     # zero -> denominator for all per-gCr ratios
+    urine_protein    = 150,
+    urine_Na         = 60,
+    urine_K          = 20
+  )
+  expect_warning(
+    out_zero <- urine_markers(df_zero),
+    "zero denominators detected"
+  )
+  expect_true(is.na(out_zero$UACR))
+  expect_true(is.na(out_zero$UPCR))
+  expect_true(is.na(out_zero$NGAL_per_gCr))
+  expect_equal(out_zero$U_Na_K_ratio, 60 / 20)  # unaffected (denominator is K, not creatinine)
+})
+
 test_that("verbose = TRUE prints a progress message", {
-  df <- tibble::tibble(
-    urine_albumin     = 30,
-    urine_creatinine  = 2,
-    serum_creatinine  = 1,
-    plasma_Na         = 140,
-    urine_Na          = 70,
-    age               = 40,
-    sex               = 1
+  df <- tibble(
+    urine_albumin    = 30,
+    urine_creatinine = 2
   )
   expect_message(
     urine_markers(df, verbose = TRUE),
-    "-> computing urine markers"
+    "-> urine_markers: computing markers"
   )
 })

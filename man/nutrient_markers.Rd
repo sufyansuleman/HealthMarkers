@@ -2,73 +2,107 @@
 % Please edit documentation in R/nutrient_markers.R
 \name{nutrient_markers}
 \alias{nutrient_markers}
-\title{Compute a Suite of Nutrient‐Based Health Markers}
+\title{Compute a Suite of Nutrient-Based Health Markers}
 \usage{
 nutrient_markers(
   data,
-  col_map = list(ferritin = "ferritin", transferrin_sat = "transferrin_sat", albumin =
-    "albumin", total_protein = "total_protein", EPA = "EPA", DHA = "DHA", Mg = "Mg",
-    creatinine = "creatinine", glycated_albumin = "glycated_albumin", uric_acid =
-    "uric_acid", BUN = "BUN", phosphate = "phosphate", calcium = "calcium", Na = "Na", K
-    = "K", Cl = "Cl", HCO3 = "HCO3", Tyr = "Tyr", Phe = "Phe"),
+  col_map = NULL,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} containing your subject‐level data.}
+\item{data}{A data frame or tibble containing subject-level data.}
 
-\item{col_map}{Named list mapping the following keys to column names in \code{data}:
-\describe{
-\item{\code{ferritin}}          {Serum ferritin (ng/mL)}
-\item{\code{transferrin_sat}}   {Transferrin saturation (\\%)}
-\item{\code{albumin}}           {Serum albumin (g/L)}
-\item{\code{total_protein}}     {Total serum protein (g/L)}
-\item{\code{EPA}}               {Red‐cell EPA \\% of total fatty acids}
-\item{\code{DHA}}               {Red‐cell DHA \\% of total fatty acids}
-\item{\code{Mg}}                {Serum magnesium (mmol/L)}
-\item{\code{creatinine}}        {Serum creatinine (µmol/L)}
-\item{\code{glycated_albumin}}  {Glycated albumin (g/L)}
-\item{\code{uric_acid}}         {Serum uric acid (µmol/L)}
-\item{\code{BUN}}               {Blood urea nitrogen (mg/dL)}
-\item{\code{phosphate}}         {Serum phosphate (mmol/L)}
-\item{\code{calcium}}           {Serum calcium (mmol/L)}
-\item{\code{Na}}                {Serum sodium (mmol/L)}
-\item{\code{K}}                 {Serum potassium (mmol/L)}
-\item{\code{Cl}}                {Serum chloride (mmol/L)}
-\item{\code{HCO3}}              {Serum bicarbonate (mmol/L)}
-\item{\code{Tyr}}               {Serum tyrosine (µmol/L)}
-\item{\code{Phe}}               {Serum phenylalanine (µmol/L)}
-}
-You only need to supply the columns you have—any markers missing
-will return \code{NA}.}
+\item{col_map}{Optional named list mapping variable keys (see Details) to
+column names in \code{data}. You only need to supply the keys you have; any
+markers with missing inputs return \code{NA}. If NULL, defaults to identity
+mapping for all known keys.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_action}{One of c("keep","omit","error") controlling missing-data policy
+across the columns referenced by \code{col_map}.
+\itemize{
+\item "keep" (default): keep NA; outputs become NA where inputs are NA.
+\item "omit": drop rows with NA in any used input column.
+\item "error": abort if any used input contains NA.
+}}
+
+\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness
+warnings on used input columns. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan used input columns for out-of-range
+values (see \code{extreme_rules}). Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") used when extremes are
+detected (only when \code{check_extreme = TRUE}). Default "warn".}
+
+\item{extreme_rules}{Optional named list from input keys to c(min,max) ranges. If NULL,
+broad defaults are used (see Details).}
+
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
 }
 \value{
-A \code{tibble} with columns:
-\describe{
-\item{FerritinTS}{Ferritin / Transferrin Saturation Ratio}
-\item{AGR}{Albumin / Globulin Ratio}
-\item{Omega3Index}{EPA + DHA (\\% of total fatty acids)}
-\item{Mg_Cr_Ratio}{Magnesium / Creatinine}
-\item{GlycatedAlbuminPct}{\\% Glycated Albumin}
-\item{UA_Cr_Ratio}{Uric Acid / Creatinine}
-\item{BUN_Cr_Ratio}{BUN / Creatinine}
-\item{Ca_x_Phosphate}{Calcium × Phosphate Product}
-\item{AnionGap}{(Na + K) − (Cl + HCO₃)}
-\item{Tyr_Phe_Ratio}{Tyrosine / Phenylalanine}
-}
+A tibble with one row per input row and these columns:
+FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct,
+UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, Tyr_Phe_Ratio.
 }
 \description{
-Given a data.frame or tibble of routine biochemical labs,
-\code{nutrient_markers()} returns a set of widely‐used ratios, products
-and z-scores that capture iron metabolism, protein status, fatty-acid
-balance, renal excretion markers, mineral homeostasis and amino-acid
-patterns.
+Given a data frame or tibble of routine biochemical labs,
+\code{nutrient_markers()} returns a set of widely used ratios, products,
+and simple percentages that summarize iron metabolism, protein status,
+omega-3 balance, renal excretion, mineral homeostasis, and aromatic
+amino-acid patterns.
+}
+\details{
+Recognized markers (returned as columns):
+\itemize{
+\item FerritinTS: Ferritin / Transferrin saturation
+\item AGR: Albumin / Globulin, where Globulin = Total protein - Albumin
+\item Omega3Index: EPA + DHA (percentage points)
+\item Mg_Cr_Ratio: Magnesium / Creatinine
+\item GlycatedAlbuminPct: (Glycated albumin / Albumin) x 100
+\item UA_Cr_Ratio: Uric acid / Creatinine
+\item BUN_Cr_Ratio: BUN / Creatinine
+\item Ca_x_Phosphate: Calcium x Phosphate
+\item AnionGap: (Na + K) - (Cl + HCO3)
+\item Tyr_Phe_Ratio: Tyrosine / Phenylalanine
+}
+
+Recognized \code{col_map} keys and expected units (no automatic conversion):
+\itemize{
+\item ferritin: Serum ferritin (ng/mL)
+\item transferrin_sat: Transferrin saturation (\%)
+\item albumin: Serum albumin (g/L)
+\item total_protein: Total serum protein (g/L)
+\item EPA: Red-cell EPA as \% of total fatty acids
+\item DHA: Red-cell DHA as \% of total fatty acids
+\item Mg: Serum magnesium (mmol/L)
+\item creatinine: Serum creatinine (umol/L)
+\item glycated_albumin: Glycated albumin (g/L)
+\item uric_acid: Serum uric acid (umol/L)
+\item BUN: Blood urea nitrogen (mg/dL)
+\item phosphate: Serum phosphate (mmol/L)
+\item calcium: Serum calcium (mmol/L)
+\item Na: Serum sodium (mmol/L)
+\item K: Serum potassium (mmol/L)
+\item Cl: Serum chloride (mmol/L)
+\item HCO3: Serum bicarbonate (mmol/L)
+\item Tyr: Serum tyrosine (umol/L)
+\item Phe: Serum phenylalanine (umol/L)
+}
+
+Default \code{extreme_rules} (inputs) are broad and intended for unit/entry checks:
+ferritin \link{0, 2000}, transferrin_sat \link{0, 100}, albumin \link{10, 60}, total_protein \link{40, 100},
+EPA \link{0, 20}, DHA \link{0, 20}, Mg \link{0.2, 3}, creatinine \link{20, 2000}, glycated_albumin \link{0, 60},
+uric_acid \link{50, 1000}, BUN \link{1, 150}, phosphate \link{0.1, 5}, calcium \link{0.5, 4},
+Na \link{100, 200}, K \link{2, 8}, Cl \link{70, 130}, HCO3 \link{5, 45}, Tyr \link{10, 300}, Phe \link{20, 300}.
 }
 \examples{
-library(tibble)
-df <- tibble(
+df <- tibble::tibble(
   ferritin         = c(50, 100),
   transferrin_sat  = c(30, 50),
   albumin          = c(45, 40),
@@ -93,16 +127,20 @@ nutrient_markers(df, verbose = TRUE)
 
 }
 \references{
-\itemize{
-\item Sullivan JL (2007). \emph{Iron in Health and Disease}.
-\item Peters T (2014). \emph{All About Albumin}.
-\item Harris WS & von Schacky C (2004). The Omega-3 Index. \emph{Prostaglandins Leukot Essent Fatty Acids}.
-\item Vormann J (2003). Magnesium Basics. \emph{Clin Chim Acta}.
-\item Koga M \emph{et al.} (2014). Glycated albumin in diabetes. \emph{J Diabetes Investig}.
-\item Kanbay M \emph{et al.} (2013). Uric acid & kidney function. \emph{Clin J Am Soc Nephrol}.
-\item Waikar SS \emph{et al.} (2006). BUN:Cr as AKI marker. \emph{Clin J Am Soc Nephrol}.
-\item Block GA \emph{et al.} (1998). Calcium×phosphate in CKD–MBD. \emph{Kidney Int}.
-\item Emmett M & Neville K (2010). Anion Gap Review. \emph{J Emerg Med}.
-\item Kaufman LM \emph{et al.} (2005). Aromatic AAs in health. \emph{Clin Chem}.
-}
+Original derivations
+Harris WS, von Schacky C. The Omega-3 Index: a new risk factor for death from coronary heart disease?
+Prostaglandins Leukot Essent Fatty Acids. 2004;71(5):263–270. \doi{10.1016/j.plefa.2004.05.011} (Omega-3 Index)
+Koga M, Kasayama S. Clinical impact of glycated albumin as another glycemic control marker.
+J Diabetes Investig. 2010;1(1–2):43–48. \doi{10.1111/j.2040-1124.2010.00011.x} (Glycated Albumin \%)
+Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium × phosphate product
+with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556–562.
+\doi{10.1046/j.1523-1755.1998.00005.x} (Calcium–phosphate product)
+
+Validations
+Sullivan JL. Iron and the sex difference in heart disease risk. Lancet. 1981;1(8233):1293–1294.
+\doi{10.1016/S0140-6736(81)92463-6} (Ferritin / iron metabolism)
+Emmett M, Narins RG. Clinical use of the anion gap. Medicine (Baltimore). 1977;56(1):38–54.
+\doi{10.1097/00005792-197701000-00003} (Anion gap)
+Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury.
+J Am Soc Nephrol. 2009;20(3):672–679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
 }

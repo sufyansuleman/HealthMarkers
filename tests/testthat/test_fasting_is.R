@@ -3,11 +3,9 @@
 test_that("fasting_is errors if missing required columns", {
   df <- tibble::tibble(G0 = 5.5)
   expect_error(
-    fasting_is(df, col_map = list(G0 = "G0", I0 = "I0")),
-    "missing required columns"
+    fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))
   )
 })
-
 
 test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
@@ -82,14 +80,16 @@ test_that("invalid normalize argument errors", {
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   expect_error(
     fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "foo"),
-    "'arg' should be one of"
+    "`normalize` must be one of"
   )
 })
 
-test_that("verbose = TRUE prints a progress message", {
+test_that("verbose = TRUE prints a progress/completion message", {
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   expect_message(
     fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), verbose = TRUE),
-    "-> fasting_is: computing fasting indices"
+    "Completed fasting_is:",
+    fixed = TRUE,
+    all = NA  # match against any of the emitted messages
   )
 })

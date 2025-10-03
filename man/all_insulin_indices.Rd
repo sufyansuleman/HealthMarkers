@@ -2,32 +2,23 @@
 % Please edit documentation in R/health_markers.R
 \name{all_insulin_indices}
 \alias{all_insulin_indices}
-\title{Compute all insulin‐sensitivity (and optionally resistance) indices}
+\title{Compute insulin sensitivity/resistance panels (fasting, OGTT, adipose, tracer/DXA)}
 \usage{
 all_insulin_indices(
   data,
   col_map,
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
-  verbose = TRUE
+  verbose = TRUE,
+  na_action = NULL
 )
 }
-\arguments{
-\item{data}{A data.frame or tibble of raw measurements.}
-
-\item{col_map}{Named list with keys G0,I0,G30,I30,G120,I120,TG,HDL_c,FFA,waist,weight,bmi,age,sex,rate_palmitate,rate_glycerol,fat_mass.}
-
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}.}
-
-\item{mode}{One of \code{c("IS","IR","both")}.  \code{"IR"} returns only inverted IR, \code{"IS"} only the original IS, \code{"both"} returns both with IR_ prefix.}
-
-\item{verbose}{Logical.}
-}
-\value{
-A tibble of IS (and/or IR_) columns.
-}
 \description{
-\code{all_insulin_indices()} calls the four IS calculators
-(\code{fasting_is()}, \code{ogtt_is()}, \code{adipo_is()}, \code{tracer_dxa_is()}) and then
-optionally inverts them to IR measures.
+Compute insulin sensitivity/resistance panels (fasting, OGTT, adipose, tracer/DXA)
+}
+\note{
+For scholarly references to specific indices (e.g., HOMA-IR, QUICKI,
+Raynaud, Belfiore, tracer-derived indices, adiposity-related IS metrics),
+consult the individual function help pages (e.g. ?fasting_is, ?ogtt_is,
+?adipo_is, ?tracer_dxa_is). Citations are intentionally not duplicated here.
 }

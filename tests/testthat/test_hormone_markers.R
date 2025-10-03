@@ -1,8 +1,12 @@
+library(testthat)
+library(tibble)
+
 test_that("errors if any col_map entries missing", {
   df <- tibble(x = 1)
+  # Only one key provided; the rest are missing -> error from validate_inputs
   expect_error(
     hormone_markers(df, col_map = list(total_testosterone = "x")),
-    "missing col_map entries"
+    "you must supply col_map entries"
   )
 })
 
@@ -35,7 +39,7 @@ test_that("computes all nine ratios correctly", {
   expect_equal(out$CAR_slope, (260 - 200) / 30)
 })
 
-test_that("verbose = TRUE prints a message", {
+test_that("verbose = TRUE prints progress message", {
   df <- as.list(rep(1, 17))
   names(df) <- c(
     "total_testosterone", "SHBG", "LH", "FSH", "estradiol", "progesterone",
@@ -45,7 +49,7 @@ test_that("verbose = TRUE prints a message", {
   df <- as_tibble(df)
   expect_message(
     hormone_markers(df, col_map = setNames(names(df), names(df)), verbose = TRUE),
-    "computing hormone ratios"
+    "-> hormone_markers: computing ratios"
   )
 })
 
@@ -63,6 +67,6 @@ test_that("handles NA inputs gracefully", {
   )
   cm <- setNames(names(df), names(df))
   out <- hormone_markers(df, col_map = cm)
-  expect_true(is.na(out$FAI))
+  expect_true(is.na(out$FAI))  # NA numerator propagates
   expect_equal(out$LH_FSH, 1 / 1)
 })

@@ -4,18 +4,92 @@
 \alias{validate_inputs}
 \title{Validate that col_map is fully specified and data has the mapped columns}
 \usage{
-validate_inputs(data, col_map, fun_name = "", required_keys = names(col_map))
+validate_inputs(
+  data,
+  col_map,
+  fun_name = "",
+  required_keys = names(col_map),
+  optional_keys = NULL,
+  allow_extra_keys = TRUE,
+  duplicate_action = c("ignore", "warn", "error"),
+  missing_action = c("error", "warn", "ignore"),
+  missing_cols_action = c("error", "warn", "ignore"),
+  normalize_map = TRUE,
+  trim_ws = TRUE,
+  return_map = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble}
 
-\item{col_map}{Named list of expected keys -> column names}
+\item{col_map}{Named list (or named character vector) of expected keys -> column names}
 
-\item{fun_name}{Character; name of the calling function for messages}
+\item{fun_name}{Character; name of the calling function for messages (e.g., "fasting_is")}
 
 \item{required_keys}{Character vector; names in col_map that are required}
+
+\item{optional_keys}{Character vector; optional keys allowed in col_map (informational)}
+
+\item{allow_extra_keys}{Logical; allow keys in col_map beyond required/optional. Default TRUE.}
+
+\item{duplicate_action}{One of c("ignore","warn","error") controlling behavior when the same
+source column is mapped to multiple keys. Default "ignore".}
+
+\item{missing_action}{One of c("error","warn","ignore") for missing map entries among required_keys.
+Default "error".}
+
+\item{missing_cols_action}{One of c("error","warn","ignore") for mapped columns not present in data.
+Default "error".}
+
+\item{normalize_map}{Logical; if TRUE, coerce col_map entries to single character strings or NULL,
+trim whitespace, and convert NA_character_ to NULL. Default TRUE.}
+
+\item{trim_ws}{Logical; trim leading/trailing whitespace when normalize_map = TRUE. Default TRUE.}
+
+\item{return_map}{Logical; if TRUE, invisibly return the normalized map (named character vector/NULLs).
+If FALSE, invisibly return TRUE (backward compatible). Default FALSE.}
+
+\item{verbose}{Logical; if TRUE, prints a short summary of checks. Default FALSE.}
+}
+\value{
+\itemize{
+\item If return_map = FALSE (default): invisibly returns TRUE on success.
+\item If return_map = TRUE: invisibly returns the normalized mapping (list with character or NULL entries).
+}
 }
 \description{
-Validate that col_map is fully specified and data has the mapped columns
+Utility used across HealthMarkers to validate a column mapping against a data
+frame. It checks that:
+\itemize{
+\item \code{data} is a data.frame/tibble.
+\item \code{col_map} is a named list or named character vector.
+\item All required keys in \code{required_keys} have non-NULL mappings.
+\item All mapped columns exist in \code{data}.
+\item Optionally flags duplicate mappings and unknown keys.
+\item Emits informative errors or warnings depending on action settings.
+\item Optional verbose summary of what was checked.
+}
+}
+\details{
+Backward compatibility:
+\itemize{
+\item Defaults keep prior behavior (error on missing map entries and missing columns;
+allow extra keys and duplicate columns).
+}
+}
+\examples{
+df <- tibble::tibble(G0 = c(5.5, 6.1), I0 = c(60, 88))
+# OK: required keys present and columns exist
+validate_inputs(df, list(G0 = "G0", I0 = "I0"), fun_name = "fasting_is")
+
+# Return normalized map
+validate_inputs(df, list(G0 = " G0 ", I0 = "I0"), fun_name = "fasting_is", return_map = TRUE)
+
+# Will error: missing mapping for I0
+\dontrun{
+validate_inputs(df, list(G0 = "G0", I0 = NULL), fun_name = "fasting_is")
+}
+
 }
 \keyword{internal}

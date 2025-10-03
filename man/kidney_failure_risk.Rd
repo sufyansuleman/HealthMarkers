@@ -2,51 +2,119 @@
 % Please edit documentation in R/kidney_kfre.R
 \name{kidney_failure_risk}
 \alias{kidney_failure_risk}
-\title{Kidney Failure Risk Equation (2- and 5-year)}
+\title{Kidney Failure Risk Equation (KFRE, 2- and 5-year risk)}
 \usage{
 kidney_failure_risk(
   data,
-  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
+  na_action = c("keep", "error", "omit"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least the columns
-mapped below.}
+\item{data}{A data.frame or tibble containing at least the columns mapped in \code{col_map}.}
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{age}  → age in years
-\item \code{sex}  → sex code (1 = male, 2 = female)
-\item \code{eGFR} → estimated GFR (mL/min/1.73 m²)
-\item \code{UACR} → urine albumin-to-creatinine ratio (mg/g)
+\item \code{age}  -> age in years
+\item \code{sex}  -> sex code (1 = male, 2 = female)
+\item \code{eGFR} -> estimated GFR (mL/min/1.73 m^2)
+\item \code{UACR} -> urine albumin-to-creatinine ratio (mg/g)
 }}
+
+\item{na_action}{One of c("keep","error","omit"). Default "keep" to preserve previous behavior:
+\itemize{
+\item "keep": propagate NA/NaN through logs and outputs.
+\item "error": abort if any required input contains missing values.
+\item "omit": drop rows with NA in required inputs before computation.
+}}
+
+\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan for out-of-range values (see \code{extreme_rules}). Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") used when \code{check_extreme = TRUE}.
+\itemize{
+\item "warn": only warn about out-of-range values (default).
+\item "cap": truncate to range and warn.
+\item "error": abort if any out-of-range is detected.
+\item "ignore": do nothing.
+}}
+
+\item{extreme_rules}{Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).
+If NULL, broad defaults are used: age \link{18, 120}, eGFR \link{1, 200}, UACR \link{0.1, 10000} (mg/g).}
+
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a completion summary. Default FALSE.}
 }
 \value{
-A tibble with two columns:
+A tibble with:
 \itemize{
-\item \code{KFRE_2yr} — risk (0–1) at 2 years
-\item \code{KFRE_5yr} — risk (0–1) at 5 years
+\item \code{KFRE_2yr} risk (0–1) at 2 years
+\item \code{KFRE_5yr} risk (0–1) at 5 years
 }
 }
 \description{
-Compute 2- and 5-year risk of end-stage kidney disease using the
-4-variable KFRE (Tangri \emph{et al.}, 2011).
+Compute 2- and 5-year risk of end-stage kidney disease using the original
+4-variable KFRE (Tangri et al., 2011) with optional data-quality diagnostics,
+extreme-value handling, and verbose progress reporting.
+}
+\details{
+This function preserves prior behavior by default:
+\itemize{
+\item Inputs are taken as-is; NA values propagate to outputs (na_action = "keep").
+\item No capping or out-of-range checks are applied unless requested.
+}
+
+Units (no automatic conversion):
+\itemize{
+\item age: years; sex: 1 = male, 2 = female
+\item eGFR: mL/min/1.73 m^2
+\item UACR: mg/g (albumin-to-creatinine ratio)
+}
+
+Details
+\itemize{
+\item Prognostic index: PI = 0.220\emph{log(age) + (-0.556)\emph{log(eGFR) + 0.451}log(UACR) + 0.391}(male)
+where male = 1 if sex == 1, else 0.
+\item Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).
+\item Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).
+\item The 2016 JAMA study provides a large, multinational validation of the KFRE in humans.
+}
 }
 \examples{
 library(tibble)
 df <- tibble(
-  age  = 65,
-  sex  = 1,
-  eGFR = 45,
-  UACR = 300
+  age  = c(65, 72),
+  sex  = c(1, 2),          # 1 = male, 2 = female
+  eGFR = c(45, 22),        # mL/min/1.73 m^2
+  UACR = c(300, 1200)      # mg/g
 )
+# Default behavior (NA propagate, no extreme checks)
 kidney_failure_risk(
   data = df,
-  col_map = list(
-    age  = "age",
-    sex  = "sex",
-    eGFR = "eGFR",
-    UACR = "UACR"
-  )
+  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
 )
+
+# With diagnostics and capping
+\donttest{
+kidney_failure_risk(
+  data = df,
+  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
+  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+)
+}
+
+}
+\references{
+Tangri N, Stevens LA, Griffith J, et al. (2011). A predictive model for progression of chronic kidney disease to kidney failure. JAMA, 305(15):1553–1559. \doi{10.1001/jama.2011.451}
+Tangri N, Grams ME, Levey AS, et al. (2016). Multinational assessment of accuracy of equations for predicting risk of kidney failure: a meta-analysis. JAMA, 315(2):164–174. \doi{10.1001/jama.2015.18202}
+Matsushita K, van der Velde M, Astor BC, et al. (2015). Estimated glomerular filtration rate and albuminuria for prediction of kidney failure: a collaborative meta-analysis. Ann Intern Med, 162(4):247–255. \doi{10.7326/M14-3312}
+Tangri N, Inker LA, Tighiouart H, et al. (2020). Validation of the kidney failure risk equation in advanced CKD. Kidney Int, 97(5):995–1004. \doi{10.1016/j.kint.2019.12.009}
+}
+\seealso{
+\code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=iAge]{iAge()}}, \code{\link[=impute_missing]{impute_missing()}}
 }

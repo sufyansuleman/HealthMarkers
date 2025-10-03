@@ -80,6 +80,6 @@ test_that("verbose = TRUE prints a progress message", {
   )
   expect_message(
     saliva_markers(df, verbose = TRUE),
-    "-> computing saliva markers"
+    "-> saliva_markers: computing markers"
   )
 })

@@ -76,3 +76,43 @@ test_that("verbose = TRUE prints a message", {
     "computing bone markers"
   )
 })
+
+test_that("na_action = 'warn_zero' warns on non-finite and high NA", {
+  df_bad <- df_full
+  df_bad$BMD[1] <- NA_real_
+  expect_warning(
+    bone_markers(df_bad, col_map = cm_full, na_action = "warn_zero", na_warn_prop = 1),
+    "Non-finite values found"
+  )
+})
+
+test_that("na_action = 'error' stops on missing/non-finite inputs", {
+  df_bad <- df_full
+  df_bad$height[2] <- NA_real_
+  expect_error(
+    bone_markers(df_bad, col_map = cm_full, na_action = "error"),
+    "Missing or non-finite values"
+  )
+})
+
+test_that("argument constraints are enforced (height > 0, ref_sd > 0)", {
+  df_h0 <- df_full; df_h0$height[1] <- 0
+  expect_error(bone_markers(df_h0, col_map = cm_full), "height' must be positive for non-missing rows")
+  df_sd0 <- df_full; df_sd0$BMD_ref_sd[1] <- 0
+  expect_error(bone_markers(df_sd0, col_map = cm_full), "BMD_ref_sd' must be positive for non-missing rows")
+})
+
+test_that("SDS extremes can warn or error when enabled", {
+  df_sds <- df_full
+  df_sds$ALMI_sds <- c(0, 7)  # one extreme value > 6
+  cm_sds <- cm_full
+  cm_sds$ALMI_sds <- "ALMI_sds"
+  expect_warning(
+    bone_markers(df_sds, col_map = cm_sds, check_extreme_sds = TRUE, sds_limit = 6, extreme_sds_action = "warn"),
+    "Extreme SDS-like values detected"
+  )
+  expect_error(
+    bone_markers(df_sds, col_map = cm_sds, check_extreme_sds = TRUE, sds_limit = 6, extreme_sds_action = "error"),
+    "Extreme SDS-like values detected"
+  )
+})

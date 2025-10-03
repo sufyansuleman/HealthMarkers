@@ -4,59 +4,98 @@
 \alias{renal_markers}
 \title{Calculate a Suite of Renal Function, Injury, and Excretion Markers}
 \usage{
-renal_markers(data, col_map, verbose = FALSE)
+renal_markers(
+  data,
+  col_map,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} with your renal lab data.}
+\item{data}{A data.frame or tibble with renal lab data.}
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{creatinine} → serum creatinine (mg/dL)
-\item \code{age} → age (years)
-\item \code{sex} → sex indicator (1 = male, 0 = female)
-\item \code{race} → race (\code{"white"}, \code{"black"}, or \code{"other"})
-\item \code{BUN} → blood urea nitrogen (mg/dL)
-\item \strong{optional} \code{cystatin_C} → serum cystatin C (mg/L)
-\item \strong{optional} \code{urea_serum} → serum urea (mg/dL)
-\item \strong{optional} \code{creatinine_urine} → urine creatinine (mg/dL)
-\item \strong{optional} \code{urea_urine} → urine urea (mg/dL)
-\item \strong{optional} \code{NGAL} → urine NGAL (ng/mL)
-\item \strong{optional} \code{KIM1} → urine KIM-1 (ng/mL)
-\item \strong{optional} \code{NAG} → urine NAG (U/g creatinine)
-\item \strong{optional} \code{beta2_micro} → urine β₂-microglobulin (µg/mL)
-\item \strong{optional} \code{IL18} → urine IL-18 (pg/mL)
-\item \strong{optional} \code{L_FABP} → urine L-FABP (µg/g creatinine)
+\item creatinine -> serum creatinine (mg/dL)
+\item age -> age (years)
+\item sex -> sex indicator (1 = male, 0 = female). Also accepts "male"/"female".
+\item race -> race ("white", "black", or "other"). Also accepts common aliases.
+\item BUN -> blood urea nitrogen (mg/dL)
+\item optional cystatin_C -> serum cystatin C (mg/L)
+\item optional urea_serum -> serum urea (mg/dL)
+\item optional creatinine_urine -> urine creatinine (mg/dL)
+\item optional urea_urine -> urine urea (mg/dL)
+\item optional NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP -> urine injury markers
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_action}{One of c("keep","omit","error") for handling missing values in
+required inputs. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for
+required inputs. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scans selected inputs for out-of-range
+values using simple heuristics. Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes
+are detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) bounds keyed by input
+names (e.g., "creatinine","BUN","cystatin_C","urea_serum","creatinine_urine","urea_urine").
+If NULL, built-in defaults are used.}
+
+\item{verbose}{Logical; if TRUE, prints progress messages and a completion summary.}
 }
 \value{
 A tibble with columns:
-\code{eGFR_cr}, \code{eGFR_cys}, \code{eGFR_combined},
-\code{BUN_Cr_ratio}, \code{FE_Urea},
-\code{NGAL}, \code{KIM1}, \code{NAG}, \code{Beta2Micro}, \code{IL18}, \code{L_FABP}
+eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio, FE_Urea,
+NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP
 }
 \description{
 Given routine blood and urine assays, \code{renal_markers()} computes:
 \itemize{
-\item \strong{eGFR_cr}       CKD-EPI creatinine equation
-\item \strong{eGFR_cys}      CKD-EPI cystatin C equation (if \code{cystatin_C} provided)
-\item \strong{eGFR_combined} CKD-EPI combined creatinine+cystatin C (if both provided)
-\item \strong{BUN_Cr_ratio}  Blood urea nitrogen / serum creatinine
-\item \strong{FE_Urea}       Fractional excretion of urea (\%)
-\item \strong{NGAL}, \strong{KIM1}, \strong{NAG}, \strong{Beta2Micro}, \strong{IL18}, \strong{L_FABP}
+\item eGFR_cr: CKD-EPI creatinine equation (2009 variant; race factor retained to preserve prior behavior)
+\item eGFR_cys: CKD-EPI cystatin C equation (if \code{cystatin_C} provided)
+\item eGFR_combined: CKD-EPI combined creatinine+cystatin C (if both provided)
+\item BUN_Cr_ratio: Blood urea nitrogen / serum creatinine
+\item FE_Urea: Fractional excretion of urea (\%)
+\item NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP: pass-through urinary injury markers (if mapped)
+}
+}
+\details{
+Robust validation is applied, including NA handling (\code{na_action}), high-missingness
+diagnostics, safe divisions with a consolidated zero-denominator warning, and an
+optional input extremes scan/cap. New arguments are appended for backward compatibility.
+
+Expected units (no automatic conversion performed):
+\itemize{
+\item creatinine (serum): mg/dL
+\item cystatin C (serum): mg/L
+\item BUN (serum): mg/dL
+\item urea_serum, urea_urine: mg/dL
+\item creatinine_urine: mg/dL
 }
 }
 \references{
-\itemize{
-\item Levey AS \emph{et al.} (2009). A new equation to estimate glomerular filtration rate. \emph{Ann Intern Med} \strong{150}(9):604–612.
-\item Inker LA \emph{et al.} (2012). Estimating glomerular filtration rate from serum cystatin C. \emph{N Engl J Med} \strong{369}(10):1011–1021.
-\item Waikar SS \emph{et al.} (2009). Fractional excretion of urea to guide diuretic therapy. \emph{Clin J Am Soc Nephrol} \strong{4}(4):801–807.
-\item Parikh CR \emph{et al.} (2011). Urine NGAL for early detection of acute kidney injury. \emph{J Am Soc Nephrol} \strong{22}(12):2233–2241.
-\item Vaidya VS \emph{et al.} (2010). Kidney Injury Molecule-1 in acute and chronic kidney disease. \emph{J Clin Invest} \strong{120}(11):3771–3783.
-\item Schaub S \emph{et al.} (2008). N-acetyl-β-D-glucosaminidase as an early marker of kidney damage. \emph{Kidney Int} \strong{73}(5):615–625.
-\item Stevens LA \emph{et al.} (2010). Urinary β₂-microglobulin for proximal tubule dysfunction. \emph{Am J Kidney Dis} \strong{56}(6):1072–1081.
-\item Parikh CR \emph{et al.} (2004). Urine interleukin-18 in acute tubular necrosis. \emph{J Am Soc Nephrol} \strong{15}(1):159–165.
-\item Portilla D \emph{et al.} (2008). Urinary L-FABP as biomarker of acute kidney injury. \emph{Toxicol Sci} \strong{101}(2):320–328.
-}
+Original derivations
+Levey AS, Stevens LA, Schmid CH, et al. A new equation to estimate glomerular filtration rate.
+Ann Intern Med. 2009;150(9):604–612. \doi{10.7326/0003-4819-150-9-200905050-00006} (CKD-EPI creatinine equation)
+Inker LA, Schmid CH, Tighiouart H, et al. Estimating glomerular filtration rate from serum cystatin C.
+N Engl J Med. 2012;367(1):20–29. \doi{10.1056/NEJMoa1114248} (CKD-EPI cystatin C equation)
+Inker LA, Eneanya ND, Coresh J, et al. New creatinine- and cystatin C–based equations for estimating GFR without race.
+N Engl J Med. 2021;385(19):1737–1749. \doi{10.1056/NEJMoa2102953} (Race-free CKD-EPI equations)
+
+Validation and biomarker studies
+Waikar SS, Sabbisetti VS, Bonventre JV. Fractional excretion of urea as a diagnostic index in acute kidney injury.
+Clin J Am Soc Nephrol. 2009;4(4):802–809. \doi{10.2215/CJN.04870908} (FEUrea in AKI)
+Parikh CR, Coca SG, Thiessen-Philbrook H, et al. Urine NGAL as an early predictive biomarker of acute kidney injury.
+J Am Soc Nephrol. 2011;22(12):1737–1747. \doi{10.1681/ASN.2010121302} (NGAL early biomarker)
+Vaidya VS, Ramirez V, Ichimura T, et al. Kidney injury molecule-1 outperforms traditional biomarkers of kidney injury in preclinical models.
+J Clin Invest. 2010;120(11):3771–3783. \doi{10.1172/JCI42242} (KIM-1 tubular injury marker)
+Portilla D, Dent C, Sugaya T, et al. Urinary liver-type fatty acid–binding protein as a biomarker of acute kidney injury.
+Toxicol Sci. 2008;101(2):365–373. \doi{10.1093/toxsci/kfm279} (L-FABP biomarker)
 }

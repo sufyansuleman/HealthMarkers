@@ -2,26 +2,59 @@
 % Please edit documentation in R/metabolic_risk_features.R
 \name{metabolic_risk_features}
 \alias{metabolic_risk_features}
-\title{Calculate metabolic risk feature flags}
+\title{Calculate metabolic risk feature flags (pediatric-friendly thresholds)}
 \usage{
-metabolic_risk_features(data)
+metabolic_risk_features(
+  data,
+  col_map = NULL,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least:
+\item{data}{A data.frame or tibble containing at least these numeric columns:
 \itemize{
-\item \code{chol_total}, \code{chol_ldl}, \code{chol_hdl}, \code{triglycerides} (numeric)
-\item \code{age_year}     (numeric, years)
-\item \code{z_HOMA}       (numeric, standardized HOMA‐IR)
-\item \code{glucose}      (numeric, mmol/L)
-\item \code{HbA1c}        (numeric, mmol/mol)
-\item \code{bp_sys_z}, \code{bp_dia_z} (numeric, systolic/diastolic BP z‐scores)
+\item chol_total, chol_ldl, chol_hdl, triglycerides (mmol/L)
+\item age_year (years)
+\item z_HOMA (standardized HOMA-IR)
+\item glucose (mmol/L)
+\item HbA1c (mmol/mol; IFCC units)
+\item bp_sys_z, bp_dia_z (BP z-scores)
 }}
+
+\item{col_map}{Optional named list to map required keys to column names in \code{data}.
+Keys: c("chol_total","chol_ldl","chol_hdl","triglycerides","age_year",
+"z_HOMA","glucose","HbA1c","bp_sys_z","bp_dia_z"). Default NULL (use same names).}
+
+\item{na_action}{One of c("keep","omit","error") controlling missing-data policy.
+Default "keep" to preserve previous behavior:
+\itemize{
+\item "keep": keep NA; outputs become NA where inputs are NA.
+\item "omit": drop rows with NA in any required input.
+\item "error": abort if any required input contains NA.
+}}
+
+\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see \code{extreme_rules}). Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") used when extremes are detected
+(only when \code{check_extreme = TRUE}).
+\itemize{
+\item "warn": only warn (default), "cap": truncate to range and warn,
+\item "error": abort, "ignore": do nothing.
+}}
+
+\item{extreme_rules}{Optional named list of c(min,max) ranges for required keys. If NULL, broad defaults are used.}
+
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
 }
 \value{
-A tibble with one column per marker-each a factor with levels \code{0}/\code{1}.
-}
-\description{
-Given routine labs and z‐scores, computes four key binary risk markers:
+A tibble with four factor columns (levels c("0","1")):
 \itemize{
 \item dyslipidemia
 \item insulin_resistance
@@ -29,8 +62,44 @@ Given routine labs and z‐scores, computes four key binary risk markers:
 \item hypertension
 }
 }
+\description{
+Compute four binary risk flags from routine clinical measures:
+\itemize{
+\item dyslipidemia
+\item insulin_resistance
+\item hyperglycemia (prediabetes-range glycemia)
+\item hypertension (BP ≥95th percentile via z > 1.64)
+}
+}
+\details{
+By default, behavior matches prior implementation: required columns are
+validated, NA values are kept (propagate to outputs), no extreme-value
+checks or capping are applied, and a tibble with 0/1 factor flags is returned.
+
+Units and criteria (no automatic unit conversion):
+\itemize{
+\item Lipids (mmol/L): total cholesterol > 5.2 OR LDL-C > 3.4 OR HDL-C < 1.0 OR
+triglycerides > 1.1 (age 0–9) OR > 1.5 (age 10–19) => dyslipidemia = 1.
+\item Insulin resistance: z_HOMA > 1.28 (≈90th percentile) => insulin_resistance = 1.
+z_HOMA is a within-sample or external z-score of HOMA-IR.
+\item Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in (39, 47) mmol/mol
+=> hyperglycemia = 1.
+\item Hypertension: either BP z-score > 1.64 (≈95th percentile) for systolic or diastolic
+=> hypertension = 1.
+}
+
+Notes and assumptions:
+\itemize{
+\item Age-specific triglyceride cutoffs follow pediatric lipid guidance (see NHLBI 2011).
+\item HbA1c is expected in mmol/mol (IFCC). If your data are in \%, convert first:
+mmol/mol = (percent - 2.15) / 0.0915, or switch to \% cutoffs externally.
+\item z_HOMA is a standardized HOMA-IR. The function uses a 1.28 z-threshold (~90th percentile).
+If you need different thresholds, alter inputs upstream.
+}
+}
 \examples{
-df <- tibble::tibble(
+library(tibble)
+df <- tibble(
   chol_total = 6.0,
   chol_ldl = 3.5,
   chol_hdl = 1.0,
@@ -43,4 +112,26 @@ df <- tibble::tibble(
   bp_dia_z = 1.0
 )
 metabolic_risk_features(df)
+
+\donttest{
+# With diagnostics and capping
+metabolic_risk_features(
+  df,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+}
+
+}
+\references{
+Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985). Homeostasis model assessment: insulin resistance and beta-cell function from fasting plasma glucose and insulin concentrations in man. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
+Wallace TM, Levy JC, Matthews DR (2004). Use and abuse of HOMA modeling. Diabetes Care, 27(6):1487–1495. \doi{10.2337/diacare.27.6.1487}
+Keskin M, Kurtoglu S, Kendirci M, Atabek ME, Yazici C (2005). Homeostasis model assessment is more reliable than the fasting glucose/insulin ratio and quantitative insulin sensitivity check index for assessing insulin resistance among obese children and adolescents. Pediatrics, 115(4):e500–e503. \doi{10.1542/peds.2004-1921}
+Expert Panel on Integrated Guidelines for Cardiovascular Health and Risk Reduction in Children and Adolescents, National Heart, Lung, and Blood Institute (2011). Expert Panel on Integrated Guidelines for Cardiovascular Health and Risk Reduction in Children and Adolescents: Summary Report. Pediatrics, 128 Suppl 5:S213–S256. \doi{10.1542/peds.2009-2107C}
+Flynn JT, Kaelber DC, Baker-Smith CM, et al. (2017). Clinical Practice Guideline for Screening and Management of High Blood Pressure in Children and Adolescents. Pediatrics, 140(3):e20171904. \doi{10.1542/peds.2017-1904}
+International Expert Committee (2009). International Expert Committee report on the role of the A1C assay in the diagnosis of diabetes. Diabetes Care, 32(7):1327–1334. \doi{10.2337/dc09-9033}
+}
+\seealso{
+\code{\link[=liver_markers]{liver_markers()}}, \code{\link[=lipid_markers]{lipid_markers()}}, \code{\link[=kidney_failure_risk]{kidney_failure_risk()}}, \code{\link[=inflammatory_markers]{inflammatory_markers()}}
 }

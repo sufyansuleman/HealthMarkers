@@ -2,18 +2,18 @@
 % Please edit documentation in R/cvd_risk.R
 \name{cvd_risk_scorescvd}
 \alias{cvd_risk_scorescvd}
-\title{RiskScorescvd main wrapper}
+\title{RiskScorescvd calculator}
 \usage{
 cvd_risk_scorescvd(data, ...)
 }
 \arguments{
-\item{data}{A tibble with columns required by RiskScorescvd::calc_scores (see package docs).}
+\item{data}{Data required by \code{RiskScorescvd::calc_scores()}.}
 
-\item{...}{Additional arguments passed to calc_scores.}
+\item{...}{Passed to \code{RiskScorescvd::calc_scores()}.}
 }
 \value{
-The raw output of calc_scores, typically a named numeric vector.
+Object returned by \code{RiskScorescvd::calc_scores()}.
 }
 \description{
-Wrapper around RiskScorescvd::calc_scores to compute selected CV scores
+Passthrough to \code{RiskScorescvd::calc_scores()} with graceful fallback to NA.
 }

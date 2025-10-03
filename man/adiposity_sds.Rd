@@ -2,28 +2,86 @@
 % Please edit documentation in R/adiposity_sds.R
 \name{adiposity_sds}
 \alias{adiposity_sds}
-\title{Calculate standardized‐score (SDS) for adiposity measures}
+\title{Calculate standardized scores (SDS) for adiposity measures}
 \usage{
-adiposity_sds(data, ref, verbose = FALSE)
+adiposity_sds(
+  data,
+  ref,
+  na_action = c("omit", "error", "keep"),
+  extreme_action = c("cap", "warn", "error", "ignore"),
+  sds_cap = 6,
+  check_raw_extreme = FALSE,
+  raw_extreme_rules = NULL,
+  diagnostics = TRUE,
+  warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
+  id_col = NULL,
+  verbose = FALSE,
+  return_summary = FALSE,
+  na_strategy = NULL,
+  extreme_strategy = NULL
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your raw measures.}
+\item{data}{data.frame or tibble containing the measurement columns.}
 
-\item{ref}{A named list of reference parameters. Each element must be
-a numeric vector of length 2, named \strong{mean} and \strong{sd}, e.g.:
+\item{ref}{Named list where each element is a numeric vector with names
+\code{mean} and \code{sd}, e.g. \code{list(BMI = c(mean = 23, sd = 4))}.}
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{list(
-  BMI           = c(mean = 18.5, sd = 4.2),
-  waist         = c(mean = 75,   sd = 10),
-  body_fat_pct  = c(mean = 25,   sd = 8)
-)
-}\if{html}{\out{</div>}}}
+\item{na_action}{One of \code{c("omit","error","keep")} determining how rows with
+any missing required values are handled.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{extreme_action}{One of \code{c("cap","warn","error","ignore")} controlling
+how SDS values exceeding \code{sds_cap} in absolute value are treated.}
+
+\item{sds_cap}{Positive numeric; absolute cap used when
+\code{extreme_action = "cap"}. Default 6.}
+
+\item{check_raw_extreme}{Logical; if TRUE apply raw-value extreme screening
+using \code{raw_extreme_rules} (before SDS computation).}
+
+\item{raw_extreme_rules}{Optional named list of length-2 numeric vectors
+giving c(min, max) for raw variables; if NULL, broad defaults are used
+for common anthropometric measures (BMI, waist, weight, height, hip, WC, HC).}
+
+\item{diagnostics}{Logical; if TRUE emit informational/warning messages
+(coercions, missingness, extremes). FALSE suppresses non-critical warnings.}
+
+\item{warn_thresholds}{Named list with optional elements:
+\code{na_prop} (default 0.05) and \code{extreme_prop} (default 0.01) used for
+proportion-based diagnostic warnings.}
+
+\item{id_col}{Optional column name used only in verbose summaries.}
+
+\item{verbose}{Logical; if TRUE print progress and completion summaries.}
+
+\item{return_summary}{Logical; if TRUE return a list with elements
+\code{data}, \code{summary}, and \code{warnings} instead of just the SDS tibble.}
+
+\item{na_strategy}{Soft-deprecated alias for \code{na_action}.}
+
+\item{extreme_strategy}{Soft-deprecated alias for \code{extreme_action}.}
 }
 \value{
-A tibble with one column per reference variable, named \verb{<var>_SDS}.
+A tibble with one \verb{<var>_SDS} column per reference variable, or a
+list when \code{return_summary = TRUE}.
 }
 \description{
-Given raw anthropometry, compute z‐scores relative to supplied reference means & SDs.
+Computes standard deviation (z) scores for anthropometric variables relative to
+a single (non–sex-stratified) reference set of means and standard deviations.
+Includes input validation, optional raw-value extreme screening/capping,
+configurable handling of extreme SDS values, NA row policies, optional concise
+summary output, and optional verbose progress messages.
+}
+\details{
+SDS are computed as: (observed - mean) / sd. Rows are removed only when
+\code{na_action = 'omit'}. Raw-value extreme screening (if enabled) is applied
+before SDS computation. Extreme SDS handling (cap / warn / error / ignore)
+is controlled by \code{extreme_action}. Legacy argument aliases (\code{na_strategy},
+\code{extreme_strategy}) are soft-deprecated but still accepted.
+}
+\examples{
+ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
+df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
+adiposity_sds(df, ref)
+
 }

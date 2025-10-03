@@ -6,30 +6,36 @@
 \usage{
 cvd_risk(
   data,
-  model = c("ALL", "ASCVD", "QRISK3", "MESA", "Stroke", "WHO", "RiskScorescvd", "AIP",
-    "LDL_PN"),
+  model = c("ALL", "ASCVD", "QRISK3", "MESA", "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
   year = 10,
-  ...
+  ...,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A tibble or data.frame with the columns required by your chosen \code{model}}
+\item{data}{A data frame with the columns required by your chosen \code{model}.}
 
 \item{model}{One of:
 \itemize{
-\item \code{"ALL"} — run every implemented model/marker
-\item Risk calculators: \code{"ASCVD"}, \code{"QRISK3"}, \code{"MESA"}, \code{"Stroke"}, \code{"WHO"}, \code{"RiskScorescvd"}
+\item \code{"ALL"} - run every implemented model/marker
+\item Risk calculators: \code{"ASCVD"}, \code{"QRISK3"}, \code{"MESA"},
+\code{"Stroke"}, \code{"RiskScorescvd"}
 \item Lipid markers: \code{"AIP"}, \code{"LDL_PN"}
 }}
 
-\item{year}{Risk horizon (10 or 30) for applicable models; ignored for lipid markers}
+\item{year}{Risk horizon (10 or 30) for applicable models; ignored for lipid markers.}
 
-\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{verbose}, \code{col_map})}
+\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{na_action}, \code{na_warn_prop}, \code{col_map}).}
+
+\item{verbose}{Logical; if TRUE, prints step-by-step progress and a completion summary.}
 }
 \value{
-A tibble.  Risk models return columns \code{model}, \code{year}, \code{risk}; lipid markers return \code{model}, \code{value}.
-When \code{model = "ALL"}, you get one row per sub-model and all of the columns (\code{model},\code{year},\code{risk},\code{value}).
+A tibble. Risk models return columns \code{model}, \code{year}, \code{risk};
+lipid markers return \code{model}, \code{value}. When \code{model = "ALL"},
+you get one row per sub-model; missing columns are filled with \code{NA}.
 }
 \description{
-Dispatch to the appropriate risk or marker function, or run \emph{all} of them.
+Dispatch to the appropriate risk or marker function, or run all of them.
+Includes basic argument validation, optional progress messages, and robust
+fallback to NA rows if individual calculators fail.
 }

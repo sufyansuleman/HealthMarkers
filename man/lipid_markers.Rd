@@ -3,7 +3,7 @@
 \name{lipid_markers}
 \alias{lipid_markers}
 \title{Calculate lipid-panel markers, Visceral Adiposity Index (VAI),
-Lipid Accumulation Product (LAP), and TyG–BMI index}
+Lipid Accumulation Product (LAP), and TyG-BMI index}
 \usage{
 lipid_markers(
   data,
@@ -18,13 +18,13 @@ lipid_markers(
 
 \item{col_map}{Named list mapping:
 \itemize{
-\item \code{TC}    → total cholesterol
-\item \code{HDL_c} → HDL-C
-\item \code{TG}    → triglycerides
-\item \code{LDL_c} → (optional) LDL-C; if missing, estimated via Friedewald
-\item \code{ApoB}, \code{ApoA1} → (optional) apolipoproteins
-\item \code{waist} → (optional) waist circumference (cm)
-\item \code{BMI}   → (optional) body mass index (kg/m²)
+\item \code{TC}    -> total cholesterol
+\item \code{HDL_c} -> HDL-C
+\item \code{TG}    -> triglycerides
+\item \code{LDL_c} -> (optional) LDL-C; if missing, estimated via Friedewald
+\item \code{ApoB}, \code{ApoA1} -> (optional) apolipoproteins
+\item \code{waist} -> (optional) waist circumference (cm)
+\item \code{BMI}   -> (optional) body mass index (kg/m^2)
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints a message about computing markers.}
@@ -53,18 +53,9 @@ waist, BMI, glucose), computes:
 }
 }
 \references{
-\itemize{
-\item Friedewald WT, Levy RI, Fredrickson DS. Estimation of the
-concentration of LDL cholesterol in plasma, without use of
-preparative ultracentrifuge. \emph{Clin Chem}. 1972;18(6):499–502.
-\item Amato MC, Giordano C, Galia M, et al. Visceral adiposity index:
-a reliable indicator of visceral fat function associated with
-cardiometabolic risk. \emph{Diabetes Care}. 2010;33(4):920–922.
-\item Kahn HS. Lipid accumulation product performs better than BMI as
-a marker of cardiovascular risk. \emph{J Clin Endocrinol Metab}.
-2005;90(11):6292–6298.
-\item Lee YH, Kim JE, et al. Triglyceride-glucose-body mass index
-(TyG-BMI) predicts nonalcoholic fatty liver disease. \emph{Int J Obes}.
-2020;44(9):2101–2110.
-}
+Friedewald WT, Levy RI, Fredrickson DS (1972). Estimation of the concentration of LDL cholesterol in plasma, without use of preparative ultracentrifuge. Clin Chem, 18(6):499–502. \doi{10.1093/clinchem/18.6.499}
+Amato MC, Giordano C, Galia M, et al. (2010). Visceral Adiposity Index: a reliable indicator of visceral fat function associated with cardiometabolic risk. Diabetes Care, 33(4):920–922. \doi{10.2337/dc09-1825}
+Kahn HS (2005). The lipid accumulation product performs better than BMI as an indicator of cardiovascular risk in women. Diabetes Care, 28(11):2728–2734. \doi{10.2337/diacare.28.11.2728}
+Lee YH, Lee SH, Jee JH, et al. (2016). Triglyceride-glucose body mass index is a simple and clinically useful surrogate marker for insulin resistance in nondiabetic adults. Int J Obes (Lond), 40(7):1187–1192. \doi{10.1038/ijo.2016.52}
+Lee YH, Jung DH, Park YW, et al. (2020). Triglyceride-glucose-body mass index (TyG-BMI) predicts nonalcoholic fatty liver disease. Int J Obes (Lond), 44(9):2101–2110. \doi{10.1038/s41366-020-0599-7}
 }

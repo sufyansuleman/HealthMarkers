@@ -2,72 +2,128 @@
 % Please edit documentation in R/glycemic_markers.R
 \name{glycemic_markers}
 \alias{glycemic_markers}
-\title{Calculate glycemic‐, C‐peptide‐, and additional metabolic markers}
+\title{Calculate glycemic-, C-peptide-, and additional metabolic markers}
 \usage{
-glycemic_markers(data, verbose = FALSE)
+glycemic_markers(
+  data,
+  na_action = c("ignore", "warn", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} containing at least:
+\item{data}{A data.frame or tibble containing at least:
 \itemize{
-\item \code{HDL_c}       (HDL cholesterol, mmol/L)
-\item \code{TG}          (triglycerides, mmol/L)
-\item \code{BMI}         (body mass index, kg/m^2)
-\item optionally \code{glucose}     (fasting glucose, mmol/L)
-\item optionally \code{HbA1c}       (mmol/mol)
-\item optionally \code{C_peptide}   (pmol/L), \code{G0} (glucose, mmol/L), \code{I0} (insulin, pmol/L)
-\item optionally \code{leptin}      (ng/mL), \code{adiponectin} (ng/mL)
+\item HDL_c (mmol/L), TG (mmol/L), BMI (kg/m^2)
+Optional if present: glucose (mmol/L), HbA1c (mmol/mol), C_peptide (pmol/L),
+G0 (mmol/L), I0 (pmol/L), leptin (ng/mL), adiponectin (ng/mL).
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+\item{na_action}{One of \code{c("ignore","warn","error")} controlling behavior when
+required inputs contain missing or non-finite values. Default "ignore".}
+
+\item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings
+among used columns when \code{na_action = "warn"}. Default 0.2.}
+
+\item{check_extreme}{Logical; if \code{TRUE}, scan selected input variables for values
+outside plausible ranges defined in \code{extreme_rules}. Default \code{FALSE}.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do
+when extreme inputs are detected. If "cap", values are truncated to the allowed range.
+Default "warn".}
+
+\item{extreme_rules}{Named list of numeric length-2 ranges for inputs to scan when
+\code{check_extreme = TRUE}. Defaults are broad medical plausibility ranges:
+\itemize{
+\item HDL_c: c(0.1, 5), TG: c(0.1, 20), BMI: c(10, 80),
+\item glucose: c(2, 30), HbA1c: c(20, 200), C_peptide: c(0, 5000),
+\item G0: c(2, 30), I0: c(0, 3000), leptin: c(0, 200), adiponectin: c(0, 300).
+Only variables present in \code{data} are checked.
+}}
+
+\item{verbose}{Logical; if \code{TRUE}, prints progress and a completion summary. Default FALSE.}
 }
 \value{
 A tibble with columns:
 \itemize{
-\item \code{SPISE}
-\item \code{METS_IR}
-\item \code{prediabetes}
-\item \code{diabetes}
-\item \code{HOMA_CP}
-\item \code{LAR}
-\item \code{ASI}
-\item \code{TyG_index}
+\item SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index
 }
 }
 \description{
 Given fasting labs and anthropometry, computes:
 \itemize{
-\item \strong{SPISE}            (Single‐Point Insulin Sensitivity Estimator; Paulmichl \emph{et al.} 2015)
-\item \strong{METS_IR}          (Metabolic Score for Insulin Resistance; Bello-Chavolla \emph{et al.} 2018 )
-\item \strong{prediabetes} flag (HbA1c ≥ 42 mmol/mol)
-\item \strong{diabetes}    flag (HbA1c ≥ 48 mmol/mol)
-\item \strong{HOMA_CP}         (C‐peptide‐based HOMA-IR)
-\item \strong{LAR}             (Leptin/Adiponectin Ratio; Frühbeck \emph{et al.} 2013)
-\item \strong{ASI}             (Adiponectin Sensitivity Index; Yang \emph{et al.} 2006)
-\item \strong{TyG_index}       (Triglyceride-Glucose Index; Simental-Mendía \emph{et al.} 2008)
+\item SPISE (Single-Point Insulin Sensitivity Estimator)
+\item METS_IR (Metabolic Score for Insulin Resistance)
+\item prediabetes flag (HbA1c >= 42 mmol/mol)
+\item diabetes flag (HbA1c >= 48 mmol/mol)
+\item HOMA_CP (C-peptide-based HOMA-IR variant; operational formula, see notes)
+\item LAR (Leptin/Adiponectin Ratio)
+\item ASI (Adiponectin Sensitivity Index; adiponectin/insulin)
+\item TyG_index (Triglyceride-Glucose Index)
+}
+}
+\details{
+Assumed units (no automatic conversion of inputs except where noted):
+\itemize{
+\item HDL_c, TG: mmol/L (TyG internally converts TG to mg/dL via 88.57)
+\item BMI: kg/m^2
+\item glucose, G0: mmol/L (TyG internally converts glucose to mg/dL via 18)
+\item HbA1c: mmol/mol
+\item C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin µU/mL; see notes)
+\item leptin, adiponectin: ng/mL
+}
+
+Quality controls and options:
+\itemize{
+\item Input validation ensures required variables exist and are numeric-coercible.
+\item Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).
+\item Missing or non-finite inputs are handled via \code{na_action}.
+\item Logs and divisions are computed safely (non-positive arguments yield NA).
+\item Optional detection/handling of extreme input values via \code{check_extreme} and \code{extreme_action}.
+\item Verbose mode prints step-by-step progress and a completion summary.
+}
+
+Notes on HOMA_CP:
+\itemize{
+\item This function retains the package's existing operational formula:
+HOMA_CP = (G0 \link{mmol/L} * (C_peptide \link{pmol/L} / 6)) / 22.5
+which mirrors HOMA-IR’s structure using a 6 pmol/µU scaling used for insulin.
+Users should verify unit conventions for their datasets; alternative C-peptide
+HOMA implementations exist (e.g., HOMA2-CP).
 }
 }
 \examples{
-library(tibble)
-df <- tibble(
-  HDL_c       = 1.0,
-  TG          = 1.3,
-  BMI         = 24,
-  glucose     = 5.6,
-  HbA1c       = 44,
-  C_peptide   = 300,
-  G0          = 5.5,
-  I0          = 60,
-  leptin      = 10,
-  adiponectin = 8
+df <- tibble::tibble(
+  HDL_c       = c(1.0, 1.3),
+  TG          = c(1.3, 2.0),
+  BMI         = c(24, 30),
+  glucose     = c(5.6, 7.1),
+  HbA1c       = c(44, 38),
+  C_peptide   = c(300, 500),
+  G0          = c(5.5, 6.2),
+  I0          = c(60, 120),
+  leptin      = c(10, 20),
+  adiponectin = c(8, 5)
 )
-glycemic_markers(df, verbose = TRUE)
+# Quiet defaults
+glycemic_markers(df)
+# Warn on missingness and scan for extremes with capping
+glycemic_markers(df,
+  na_action = "warn", na_warn_prop = 0.1,
+  check_extreme = TRUE, extreme_action = "cap",
+  verbose = TRUE
+)
 }
 \references{
 \itemize{
-\item Paulmichl F, Schneditz D, et al. A Single-Point Insulin Sensitivity Estimator (SPISE): a novel index for assessing insulin sensitivity in clinical practice. \emph{J Clin Endocrinol Metab}. 2015;100(5):E536–E541.
-\item Bello-Chavolla OY, Almeda-Valdés P, et al. METS-IR, a novel score to evaluate insulin sensitivity, is predictive of visceral adiposity and incident type 2 diabetes. \emph{Eur J Endocrinol}. 2018;178(3):235–245.
-\item Frühbeck G, Gómez-Ambrosi J, et al. Role of the leptin/adiponectin ratio in insulin resistance. \emph{Int J Obes}. 2013;37(4):510–514.
-\item Yang X, Zhang L, et al. Adiponectin Sensitivity Index (ASI): adiponectin/insulin ratio as a marker of adipocyte insulin sensitivity in type 2 diabetes. \emph{Diabetes Res Clin Pract}. 2006;71(1):28–36.
-\item Simental-Mendía LE, Rodríguez-Morán M, Guerrero-Romero F. The triglyceride-glucose (TyG) index is a simple and accurate surrogate marker of insulin sensitivity. \emph{Eur J Clin Invest}. 2008;38(7):331–336.
+\item Paulmichl K, et al. (2016). SPISE: Single-Point Insulin Sensitivity Estimator. Clin Chem, 62(9):1211–1219.
+\item Bello-Chavolla OY, et al. (2018). METS-IR score. Eur J Endocrinol, 178(5):533–544.
+\item Frühbeck G, et al. (2018). Adiponectin-leptin ratio. Adipocyte, 7(1):57–62.
+\item Matthews DR, et al. (1985). HOMA. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
+\item Simental-Mendía LE, et al. (2008). TyG index. Metab Syndr Relat Disord, 6(2):89–95. \doi{10.1089/met.2007.0038}
+\item Yang X, et al. (2006). Adiponectin/insulin ratio. Diabetes Res Clin Pract, 73(2):293–299.
 }
 }

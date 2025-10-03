@@ -2,22 +2,40 @@
 % Please edit documentation in R/sweat_markers.R
 \name{sweat_markers}
 \alias{sweat_markers}
-\title{Calculate sweat‐based ionic & metabolic markers}
+\title{Calculate sweat-based ionic & metabolic markers}
 \usage{
-sweat_markers(data, verbose = FALSE)
+sweat_markers(
+  data,
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble containing at least:
 \itemize{
-\item \code{sweat_chloride}    (mmol/L)
+\item \code{sweat_chloride} (mmol/L)
 \item \code{sweat_Na}, \code{sweat_K} (mmol/L)
-\item \code{sweat_lactate}     (mmol/L)
+\item \code{sweat_lactate} (mmol/L)
 \item \code{weight_before}, \code{weight_after} (kg)
-\item \code{duration}          (h)
+\item \code{duration} (h)
 \item \code{body_surface_area} (m^2)
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages and a completion summary.}
+
+\item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for required inputs. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.}
 }
 \value{
 A tibble with columns:
@@ -26,10 +44,23 @@ A tibble with columns:
 \description{
 Computes:
 \itemize{
-\item \strong{sweat_chloride} (mmol/L)
-\item \strong{Na_K_ratio}      (sweat Na⁺/K⁺)
-\item \strong{sweat_lactate}   (mmol/L)
-\item \strong{sweat_rate}      (L/m^2/h)
+\item sweat_chloride (mmol/L)
+\item Na_K_ratio     (sweat Na+/K+)
+\item sweat_lactate  (mmol/L)
+\item sweat_rate     (L/m^2/h) from body mass loss per hour per m^2
+}
+}
+\details{
+Inputs are validated, missingness handled via \code{na_action}, safe divisions
+are used to avoid Inf/NaN, and an optional extremes scan/cap is available.
+
+Expected units:
+\itemize{
+\item sweat_chloride, sweat_Na, sweat_K: mmol/L
+\item sweat_lactate: mmol/L
+\item weight_before, weight_after: kg
+\item duration: hours
+\item body_surface_area: m^2
 }
 }
 \examples{
@@ -44,4 +75,11 @@ df <- tibble::tibble(
   body_surface_area = 1.9
 )
 sweat_markers(df)
+
+}
+\references{
+Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis. Pediatrics. 1959;23(3):545–549. (Sweat chloride test origin)
+Dill DB, Costill DL. Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration. J Appl Physiol. 1974;37(2):247–248. \doi{10.1152/jappl.1974.37.2.247}
+Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4–S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
+Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51–S60. \doi{10.1007/s40279-015-0395-7}
 }

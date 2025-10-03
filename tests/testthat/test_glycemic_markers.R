@@ -26,12 +26,19 @@ test_that("SPISE is computed correctly", {
   expect_equal(out$SPISE, expected, tolerance = 1e-8)
 })
 
-test_that("METS_IR returns Inf/finite when glucose present, NA otherwise", {
-  df_with <- tibble(HDL_c = 1, TG = 1.3, BMI = 24, glucose = 5.6)
+test_that("METS_IR returns finite when glucose present and HDL_c != 1, NA when denominator is zero", {
+  # Use HDL_c != 1 so log(HDL_c) != 0 and result is finite
+  df_with <- tibble(HDL_c = 1.2, TG = 1.3, BMI = 24, glucose = 5.6)
   out1 <- glycemic_markers(df_with)
-  # log(1) = 0, so may be Inf
-  expect_true(is.finite(out1$METS_IR) || is.infinite(out1$METS_IR))
+  expected <- (log(2 * 5.6 + 1.3) * 24) / log(1.2)
+  expect_equal(out1$METS_IR, expected, tolerance = 1e-8)
 
+  # Denominator zero case -> safe division returns NA
+  df_den0 <- tibble(HDL_c = 1, TG = 1.3, BMI = 24, glucose = 5.6)
+  out_den0 <- glycemic_markers(df_den0)
+  expect_true(is.na(out_den0$METS_IR))
+
+  # No glucose column -> NA
   df_without <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   out2 <- glycemic_markers(df_without)
   expect_true(is.na(out2$METS_IR))

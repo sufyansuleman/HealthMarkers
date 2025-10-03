@@ -2,33 +2,47 @@
 % Please edit documentation in R/cvd_risk.R
 \name{cvd_risk_ascvd}
 \alias{cvd_risk_ascvd}
-\title{ASCVD 10-year risk (ACC/AHA Pooled Cohort Equations)}
+\title{ASCVD risk (ACC/AHA Pooled Cohort Equations)}
 \usage{
-cvd_risk_ascvd(data, year = 10, ...)
+cvd_risk_ascvd(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{A tibble with columns: \code{age}, \code{sex} (1=male,0=female), \code{race} ("white","black","other"),
-\code{smoker} (logical), \code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated} (logical),
-\code{diabetes} (logical), \code{bmi}.}
+\item{data}{A data frame with columns:
+\code{age}, \code{sex} (1 = male, 0 = female), \code{race} ("white","black","other"),
+\code{smoker} (logical), \code{total_chol}, \code{HDL_c}, \code{sbp},
+\code{bp_treated} (logical), \code{diabetes} (logical), \code{bmi}.}
 
-\item{year}{Risk horizon: 10 or 30 years.}
+\item{year}{Risk horizon: 10 or 30.}
 
-\item{...}{Additional arguments passed to the underlying PooledCohort function.}
+\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+Only used when \code{verbose = TRUE}; underlying backend handles NA as per its API.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a short summary.}
+
+\item{...}{Passed to the underlying PooledCohort function.}
 }
 \value{
-A tibble with columns \code{model}, \code{year}, and \code{risk} (numeric percentage).
+A tibble with columns \code{model}, \code{year}, \code{risk} (percentage).
 }
 \description{
-Wrapper around PooledCohort's ASCVD risk calculators.
+Wrapper around the PooledCohort ASCVD calculators with added input validation,
+optional data-quality warnings, and quiet failure to NA if the backend errors.
 }
 \examples{
-\dontrun{
-df <- tibble(
+df <- tibble::tibble(
   age = 55, sex = 1, race = "white", smoker = FALSE,
   total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
   diabetes = FALSE, bmi = 27
 )
-cvd_risk_ascvd(df, year = 10)
-cvd_risk_ascvd(df, year = 30)
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  cvd_risk_ascvd(df, year = 10, verbose = TRUE)
+}
+
+}
+\references{
+\itemize{
+\item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline on the
+Assessment of Cardiovascular Risk: a report of the ACC/AHA Task Force on Practice
+Guidelines. Circulation. 2014;129(25 Suppl 2):S49–S73. (Pooled Cohort Equations)
 }
 }

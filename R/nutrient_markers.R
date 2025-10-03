@@ -1,69 +1,94 @@
-# File: R/nutrient_markers.R
-
-#' Compute a Suite of Nutrient‐Based Health Markers
+#' Compute a Suite of Nutrient-Based Health Markers
 #'
-#' Given a data.frame or tibble of routine biochemical labs,
-#' `nutrient_markers()` returns a set of widely‐used ratios, products
-#' and z-scores that capture iron metabolism, protein status, fatty-acid
-#' balance, renal excretion markers, mineral homeostasis and amino-acid
-#' patterns.
+#' Given a data frame or tibble of routine biochemical labs,
+#' `nutrient_markers()` returns a set of widely used ratios, products,
+#' and simple percentages that summarize iron metabolism, protein status,
+#' omega-3 balance, renal excretion, mineral homeostasis, and aromatic
+#' amino-acid patterns.
 #'
-#' @param data A `data.frame` or `tibble` containing your subject‐level data.
-#' @param col_map Named list mapping the following keys to column names in `data`:
-#'   \describe{
-#'     \item{`ferritin`}          {Serum ferritin (ng/mL)}
-#'     \item{`transferrin_sat`}   {Transferrin saturation (\%)}
-#'     \item{`albumin`}           {Serum albumin (g/L)}
-#'     \item{`total_protein`}     {Total serum protein (g/L)}
-#'     \item{`EPA`}               {Red‐cell EPA \% of total fatty acids}
-#'     \item{`DHA`}               {Red‐cell DHA \% of total fatty acids}
-#'     \item{`Mg`}                {Serum magnesium (mmol/L)}
-#'     \item{`creatinine`}        {Serum creatinine (µmol/L)}
-#'     \item{`glycated_albumin`}  {Glycated albumin (g/L)}
-#'     \item{`uric_acid`}         {Serum uric acid (µmol/L)}
-#'     \item{`BUN`}               {Blood urea nitrogen (mg/dL)}
-#'     \item{`phosphate`}         {Serum phosphate (mmol/L)}
-#'     \item{`calcium`}           {Serum calcium (mmol/L)}
-#'     \item{`Na`}                {Serum sodium (mmol/L)}
-#'     \item{`K`}                 {Serum potassium (mmol/L)}
-#'     \item{`Cl`}                {Serum chloride (mmol/L)}
-#'     \item{`HCO3`}              {Serum bicarbonate (mmol/L)}
-#'     \item{`Tyr`}               {Serum tyrosine (µmol/L)}
-#'     \item{`Phe`}               {Serum phenylalanine (µmol/L)}
-#'   }
-#'   You only need to supply the columns you have—any markers missing
-#'   will return `NA`.
-#' @param verbose Logical; if `TRUE`, prints a progress message.
+#' Recognized markers (returned as columns):
+#' - FerritinTS: Ferritin / Transferrin saturation
+#' - AGR: Albumin / Globulin, where Globulin = Total protein - Albumin
+#' - Omega3Index: EPA + DHA (percentage points)
+#' - Mg_Cr_Ratio: Magnesium / Creatinine
+#' - GlycatedAlbuminPct: (Glycated albumin / Albumin) x 100
+#' - UA_Cr_Ratio: Uric acid / Creatinine
+#' - BUN_Cr_Ratio: BUN / Creatinine
+#' - Ca_x_Phosphate: Calcium x Phosphate
+#' - AnionGap: (Na + K) - (Cl + HCO3)
+#' - Tyr_Phe_Ratio: Tyrosine / Phenylalanine
 #'
-#' @return A `tibble` with columns:
-#' \describe{
-#'   \item{FerritinTS}{Ferritin / Transferrin Saturation Ratio}
-#'   \item{AGR}{Albumin / Globulin Ratio}
-#'   \item{Omega3Index}{EPA + DHA (\% of total fatty acids)}
-#'   \item{Mg_Cr_Ratio}{Magnesium / Creatinine}
-#'   \item{GlycatedAlbuminPct}{\% Glycated Albumin}
-#'   \item{UA_Cr_Ratio}{Uric Acid / Creatinine}
-#'   \item{BUN_Cr_Ratio}{BUN / Creatinine}
-#'   \item{Ca_x_Phosphate}{Calcium × Phosphate Product}
-#'   \item{AnionGap}{(Na + K) − (Cl + HCO₃)}
-#'   \item{Tyr_Phe_Ratio}{Tyrosine / Phenylalanine}
-#' }
+#' @param data A data frame or tibble containing subject-level data.
+#' @param col_map Optional named list mapping variable keys (see Details) to
+#'   column names in `data`. You only need to supply the keys you have; any
+#'   markers with missing inputs return `NA`. If NULL, defaults to identity
+#'   mapping for all known keys.
+#' @param na_action One of c("keep","omit","error") controlling missing-data policy
+#'   across the columns referenced by `col_map`.
+#'   - "keep" (default): keep NA; outputs become NA where inputs are NA.
+#'   - "omit": drop rows with NA in any used input column.
+#'   - "error": abort if any used input contains NA.
+#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness
+#'   warnings on used input columns. Default 0.2.
+#' @param check_extreme Logical; if TRUE, scan used input columns for out-of-range
+#'   values (see `extreme_rules`). Default FALSE.
+#' @param extreme_action One of c("warn","cap","error","ignore") used when extremes are
+#'   detected (only when `check_extreme = TRUE`). Default "warn".
+#' @param extreme_rules Optional named list from input keys to c(min,max) ranges. If NULL,
+#'   broad defaults are used (see Details).
+#' @param verbose Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.
+#'
+#' @details
+#' Recognized `col_map` keys and expected units (no automatic conversion):
+#' - ferritin: Serum ferritin (ng/mL)
+#' - transferrin_sat: Transferrin saturation (%)
+#' - albumin: Serum albumin (g/L)
+#' - total_protein: Total serum protein (g/L)
+#' - EPA: Red-cell EPA as % of total fatty acids
+#' - DHA: Red-cell DHA as % of total fatty acids
+#' - Mg: Serum magnesium (mmol/L)
+#' - creatinine: Serum creatinine (umol/L)
+#' - glycated_albumin: Glycated albumin (g/L)
+#' - uric_acid: Serum uric acid (umol/L)
+#' - BUN: Blood urea nitrogen (mg/dL)
+#' - phosphate: Serum phosphate (mmol/L)
+#' - calcium: Serum calcium (mmol/L)
+#' - Na: Serum sodium (mmol/L)
+#' - K: Serum potassium (mmol/L)
+#' - Cl: Serum chloride (mmol/L)
+#' - HCO3: Serum bicarbonate (mmol/L)
+#' - Tyr: Serum tyrosine (umol/L)
+#' - Phe: Serum phenylalanine (umol/L)
+#'
+#' Default `extreme_rules` (inputs) are broad and intended for unit/entry checks:
+#' ferritin [0, 2000], transferrin_sat [0, 100], albumin [10, 60], total_protein [40, 100],
+#' EPA [0, 20], DHA [0, 20], Mg [0.2, 3], creatinine [20, 2000], glycated_albumin [0, 60],
+#' uric_acid [50, 1000], BUN [1, 150], phosphate [0.1, 5], calcium [0.5, 4],
+#' Na [100, 200], K [2, 8], Cl [70, 130], HCO3 [5, 45], Tyr [10, 300], Phe [20, 300].
+#'
+#' @return A tibble with one row per input row and these columns:
+#' FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct,
+#' UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, Tyr_Phe_Ratio.
 #'
 #' @references
-#' - Sullivan JL (2007). *Iron in Health and Disease*.
-#' - Peters T (2014). *All About Albumin*.
-#' - Harris WS & von Schacky C (2004). The Omega-3 Index. *Prostaglandins Leukot Essent Fatty Acids*.
-#' - Vormann J (2003). Magnesium Basics. *Clin Chim Acta*.
-#' - Koga M *et al.* (2014). Glycated albumin in diabetes. *J Diabetes Investig*.
-#' - Kanbay M *et al.* (2013). Uric acid & kidney function. *Clin J Am Soc Nephrol*.
-#' - Waikar SS *et al.* (2006). BUN:Cr as AKI marker. *Clin J Am Soc Nephrol*.
-#' - Block GA *et al.* (1998). Calcium×phosphate in CKD–MBD. *Kidney Int*.
-#' - Emmett M & Neville K (2010). Anion Gap Review. *J Emerg Med*.
-#' - Kaufman LM *et al.* (2005). Aromatic AAs in health. *Clin Chem*.
+#'  Original derivations
+#'  Harris WS, von Schacky C. The Omega-3 Index: a new risk factor for death from coronary heart disease? 
+#'   Prostaglandins Leukot Essent Fatty Acids. 2004;71(5):263–270. \doi{10.1016/j.plefa.2004.05.011} (Omega-3 Index)
+#'  Koga M, Kasayama S. Clinical impact of glycated albumin as another glycemic control marker. 
+#'   J Diabetes Investig. 2010;1(1–2):43–48. \doi{10.1111/j.2040-1124.2010.00011.x} (Glycated Albumin %)
+#'  Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium × phosphate product 
+#'   with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556–562. 
+#'   \doi{10.1046/j.1523-1755.1998.00005.x} (Calcium–phosphate product)
 #'
+#' Validations
+#'  Sullivan JL. Iron and the sex difference in heart disease risk. Lancet. 1981;1(8233):1293–1294. 
+#'   \doi{10.1016/S0140-6736(81)92463-6} (Ferritin / iron metabolism)
+#'  Emmett M, Narins RG. Clinical use of the anion gap. Medicine (Baltimore). 1977;56(1):38–54. 
+#'   \doi{10.1097/00005792-197701000-00003} (Anion gap)
+#'  Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury. 
+#'   J Am Soc Nephrol. 2009;20(3):672–679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
 #' @examples
-#' library(tibble)
-#' df <- tibble(
+#' df <- tibble::tibble(
 #'   ferritin         = c(50, 100),
 #'   transferrin_sat  = c(30, 50),
 #'   albumin          = c(45, 40),
@@ -86,88 +111,281 @@
 #' )
 #' nutrient_markers(df, verbose = TRUE)
 #'
+#' @importFrom rlang abort warn inform
+#' @importFrom tibble tibble
 #' @export
-nutrient_markers <- function(data,
-                             col_map = list(
-                               ferritin         = "ferritin",
-                               transferrin_sat  = "transferrin_sat",
-                               albumin          = "albumin",
-                               total_protein    = "total_protein",
-                               EPA              = "EPA",
-                               DHA              = "DHA",
-                               Mg               = "Mg",
-                               creatinine       = "creatinine",
-                               glycated_albumin = "glycated_albumin",
-                               uric_acid        = "uric_acid",
-                               BUN              = "BUN",
-                               phosphate        = "phosphate",
-                               calcium          = "calcium",
-                               Na               = "Na",
-                               K                = "K",
-                               Cl               = "Cl",
-                               HCO3             = "HCO3",
-                               Tyr              = "Tyr",
-                               Phe              = "Phe"
-                             ),
-                             verbose = FALSE) {
-  if (!is.data.frame(data)) {
-    stop("nutrient_markers(): `data` must be a data.frame or tibble.")
-  }
-  if (verbose) message("-> computing nutrient markers")
+nutrient_markers <- function(
+  data,
+  col_map = NULL,
+  na_action = c("keep","omit","error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn","cap","error","ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
+) {
+  na_action <- match.arg(na_action)
+  extreme_action <- match.arg(extreme_action)
 
-  # helper to pull or NULL
+  t0 <- Sys.time()
+  if (isTRUE(verbose)) rlang::inform("-> nutrient_markers: validating inputs")
+
+  .nm_validate_args(data, col_map, na_warn_prop, extreme_rules)
+
+  # Known keys
+  keys <- c(
+    "ferritin","transferrin_sat","albumin","total_protein",
+    "EPA","DHA","Mg","creatinine","glycated_albumin","uric_acid",
+    "BUN","phosphate","calcium","Na","K","Cl","HCO3","Tyr","Phe"
+  )
+
+  # Default identity mapping if NULL
+  if (is.null(col_map)) {
+    col_map <- as.list(keys); names(col_map) <- keys
+  } else {
+    # Keep only recognized keys; ignore extras with a warning
+    extra <- setdiff(names(col_map), keys)
+    if (length(extra)) {
+      rlang::warn(sprintf("nutrient_markers(): ignoring unrecognized keys in col_map: %s", paste(extra, collapse = ", ")))
+      col_map[extra] <- NULL
+    }
+  }
+
+  # Determine used input columns present in data
+  mapped <- unlist(col_map, use.names = TRUE)
+  used_cols <- intersect(unname(mapped), names(data))
+  .nm_warn_high_missing(data, used_cols, na_warn_prop = na_warn_prop)
+
+  # NA policy over used inputs
+  if (na_action == "error") {
+    has_na <- Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
+    if (any(has_na)) {
+      rlang::abort("nutrient_markers(): used input columns contain missing values (na_action='error').",
+                   class = "healthmarkers_nm_error_missing_values")
+    }
+  } else if (na_action == "omit" && length(used_cols)) {
+    keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose)) rlang::inform(sprintf("-> nutrient_markers: omitting %d rows with NA in used inputs", sum(!keep)))
+    data <- data[keep, , drop = FALSE]
+  }
+
+  # Optional extreme scan/capping on used inputs
+  capped_n <- 0L
+  if (isTRUE(check_extreme) && length(used_cols)) {
+    rules <- if (is.null(extreme_rules)) .nm_default_extreme_rules() else extreme_rules
+    ex <- .nm_extreme_scan(data, col_map, rules, keys)
+    if (ex$count > 0L) {
+      if (extreme_action == "error") {
+        rlang::abort(sprintf("nutrient_markers(): detected %d extreme input values.", ex$count),
+                     class = "healthmarkers_nm_error_extremes")
+      } else if (extreme_action == "cap") {
+        data <- .nm_cap_inputs(data, ex$flags, col_map, rules)
+        capped_n <- ex$count
+        rlang::warn(sprintf("nutrient_markers(): capped %d extreme input values into allowed ranges.", ex$count))
+      } else if (extreme_action == "warn") {
+        rlang::warn(sprintf("nutrient_markers(): detected %d extreme input values (not altered).", ex$count))
+      }
+      # "ignore": no-op
+    }
+  }
+
+  if (isTRUE(verbose)) rlang::inform("-> nutrient_markers: computing markers")
+
+  n <- nrow(data)
   getcol <- function(key) {
     nm <- col_map[[key]]
     if (!is.null(nm) && nm %in% names(data)) data[[nm]] else NULL
   }
 
+  # Track zero denominators per ratio marker
+  denom_zero <- list()
+
+  safe_div <- function(num, den, label) {
+    if (is.null(num) || is.null(den)) return(rep(NA_real_, n))
+    z <- (!is.na(den)) & (den == 0)
+    denom_zero[[label]] <<- sum(z, na.rm = TRUE)
+    out <- num / den
+    out[!is.finite(out)] <- NA_real_
+    out
+  }
+
   ferr <- getcol("ferritin")
   tsat <- getcol("transferrin_sat")
-  alb <- getcol("albumin")
+  alb  <- getcol("albumin")
   tprot <- getcol("total_protein")
-  EPA <- getcol("EPA")
-  DHA <- getcol("DHA")
-  Mg <- getcol("Mg")
-  Cr <- getcol("creatinine")
-  gAlb <- getcol("glycated_albumin")
-  UA <- getcol("uric_acid")
-  BUN <- getcol("BUN")
+  epa  <- getcol("EPA")
+  dha  <- getcol("DHA")
+  mg   <- getcol("Mg")
+  cr   <- getcol("creatinine")
+  galb <- getcol("glycated_albumin")
+  ua   <- getcol("uric_acid")
+  bun  <- getcol("BUN")
   phos <- getcol("phosphate")
-  Ca <- getcol("calcium")
-  Na_ <- getcol("Na")
-  K_ <- getcol("K")
-  Cl_ <- getcol("Cl")
-  HCO3_ <- getcol("HCO3")
-  Tyr <- getcol("Tyr")
-  Phe <- getcol("Phe")
+  ca   <- getcol("calcium")
+  na_  <- getcol("Na")
+  k_   <- getcol("K")
+  cl_  <- getcol("Cl")
+  hco3 <- getcol("HCO3")
+  tyr  <- getcol("Tyr")
+  phe  <- getcol("Phe")
 
-  # compute each marker (NA if inputs missing)
-  FerritinTS <- if (!is.null(ferr) && !is.null(tsat)) ferr / tsat else NA_real_
-  AGR <- if (!is.null(alb) && !is.null(tprot)) alb / (tprot - alb) else NA_real_
-  Omega3Index <- if (!is.null(EPA) && !is.null(DHA)) EPA + DHA else NA_real_
-  Mg_Cr_Ratio <- if (!is.null(Mg) && !is.null(Cr)) Mg / Cr else NA_real_
-  GlycatedAlbuminPct <- if (!is.null(gAlb) && !is.null(alb)) (gAlb / alb) * 100 else NA_real_
-  UA_Cr_Ratio <- if (!is.null(UA) && !is.null(Cr)) UA / Cr else NA_real_
-  BUN_Cr_Ratio <- if (!is.null(BUN) && !is.null(Cr)) BUN / Cr else NA_real_
-  Ca_x_Phosphate <- if (!is.null(Ca) && !is.null(phos)) Ca * phos else NA_real_
-  AnionGap <- if (!is.null(Na_) && !is.null(K_) && !is.null(Cl_) && !is.null(HCO3_)) {
-    (Na_ + K_) - (Cl_ + HCO3_)
-  } else {
-    NA_real_
+  FerritinTS <- safe_div(ferr, tsat, "FerritinTS")
+
+  AGR <- if (!is.null(alb) && !is.null(tprot)) {
+    glob <- tprot - alb
+    safe_div(alb, glob, "AGR")
+  } else rep(NA_real_, n)
+
+  Omega3Index <- if (!is.null(epa) && !is.null(dha)) epa + dha else rep(NA_real_, n)
+
+  Mg_Cr_Ratio <- safe_div(mg, cr, "Mg_Cr_Ratio")
+  GlycatedAlbuminPct <- {
+    x <- safe_div(galb, alb, "GlycatedAlbuminPct")
+    if (all(is.na(x))) x else x * 100
   }
-  Tyr_Phe_Ratio <- if (!is.null(Tyr) && !is.null(Phe)) Tyr / Phe else NA_real_
+  UA_Cr_Ratio <- safe_div(ua, cr, "UA_Cr_Ratio")
+  BUN_Cr_Ratio <- safe_div(bun, cr, "BUN_Cr_Ratio")
 
-  # assemble results
-  tibble::tibble(
-    FerritinTS,
-    AGR,
-    Omega3Index,
-    Mg_Cr_Ratio,
-    GlycatedAlbuminPct,
-    UA_Cr_Ratio,
-    BUN_Cr_Ratio,
-    Ca_x_Phosphate,
-    AnionGap,
-    Tyr_Phe_Ratio
+  Ca_x_Phosphate <- if (!is.null(ca) && !is.null(phos)) ca * phos else rep(NA_real_, n)
+
+  AnionGap <- if (!is.null(na_) && !is.null(k_) && !is.null(cl_) && !is.null(hco3)) {
+    (na_ + k_) - (cl_ + hco3)
+  } else rep(NA_real_, n)
+
+  Tyr_Phe_Ratio <- safe_div(tyr, phe, "Tyr_Phe_Ratio")
+
+  out <- tibble::tibble(
+    FerritinTS = FerritinTS,
+    AGR = AGR,
+    Omega3Index = Omega3Index,
+    Mg_Cr_Ratio = Mg_Cr_Ratio,
+    GlycatedAlbuminPct = GlycatedAlbuminPct,
+    UA_Cr_Ratio = UA_Cr_Ratio,
+    BUN_Cr_Ratio = BUN_Cr_Ratio,
+    Ca_x_Phosphate = Ca_x_Phosphate,
+    AnionGap = AnionGap,
+    Tyr_Phe_Ratio = Tyr_Phe_Ratio
   )
+
+  # Emit a single denominator-zero warning if any occurred
+  dz_total <- sum(unlist(denom_zero), na.rm = TRUE)
+  if (dz_total > 0L) {
+    which_str <- paste(
+      sprintf("%s=%d", names(denom_zero)[unlist(denom_zero) > 0], unlist(denom_zero)[unlist(denom_zero) > 0]),
+      collapse = ", "
+    )
+    rlang::warn(sprintf("nutrient_markers(): zero denominators detected in %d cases (%s).", dz_total, which_str))
+  }
+
+  if (isTRUE(verbose)) {
+    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
+    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
+    rlang::inform(sprintf(
+      "Completed nutrient_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
+      nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
+      capped_n, dz_total, elapsed
+    ))
+  }
+
+  out
+}
+
+# ---- internal helpers ---------------------------------------------------------
+
+.nm_validate_args <- function(data, col_map, na_warn_prop, extreme_rules) {
+  if (!is.data.frame(data)) {
+    rlang::abort("nutrient_markers(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_nm_error_data_type")
+  }
+  if (!is.null(col_map)) {
+    if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
+      rlang::abort("nutrient_markers(): `col_map` must be a named list when supplied.",
+                   class = "healthmarkers_nm_error_colmap_type")
+    }
+  }
+  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L &&
+        is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
+    rlang::abort("nutrient_markers(): `na_warn_prop` must be a single numeric in [0, 1].",
+                 class = "healthmarkers_nm_error_na_warn_prop")
+  }
+  if (!is.null(extreme_rules)) {
+    if (!is.list(extreme_rules)) {
+      rlang::abort("nutrient_markers(): `extreme_rules` must be NULL or a named list of c(min,max).",
+                   class = "healthmarkers_nm_error_extreme_rules_type")
+    }
+    for (nm in names(extreme_rules)) {
+      rng <- extreme_rules[[nm]]
+      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)) && rng[1] <= rng[2])) {
+        rlang::abort(sprintf("nutrient_markers(): `extreme_rules[['%s']]` must be numeric length-2 with min <= max.", nm),
+                     class = "healthmarkers_nm_error_extreme_rules_value")
+      }
+    }
+  }
+  invisible(TRUE)
+}
+
+.nm_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
+  for (cn in cols) {
+    x <- df[[cn]]; n <- length(x); if (n == 0L) next
+    pna <- sum(is.na(x)) / n
+    if (pna >= na_warn_prop && pna > 0) {
+      rlang::warn(sprintf("nutrient_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+    }
+  }
+  invisible(TRUE)
+}
+
+.nm_default_extreme_rules <- function() {
+  list(
+    ferritin = c(0, 2000),
+    transferrin_sat = c(0, 100),
+    albumin = c(10, 60),
+    total_protein = c(40, 100),
+    EPA = c(0, 20),
+    DHA = c(0, 20),
+    Mg = c(0.2, 3),
+    creatinine = c(20, 2000),
+    glycated_albumin = c(0, 60),
+    uric_acid = c(50, 1000),
+    BUN = c(1, 150),
+    phosphate = c(0.1, 5),
+    calcium = c(0.5, 4),
+    Na = c(100, 200),
+    K = c(2, 8),
+    Cl = c(70, 130),
+    HCO3 = c(5, 45),
+    Tyr = c(10, 300),
+    Phe = c(20, 300)
+  )
+}
+
+.nm_extreme_scan <- function(df, col_map, rules, keys) {
+  count <- 0L
+  flags <- list()
+  for (key in intersect(names(col_map), names(rules))) {
+    cn <- col_map[[key]]
+    if (is.null(cn) || !cn %in% names(df)) next
+    x <- df[[cn]]
+    rng <- rules[[key]]
+    bad <- is.finite(x) & (x < rng[1] | x > rng[2])
+    flags[[cn]] <- bad
+    count <- count + sum(bad, na.rm = TRUE)
+  }
+  list(count = count, flags = flags)
+}
+
+.nm_cap_inputs <- function(df, flags, col_map, rules) {
+  for (cn in names(flags)) {
+    # Find key by column name
+    key <- names(col_map)[match(cn, unlist(col_map, use.names = FALSE))]
+    key <- key[!is.na(key)][1]
+    if (is.na(key) || is.null(rules[[key]])) next
+    rng <- rules[[key]]
+    x <- df[[cn]]
+    bad <- flags[[cn]]
+    x[bad & is.finite(x) & x < rng[1]] <- rng[1]
+    x[bad & is.finite(x) & x > rng[2]] <- rng[2]
+    df[[cn]] <- x
+  }
+  df
 }

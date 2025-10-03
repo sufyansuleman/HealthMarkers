@@ -2,32 +2,25 @@
 % Please edit documentation in R/health_markers.R
 \name{all_health_markers}
 \alias{all_health_markers}
-\title{Compute \strong{all} HealthMarkers in one go}
+\title{Compute all available HealthMarkers categories}
 \usage{
 all_health_markers(
   data,
   col_map,
+  which = "all",
+  include_insulin = TRUE,
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
-  verbose = TRUE
+  verbose = TRUE,
+  na_action = NULL
 )
 }
-\arguments{
-\item{data}{A data.frame or tibble of raw measurements.}
-
-\item{col_map}{Passed to insulin calculators.}
-
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}.}
-
-\item{mode}{One of \code{c("both","IS","IR")}.}
-
-\item{verbose}{Logical.}
-}
-\value{
-A tibble: the original data plus every marker column.
-}
 \description{
-Convenience wrapper that runs \strong{every} calculator in the package:
-insulin sensitivity/resistance, anthropometry‐SDS, cardio, lipid,
-liver, glycemic, MetS, pulmonary, saliva, sweat, urine.
+Compute all available HealthMarkers categories
+}
+\note{
+For academic / clinical references tied to each derived marker or
+index, consult the help pages of the source functions (e.g. ?allostatic_load,
+?bone_markers, ?vitamin_markers, ?inflammatory_markers, etc.). This
+aggregator provides integration only and does not restate citations.
 }

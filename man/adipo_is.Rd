@@ -2,64 +2,88 @@
 % Please edit documentation in R/adipo_is.R
 \name{adipo_is}
 \alias{adipo_is}
-\title{Calculate adipose based insulin sensitivity indices}
+\title{Calculate adipose-based insulin sensitivity indices (HM-CRANIZED)}
 \usage{
-adipo_is(data, col_map, normalize = "none", verbose = FALSE)
+adipo_is(
+  data,
+  col_map,
+  normalize = "none",
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  diagnostics = TRUE,
+  normalize_quiet = FALSE
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least the columns mapped by \code{col_map}.}
+\item{data}{data.frame / tibble with required columns}
 
-\item{col_map}{Named list mapping:
-\itemize{
-\item \code{G0} -> fasting glucose (mmol/L)
-\item \code{I0} -> fasting insulin (pmol/L)
-\item \code{TG} -> triglycerides (mmol/L)
-\item \code{HDL_c} -> HDL cholesterol (mmol/L)
-\item \code{FFA} -> free fatty acids (mmol/L)
-\item \code{waist} -> waist circumference (cm)
-\item \code{bmi} -> body‐mass index (kg/m^2)
-}}
+\item{col_map}{Named list mapping required keys (see above) to column names}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}-method to scale each index.}
+\item{normalize}{One of c("none","z","inverse","range","robust"). Applied column-wise post-computation.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{verbose}{Logical; print step messages}
+
+\item{na_action}{One of c("keep","omit","error") for required-input NAs. Default "keep".}
+
+\item{na_warn_prop}{Proportion (0–1) at/above which high-missingness warning is emitted. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for extremes using \code{extreme_rules}.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore"). Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) per required key (original units before conversion).
+If NULL, broad defaults are used.}
+
+\item{diagnostics}{Logical; if TRUE (default) emit domain diagnostic warnings (non-positive values that
+will invalidate logs, etc.).}
+
+\item{normalize_quiet}{Logical; if TRUE suppress normalization warnings (passed
+through to normalize_vec when supported, else warnings suppressed locally). Default FALSE.}
 }
 \value{
-A tibble with the 10 adipose‐based index columns.
+tibble with the 10 indices (after optional normalization)
 }
 \description{
-Given fasting glucose & insulin plus lipid and adiposity measures,
-computes:
+Computes 10 adipose / lipid–glucose derived insulin sensitivity (or inverted
+resistance) indices from fasting measurements. Resistance-style indices are
+multiplied by -1 so that higher values uniformly indicate better insulin
+sensitivity (suffix _inv where applicable).
+}
+\details{
+Required col_map keys (units expected in input):
 \itemize{
-\item Revised_QUICKI
-\item VAI_Men_inv
-\item VAI_Women_inv
-\item TG_HDL_C_inv
-\item TyG_inv
-\item LAP_Men_inv
-\item LAP_Women_inv
-\item McAuley_index
-\item Adipo_inv
-\item Belfiore_inv_FFA
+\item G0      : fasting glucose (mmol/L)
+\item I0      : fasting insulin (pmol/L)
+\item TG      : triglycerides (mmol/L)
+\item HDL_c   : HDL cholesterol (mmol/L)
+\item FFA     : free fatty acids (mmol/L)
+\item waist   : waist circumference (cm)
+\item bmi     : body mass index (kg/m^2)
 }
+
+Internal unit conversions (do not pre-convert):
+\itemize{
+\item Glucose mmol/L -> mg/dL ( * 18 )
+\item Insulin pmol/L -> µU/mL ( / 6 )
+\item TG mmol/L -> mg/dL ( * 88.57 )
+\item HDL mmol/L -> mg/dL ( * 38.67 )
 }
-\examples{
-df <- tibble::tibble(
-  G0 = 5.5, I0 = 60,
-  TG = 1.2, HDL_c = 1.0,
-  FFA = 0.45, waist = 80, bmi = 24
-)
-adipo_is(
-  df,
-  col_map = list(
-    G0    = "G0",
-    I0    = "I0",
-    TG    = "TG",
-    HDL_c = "HDL_c",
-    FFA   = "FFA",
-    waist = "waist",
-    bmi   = "bmi"
-  ),
-  normalize = "none"
-)
+
+Indices returned:
+Revised_QUICKI, VAI_Men_inv, VAI_Women_inv, TG_HDL_C_inv, TyG_inv,
+LAP_Men_inv, LAP_Women_inv, McAuley_index, Adipo_inv, Belfiore_inv_FFA
+}
+\references{
+Katz A, Nambi S, Mather K, et al. (2000). Quantitative insulin sensitivity check index (QUICKI). J Clin Endocrinol Metab, 85(7):2402–2410. \doi{10.1210/jcem.85.7.6661}
+Amato MC, Giordano C, Galia M, et al. (2010). Visceral Adiposity Index: a reliable indicator of visceral fat function associated with cardiometabolic risk. Diabetes Care, 33(4):920–922. \doi{10.2337/dc09-1825}
+Kahn HS (2005). The lipid accumulation product performs better than body mass index for identifying cardiovascular risk. Diabetes Care, 28(7):1757–1762. \doi{10.2337/diacare.28.7.1757}
+Simental-Mendía LE, Rodríguez-Morán M, Guerrero-Romero F (2008). The product of fasting glucose and triglycerides as surrogate for identifying insulin resistance. Metab Syndr Relat Disord, 6(4):299–304. \doi{10.1089/met.2007.0038}
+McAuley KA, Williams SM, Mann JI, et al. (2001). Derivation of an index of insulin sensitivity from fasting plasma insulin and triglyceride concentrations. Diabetes Care, 24(3):460–464. \doi{10.2337/diacare.24.3.460}
+Perseghin G, Lattuada G, De Cobelli F, et al. (2003). Insulin resistance, intramyocellular lipid content, and plasma adiponectin in subjects with type 2 diabetes. J Clin Endocrinol Metab, 88(2):681–686.
+McLaughlin T, Abbasi F, Cheal K, et al. (2005). Use of metabolic markers to identify overweight individuals who are insulin resistant. Am J Cardiol, 96(3):399–404.
+Belfiore F, Iannello S, Volpicelli G (1998). Insulin sensitivity indices calculated from basal and OGTT values validated by clamp in healthy and diabetic subjects. Mol Genet Metab, 63(2):134–141.
 }

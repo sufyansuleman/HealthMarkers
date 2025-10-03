@@ -14,7 +14,13 @@ obesity_indices(
   weight_unit = c("kg", "lb"),
   height_unit = c("cm", "m"),
   adjust_WHR = FALSE,
-  include_RFM = FALSE
+  include_RFM = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -37,6 +43,18 @@ obesity_indices(
 \item{adjust_WHR}{Logical; if TRUE, adds a column WHRadjBMI as residuals from WHR ~ BMI.}
 
 \item{include_RFM}{Logical; if TRUE, computes Relative Fat Mass (requires sex column).}
+
+\item{na_action}{One of c("keep","omit","error") for handling NA in required inputs. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for required inputs. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (heuristic). Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes are detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) for c("weight_kg","height_m","waist","hip"). NULL uses defaults.}
+
+\item{verbose}{Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.}
 }
 \value{
 A tibble with original columns plus new indices:
@@ -62,12 +80,21 @@ Calculates a comprehensive set of body shape and adiposity indices:
 \item (Optional) Relative Fat Mass (RFM)
 }
 }
+\details{
+Units assumed (no automatic conversion beyond the specified weight/height options):
+\itemize{
+\item weight: kg (or lb if weight_unit = "lb")
+\item height: m (or cm if height_unit = "cm")
+\item waist, hip: cm
+\item sex: 0 = male, 1 = female (only required if include_RFM = TRUE)
+}
+}
 \examples{
 library(tibble)
 df <- tibble(
-  wt     = c(70, 80), # kg
-  ht     = c(175, 165), # cm
-  waist  = c(80, 90), # cm
+  wt     = c(70, 80),  # kg
+  ht     = c(175, 165),# cm
+  waist  = c(80, 90),  # cm
   hip    = c(100, 95), # cm
   sex    = c(0, 1)
 )
@@ -81,6 +108,24 @@ obesity_indices(
   weight_unit  = "kg",
   height_unit  = "cm",
   adjust_WHR   = TRUE,
-  include_RFM  = TRUE
+  include_RFM  = TRUE,
+  verbose      = TRUE
 )
+}
+\references{
+Original derivations
+Quetelet A. A Treatise on Man and the Development of his Faculties. Edinburgh: William & Robert Chambers; 1842. (BMI origin)
+WHO Expert Committee. Physical Status: The Use and Interpretation of Anthropometry. WHO Technical Report Series 854. Geneva: World Health Organization; 1995. (BMI categories, WHR, WHtR)
+Guerrero-Romero F, Rodríguez-Morán M. Abdominal volume index. An anthropometric index of central obesity. Int J Obes Relat Metab Disord. 1999;23(6):615–619. \doi{10.1038/sj.ijo.0800887} (AVI derivation)
+Bergman RN, Stefanovski D, Buchanan TA, et al. A better index of body adiposity. Obesity (Silver Spring). 2011;19(5):1083–1089. \doi{10.1038/oby.2011.38} (BAI derivation)
+Krakauer NY, Krakauer JC. A new body shape index predicts mortality hazard independently of BMI. PLoS One. 2012;7(7):e39504. \doi{10.1371/journal.pone.0039504} (ABSI derivation)
+Thomas DM, Bredlau C, Bosy-Westphal A, et al. Relationships between body roundness with body fat and visceral adipose tissue emerging from a new geometrical model. Obesity (Silver Spring). 2013;21(11):2264–2271. \doi{10.1002/oby.20408} (BRI derivation)
+Valdez R. A simple model-based index of abdominal adiposity. J Clin Epidemiol. 1991;44(9):955–956. \doi{10.1016/0895-4356(91)90019-I} (Conicity Index derivation)
+Woolcott OO, Bergman RN. Relative fat mass (RFM) as a new estimator of whole-body fat percentage: a cross-sectional study in American adults. Sci Rep. 2018;8(1):10980. \doi{10.1038/s41598-018-29362-1} (RFM derivation)
+
+Validation and consensus
+Calle EE, Thun MJ, Petrelli JM, Rodriguez C, Heath CW Jr. Body-mass index and mortality in a prospective cohort of U.S. adults. N Engl J Med. 1999;341(15):1097–1105. \doi{10.1056/NEJM199910073411501} (BMI validation in mortality risk)
+Freedman DS, Thornton JC, Pi-Sunyer FX, et al. The body adiposity index is not a more accurate measure of adiposity than BMI, waist circumference, or hip circumference. Obesity (Silver Spring). 2012;20(12):2438–2444. \doi{10.1038/oby.2012.81} (BAI validation vs. BMI)
+He S, Chen X. Could the new body shape index predict the new onset of diabetes mellitus in the Chinese population? PLoS One. 2013;8(1):e50573. \doi{10.1371/journal.pone.0050573} (ABSI validation in diabetes)
+Maessen MF, Eijsvogels TM, Verheggen RJ, Hopman MT, Verbeek AL, de Vegt F. Entering a new era of body indices: the feasibility of ABSI and BRI to identify cardiovascular health status. PLoS One. 2014;9(9):e107212. \doi{10.1371/journal.pone.0107212} (BRI & ABSI validation in CVD risk)
 }

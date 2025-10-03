@@ -2,25 +2,99 @@
 % Please edit documentation in R/utils_infer-cols.R
 \name{infer_cols}
 \alias{infer_cols}
-\title{Infer column names from user data based on flexible patterns,
-record a mapping log, and optionally write it out.}
+\title{Infer column names from user data based on flexible patterns, with logging}
 \usage{
-infer_cols(data, map, verbose = TRUE, log_file = NULL)
+infer_cols(
+  data,
+  map,
+  verbose = TRUE,
+  log_file = NULL,
+  patterns = NULL,
+  prefer = NULL,
+  strategy = c("error", "prefer", "first", "stable"),
+  strict = TRUE,
+  ignore_case = TRUE,
+  fuzzy = FALSE,
+  max_distance = 0.1,
+  return = c("map", "list")
+)
 }
 \arguments{
-\item{data}{A data.frame whose names we scan.}
+\item{data}{A data.frame or tibble whose column names are scanned.}
 
-\item{map}{A named list of length-1 NULLs (one for each target var: G0, I0, …).}
+\item{map}{Named list where names are target keys (e.g., "G0","I0","TG") and
+values are NULL (to infer) or a user-supplied column name (to keep as-is).}
 
-\item{verbose}{If TRUE, message() each mapping as it happens.}
+\item{verbose}{Logical; if TRUE, messages are printed for each mapping decision.
+Default TRUE.}
 
-\item{log_file}{Optional file path; if supplied, writes the full log to that path.}
+\item{log_file}{Optional file path; if supplied, a human-readable mapping log is written there.}
+
+\item{patterns}{Optional named character vector of regex patterns keyed by the
+same names as \code{map}. If NULL, a built-in dictionary is used.}
+
+\item{prefer}{Optional named list of character vectors with preferred column
+names for each key, used to resolve multiple matches deterministically.
+Matching is case-insensitive and exact against the provided names.}
+
+\item{strategy}{One of c("error","prefer","first","stable") controlling resolution when
+there are multiple candidates. Default "error" (backward compatible).
+\itemize{
+\item "prefer": use \code{prefer} names first; else fall back to "stable" tie-break.
+\item "first": take the first match in data's column order.
+\item "stable": choose shortest name, then alphabetical.
+}}
+
+\item{strict}{Logical; if TRUE (default), missing matches error. If FALSE, missing
+matches leave map[\link{key}] as NULL and issue a warning.}
+
+\item{ignore_case}{Logical; pass to grep(ignore.case = ...). Default TRUE.}
+
+\item{fuzzy}{Logical; if TRUE and no regex matches are found, attempt a fuzzy match
+with agrep using \code{max_distance}. Default FALSE.}
+
+\item{max_distance}{Numeric in \link{0,1} passed to agrep when fuzzy = TRUE. Default 0.1.}
+
+\item{return}{One of c("map","list"). "map" (default) invisibly returns the
+filled mapping list. "list" returns a list(map = ..., log = tibble) for auditing.}
 }
 \value{
-A named list exactly like \code{map}, but with each element filled
-by the matching column name in \code{data}.
+By default, invisibly returns the filled \code{map}. If return = "list",
+returns a list(map = \if{html}{\out{<named list>}}, log = \if{html}{\out{<tibble>}}).
 }
 \description{
-Infer column names from user data based on flexible patterns,
-record a mapping log, and optionally write it out.
+Given a data.frame and a named mapping spec (e.g., list(G0 = NULL, I0 = NULL)),
+infer the source column names for each key using a set of regex patterns.
+You can supply your own patterns and "preferred" names to deterministically
+resolve ambiguous matches. A structured log is kept and can be written to disk.
+}
+\details{
+This helper produces a col_map you can pass to HealthMarkers functions
+(e.g., fasting_is(), lipid-derived indices).
+
+Backward compatibility:
+\itemize{
+\item By default, strict = TRUE and strategy = "error" keep prior behavior:
+\itemize{
+\item Error if no match found.
+\item Error if multiple candidates found.
+}
+\item You can opt into smarter resolution via strategy = "prefer" or "first".
+}
+}
+\examples{
+df <- tibble::tibble(
+  fasting_glucose = c(5.5, 6.1),
+  fasting_insulin = c(60, 88),
+  TG = c(120, 150),
+  `HDL-c` = c(50, 45),
+  age = c(55, 60)
+)
+spec <- list(G0 = NULL, I0 = NULL, TG = NULL, HDL_c = NULL)
+# Backward-compatible: strict and "error" strategy
+res1 <- infer_cols(df, spec, verbose = FALSE)
+# Prefer/resolve ties deterministically
+res2 <- infer_cols(df, spec, strategy = "prefer", verbose = TRUE)
+# Get structured log
+res3 <- infer_cols(df, spec, return = "list")
 }

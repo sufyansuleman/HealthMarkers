@@ -2,67 +2,131 @@
 % Please edit documentation in R/liver_markers.R
 \name{liver_markers}
 \alias{liver_markers}
-\title{Calculate a panel of blood-based liver markers}
+\title{Compute liver-related indices (FLI, NFS, APRI, FIB-4, BARD, ALBI, MELD-XI) with validation and diagnostics}
 \usage{
 liver_markers(
   data,
   col_map = list(BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT =
     "GGT", age = "age", AST = "AST", ALT = "ALT", platelets = "platelets", albumin =
     "albumin", diabetes = "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
-  verbose = FALSE
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your liver & anthropometry data.}
+\item{data}{A data.frame or tibble containing your liver and anthropometry data.}
 
-\item{col_map}{Named list mapping these keys → your column names:
+\item{col_map}{Named list mapping these keys -> column names in \code{data}:
 \itemize{
-\item \code{BMI}        → body mass index (kg/m²)
-\item \code{waist}      → waist circumference (cm)
-\item \code{triglycerides} → fasting TG (mg/dL)
-\item \code{GGT}        → gamma-GT (U/L)
-\item \code{age}        → age (years)
-\item \code{AST}        → aspartate aminotransferase (U/L)
-\item \code{ALT}        → alanine aminotransferase (U/L)
-\item \code{platelets}  → platelet count (10⁹/L)
-\item \code{albumin}    → serum albumin (g/L)
-\item \code{diabetes}   → diabetes status (0/1 or logical)
-\item \code{bilirubin}  → total bilirubin (mg/dL)
-\item \code{creatinine} → serum creatinine (mg/dL)
+\item \code{BMI} (kg/m^2), \code{waist} (cm), \code{triglycerides} (mg/dL), \code{GGT} (U/L),
+\item \code{age} (years), \code{AST} (U/L), \code{ALT} (U/L), \code{platelets} (10^9/L),
+\item \code{albumin} (g/L), \code{diabetes} (0/1 or logical),
+\item \code{bilirubin} (mg/dL), \code{creatinine} (mg/dL).
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a message when running.}
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
+
+\item{na_action}{One of c("keep","omit","error") controlling missing-data policy. Default "keep" (preserves prior behavior).
+\itemize{
+\item "keep": leave NAs; they propagate to outputs.
+\item "omit": drop rows with NA in any required input.
+\item "error": abort if any required input contains NA.
+}}
+
+\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see \code{extreme_rules}). Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes are detected (only used if \code{check_extreme = TRUE}).
+\itemize{
+\item "warn": only warn (default), "cap": truncate to allowed range, "error": abort, "ignore": do nothing.
+}}
+
+\item{extreme_rules}{Optional named list of c(min,max) ranges for keys in \code{col_map}. If NULL, broad defaults are used.}
 }
 \value{
-A tibble with one column per marker:
-\code{FLI}, \code{NFS}, \code{APRI}, \code{FIB4}, \code{BARD}, \code{ALBI}, \code{MELD_XI}.
+A tibble with one column per marker: \code{FLI}, \code{NFS}, \code{APRI}, \code{FIB4}, \code{BARD}, \code{ALBI}, \code{MELD_XI}.
 }
 \description{
 Given routine labs and anthropometry, computes:
 \itemize{
-\item \strong{FLI}      — Fatty Liver Index (Bedogni et al. 2006)
-\item \strong{NFS}      — NAFLD Fibrosis Score (Angulo et al. 2007)
-\item \strong{APRI}     — AST-to-Platelet Ratio Index
-\item \strong{FIB4}     — Fibrosis-4 Index
-\item \strong{BARD}     — BMI-AST/ALT-Diabetes score
-\item \strong{ALBI}     — Albumin-Bilirubin score
-\item \strong{MELD_XI}  — MELD excluding INR
+\item FLI      — Fatty Liver Index (Bedogni et al. 2006)
+\item NFS      — NAFLD Fibrosis Score (Angulo et al. 2007)
+\item APRI     — AST-to-Platelet Ratio Index
+\item FIB4     — Fibrosis-4 Index
+\item BARD     — BMI-AST/ALT-Diabetes score
+\item ALBI     — Albumin-Bilirubin score
+\item MELD_XI  — MELD excluding INR
+}
+}
+\details{
+Enhancements:
+\itemize{
+\item Robust input validation (columns present, types) with informative errors.
+\item Configurable NA policy and optional extreme-value scanning/capping.
+\item Data-quality warnings (high missingness, non-positive logs, zero denominators).
+\item Verbose stepwise progress and completion summary.
+}
+
+Units (no automatic conversion):
+\itemize{
+\item BMI: kg/m^2; Waist: cm; TG: mg/dL; GGT/AST/ALT: U/L; Platelets: 10^9/L; Albumin: g/L; Bilirubin: mg/dL; Creatinine: mg/dL.
+\item ALBI uses bilirubin in µmol/L internally (converted as bilirubin\link{mg/dL} * 17.1).
+}
+
+Formulas (unchanged from prior implementation):
+\itemize{
+\item FLI      = logistic(0.953\emph{ln(TG) + 0.139}BMI + 0.718\emph{ln(GGT) + 0.053}waist - 15.745) * 100
+\item NFS      = -1.675 + 0.037\emph{age + 0.094}BMI + 1.13\emph{diabetes + 0.99}(AST/ALT) - 0.013\emph{platelets - 0.66}albumin
+\item APRI     = (AST / 40) / platelets * 100   \link{ULN(AST)=40 U/L}
+\item FIB-4    = (age * AST) / (platelets * sqrt(ALT))
+\item BARD     = 1 if BMI≥28, +1 if AST/ALT≥0.8, +1 if diabetes present; sum in {0,1,2,3}
+\item ALBI     = 0.66\emph{log10(bilirubin\link{µmol/L}) - 0.0852}albumin\link{g/L}
+\item MELD-XI  = 5.11\emph{ln(bilirubin\link{mg/dL}) + 11.76}ln(creatinine\link{mg/dL}) + 9.44
 }
 }
 \examples{
-df <- tibble::tibble(
+library(tibble)
+df <- tibble(
   BMI           = 24,
   waist         = 80,
   triglycerides = 150, # mg/dL
   GGT           = 30,
-  age           = 30,
+  age           = 45,
   AST           = 25,
   ALT           = 20,
-  platelets     = 250,
-  albumin       = 45,
+  platelets     = 250, # 10^9/L
+  albumin       = 42,  # g/L
   diabetes      = FALSE,
-  bilirubin     = 1.0,
-  creatinine    = 0.8
+  bilirubin     = 1.0, # mg/dL
+  creatinine    = 0.9  # mg/dL
 )
-liver_markers(df)
+liver_markers(df, verbose = TRUE)
+
+\donttest{
+# With extreme-value capping and diagnostics
+liver_markers(
+  df,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+}
+
+}
+\references{
+Bedogni G, Bellentani S, Miglioli L, et al. (2006). The Fatty Liver Index: a simple and accurate predictor of hepatic steatosis in the general population. BMC Gastroenterol, 6:33. \doi{10.1186/1471-230X-6-33}
+Angulo P, Hui JM, Marchesini G, et al. (2007). The NAFLD fibrosis score: a noninvasive system that identifies liver fibrosis in patients with NAFLD. Hepatology, 45(4):846–854. \doi{10.1002/hep.21496}
+Wai CT, Greenson JK, Fontana RJ, et al. (2003). A simple noninvasive index can predict both significant fibrosis and cirrhosis in patients with chronic hepatitis C. Hepatology, 38(2):518–526. \doi{10.1053/jhep.2003.50346}
+Sterling RK, Lissen E, Clumeck N, et al. (2006). Development of a simple noninvasive index to predict significant fibrosis in patients with HIV/HCV coinfection (FIB-4). Hepatology, 43(6):1317–1325. \doi{10.1002/hep.21178}
+Harrison SA, Oliver D, Arnold HL, et al. (2008). Development and validation of a simple NAFLD clinical scoring system for predicting advanced fibrosis (BARD). Hepatology, 47(1):154–160. \doi{10.1002/hep.21984}
+Johnson PJ, Berhane S, Kagebayashi C, et al. (2015). Assessment of liver function in patients with hepatocellular carcinoma: the ALBI grade. J Clin Oncol, 33(6):550–558. \doi{10.1200/JCO.2014.57.9151}
+Heuman DM, Abou-Assi SG, Habib A, et al. (2007). MELD-XI: a modified model for end-stage liver disease to exclude INR. Liver Transpl, 13(6):861–869. \doi{10.1002/lt.21030}
+}
+\seealso{
+\code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=kidney_failure_risk]{kidney_failure_risk()}}, \code{\link[=iAge]{iAge()}}
 }

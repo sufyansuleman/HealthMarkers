@@ -2,25 +2,50 @@
 % Please edit documentation in R/impute_missing.R
 \name{impute_missforest}
 \alias{impute_missforest}
-\title{Impute missing data via random-forest (missForest)}
+\title{Impute missing values via random forest (missForest)}
 \usage{
-impute_missforest(data, ntree = 100, cols = NULL, ...)
+impute_missforest(data, ntree = 100, cols = NULL, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} with missing values.}
+\item{data}{A data.frame or tibble containing missing values.}
 
-\item{ntree}{Number of trees (default: 100).}
+\item{ntree}{Integer; number of trees to grow in each forest (passed to missForest). Default 100.}
 
-\item{cols}{Optional character vector of column names to impute;
-other columns are passed through untouched.  If supplied, must all
-exist in \code{data}, otherwise an error is raised.}
+\item{cols}{Optional character vector of numeric columns to impute.
+Defaults to all numeric columns with at least one NA.}
 
-\item{...}{Additional arguments passed to \code{missForest::missForest()}.}
+\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
+
+\item{...}{Additional arguments passed to missForest::missForest().}
 }
 \value{
-A complete \code{data.frame} (or \code{tibble}) with missing data imputed.
+A data.frame/tibble with numeric columns imputed by missForest (or mean fallback).
 }
 \description{
-Wrapper around the \strong{missForest} package.  Falls back to
-mean-imputation if missForest throws an error.
+Wraps missForest to impute numeric columns using non-parametric random forests.
+Requires the missForest package to be installed (Suggests). Non-numeric columns
+are untouched. If no numeric columns contain NAs, \code{data} is returned unchanged.
+}
+\details{
+Notes:
+\itemize{
+\item missForest uses iterative RF training; it can be slow on wide/high-NA data.
+\item Errors (e.g., insufficient unique values) are caught and a deterministic mean
+imputation fallback is applied to the selected numeric columns.
+}
+}
+\examples{
+\donttest{
+if (requireNamespace("missForest", quietly = TRUE)) {
+  df <- tibble::tibble(a = c(1, NA, 3), b = c(2, 4, NA), c = 5)
+  impute_missforest(df, ntree = 50, verbose = TRUE)
+}
+}
+
+}
+\references{
+\itemize{
+\item Stekhoven DJ, Bühlmann P. MissForest—non-parametric missing value imputation for mixed-type data.
+Bioinformatics. 2012;28(1):112–118. https://pubmed.ncbi.nlm.nih.gov/22039212/
+}
 }

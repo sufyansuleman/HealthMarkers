@@ -2,31 +2,86 @@
 % Please edit documentation in R/adiposity_sds_strat.R
 \name{adiposity_sds_strat}
 \alias{adiposity_sds_strat}
-\title{Calculate sex‐stratified standardized‐score (SDS) for adiposity measures}
+\title{Calculate sex-stratified standardized scores (SDS) for adiposity measures (HM-CRANIZED)}
 \usage{
-adiposity_sds_strat(data, ref, sex_col = "sex", verbose = FALSE)
+adiposity_sds_strat(
+  data,
+  ref,
+  sex_col = "sex",
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  allow_partial = FALSE,
+  diagnostics = TRUE,
+  verbose = FALSE,
+  prefix = ""
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your raw measures \emph{and} a
-\code{sex} column coded \code{"M"} or \code{"F"}.}
+\item{data}{data.frame / tibble containing variables + a sex column.}
 
-\item{ref}{A named list with elements \code{"M"} and \code{"F"}. Each is itself a
-named list of numeric vectors \verb{c(mean=…, sd=…)}. E.g.:
+\item{ref}{Named list with elements "M" and "F". Each is a named list of
+numeric vectors c(mean=, sd=). Example:
+list(
+M = list(BMI = c(mean=23, sd=3.5), waist = c(mean=85, sd=10)),
+F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
+)}
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{list(
-  M = list(BMI = c(mean=23, sd=3.5), waist = c(mean=85, sd=10)),
-  F = list(BMI = c(mean=21, sd=3  ), waist = c(mean=75, sd= 9))
-)
-}\if{html}{\out{</div>}}}
+\item{sex_col}{Name of sex column (default "sex"). Values accepted:
+"M","F","m","f", 1,2.}
 
-\item{sex_col}{Character; name of the sex column in \code{data} (values \code{"M"}/\code{"F"}).}
+\item{na_action}{One of c("keep","omit","error") for rows with NA in any
+required measure (default "keep").}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_warn_prop}{Proportion (0–1) above which per-variable missingness
+triggers a warning (default 0.2).}
+
+\item{check_extreme}{Logical; if TRUE perform extreme range screening on
+raw variables before SDS computation.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") for handling
+detected extremes (default "warn").}
+
+\item{extreme_rules}{Optional named list of c(min,max) bounds per variable
+(raw scale). If NULL, broad defaults are inferred per variable name
+(supports BMI, waist, weight, height, hip, WC, HC; others skipped).}
+
+\item{allow_partial}{If TRUE and some reference variables are missing in
+data (or vice versa) they are skipped with a warning; if FALSE (default)
+this is an error.}
+
+\item{diagnostics}{Logical; if TRUE (default) emit diagnostic warnings
+(missing ref vars, extreme SDS > 10, etc.).}
+
+\item{verbose}{Logical; if TRUE print progress & summary.}
+
+\item{prefix}{Optional string prepended to output column names (default "").}
 }
 \value{
-A tibble with one \verb{<var>_SDS} column per reference variable.
+A tibble with one SDS column per retained variable:
+\if{html}{\out{<prefix>}}\if{html}{\out{<var>}}_SDS
 }
 \description{
-Given raw anthropometry and a sex column, compute z‐scores relative to
-sex‐specific reference means & SDs.
+Computes sex-specific z-scores (standard deviation scores) for supplied
+anthropometric variables using reference means/SDs provided separately
+for males and females. Adds extended validation, NA and extreme handling.
+}
+\details{
+SDS = (observed - sex_mean) / sex_sd (with sex-specific mean/sd vectorization).
+Rows dropped only if na_action == "omit" and required var NA present.
+}
+\examples{
+ref <- list(
+  M = list(BMI = c(mean=24.5, sd=3.8), waist = c(mean=88, sd=12)),
+  F = list(BMI = c(mean=22.1, sd=4.2), waist = c(mean=76, sd=11))
+)
+df <- data.frame(BMI=c(25.2,21.8,27.1), waist=c(85,72,95), sex=c("M","F","M"))
+adiposity_sds_strat(df, ref, verbose=TRUE)
+
+}
+\references{
+WHO Expert Committee. Physical Status: The Use and Interpretation of Anthropometry. WHO Technical Report Series 854. Geneva: World Health Organization; 1995.
+Cole TJ, Green PJ (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10):1305–1319. \doi{10.1002/sim.4780111005}
 }

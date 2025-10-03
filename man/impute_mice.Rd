@@ -2,26 +2,51 @@
 % Please edit documentation in R/impute_missing.R
 \name{impute_mice}
 \alias{impute_mice}
-\title{Impute missing data via multiple imputation (mice)}
+\title{Impute missing values via Multiple Imputation (mice)}
 \usage{
-impute_mice(data, m = 5, seed = 123, cols = NULL, ...)
+impute_mice(data, m = 5, cols = NULL, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} with missing values.}
+\item{data}{A data.frame or tibble containing missing values.}
 
-\item{m}{Number of multiple imputations (default: 5).}
+\item{m}{Integer; number of imputations to run (passed to mice). Default 5.}
 
-\item{seed}{Random seed for reproducibility.}
+\item{cols}{Optional character vector of numeric columns to impute.
+Defaults to all numeric columns with at least one NA.}
 
-\item{cols}{Optional character vector of column names to impute;
-other columns are passed through untouched.  If supplied, must all
-exist in \code{data}, otherwise an error is raised.}
+\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
 
-\item{...}{Additional arguments passed to \code{mice::mice()}.}
+\item{...}{Additional arguments passed to mice::mice().}
 }
 \value{
-A complete \code{data.frame} (or \code{tibble}) with missing data imputed.
+A data.frame/tibble with numeric columns imputed by mice.
 }
 \description{
-Wrapper around the \strong{mice} package.  Returns a single completed dataset.
+Wraps mice to impute only numeric columns; non-numeric columns are untouched.
+Requires the mice package to be installed (Suggests). If no numeric columns
+contain NAs, \code{data} is returned unchanged.
+}
+\details{
+Notes:
+\itemize{
+\item At least two numeric columns are typically needed by mice to borrow strength.
+\item This function runs \code{m} imputations and returns the first completed dataset.
+\item Messages from mice are suppressed; use \code{verbose = TRUE} here for high-level progress.
+}
+}
+\examples{
+\donttest{
+if (requireNamespace("mice", quietly = TRUE)) {
+  df <- tibble::tibble(a = c(1, NA, 3), b = c(2, 4, NA), c = 5)
+  impute_mice(df, m = 2, verbose = TRUE)
+}
+}
+
+}
+\references{
+\itemize{
+\item Rubin DB. Multiple Imputation for Nonresponse in Surveys. Wiley; 1987. (Foundational MI)
+\item van Buuren S, Groothuis-Oudshoorn K. mice: Multivariate Imputation by Chained Equations in R.
+J Stat Softw. 2011;45(3):1–67. (MICE algorithm and R package)
+}
 }

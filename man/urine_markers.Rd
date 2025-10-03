@@ -2,36 +2,64 @@
 % Please edit documentation in R/urine_markers.R
 \name{urine_markers}
 \alias{urine_markers}
-\title{Calculate urine‐based renal & protein markers}
+\title{Calculate urine-only renal and tubular markers (research-ready)}
 \usage{
-urine_markers(data, verbose = FALSE)
+urine_markers(
+  data,
+  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least:
-\itemize{
-\item \code{urine_albumin}     (mg/L)
-\item \code{urine_creatinine}  (mg/dL)
-\item \code{serum_creatinine}  (mg/dL)
-\item \code{plasma_Na}, \code{urine_Na} (mmol/L)
-\item \code{age}               (years)
-\item \code{sex}               (1 = male, 2 = female)
-\item optionally \code{urine_protein} (mg/L) for UPCR
-}}
+\item{data}{A data.frame or tibble with at least urine_albumin and urine_creatinine.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages and a completion summary. Default FALSE.}
+
+\item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for required inputs. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
+
+\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.}
 }
 \value{
-A tibble with:
-\code{UACR}, \code{microalbuminuria}, \code{eGFR_CKD_EPI}, \code{FENa}, \code{UPCR}
+A tibble with columns:
+UACR, albuminuria_stage, microalbuminuria, UPCR, U_Na_K_ratio,
+NGAL_per_gCr, KIM1_per_gCr, NAG_per_gCr, Beta2Micro_per_gCr,
+A1Micro_per_gCr, IL18_per_gCr, L_FABP_per_gCr
 }
 \description{
-Computes:
+Computes (urine-only):
 \itemize{
-\item \strong{UACR} (Albumin-to-Creatinine Ratio, mg/g)
-\item \strong{microalbuminuria} flag ("normal" vs "micro")
-\item \strong{eGFR_CKD_EPI} (mL/min/1.73 m^2, race-free CKD-EPI 2021)
-\item \strong{FENa} (Fractional Excretion of Sodium, \%)
-\item \strong{UPCR} (Urine Protein-to-Creatinine Ratio, mg/g)
+\item UACR (Albumin-to-Creatinine Ratio, mg/g)
+\item albuminuria_stage (KDIGO A1/A2/A3 by UACR)
+\item microalbuminuria flag ("normal" vs "micro")
+\item UPCR (Urine Protein-to-Creatinine Ratio, mg/g; if urine_protein available)
+\item U_Na_K_ratio (urine Na+/K+; if urine_Na and urine_K available)
+\item Creatinine-normalized tubular markers (if present, per g creatinine):
+NGAL_per_gCr, KIM1_per_gCr, NAG_per_gCr, Beta2Micro_per_gCr,
+A1Micro_per_gCr, IL18_per_gCr, L_FABP_per_gCr
+}
+}
+\details{
+Inputs are validated, missingness handled via \code{na_action}, divisions are
+safeguarded (Inf/NaN -> NA) with a consolidated zero-denominator warning,
+and an optional extremes scan/cap is available.
+
+Expected units:
+\itemize{
+\item urine_albumin: mg/L
+\item urine_protein: mg/L (optional)
+\item urine_creatinine: mg/dL
+\item urine_Na, urine_K: mmol/L (optional)
+\item Optional tubular markers above assumed mg/L when normalized per g creatinine
 }
 }
 \examples{
@@ -46,4 +74,29 @@ df <- tibble::tibble(
   urine_protein    = 150
 )
 urine_markers(df)
+}
+\references{
+\subsection{Original derivations}{
+\itemize{
+\item Mogensen CE. Microalbuminuria predicts clinical proteinuria and early mortality in maturity-onset diabetes.
+N Engl J Med. 1984;310(6):356–360. \doi{10.1056/NEJM198402093100602} (UACR and microalbuminuria concept)
+\item Ginsberg JM, Chang BS, Matarese RA, Garella S. Use of single voided urine samples to estimate quantitative proteinuria.
+N Engl J Med. 1983;309(25):1543–1546. \doi{10.1056/NEJM198312223092503} (UPCR derivation and validation)
+\item Bökenkamp A, Domanetzki M, Zinck R, Schumann G, Byrd D, Brodehl J. Reference values for urinary albumin excretion in healthy children.
+Pediatr Nephrol. 1998;12(6):478–483. \doi{10.1007/s004670050480} (Albumin excretion normative values)
+}
+}
+
+\subsection{Validation and consensus}{
+\itemize{
+\item Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease.
+Kidney Int Suppl. 2013;3(1):1–150. \doi{10.1038/kisup.2012.73} (Albuminuria stages A1–A3; UACR cutoffs)
+\item de Zeeuw D, Parving HH, Henning RH. Microalbuminuria as an early marker for cardiovascular disease.
+J Am Soc Nephrol. 2006;17(8):2100–2105. \doi{10.1681/ASN.2006040388} (Prognostic validation of UACR)
+\item Ichimura T, Hung CC, Yang SA, Stevens JL, Bonventre JV. Kidney injury molecule-1: a tissue and urinary biomarker for nephrotoxicant-induced renal injury.
+Am J Physiol Renal Physiol. 2004;286(3):F552–F563. \doi{10.1152/ajprenal.00285.2002} (KIM-1 as tubular marker)
+\item Portilla D, Dent C, Sugaya T, et al. Liver fatty acid–binding protein as a biomarker of acute kidney injury after cardiac surgery.
+Kidney Int. 2008;73(4):465–472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
+}
+}
 }

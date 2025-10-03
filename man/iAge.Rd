@@ -2,61 +2,132 @@
 % Please edit documentation in R/inflammatory_age.R
 \name{iAge}
 \alias{iAge}
-\title{Compute a simplified Inflammatory Age Index (iAge)}
+\title{Compute a simplified Inflammatory Age Index (iAge) with QA and verbose summaries}
 \usage{
 iAge(
   data,
   col_map,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
-  verbose = FALSE
+  verbose = FALSE,
+  na_action = c("omit", "keep", "error"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} containing at least the columns mapped by \code{col_map}.}
+\item{data}{A data.frame or tibble containing the biomarker columns mapped by \code{col_map}.}
 
-\item{col_map}{Named \code{list} mapping:
+\item{col_map}{Named list mapping:
 \itemize{
-\item \code{CRP}  -> column name for C-reactive protein (mg/L).
-\item \code{IL6}  -> column name for interleukin-6 (pg/mL).
-\item \code{TNFa} -> column name for tumor necrosis factor-alpha (pg/mL).
+\item CRP  -> column name for C-reactive protein (mg/L)
+\item IL6  -> column name for interleukin-6 (pg/mL)
+\item TNFa -> column name for tumor necrosis factor-alpha (pg/mL)
 }}
 
-\item{weights}{Named \code{numeric} vector of weights for each marker (must sum to 1).
-Defaults to \code{c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34)}.}
+\item{weights}{Named numeric vector of weights for each marker (must sum to 1).
+Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 
-\item{verbose}{\code{logical}; if \code{TRUE}, prints progress messages.}
+\item{verbose}{Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.}
+
+\item{na_action}{One of c("omit","keep","error") controlling how missing inputs affect iAge:
+\itemize{
+\item "omit": ignore NAs in the sum (default; preserves previous behavior).
+\item "keep": return NA for rows where any required marker is NA.
+\item "error": abort if any required marker contains NA.
+}}
+
+\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high missingness warnings. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore") controlling what to do when extremes are detected.
+\itemize{
+\item "warn": issue a warning, do not modify values (default if check_extreme = TRUE).
+\item "cap": truncate values to the allowed range and warn.
+\item "error": abort on detection.
+\item "ignore": do nothing.
+}}
+
+\item{extreme_rules}{Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.}
 }
 \value{
-A \code{tibble} with one column:
+A tibble with one column:
 \itemize{
-\item \code{iAge} (numeric): the computed inflammatory age index.
+\item iAge (numeric): the computed inflammatory age index.
 }
 }
 \description{
 Implements a linear proxy for immunosenescence based on key inflammatory biomarkers,
-following the approach described by Sayed \emph{et al.} (2021, \emph{Nature Aging}).
+following the approach introduced by Sayed et al. for the inflammatory aging clock (iAge).
+This simplified iAge is computed as a weighted sum of C-reactive protein (CRP),
+interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa).
 }
 \details{
-This function calculates iAge as a weighted sum of C-reactive protein (CRP),
-interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa) using user-specified
-or default weights. Higher iAge values are associated with accelerated immune aging
-and increased risk of age-related disease, as validated against clinical outcomes.
+By default, missing inputs are omitted in the sum (consistent with prior behavior).
+Optional diagnostics can warn on high missingness and scan for extreme values, with
+the ability to cap, warn, or error on extremes. Verbose mode prints step-by-step
+progress and a final summary.
+
+Assumed units (no automatic unit conversion):
+\itemize{
+\item CRP: mg/L
+\item IL6: pg/mL
+\item TNFa: pg/mL
+}
+
+Note:
+\itemize{
+\item The original iAge model in Sayed et al. (Nature Aging, 2021) is a multi-marker
+machine learning model. This function provides a simple, linear proxy using
+three canonical inflammatory biomarkers. It is not identical to the original
+published iAge but is inspired by its rationale.
+}
+
+Default extreme ranges (if \code{extreme_rules = NULL}):
+\itemize{
+\item CRP: 0 to 300 mg/L
+\item IL6: 0 to 1,000 pg/mL
+\item TNFa: 0 to 1,000 pg/mL
+}
+
+These are deliberately broad. Adjust \code{extreme_rules} to fit your cohort.
 }
 \examples{
 library(tibble)
 df <- tibble(
-  CRP  = c(1.2, 3.5, 0.8), # mg/L
+  CRP  = c(1.2, 3.5, NA),  # mg/L
   IL6  = c(2.0, 4.1, 1.5), # pg/mL
-  TNFa = c(1.0, 1.8, 0.9) # pg/mL
+  TNFa = c(1.0, 1.8, 0.9)  # pg/mL
 )
+# Default behavior (omit NAs in row-wise sum)
+iAge(
+  df,
+  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
+)
+
+# Keep NA if any marker missing in a row
 iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
-  weights = c(CRP = 0.3, IL6 = 0.4, TNFa = 0.3)
+  na_action = "keep"
+)
+
+# Scan and cap extreme values
+iAge(
+  df,
+  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
+  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
 )
 
 }
 \references{
-Sayed, N., et al. (2021). An inflammatory aging clock (iAge) predicts multimorbidity,
-immunosenescence, frailty and cardiovascular aging. \emph{Nature Aging}, 1, 598–610.
+\itemize{
+\item Sayed N et al, An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging, Nat Aging, 2021;1:598–610.
+\item Sayed N et al, Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan, Sci Transl Med, 2023;15(722):eabo4163.
+}
+}
+\seealso{
+\code{\link[=impute_missing]{impute_missing()}}, \code{\link[=glycemic_markers]{glycemic_markers()}}
 }

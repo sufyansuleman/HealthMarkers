@@ -1,1 +1,6 @@
 ^\.github$
+^.*\.Rproj$
+^\.Rproj\.user$
+^tools$
+^README\.Rmd$
+^\.vscode$

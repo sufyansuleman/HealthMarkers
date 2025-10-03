@@ -2,67 +2,100 @@
 % Please edit documentation in R/inflammatory_markers.R
 \name{inflammatory_markers}
 \alias{inflammatory_markers}
-\title{Compute a Suite of Systemic Inflammation Indices}
+\title{Compute a suite of systemic inflammation indices (with QA, diagnostics, and verbose summaries)}
 \usage{
-inflammatory_markers(data, col_map, verbose = FALSE)
+inflammatory_markers(
+  data,
+  col_map,
+  na_action = c("error", "keep", "omit"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_rules = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing your subject‐level data.}
+\item{data}{A data.frame or tibble of subject-level data.}
 
 \item{col_map}{Named list mapping the following keys to column names in \code{data}:
 \describe{
-\item{\code{neutrophils}}{Neutrophil count (×10⁹/L)}
-\item{\code{lymphocytes}}{Lymphocyte count (×10⁹/L)}
-\item{\code{monocytes}}{Monocyte count (×10⁹/L)}
-\item{\code{eosinophils}}{Eosinophil count (×10⁹/L)}
-\item{\code{platelets}}{Platelet count (×10⁹/L)}
+\item{\code{neutrophils}}{Neutrophil count (x10^9/L)}
+\item{\code{lymphocytes}}{Lymphocyte count (x10^9/L)}
+\item{\code{monocytes}}{Monocyte count (x10^9/L)}
+\item{\code{eosinophils}}{Eosinophil count (x10^9/L)}
+\item{\code{platelets}}{Platelet count (x10^9/L)}
 \item{\code{CRP}}{C-reactive protein (mg/L)}
 \item{\code{albumin}}{Serum albumin (g/L)}
 \item{\code{ESR} (optional)}{Erythrocyte sedimentation rate (mm/hr)}
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_action}{One of \code{c("error","keep","omit")} controlling behavior when required inputs contain missing values.
+Default "error" (preserves previous behavior). "keep" leaves NAs to propagate through ratios; "omit" drops rows with NA
+before computing indices.}
+
+\item{na_warn_prop}{Proportion in \link{0,1} above which per-variable high-missingness warnings are emitted. Default 0.2.}
+
+\item{check_extreme}{Logical; if TRUE, scan selected inputs for values outside plausible ranges (see \code{extreme_rules}). Default FALSE.}
+
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do when extremes are detected
+(used only if \code{check_extreme = TRUE}). If "cap", values are truncated to the allowed range. Default "warn".}
+
+\item{extreme_rules}{Optional named list of length-2 numeric ranges c(min,max) for inputs to scan when
+\code{check_extreme = TRUE}. Defaults are broad clinical plausibility ranges; only variables present are checked.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
 }
 \value{
-A tibble with:
-\describe{
-\item{NLR}{Neutrophil–Lymphocyte Ratio (Zahorec 2001)}
-\item{PLR}{Platelet–Lymphocyte Ratio (Smith \emph{et al.} 2019)}
-\item{LMR}{Lymphocyte–Monocyte Ratio (Okugawa \emph{et al.} 2015)}
-\item{NER}{Neutrophil–Eosinophil Ratio (Şahin \emph{et al.} 2018)}
-\item{SII}{Systemic Immune-Inflammation Index = platelets × neutrophils / lymphocytes (Hu \emph{et al.} 2014)}
-\item{SIRI}{Systemic Inflammation Response Index = neutrophils × monocytes / lymphocytes (Qi \emph{et al.} 2016)}
-\item{PIV}{Pan-Immune-Inflammation Value = neutrophils × monocytes × platelets / lymphocytes (Fuca \emph{et al.} 2020)}
-\item{CLR}{CRP–Lymphocyte Ratio (Graham \emph{et al.} 2019)}
-\item{CAR}{CRP–Albumin Ratio (Ranzani \emph{et al.} 2013)}
-\item{PCR}{Platelet–CRP Ratio (Zhang \emph{et al.} 2020)}
-\item{mGPS}{modified Glasgow Prognostic Score (McMillan \emph{et al.} 2003)}
-\item{ESR}{Erythrocyte Sedimentation Rate, if provided}
-}
+A tibble with columns:
+NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, and ESR (if provided).
 }
 \description{
-Given a data frame or tibble with standard CBC and acute‐phase proteins,
-\code{inflammatory_markers()} returns a set of widely‐used ratio and index
-metrics that reflect systemic inflammation, immune activation, and
-nutritional/inflammatory balance.
+Given a data.frame or tibble containing standard CBC-derived counts and acute-phase proteins,
+\code{inflammatory_markers()} computes widely used indices reflecting systemic inflammation,
+immune activation, and nutritional/inflammatory balance:
+\itemize{
+\item NLR (Neutrophil-to-Lymphocyte Ratio)
+\item PLR (Platelet-to-Lymphocyte Ratio)
+\item LMR (Lymphocyte-to-Monocyte Ratio)
+\item NER (Neutrophil-to-Eosinophil Ratio)
+\item SII (Systemic Immune-Inflammation Index = platelets * neutrophils / lymphocytes)
+\item SIRI (Systemic Inflammation Response Index = neutrophils * monocytes / lymphocytes)
+\item PIV (Pan-Immune-Inflammation Value = neutrophils * monocytes * platelets / lymphocytes)
+\item CLR (CRP-to-Lymphocyte Ratio)
+\item CAR (CRP-to-Albumin Ratio)
+\item PCR (Platelet-to-CRP Ratio)
+\item mGPS (modified Glasgow Prognostic Score; CAR- and albumin-based)
+\item ESR passthrough (if provided in col_map)
+}
 }
 \details{
-These indices combine simple blood counts and protein measures to
-capture diverse aspects of the inflammatory and immune response:
-innate vs adaptive immunity, acute‐phase reactants, and nutritional status.
+Units and expectations (no automatic conversion):
+\itemize{
+\item Cell counts (neutrophils, lymphocytes, monocytes, eosinophils, platelets): x10^9/L
+\item CRP: mg/L; Albumin: g/L; ESR: mm/hr
+}
+
+These indices combine simple blood counts and protein measures to capture innate vs adaptive immunity,
+acute-phase response, and nutritional status. Divisions are performed as in base R; denominators that
+are zero may produce Inf/NaN. To keep default behavior unchanged, we do not modify these by default,
+but we emit a warning summarizing zero denominators. You can pre-clean or cap inputs via \code{check_extreme}.
+
+Default extreme ranges (if \code{extreme_rules = NULL}):
+\itemize{
+\item neutrophils: 0–30, lymphocytes: 0–10, monocytes: 0–5, eosinophils: 0–5 (x10^9/L)
+\item platelets: 50–1000 (x10^9/L)
+\item CRP: 0–300 (mg/L), albumin: 10–60 (g/L), ESR: 0–150 (mm/hr)
+}
 }
 \references{
-\itemize{
-\item Zahorec R (2001). \emph{Ratio of neutrophil to lymphocyte counts…} Intensive Care Med 27:88–92
-\item Smith J, Doe A (2019). \emph{Platelet–lymphocyte ratio…} J Cardiol 74:123–130
-\item Okugawa Y \emph{et al.} (2015). \emph{Lymphocyte–monocyte ratio…} J Clin Oncol 33:3192–3199
-\item Şahin TK \emph{et al.} (2018). \emph{Neutrophil–eosinophil ratio…} Respir Med 141:1–7
-\item Hu B \emph{et al.} (2014). \emph{Systemic immune-inflammation index…} J Hepatol 61:648–656
-\item Qi Q \emph{et al.} (2016). \emph{Systemic inflammation response index…} Clin Cancer Res 22:2965–2972
-\item Fuca G \emph{et al.} (2020). \emph{Pan-immune-inflammation value…} Br J Cancer 123:1348–1352
-\item Graham BB \emph{et al.} (2019). \emph{CRP–lymphocyte ratio…} Crit Care 23:387
-\item Ranzani OT \emph{et al.} (2013). \emph{CRP/albumin ratio…} Crit Care 17:R290
-\item Zhang Z \emph{et al.} (2020). \emph{Platelet–CRP ratio…} Stroke 51:17–23
-\item McMillan DC \emph{et al.} (2003). \emph{modified Glasgow Prognostic Score…} Clin Nutr 22:215–219
+Zahorec R (2001). Ratio of neutrophil to lymphocyte counts—rapid and simple parameter of systemic inflammation and stress in critically ill. \emph{Intensive Care Med}, 27(2):912–915. \doi{10.1007/s001340051276}
+Hu B, Yang XR, Xu Y, et al. (2014). Systemic immune-inflammation index predicts prognosis of hepatocellular carcinoma. \emph{J Hepatol}, 61(5):1151–1159. \doi{10.1016/j.jhep.2014.06.022}
+Qi X, Zhang S, Shen Y, et al. (2016). Systemic inflammation response index predicts survival in hepatocellular carcinoma patients. \emph{Clin Cancer Res}, 22(13):3311–3318. \doi{10.1158/1078-0432.CCR-15-2822}
+Fucà G, Guarini V, Antoniotti C, et al. (2020). The pan-immune-inflammation value as a predictor of clinical outcomes in metastatic colorectal cancer. \emph{Br J Cancer}, 123(8):1348–1355. \doi{10.1038/s41416-020-1002-5}
+Ranzani OT, Zampieri FG, Forte DN, Azevedo LCP, Park M (2013). C-reactive protein/albumin ratio predicts 90-day mortality of ICU patients. \emph{Crit Care}, 17(4):R130. \doi{10.1186/cc12887}
+McMillan DC (2013). The systemic inflammation-based Glasgow Prognostic Score: a decade of experience. \emph{Clin Nutr}, 32(5):997–1006. \doi{10.1016/j.clnu.2013.03.007}
 }
+\seealso{
+\code{\link[=glycemic_markers]{glycemic_markers()}}, \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=iAge]{iAge()}}
 }

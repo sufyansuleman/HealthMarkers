@@ -2,8 +2,7 @@
 % Please edit documentation in R/frailty_index.R
 \name{frailty_index}
 \alias{frailty_index}
-\alias{plot_frailty_age}
-\title{Compute Frailty (Deficit) Index}
+\title{Compute Frailty (Deficit) Index using di::di with QA and verbose summaries}
 \usage{
 frailty_index(
   data,
@@ -14,50 +13,106 @@ frailty_index(
   rescale.custom = NULL,
   rescale.avoid = NULL,
   bins = 7,
-  visible = FALSE
-)
-
-plot_frailty_age(
-  data,
-  cols = NULL,
-  invert = NULL,
-  rescale = TRUE,
-  age = NULL,
-  rescale.custom = NULL,
-  rescale.avoid = NULL,
-  bins = 7
+  visible = FALSE,
+  na_action = c("ignore", "warn", "error"),
+  na_warn_prop = 0.2,
+  extreme_action = c("warn", "ignore", "error", "cap"),
+  return = c("list", "data"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} of health deficit variables (0/1 or logical).}
+\item{data}{A data.frame or tibble of health deficits (ideally binary/logical or
+scaled to \link{0,1}). Non-binary numeric columns can be rescaled by di::di when
+rescale = TRUE.}
 
-\item{cols}{Character vector of names of deficit columns to use.  If \code{NULL},
-all numeric columns except \code{age} (if set) will be used.}
+\item{cols}{Character vector of deficit column names to use. If NULL (default),
+all numeric columns are used except age (if supplied).}
 
-\item{invert}{Character vector of column names whose values should be inverted.}
+\item{invert}{Character vector of column names whose values should be inverted
+by di::di (e.g., where higher values indicate better health).}
 
-\item{rescale}{Logical; if \code{TRUE}, non–0/1 columns will be rescaled to \link{0,1}.}
+\item{rescale}{Logical; if TRUE, non-binary columns will be rescaled to \link{0,1}
+by di::di. Default TRUE.}
 
-\item{age}{Name of the column holding age (for plotting only).}
+\item{age}{Optional name of the column holding age (used by di for plotting and
+optional age-binned outputs; excluded from auto-selected cols).}
 
-\item{rescale.custom}{Character vector of custom rescaling specs (see \code{di::di}).}
+\item{rescale.custom, }{rescale.avoid Advanced arguments passed through to di::di.
+See di::di documentation for syntax.}
 
-\item{rescale.avoid}{Character vector of columns to skip during rescaling.}
+\item{bins}{Integer; number of age bins for FI-by-age plots. Default 7.}
 
-\item{bins}{Number of age‐bins for the DI‐vs‐age plot.}
+\item{visible}{Logical; if TRUE and age is provided, di will draw a plot (via
+plot.di()). Default FALSE.}
 
-\item{visible}{Logical; if \code{TRUE} and \code{age} is set, calls \code{plot.di()} internally.}
+\item{na_action}{One of c("ignore","warn","error") controlling behavior when
+missing values are detected in selected deficit columns before calling di.
+Default "ignore".}
+
+\item{na_warn_prop}{Proportion in \link{0,1} above which a high-missingness warning
+is emitted (per column) when na_action = "warn". Default 0.2.}
+
+\item{extreme_action}{One of c("ignore","warn","error","cap") controlling behavior
+when out-of-range values (< 0 or > 1) are found in selected columns BEFORE
+calling di. When rescale = TRUE, many numeric columns may be outside \link{0,1};
+in that case only values outside \link{0,1} in logical or already-binary columns
+are considered extreme. If "cap", such values are truncated into \link{0,1} prior
+to calling di. Default "warn".}
+
+\item{return}{One of c("list","data"). "list" (default) returns the original
+di::di result (backward compatible). "data" returns a tibble with one row
+per individual, columns: di (the frailty index) plus the selected deficit
+columns (post-capping if applied). Age is included if present.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
 }
 \value{
-A list with components:
 \itemize{
-\item \code{di}      : numeric vector of individual frailty index scores (0–1)
-\item \code{columns} : the (possibly rescaled) data columns actually used
+\item If return = "list" (default): the object returned by di::di (typically a list
+with di and columns).
+\item If return = "data": a tibble with di and the selected columns.
 }
 }
 \description{
-Thin‐wrapper around \strong{di}’s \code{di()} function.  Coerces tibbles to pure data.frames
-(so that \code{di()}’s internal \verb{if (class(dat) != "data.frame")} check passes),
-auto‐selects deficit columns if none are specified, and exposes the same
-arguments as \code{di::di()}, plus a convenience \code{plot_frailty_age()} wrapper.
+Thin wrapper around the di package's di() that:
+\itemize{
+\item Validates inputs and arguments.
+\item Coerces tibbles to base data.frames (for di()'s class checks).
+\item Auto-selects numeric deficit columns when cols = NULL (excluding age if supplied).
+\item Optionally scans for missing/out-of-range values with warnings or errors.
+\item Provides step-by-step verbose output and a completion summary.
+\item Optionally returns a tidy tibble instead of the original list.
+}
+}
+\details{
+Background
+The Frailty Index (FI) is computed as the proportion of health deficits present
+in an individual across a set of candidate deficits. The approach was introduced
+and formalized by Rockwood and Mitnitski and subsequently standardized for
+construction and reporting.
+}
+\examples{
+# Minimal example (runs only if the 'di' package is installed)
+if (requireNamespace("di", quietly = TRUE)) {
+  df <- data.frame(
+    age = c(70, 75, 80),
+    d1 = c(0, 1, 1),
+    d2 = c(0.2, 0.8, 1.0),
+    d3 = c(TRUE, FALSE, TRUE)
+  )
+  # Auto-select numeric deficits; returns list (di, columns)
+  res <- frailty_index(df, cols = NULL, age = "age", verbose = TRUE)
+  # Tidy tibble return
+  tb  <- frailty_index(df, cols = c("d1","d2","d3"), age = "age",
+                       return = "data", verbose = TRUE)
+}
+
+}
+\references{
+Mitnitski AB, Mogilner AJ, Rockwood K (2001). Accumulation of deficits as a proxy measure of aging. Sci World J, 1:323–336. \doi{10.1100/tsw.2001.58}
+Rockwood K, Mitnitski A (2007). Frailty in relation to the accumulation of deficits. J Gerontol A Biol Sci Med Sci, 62(7):722–727. \doi{10.1093/gerona/62.7.722}
+Searle SD, Mitnitski A, Gahbauer EA, Gill TM, Rockwood K. A standard procedure for creating a frailty index. BMC Geriatr. 2008;8:24. \doi{10.1186/1471-2318-8-24}
+Rockwood K, Theou O. Using the clinical frailty scale in allocating scarce health care resources. Can Geriatr J. 2020;23(3):210–215. \doi{10.5770/cgj.23.463}
+Cesari M, Gambassi G, van Kan GA, Vellas B. The frailty phenotype and the frailty index: different instruments for different purposes. Age Ageing. 2014;43(1):10–12. \doi{10.1093/ageing/aft160}
 }

@@ -4,17 +4,80 @@
 \alias{normalize_vec}
 \title{Normalize a numeric vector}
 \usage{
-normalize_vec(x, method = c("none", "z", "inverse", "range", "robust"))
+normalize_vec(
+  x,
+  method = c("none", "z", "inverse", "range", "robust"),
+  na_rm = TRUE,
+  feature_range = c(0, 1),
+  invnorm_denominator = c("n", "n+1", "blom"),
+  ties = c("average", "first", "last", "random", "max", "min"),
+  warn_constant = TRUE
+)
 }
 \arguments{
-\item{x}{Numeric vector}
+\item{x}{A numeric (or numeric-coercible) vector.}
 
-\item{method}{One of c("none","z","inverse","range","robust")}
+\item{method}{One of c("none","z","inverse","range","robust"). Default "none".}
+
+\item{na_rm}{Logical; remove NAs when estimating statistics (mean, sd, etc.). Default TRUE.}
+
+\item{feature_range}{Numeric length-2 vector giving the target range for method = "range".
+Default c(0, 1).}
+
+\item{invnorm_denominator}{One of c("n","n+1","blom") controlling the denominator
+of the inverse-normal transform:
+\itemize{
+\item "n": p = (r - 0.5) / n  (Rankit; default)
+\item "n+1": p = (r - 0.5) / (n + 1)
+\item "blom": p = (r - 3/8) / (n + 1/4)  (Blom, 1958)
+}}
+
+\item{ties}{Ties method passed to base::rank for method = "inverse".
+One of c("average","first","last","random","max","min"). Default "average".}
+
+\item{warn_constant}{Logical; if TRUE, warn when input is constant and a zero vector
+(or lower bound for range) is returned. Default TRUE.}
 }
 \value{
-Numeric vector of same length as x
+A numeric vector of the same length as x.
 }
 \description{
-Normalize a numeric vector
+Utility used across HealthMarkers to normalize numeric vectors with several
+common schemes while handling edge cases (constant vectors, all-NA, non-finite
+values) robustly. NA positions are preserved.
+}
+\details{
+Methods:
+\itemize{
+\item "none": return input as-is (no coercion; fully backward compatible).
+\item "z": z-score (mean 0, sd 1). Constant vectors return zeros (non-NA entries).
+\item "range": min–max to a target interval (default \link{0,1}). Constant vectors return
+the lower bound (mapped from zeros).
+\item "robust": median/MAD scaling. Constant vectors (MAD=0) return zeros.
+\item "inverse": rank-based inverse normal transform (normal scores).
+}
+}
+\examples{
+x <- c(1, 2, 3, NA, 5)
+normalize_vec(x, "none")
+normalize_vec(x, "z")
+normalize_vec(x, "range", feature_range = c(-1, 1))
+normalize_vec(x, "robust")
+normalize_vec(x, "inverse")               # Rankit (default)
+normalize_vec(x, "inverse", invnorm_denominator = "blom")
+
+}
+\references{
+\itemize{
+\item Rank-based inverse normal transform (overview and guidance):
+https://pubmed.ncbi.nlm.nih.gov/22982992/
+\item Robust scaling via median and MAD (outlier-robust standardization):
+Leys C, Ley C, Klein O, Bernard P, Licata L. Detecting outliers: Do not use standard deviation
+around the mean, use median absolute deviation around the median. Front Psychol. 2013;4:241.
+https://pubmed.ncbi.nlm.nih.gov/23964219/
+\item z-scores and SD/SE primer (general background):
+Bland JM, Altman DG. Standard deviations and standard errors. BMJ. 1996;313(7047):41.
+https://pubmed.ncbi.nlm.nih.gov/8664809/
+}
 }
 \keyword{internal}

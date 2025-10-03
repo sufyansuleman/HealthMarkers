@@ -4,46 +4,77 @@
 \alias{bone_markers}
 \title{Compute Bone Health & Body-Composition Markers}
 \usage{
-bone_markers(data, col_map, verbose = FALSE)
+bone_markers(
+  data,
+  col_map,
+  verbose = FALSE,
+  na_action = c("zero", "warn_zero", "error"),
+  na_warn_prop = 0.2,
+  check_extreme_sds = FALSE,
+  sds_limit = 6,
+  extreme_sds_action = c("warn", "error", "ignore")
+)
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} with your subject‐level DXA/anthro data.}
+\item{data}{A \code{data.frame} or tibble with subject-level DXA/anthropometry data.}
 
-\item{col_map}{Named list mapping \strong{required} keys:
+\item{col_map}{Named list mapping keys to column names. Required keys:
 \itemize{
-\item \code{age}           → age (years)
-\item \code{weight}        → body weight (kg)
-\item \code{height}        → height (m)
-\item \code{ALM}           → appendicular lean mass (kg)
-\item \code{FM}            → total fat mass (kg)
-\item \code{BMD}           → bone mineral density (g/cm²)
-\item \code{BMD_ref_mean}  → reference mean BMD for T-score
-\item \code{BMD_ref_sd}    → reference SD BMD for T-score
-\strong{Optional} keys (if present will be carried through):
-\item \code{TBS}, \code{HSA}, \code{PINP}, \code{CTX}, \code{BSAP}, \code{Osteocalcin}
+\item \code{age}, \code{weight}, \code{height}, \code{ALM}, \code{FM}, \code{BMD}, \code{BMD_ref_mean}, \code{BMD_ref_sd}
+Optional (passed-through if present and found in data): \code{TBS}, \code{HSA}, \code{PINP}, \code{CTX}, \code{BSAP}, \code{Osteocalcin}.
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a message.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress and summary.}
+
+\item{na_action}{One of "zero", "warn_zero", or "error" controlling how
+missing/non-finite input values are treated. Default "zero" treats them as
+zero contribution in derived metrics (where applicable) or yields \code{NA} but
+suppresses warnings.}
+
+\item{na_warn_prop}{Proportion (0–1) threshold to warn about high missingness
+per variable (only when \code{na_action = "warn_zero"}). Default 0.2.}
+
+\item{check_extreme_sds}{Logical; if \code{TRUE}, scan mapped columns whose key
+names contain "sds" (case-insensitive) for absolute values > \code{sds_limit}.
+Default FALSE.}
+
+\item{sds_limit}{Positive numeric; SDS magnitude limit for \code{check_extreme_sds}.
+Default 6.}
+
+\item{extreme_sds_action}{One of "warn", "error", or "ignore" for what to do
+when extreme SDS-like values are detected. Default "warn".}
 }
 \value{
-A tibble with columns
-\code{OSTA}, \code{ALMI}, \code{FMI}, \code{BMD_Tscore}, \code{TBS}, \code{HSA}, \code{PINP}, \code{CTX}, \code{BSAP}, \code{Osteocalcin}.
+A tibble with columns: \code{OSTA}, \code{ALMI}, \code{FMI}, \code{BMD_Tscore}, and
+optionally \code{TBS}, \code{HSA}, \code{PINP}, \code{CTX}, \code{BSAP}, \code{Osteocalcin} (in that order).
 }
 \description{
-Given DXA, anthropometry, and optional bone‐turnover markers, computes:
+Given DXA, anthropometry, and optional bone-turnover markers, computes:
 \itemize{
-\item \strong{OSTA}       Osteoporosis Self-assessment Tool for Asians: (weight – age) × 0.2
-\item \strong{ALMI}       Appendicular Lean Mass Index = ALM / height²
-\item \strong{FMI}        Fat Mass Index = FM / height²
-\item \strong{BMD_Tscore} BMD T-score = (BMD – ref_mean) / ref_sd
-and (if in \code{col_map} + data) passes through: \strong{TBS}, \strong{HSA}, \strong{PINP}, \strong{CTX}, \strong{BSAP}, \strong{Osteocalcin}.
+\item OSTA: (weight - age) x 0.2
+\item ALMI: Appendicular Lean Mass Index = ALM / height^2
+\item FMI: Fat Mass Index = FM / height^2
+\item BMD_Tscore: (BMD - ref_mean) / ref_sd
+and (if in \code{col_map} + data) passes through: TBS, HSA, PINP, CTX, BSAP, Osteocalcin.
 }
+}
+\examples{
+library(tibble)
+df <- tibble(
+  age = c(60, 72), weight = c(65, 50), height = c(1.65, 1.58),
+  ALM = c(18.2, 14.7), FM = c(22.0, 20.5),
+  BMD = c(0.95, 0.80), BMD_ref_mean = c(1.00, 1.00), BMD_ref_sd = c(0.12, 0.12)
+)
+col_map <- list(
+  age = "age", weight = "weight", height = "height",
+  ALM = "ALM", FM = "FM", BMD = "BMD",
+  BMD_ref_mean = "BMD_ref_mean", BMD_ref_sd = "BMD_ref_sd"
+)
+bone_markers(df, col_map)
+
 }
 \references{
-\itemize{
-\item Woo J \emph{et al.} (2002). The osteoporosis self-assessment tool for Asians (OSTA). \emph{Maturitas} 41(2):227–232.
-\item Cruz-Jentoft AJ \emph{et al.} (2019). Sarcopenia clinical definitions. \emph{Age Ageing} 48(1):16–31.
-\item Kelly TL \emph{et al.} (2009). Fat mass index vs BMI. \emph{Int J Obes} 33:783–789.
-\item World Health Organization (1994). Assessment of fracture risk and its application to screening for postmenopausal osteoporosis. \emph{WHO Tech Rep Ser} No. 843.
-}
+Woo J, Leung J, Lau E, et al. (2002). The Osteoporosis Self-Assessment Tool (OSTA): a simple screening tool for osteoporosis. Maturitas, 41(2):227–232.
+Kelly TL, Wilson KE, Heymsfield SB (2009). Dual energy X-ray absorptiometry body composition reference values from NHANES. Int J Obes, 33(6):783–789.
+World Health Organization (1994). Assessment of fracture risk and its application to screening for postmenopausal osteoporosis. WHO Tech Rep Ser, 843:1–129.
 }

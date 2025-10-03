@@ -2,27 +2,40 @@
 % Please edit documentation in R/pulmo_markers.R
 \name{pulmo_markers}
 \alias{pulmo_markers}
-\title{Calculate pulmonary function markers (FEV₁/FVC, z-scores, percent predicted, LLN, etc.)}
+\title{Calculate pulmonary function markers (FEV1/FVC, z-scores, percent predicted, LLN, etc.)}
 \usage{
-pulmo_markers(data, equation = c("GLI", "GLIgl", "NHANES3"), verbose = FALSE)
+pulmo_markers(
+  data,
+  equation = c("GLI", "GLIgl", "NHANES3"),
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{data}{A data.frame or tibble with columns:
 \itemize{
 \item \code{age}       (numeric): years
-\item \code{sex}       (character): "male"/"female" (case‐insensitive)
-\item \code{height}    (numeric): cm or m (auto‐detected)
-\item \code{ethnicity} (character): e.g. "Caucasian", "African-American", …
-\item \code{fev1}      (numeric): observed FEV₁ in L
+\item \code{sex}       (character or numeric): "male"/"female" (case-insensitive) or {1,2}, {0,1}
+\item \code{height}    (numeric): cm or m (auto-detected)
+\item \code{ethnicity} (character): e.g. "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"
+\item \code{fev1}      (numeric): observed FEV1 in L
 \item \code{fvc}       (numeric): observed FVC in L
 }}
 
-\item{equation}{One of \code{c("GLI","GLIgl","NHANES3")} (see \code{rspiro} for more)}
+\item{equation}{One of \code{c("GLI","GLIgl","NHANES3")} (see \code{rspiro} for details).
+GLIgl ignores ethnicity.}
 
-\item{verbose}{Logical; if \code{TRUE} prints progress messages.}
+\item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in
+required inputs. Default "keep".}
+
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings on
+required inputs. Default 0.2.}
+
+\item{verbose}{Logical; if \code{TRUE} prints progress messages and a completion summary.}
 }
 \value{
-A tibble with:
+A tibble with columns:
 \itemize{
 \item \code{fev1_pred}, \code{fev1_z},   \code{fev1_pctpred}, \code{fev1_LLN}
 \item \code{fvc_pred},  \code{fvc_z},    \code{fvc_pctpred},  \code{fvc_LLN}
@@ -31,6 +44,19 @@ A tibble with:
 }
 \description{
 Uses the \code{rspiro} reference equations to compute predicted normals,
-z-scores, percent predicted and lower limits of normal (LLN) for FEV₁, FVC,
-and the FEV₁/FVC ratio.
+z-scores, percent predicted and lower limits of normal (LLN) for FEV1, FVC,
+and the FEV1/FVC ratio.
+}
+\details{
+Inputs are validated, missingness is handled via \code{na_action}, and heights are
+auto-detected as cm when any height > 3; otherwise interpreted as metres (no
+automatic unit conversion beyond that heuristic, preserving prior behavior).
+}
+\references{
+Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3–95-yr age range: the GLI equations. Eur Respir J, 40:1324–1343. \doi{10.1183/09031936.00162412}
+Hankinson JL, Odencrantz JR, Fedan KB (1999). Spirometric reference values from a sample of the general U.S. population. Am J Respir Crit Care Med, 159:179–187. \doi{10.1164/ajrccm.159.1.9712108}
+Bowerman SD, Quanjer PH, et al. (2023). GLI-Global update. Eur Respir J, 61:2201632. \doi{10.1183/13993003.01632-2023}
+}
+\seealso{
+rspiro
 }

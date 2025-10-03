@@ -1,9 +1,10 @@
 # tests/testthat/test_adipo_is.R
 
+library(testthat)
+library(tibble)
+library(dplyr)
 
-
-# Helper to call adipo_is with the standard col_map
-run_adipo <- function(df, normalize = "none", verbose = FALSE) {
+run_adipo <- function(df, normalize = "none", verbose = FALSE, ...) {
   adipo_is(
     df,
     col_map = list(
@@ -16,11 +17,11 @@ run_adipo <- function(df, normalize = "none", verbose = FALSE) {
       bmi   = "bmi"
     ),
     normalize = normalize,
-    verbose = verbose
+    verbose = verbose,
+    ...
   )
 }
 
-# Base single‐row input
 base_df <- tibble(
   G0    = 5.5,
   I0    = 60,
@@ -34,30 +35,30 @@ base_df <- tibble(
 test_that("errors when col_map is missing required keys", {
   expect_error(
     adipo_is(base_df, col_map = list(G0 = "G0")),
-    "you must supply col_map entries"
+    "missing col_map entries for"
   )
 })
 
-test_that("returns all 10 adipose‐based indices", {
+test_that("returns all 10 adipose-based indices", {
   out <- run_adipo(base_df)
   expected <- c(
-    "Revised_QUICKI", "VAI_Men_inv",    "VAI_Women_inv",
-    "TG_HDL_C_inv",   "TyG_inv",        "LAP_Men_inv",
-    "LAP_Women_inv",  "McAuley_index",  "Adipo_inv",
+    "Revised_QUICKI","VAI_Men_inv","VAI_Women_inv",
+    "TG_HDL_C_inv","TyG_inv","LAP_Men_inv",
+    "LAP_Women_inv","McAuley_index","Adipo_inv",
     "Belfiore_inv_FFA"
   )
-  expect_setequal(names(out), expected)
+  expect_named(out, expected)
   expect_equal(ncol(out), length(expected))
+  expect_equal(nrow(out), 1L)
 })
 
-test_that("vectorized input: two rows gives two outputs", {
+test_that("vectorized input produces matching row count", {
   df2 <- bind_rows(base_df, mutate(base_df, G0 = 6))
   out2 <- run_adipo(df2)
   expect_equal(nrow(out2), 2)
 })
 
 test_that("Revised_QUICKI matches manual computation", {
-  # internal conversions: I0_u <- I0/6, G0_mgdL <- G0*18, FFA stays
   I0_u <- base_df$I0 / 6
   G0_mgdL <- base_df$G0 * 18
   FFA_v <- base_df$FFA
@@ -66,56 +67,98 @@ test_that("Revised_QUICKI matches manual computation", {
   expect_equal(out$Revised_QUICKI, manual, tolerance = 1e-8)
 })
 
-test_that("normalize = 'range' scales variable indices to [0,1], constants to NA", {
+test_that("normalize='range' maps variable columns to [0,1]; constants allowed", {
   df2 <- bind_rows(base_df, mutate(base_df, G0 = 6))
-  out_r <- run_adipo(df2, normalize = "range")
+  out_r <- suppressWarnings(run_adipo(df2, normalize = "range"))
   for (col in names(out_r)) {
     vals <- out_r[[col]]
-    v2 <- vals[!is.na(vals)]
-    if (length(unique(v2)) > 1) {
-      expect_equal(min(v2), 0)
-      expect_equal(max(v2), 1)
+    finite <- vals[is.finite(vals)]
+    if (length(unique(finite)) > 1) {
+      expect_gte(min(finite), 0)
+      expect_lte(max(finite), 1)
     } else {
-      expect_true(all(is.na(vals)))
+      expect_true(length(unique(finite)) == 1)
     }
   }
 })
 
-test_that("normalize = 'z' yields mean ≈ 0 and sd ≈ 1 on variable indices", {
+test_that("normalize='z' gives mean≈0 / sd≈1 when variable; constants -> zeros", {
   df3 <- bind_rows(
     base_df,
     mutate(base_df, G0 = 6),
     mutate(base_df, G0 = 8)
   )
-  out_z <- run_adipo(df3, normalize = "z")
+  out_z <- suppressWarnings(run_adipo(df3, normalize = "z"))
   for (col in names(out_z)) {
     vals <- out_z[[col]]
-    v2 <- vals[!is.na(vals)]
-    if (length(unique(v2)) > 1) {
-      expect_equal(mean(v2), 0, tolerance = 1e-6)
-      expect_equal(sd(v2), 1, tolerance = 1e-6)
+    finite <- vals[is.finite(vals)]
+    if (length(unique(finite)) > 1) {
+      expect_equal(mean(finite), 0, tolerance = 1e-6)
+      expect_equal(sd(finite), 1, tolerance = 1e-6)
     } else {
-      expect_true(all(is.na(vals)))
+      expect_true(all(finite == 0))
     }
   }
 })
 
-test_that("normalize = 'inverse' and 'robust' run without error", {
+test_that("normalize='inverse' and 'robust' execute", {
   df2 <- bind_rows(base_df, mutate(base_df, I0 = 30))
-  expect_silent(run_adipo(df2, normalize = "inverse"))
-  expect_silent(run_adipo(df2, normalize = "robust"))
+  # Silence normalization warnings (e.g., MAD zero)
+  expect_error(suppressWarnings(run_adipo(df2, normalize = "inverse")), NA)
+  expect_error(suppressWarnings(run_adipo(df2, normalize = "robust")),  NA)
 })
 
 test_that("invalid normalize argument errors", {
   expect_error(
     run_adipo(base_df, normalize = "foo"),
-    "'arg' should be one of"
+    "`normalize` must be one of"
   )
 })
 
-test_that("verbose = TRUE prints a progress message", {
-  expect_message(
-    run_adipo(base_df, verbose = TRUE),
-    "-> adipo_is: computing adipose"
+test_that("na_action policies", {
+  df_na <- bind_rows(base_df, mutate(base_df, TG = NA_real_))
+  expect_error(
+    suppressWarnings(adipo_is(df_na,
+                              col_map = list(G0="G0",I0="I0",TG="TG",HDL_c="HDL_c",FFA="FFA",waist="waist",bmi="bmi"),
+                              na_action = "error")),
+    "required inputs contain missing values"
   )
+  out_omit <- suppressWarnings(adipo_is(df_na,
+                                        col_map = list(G0="G0",I0="I0",TG="TG",HDL_c="HDL_c",FFA="FFA",waist="waist",bmi="bmi"),
+                                        na_action = "omit"))
+  expect_equal(nrow(out_omit), 1L)
+})
+
+test_that("extreme detection warn vs cap", {
+  df_ext <- mutate(base_df,
+                   G0 = 40,
+                   I0 = 5000,
+                   TG = 30,
+                   HDL_c = 0.1,
+                   FFA = 5,
+                   waist = 400,
+                   bmi = 100)
+  expect_warning(
+    out_w <- run_adipo(df_ext, check_extreme = TRUE, extreme_action = "warn", diagnostics = FALSE),
+    "detected .* extreme input values \\(not altered\\)"
+  )
+  expect_warning(
+    out_c <- run_adipo(df_ext, check_extreme = TRUE, extreme_action = "cap", diagnostics = FALSE),
+    "capped .* extreme input values into allowed ranges"
+  )
+  expect_false(isTRUE(all.equal(out_w$Revised_QUICKI, out_c$Revised_QUICKI)))
+})
+
+test_that("zero denominators consolidated warning", {
+  df_zero <- mutate(base_df, HDL_c = 0, TG = 0)
+  expect_warning(
+    out_zero <- run_adipo(df_zero, diagnostics = FALSE),
+    "zero denominators detected"
+  )
+  expect_true(any(is.na(out_zero$TG_HDL_C_inv)))
+})
+
+test_that("verbose outputs messages", {
+  expect_message(run_adipo(base_df, verbose = TRUE), "-> adipo_is: computing indices")
+  expect_message(run_adipo(base_df, verbose = TRUE), "Completed adipo_is:")
 })

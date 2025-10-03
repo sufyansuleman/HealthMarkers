@@ -2,7 +2,7 @@
 % Please edit documentation in R/health_markers.R
 \name{metabolic_markers}
 \alias{metabolic_markers}
-\title{Compute core metabolic markers (insulin + liver, lipid, cardio, etc.)}
+\title{Aggregate selected metabolic marker groups}
 \usage{
 metabolic_markers(
   data,
@@ -13,31 +13,12 @@ metabolic_markers(
   verbose = TRUE
 )
 }
-\arguments{
-\item{data}{A data.frame or tibble of raw measurements.}
-
-\item{col_map}{As above, for insulin calculators.}
-
-\item{which}{Character vector choosing subsets; default all:
-\code{c("insulin","adiposity_sds","cardio","lipid","liver","glycemic","mets")}.}
-
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")}.}
-
-\item{mode}{Passed to \code{all_insulin_indices()}.}
-
-\item{verbose}{Logical.}
-}
-\value{
-A tibble: original \code{data} plus requested marker columns.
-}
 \description{
-\code{metabolic_markers()} builds on \code{all_insulin_indices()} and then adds:
-\itemize{
-\item adiposity_sds
-\item cardio_advanced
-\item lipid_markers
-\item liver_markers
-\item glycemic_markers
-\item mets
+Aggregate selected metabolic marker groups
 }
+\note{
+For references supporting liver, lipid, glycemic, MetS, adiposity and
+other domain-specific indices, see each underlying function's documentation
+(e.g. ?liver_markers, ?lipid_markers, ?glycemic_markers, ?metss, ?adiposity_sds).
+This wrapper omits repeated reference listings to avoid redundancy.
 }

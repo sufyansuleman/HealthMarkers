@@ -2,44 +2,68 @@
 % Please edit documentation in R/allostatic_load.R
 \name{allostatic_load}
 \alias{allostatic_load}
-\title{Compute a basic Allostatic Load Index}
+\title{Allostatic Load Index (HM-CRANIZED)}
 \usage{
-allostatic_load(data, thresholds, verbose = FALSE)
+allostatic_load(
+  data,
+  thresholds,
+  verbose = FALSE,
+  na_action = c("zero", "warn_zero", "error", "keep"),
+  na_warn_prop = 0.2,
+  check_extreme_sds = FALSE,
+  sds_limit = 6,
+  extreme_sds_action = c("warn", "error", "ignore"),
+  diagnostics = TRUE,
+  return_summary = FALSE
+)
 }
 \arguments{
-\item{data}{A \code{data.frame} or tibble of biomarker columns.}
+\item{data}{data.frame or tibble of numeric biomarker columns.}
 
-\item{thresholds}{Named list mapping biomarker names → numeric cutoffs.}
+\item{thresholds}{named list of scalar numeric cutoffs (names must match columns).}
 
-\item{verbose}{Logical; if \code{TRUE}, prints which biomarkers are used.}
+\item{verbose}{logical; print progress messages.}
+
+\item{na_action}{one of c("zero","warn_zero","error","keep") ("keep" treated as "zero").}
+
+\item{na_warn_prop}{numeric in \link{0,1}; high-missingness warning threshold (default 0.2).}
+
+\item{check_extreme_sds}{logical; scan columns containing "sds" for |value| > sds_limit.}
+
+\item{sds_limit}{positive numeric cutoff for SDS-like scan (default 6).}
+
+\item{extreme_sds_action}{one of c("warn","error","ignore") for SDS-like extremes.}
+
+\item{diagnostics}{logical; FALSE suppresses non-critical warnings.}
+
+\item{return_summary}{logical; TRUE returns list(data, summary, warnings).}
 }
 \value{
-A tibble with a single integer column:
-\itemize{
-\item \code{AllostaticLoad}: sum of per‐marker risk flags.
-}
+tibble with AllostaticLoad or list when return_summary = TRUE.
 }
 \description{
-Given a data frame of numeric biomarkers and a named list of high‐risk
-thresholds, scores each marker as 1 if it is above the cutoff:
-\itemize{
-\item \strong{strictly greater} when you supply \strong{multiple} thresholds
-\item \strong{greater‐or‐equal} when you supply \strong{exactly one} threshold
-(so single‐marker ≥‐logic tests pass).  Missing values count as 0.
+Computes a composite Allostatic Load (AL) score by flagging biomarkers that
+exceed user-specified high-risk thresholds (strict > when multiple biomarkers;
+inclusive >= when only one biomarker). Designed to align with HealthMarkers
+HM-CRANIZED conventions: structured validation, diagnostic control, verbose
+reporting, and optional summary output.
 }
+\details{
+Methodological context:
+Allostatic Load is a multisystem cumulative (dis)regulation construct. This
+function operationalizes a threshold-based (count) AL index; other approaches
+(e.g. z-score summation, percentile cut-points, weighted or system-level
+aggregation) exist and may be preferable depending on study aims.
+Thresholds supplied via \code{thresholds} should be justified (e.g. clinical
+cut-points, cohort-specific quartiles, or consensus risk criteria). This
+routine does not derive thresholds—only applies them.
 }
-\examples{
-library(tibble)
-df <- tibble(
-  A = c(1, 5, 10, NA),
-  B = c(0, 2, 3, 4),
-  C = c(100, 50, 25, 10)
-)
-thr <- list(A = 4, B = 2, C = 30)
-allostatic_load(df, thr)
-
-# Single‐marker inclusive logic
-df2 <- tibble(X = c(5, 10))
-allostatic_load(df2, list(X = 10))
-
+\references{
+McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238.
+Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268.
+Juster RP et al, Allostatic Load biomarkers: review of measurement issues, Neurosci Biobehav Rev, 2010;35:2–16.
+Wiley JF et al, Methodological considerations in constructing allostatic load indices, Psychoneuroendocrinology, 2021;129:105248.
+}
+\seealso{
+\code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
 }

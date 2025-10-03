@@ -4,26 +4,36 @@
 \alias{cvd_risk_mesa}
 \title{MESA 10-year CHD risk}
 \usage{
-cvd_risk_mesa(data, ...)
+cvd_risk_mesa(data, na_warn_prop = 0.2, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{A tibble with columns: \code{race}, \code{sex}, \code{age}, \code{totchol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{smoker}, \code{diabetes}.}
+\item{data}{Data frame with: \code{race}, \code{sex}, \code{age}, \code{total_chol},
+\code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{smoker}, \code{diabetes}.}
 
-\item{...}{Additional arguments for chd_10y_mesa.}
+\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+Only used when \code{verbose = TRUE}.}
+
+\item{verbose}{Logical; if TRUE, prints progress and a short summary.}
+
+\item{...}{Passed to \code{CVrisk::chd_10y_mesa()}.}
 }
 \value{
-A tibble with columns \code{model}, \code{year} (10), and \code{risk}.
+A tibble with \code{model}, \code{year}, \code{risk}.
 }
 \description{
-Wrapper around CVrisk::chd_10y_mesa.
+Wrapper around \code{CVrisk::chd_10y_mesa()} with graceful fallback to NA if the
+backend errors.
 }
 \examples{
-\dontrun{
-library(tibble)
-df <- tibble(
-  race = "white", sex = 1, age = 55, totchol = 200, HDL_c = 50,
-  sbp = 140, bp_treated = FALSE, smoker = FALSE, diabetes = FALSE
-)
-cvd_risk_mesa(df)
+if (requireNamespace("CVrisk", quietly = TRUE)) {
+  # cvd_risk_mesa(df, verbose = TRUE)
+}
+
+}
+\references{
+\itemize{
+\item McClelland RL, et al. Ten-year coronary heart disease risk prediction using
+coronary artery calcium and traditional risk factors: the MESA risk score.
+Circulation. 2015;131(5):402–409.
 }
 }

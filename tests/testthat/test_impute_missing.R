@@ -7,21 +7,21 @@ library(tibble)
 test_that("impute_missing mean/median/zero/constant work", {
   df <- tibble(x = c(1, NA, 3), y = c(NA, 2, NA), z = c("a", "b", "c"))
   # default mean
-  out1 <- impute_missing(df)
+  out1 <- suppressWarnings(impute_missing(df))
   expect_equal(out1$x, c(1, mean(c(1, 3)), 3))
   expect_equal(out1$y, c(mean(2), 2, mean(2)))
   # zero only x
-  out2 <- impute_missing(df, method = "zero", cols = "x")
+  out2 <- suppressWarnings(impute_missing(df, method = "zero", cols = "x"))
   expect_equal(out2$x, c(1, 0, 3))
   expect_true(is.na(out2$y[1]))
   # constant
-  out3 <- impute_missing(df, method = "constant", constant = 99)
+  out3 <- suppressWarnings(impute_missing(df, method = "constant", constant = 99))
   expect_equal(out3$x, c(1, 99, 3))
   expect_equal(out3$y, c(99, 2, 99))
 })
 
 test_that("impute_missing errors appropriately", {
-  expect_error(impute_missing("not a df"), "'data' must be a data.frame")
+  expect_error(impute_missing("not a df"), "must be a data.frame or tibble")
   expect_error(impute_missing(tibble(a = 1), cols = "b"), "Some `cols` not in data")
 })
 
@@ -40,11 +40,14 @@ test_that("impute_mice basic functionality is silent and imputes", {
 
 test_that("impute_mice errors on bad inputs", {
   skip_if_not_installed("mice")
-  expect_error(impute_mice("nope"), "'data' must be a data.frame")
+  expect_error(impute_mice("nope"), "must be a data.frame or tibble")
   expect_error(impute_mice(tibble(x = 1:3), cols = "foo"),
                "Some `cols` not in data")
-  expect_error(impute_mice(tibble(a = c(1,2,3))), # only one numeric column
-               "need at least two numeric columns for mice")
+  # only one numeric column with missing values -> error
+  expect_error(
+    impute_mice(tibble(a = c(1, NA, 3), b = c(1, 2, 3))),
+    "need at least two numeric columns"
+  )
 })
 
 # 3) impute_missforest()
@@ -65,9 +68,12 @@ test_that("impute_missforest fills NAs and preserves non-numeric", {
 
 test_that("impute_missforest errors on bad inputs", {
   skip_if_not_installed("missForest")
-  expect_error(impute_missforest("nope"), "'data' must be a data.frame")
+  expect_error(impute_missforest("nope"), "must be a data.frame or tibble")
   expect_error(impute_missforest(tibble(x = 1:3), cols = "foo"),
                "Some `cols` not in data")
-  expect_error(impute_missforest(tibble(a = c(1,2,3))),
-               "need at least two numeric columns for missForest")
+  # only one numeric column with missing values -> error
+  expect_error(
+    impute_missforest(tibble(a = c(1, NA, 3), b = c(1, 2, 3))),
+    "need at least two numeric columns"
+  )
 })
