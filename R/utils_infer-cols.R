@@ -294,3 +294,43 @@ infer_cols <- function(data,
 
   invisible(map)
 }
+
+# HM-VS v2: inference helper that reports via hm_inform and errors via rlang::abort
+# patterns: named list where each element is a character vector of candidate column names for that key
+hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbose = FALSE) {
+  if (!is.data.frame(data)) {
+    rlang::abort("hm_infer_cols(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_infer_error_data_type")
+  }
+  if (!is.list(patterns) || is.null(names(patterns)) || any(names(patterns) == "")) {
+    rlang::abort("hm_infer_cols(): `patterns` must be a named list of candidate names per key.",
+                 class = "healthmarkers_infer_error_patterns_type")
+  }
+
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> hm_infer_cols: inferring column map")
+
+  resolved <- list()
+  for (key in names(patterns)) {
+    cands <- unique(na.omit(as.character(patterns[[key]])))
+    hit <- intersect(cands, names(data))
+    if (length(hit) >= 1L) {
+      resolved[[key]] <- hit[[1L]]
+      if (isTRUE(verbose)) hm_inform(level = "debug", msg = sprintf("hm_infer_cols(): key '%s' -> '%s'", key, hit[[1L]]))
+    } else {
+      resolved[[key]] <- NA_character_
+      hm_inform(level = "debug", msg = sprintf("hm_infer_cols(): key '%s' unresolved", key))
+    }
+  }
+
+  # Ensure required keys are found
+  missing_req <- required_keys[is.na(rlang::`%||%`(unlist(resolved[required_keys]), NA_character_))]
+  if (length(missing_req)) {
+    rlang::abort(
+      sprintf("hm_infer_cols(): could not infer columns for required keys: %s",
+              paste(missing_req, collapse = ", ")),
+      class = "healthmarkers_infer_error_missing_required"
+    )
+  }
+
+  resolved
+}

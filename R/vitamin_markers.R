@@ -1,116 +1,104 @@
 # File: R/vitamin_markers.R
 
-#' Compute Vitamin & Nutrient-Status Indices (HM-CRANIZED)
+#' Compute composite vitamin and endocrine marker ratios and z-scores
 #'
-#' Given a data.frame or tibble with vitamin and nutrient labs, `vitamin_markers()`
-#' returns commonly-used z-scores, ratios, and direct measures of vitamin and nutrient status.
+#' Given serum/plasma vitamins and related analytes, `vitamin_markers()` computes:
+#' - VitD_Z: z-score of 25(OH)D using provided reference mean/sd
+#' - B12_Fol_Ratio: vitamin B12 / folate
+#' - Ferr_TSat_R: ferritin / transferrin saturation (TSat)
+#' - Cort_DHEA_R: cortisol / DHEA-S
+#' - T_E2_Ratio: testosterone / estradiol
+#' - TSH_fT4_R: TSH / free T4
+#' - Retinol_Z: z-score of retinol using provided reference mean/sd
+#' - Toco_Lip_R: alpha-tocopherol / total lipids
+#' - Mg_Zn_R: magnesium / zinc
+#' - Cu_Zn_R: copper / zinc
+#' Plus pass-through: PIVKA_II, VitC, Homocysteine, MMA
 #'
-#' Required col_map keys -> column names in `data`:
-#'   - VitD (nmol/L), VitD_ref_mean (nmol/L), VitD_ref_sd (nmol/L)
-#'   - B12 (pmol/L), Folate (nmol/L)
-#'   - Ferritin (ng/mL), TSat (fraction 0–1)
-#'   - Cortisol (nmol/L), DHEAS (nmol/L)
-#'   - Testosterone (nmol/L), Estradiol (pmol/L)
-#'   - TSH (mIU/L), free_T4 (pmol/L)
-#'   - Retinol (umol/L), Retinol_ref_mean (umol/L), Retinol_ref_sd (umol/L)
-#'   - Tocopherol (umol/L), Total_lipids (mmol/L)
-#'   - PIVKA_II (ng/mL), VitC (umol/L)
-#'   - Homocysteine (umol/L), MMA (umol/L)
-#'   - Magnesium (mmol/L), Zinc (umol/L), Copper (umol/L)
+#' HM-CS v2:
+#' - Validation via `hm_validate_inputs(data, col_map, required_keys, fn)`
+#' - User errors via `rlang::abort(..., class=...)`
+#' - Verbosity via `hm_inform(level)` controlled by `options(healthmarkers.verbose)`
+#' - High-missingness diagnostics at debug level only
 #'
-#' Adds:
-#'  - Robust validation and numeric coercion (warn on NAs introduced)
-#'  - NA handling policies via `na_action`
-#'  - High-missingness diagnostics via `na_warn_prop`
-#'  - Optional extremes scan/cap via `check_extreme` and `extreme_action`
-#'  - Safe division with consolidated zero-denominator warnings
-#'  - Verbose progress and completion summaries
-#'
-#' @param data A data.frame or tibble with the mapped columns.
-#' @param col_map Named list mapping required keys to column names (see above).
-#' @param verbose Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.
-#' @param na_action One of c("keep","omit","error") for handling NAs in required inputs. Default "keep".
-#' @param na_warn_prop Proportion [0,1] to trigger high-missingness warnings. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for extremes. Default FALSE.
+#' @param data A data.frame or tibble with vitamin/analyte columns.
+#' @param col_map Named list mapping required keys to column names:
+#'   VitD, VitD_ref_mean, VitD_ref_sd, B12, Folate, Ferritin, TSat,
+#'   Cortisol, DHEAS, Testosterone, Estradiol, TSH, free_T4,
+#'   Retinol, Retinol_ref_mean, Retinol_ref_sd, Tocopherol, Total_lipids,
+#'   PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper.
+#' @param na_action One of c("keep","omit","error") for required inputs. Default "keep".
+#' @param na_warn_prop Proportion [0,1] to trigger high-missingness debug notices. Default 0.2.
+#' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
 #' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds keyed by col_map keys. If NULL, broad defaults are used.
+#' @param extreme_rules Optional named list of c(min,max) bounds keyed by input keys or column names.
+#' @param verbose Logical; if TRUE, prints progress messages via hm_inform().
 #'
-#' @return A tibble with:
+#' @return A tibble with columns:
 #'   VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R,
 #'   Retinol_Z, Toco_Lip_R, PIVKA_II, VitC, Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R
 #'
-#' @references
-#' Original derivations
-#' - Holick MF, Binkley NC, Bischoff-Ferrari HA, et al. Evaluation, treatment, and prevention of vitamin D deficiency: an Endocrine Society clinical practice guideline. 
-#'   J Clin Endocrinol Metab. 2011;96(7):1911–1930. \doi{10.1210/jc.2011-0385} (Vitamin D reference ranges, z-scores)
-#' - Stabler SP. Vitamin B12 deficiency. 
-#'   N Engl J Med. 2013;368(2):149–160. \doi{10.1056/NEJMcp1113996} (B12/Folate ratio, MMA, homocysteine)
-#' - Traber MG, Atkinson J. Vitamin E, antioxidant and nothing more. 
-#'   Free Radic Biol Med. 2007;43(1):4–15. \doi{10.1016/j.freeradbiomed.2007.03.024} (Tocopherol/lipids ratio)
-#' - Levine M, Rumsey SC, Daruwala R, Park JB, Wang Y. Criteria and recommendations for vitamin C intake. 
-#'   Proc Natl Acad Sci U S A. 1996;93(8):3704–3709. \doi{10.1073/pnas.93.8.3704} (Vitamin C reference values)
+#' @examples
+#' df <- tibble::tibble(
+#'   VitD = 50, VitD_ref_mean = 40, VitD_ref_sd = 5,
+#'   B12 = 300, Folate = 15,
+#'   Ferritin = 100, TSat = 0.25,
+#'   Cortisol = 200, DHEAS = 100,
+#'   Testosterone = 12, Estradiol = 120,
+#'   TSH = 2, free_T4 = 14,
+#'   Retinol = 0.8, Retinol_ref_mean = 0.9, Retinol_ref_sd = 0.2,
+#'   Tocopherol = 30, Total_lipids = 3,
+#'   PIVKA_II = 5, VitC = 60, Homocysteine = 10, MMA = 0.3,
+#'   Magnesium = 0.8, Zinc = 15, Copper = 15
+#' )
+#' cm <- as.list(names(df)); names(cm) <- names(df)
+#' vitamin_markers(df, cm)
 #'
-#' Validation and consensus
-#' - Allen LH. Causes of vitamin B12 and folate deficiency. 
-#'   Food Nutr Bull. 2008;29(2 Suppl):S20–S34. \doi{10.1177/15648265080292S105} (Validation of B12/Folate ratio)
-#' - Arnaud J, Faure H, et al. Longitudinal studies of antioxidant vitamins: correlation of serum α-tocopherol with lipids. 
-#'   Am J Clin Nutr. 1991;53(4):884–889. \doi{10.1093/ajcn/53.4.884} (Validation of tocopherol/lipids ratio)
-#' - Labrie F, Bélanger A, et al. DHEA and aging: importance of DHEA in sex steroid biosynthesis. 
-#'   Endocr Rev. 1997;18(5):713–738. \doi{10.1210/edrv.18.5.0319} (Cortisol/DHEAS ratio context)
-#' - Lippi G, Montagnana M, Guidi GC. Biochemical markers of alcoholism. 
-#'   Clin Chim Acta. 2006;356(1–2):9–26. \doi{10.1016/j.cca.2005.11.007} (PIVKA-II as marker of vitamin K deficiency)
-#' - Prasad AS. Zinc in human health: effect of zinc on immune cells. 
-#'   Mol Med. 2008;14(5–6):353–357. \doi{10.2119/2008-00033.Prasad} (Zn and Cu/Zn ratio in health and disease)
+#' @references
+#' Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266–281. \doi{10.1056/NEJMra070553}
+#' O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299–316. \doi{10.3390/nu2030299}
+#' Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500–510. \doi{10.1038/nri3863}
+#' Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101–163. (endocrine ratios context)
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
 #' @export
-vitamin_markers <- function(data, col_map,
-                            verbose = FALSE,
+vitamin_markers <- function(data,
+                            col_map,
                             na_action = c("keep","omit","error"),
                             na_warn_prop = 0.2,
                             check_extreme = FALSE,
                             extreme_action = c("warn","cap","error","ignore"),
-                            extreme_rules = NULL) {
+                            extreme_rules = NULL,
+                            verbose = FALSE) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
   t0 <- Sys.time()
 
-  # Validate inputs
   if (!is.data.frame(data)) {
     rlang::abort("vitamin_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitamin_error_data_type")
   }
   if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("vitamin_markers(): `col_map` must be a named list mapping keys to column names.",
+    rlang::abort("vitamin_markers(): `col_map` must be a named list of required keys -> column names.",
                  class = "healthmarkers_vitamin_error_colmap_type")
   }
-  if (isTRUE(verbose)) rlang::inform("-> vitamin_markers: validating inputs")
 
   required_keys <- c(
-    "VitD", "VitD_ref_mean", "VitD_ref_sd",
-    "B12", "Folate",
-    "Ferritin", "TSat",
-    "Cortisol", "DHEAS",
-    "Testosterone", "Estradiol",
-    "TSH", "free_T4",
-    "Retinol", "Retinol_ref_mean", "Retinol_ref_sd",
-    "Tocopherol", "Total_lipids",
-    "PIVKA_II", "VitC",
-    "Homocysteine", "MMA",
-    "Magnesium", "Zinc", "Copper"
+    "VitD","VitD_ref_mean","VitD_ref_sd","B12","Folate","Ferritin","TSat",
+    "Cortisol","DHEAS","Testosterone","Estradiol","TSH","free_T4",
+    "Retinol","Retinol_ref_mean","Retinol_ref_sd","Tocopherol","Total_lipids",
+    "PIVKA_II","VitC","Homocysteine","MMA","Magnesium","Zinc","Copper"
   )
 
-  missing_keys <- setdiff(required_keys, names(col_map))
-  if (length(missing_keys)) {
-    rlang::abort(
-      paste0("vitamin_markers(): missing col_map entries for: ", paste(missing_keys, collapse = ", ")),
-      class = "healthmarkers_vitamin_error_missing_map"
-    )
-  }
+  # HM-CS v2: standardized validation
+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "vitamin_markers")
 
-  mapped_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
-  missing_cols <- setdiff(mapped_cols, names(data))
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> vitamin_markers: validating inputs")
+
+  # Ensure mapped columns exist
+  req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {
     rlang::abort(
       paste0("vitamin_markers(): missing required columns in `data`: ", paste(missing_cols, collapse = ", ")),
@@ -118,22 +106,42 @@ vitamin_markers <- function(data, col_map,
     )
   }
 
-  # Coerce mapped columns to numeric where appropriate; warn on NAs introduced
-  .vm_coerce_numeric(data, col_map, keys = required_keys, warn = TRUE)
+  # Coerce mapped numerics; warn if NAs introduced; non-finite -> NA
+  for (key in required_keys) {
+    cn <- col_map[[key]]
+    if (!is.numeric(data[[cn]])) {
+      old <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old))
+      introduced <- sum(is.na(data[[cn]]) & !is.na(old))
+      if (introduced > 0) {
+        rlang::warn(sprintf("vitamin_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
+      }
+    }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
+  }
 
-  # High-missingness warnings on required inputs
-  .vm_warn_high_missing(data, mapped_cols, na_warn_prop = na_warn_prop)
+  # High-missingness diagnostics (debug)
+  for (key in required_keys) {
+    cn <- col_map[[key]]
+    x <- data[[cn]]
+    n <- length(x); if (!n) next
+    pna <- sum(is.na(x)) / n
+    if (pna >= na_warn_prop && pna > 0) {
+      hm_inform(level = "debug", msg = sprintf("vitamin_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+    }
+  }
 
-  # NA policy on required inputs
+  # NA policy
+  used_cols <- req_cols
   if (na_action == "error") {
-    has_na <- Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
+    has_na <- Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
     if (any(has_na)) {
       rlang::abort("vitamin_markers(): required inputs contain missing values (na_action='error').",
                    class = "healthmarkers_vitamin_error_missing_values")
     }
   } else if (na_action == "omit") {
-    keep <- !Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> vitamin_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> vitamin_markers: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -157,21 +165,44 @@ vitamin_markers <- function(data, col_map,
     ))
   }
 
-  # Optional extremes scan/cap
+  # Optional extremes scan/cap (allow rules keyed by keys or by column names)
   capped_n <- 0L
   if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .vm_default_extreme_rules() else extreme_rules
+    default_rules <- list(
+      VitD = c(0, 250), VitD_ref_mean = c(-Inf, Inf), VitD_ref_sd = c(0.01, Inf),
+      B12 = c(0, 2000), Folate = c(0, 100),
+      Ferritin = c(0, 3000), TSat = c(0, 1),
+      Cortisol = c(0, 2000), DHEAS = c(0, 2000),
+      Testosterone = c(0, 200), Estradiol = c(0, 5000),
+      TSH = c(0, 200), free_T4 = c(0, 100),
+      Retinol = c(0, 10), Retinol_ref_mean = c(-Inf, Inf), Retinol_ref_sd = c(0.001, Inf),
+      Tocopherol = c(0, 200), Total_lipids = c(0.001, 100),
+      PIVKA_II = c(0, 10000), VitC = c(0, 1000), Homocysteine = c(0, 200), MMA = c(0, 20),
+      Magnesium = c(0, 10), Zinc = c(0, 1000), Copper = c(0, 1000)
+    )
+    rules <- if (is.null(extreme_rules)) default_rules else extreme_rules
+
+    # Remap if rules keyed by required_keys
+    key_to_col <- stats::setNames(req_cols, required_keys)
+    if (!is.null(names(rules))) {
+      remapped <- list()
+      for (nm in names(rules)) {
+        col_nm <- if (nm %in% names(key_to_col)) key_to_col[[nm]] else nm
+        remapped[[col_nm]] <- rules[[nm]]
+      }
+      rules <- remapped
+    }
+
     ex_counts <- integer(0)
-    for (key in intersect(names(rules), required_keys)) {
-      cn <- col_map[[key]]
-      rng <- rules[[key]]
-      x <- data[[cn]]
+    for (nm in intersect(names(rules), names(data))) {
+      rng <- rules[[nm]]
+      x <- data[[nm]]
       bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      ex_counts[key] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
+      ex_counts[nm] <- sum(bad, na.rm = TRUE)
+      if (extreme_action == "cap" && any(bad, na.rm = TRUE)) {
         x[bad & is.finite(x) & x < rng[1]] <- rng[1]
         x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-        data[[cn]] <- x
+        data[[nm]] <- x
       }
     }
     total_ex <- sum(ex_counts, na.rm = TRUE)
@@ -185,12 +216,13 @@ vitamin_markers <- function(data, col_map,
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("vitamin_markers(): detected %d extreme input values (not altered).", total_ex))
       }
+      # ignore: no-op
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> vitamin_markers: computing markers")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> vitamin_markers: computing markers")
 
-  # Safe division helper with consolidated zero-denominator tracking
+  # Safe division with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
   safe_div <- function(num, den, label) {
     out <- num / den
@@ -200,44 +232,18 @@ vitamin_markers <- function(data, col_map,
     out
   }
 
-  # Pull inputs
-  d25  <- data[[col_map$VitD]]
-  d25m <- data[[col_map$VitD_ref_mean]]
-  d25s <- data[[col_map$VitD_ref_sd]]
-  B12  <- data[[col_map$B12]]
-  Fol  <- data[[col_map$Folate]]
-  Fe   <- data[[col_map$Ferritin]]
-  TS   <- data[[col_map$TSat]]
-  Cort <- data[[col_map$Cortisol]]
-  DHEA <- data[[col_map$DHEAS]]
-  Tst  <- data[[col_map$Testosterone]]
-  E2   <- data[[col_map$Estradiol]]
-  TSHv <- data[[col_map$TSH]]
-  fT4  <- data[[col_map$free_T4]]
-  Ret  <- data[[col_map$Retinol]]
-  Rm   <- data[[col_map$Retinol_ref_mean]]
-  Rs   <- data[[col_map$Retinol_ref_sd]]
-  Toc  <- data[[col_map$Tocopherol]]
-  Lip  <- data[[col_map$Total_lipids]]
-  PIV  <- data[[col_map$PIVKA_II]]
-  VC   <- data[[col_map$VitC]]
-  Hcy  <- data[[col_map$Homocysteine]]
-  MMAv <- data[[col_map$MMA]]
-  Mg   <- data[[col_map$Magnesium]]
-  Zn   <- data[[col_map$Zinc]]
-  Cu   <- data[[col_map$Copper]]
+  g <- function(key) data[[col_map[[key]]]]
 
-  # Compute indices using safe divisions
-  VitD_Z        <- safe_div(d25 - d25m, d25s, "VitD_Z_sd")
-  B12_Fol_Ratio <- safe_div(B12, Fol, "B12_over_Folate")
-  Ferr_TSat_R   <- safe_div(Fe, TS, "Ferritin_over_TSat")
-  Cort_DHEA_R   <- safe_div(Cort, DHEA, "Cortisol_over_DHEAS")
-  T_E2_Ratio    <- safe_div(Tst, E2, "Testosterone_over_E2")
-  TSH_fT4_R     <- safe_div(TSHv, fT4, "TSH_over_freeT4")
-  Retinol_Z     <- safe_div(Ret - Rm, Rs, "Retinol_Z_sd")
-  Toco_Lip_R    <- safe_div(Toc, Lip, "Tocopherol_over_Lipids")
-  Mg_Zn_R       <- safe_div(Mg, Zn, "Magnesium_over_Zinc")
-  Cu_Zn_R       <- safe_div(Cu, Zn, "Copper_over_Zinc")
+  VitD_Z        <- (g("VitD")     - g("VitD_ref_mean"))    / g("VitD_ref_sd")
+  B12_Fol_Ratio <-  safe_div(g("B12"), g("Folate"), "B12_Folate_den")
+  Ferr_TSat_R   <-  safe_div(g("Ferritin"), g("TSat"), "Ferr_TSat_den")
+  Cort_DHEA_R   <-  safe_div(g("Cortisol"), g("DHEAS"), "Cort_DHEAS_den")
+  T_E2_Ratio    <-  safe_div(g("Testosterone"), g("Estradiol"), "T_E2_den")
+  TSH_fT4_R     <-  safe_div(g("TSH"), g("free_T4"), "TSH_fT4_den")
+  Retinol_Z     <- (g("Retinol") - g("Retinol_ref_mean")) / g("Retinol_ref_sd")
+  Toco_Lip_R    <-  safe_div(g("Tocopherol"), g("Total_lipids"), "Toco_Lip_den")
+  Mg_Zn_R       <-  safe_div(g("Magnesium"), g("Zinc"), "Mg_Zn_den")
+  Cu_Zn_R       <-  safe_div(g("Copper"), g("Zinc"), "Cu_Zn_den")
 
   out <- tibble::tibble(
     VitD_Z        = as.numeric(VitD_Z),
@@ -248,10 +254,10 @@ vitamin_markers <- function(data, col_map,
     TSH_fT4_R     = as.numeric(TSH_fT4_R),
     Retinol_Z     = as.numeric(Retinol_Z),
     Toco_Lip_R    = as.numeric(Toco_Lip_R),
-    PIVKA_II      = as.numeric(PIV),
-    VitC          = as.numeric(VC),
-    Homocysteine  = as.numeric(Hcy),
-    MMA           = as.numeric(MMAv),
+    PIVKA_II      = as.numeric(g("PIVKA_II")),
+    VitC          = as.numeric(g("VitC")),
+    Homocysteine  = as.numeric(g("Homocysteine")),
+    MMA           = as.numeric(g("MMA")),
     Mg_Zn_R       = as.numeric(Mg_Zn_R),
     Cu_Zn_R       = as.numeric(Cu_Zn_R)
   )
@@ -268,7 +274,7 @@ vitamin_markers <- function(data, col_map,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
+    hm_inform(level = "inform", msg = sprintf(
       "Completed vitamin_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
@@ -277,68 +283,4 @@ vitamin_markers <- function(data, col_map,
   }
 
   out
-}
-
-# ------------------- internal helpers ------------------------------------------
-
-.vm_coerce_numeric <- function(data, col_map, keys, warn = TRUE) {
-  for (key in keys) {
-    cn <- col_map[[key]]
-    if (!(cn %in% names(data))) next
-    if (!is.numeric(data[[cn]])) {
-      old <- data[[cn]]
-      suppressWarnings(data[[cn]] <- as.numeric(old))
-      if (isTRUE(warn)) {
-        introduced <- sum(is.na(data[[cn]]) & !is.na(old))
-        if (introduced > 0) {
-          rlang::warn(sprintf("vitamin_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
-        }
-      }
-    }
-  }
-  invisible(TRUE)
-}
-
-.vm_warn_high_missing <- function(data, cols, na_warn_prop = 0.2) {
-  for (cn in cols) {
-    x <- data[[cn]]
-    n <- length(x)
-    if (n == 0L) next
-    pna <- sum(is.na(x)) / n
-    if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("vitamin_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
-    }
-  }
-  invisible(TRUE)
-}
-
-.vm_default_extreme_rules <- function() {
-  # Broad plausibility bounds by analyte (units in header)
-  list(
-    VitD = c(0, 375),
-    VitD_ref_mean = c(0, 375),
-    VitD_ref_sd = c(0.1, 200),
-    B12 = c(50, 2000),
-    Folate = c(1, 100),
-    Ferritin = c(1, 2000),
-    TSat = c(0, 1.2), # fraction
-    Cortisol = c(0, 2000),
-    DHEAS = c(0, 30000),
-    Testosterone = c(0, 100),
-    Estradiol = c(0, 20000),
-    TSH = c(0, 100),
-    free_T4 = c(0, 100),
-    Retinol = c(0, 10),
-    Retinol_ref_mean = c(0, 10),
-    Retinol_ref_sd = c(0.05, 5),
-    Tocopherol = c(0, 100),
-    Total_lipids = c(0.1, 50),
-    PIVKA_II = c(0, 10000),
-    VitC = c(0, 300),
-    Homocysteine = c(0, 200),
-    MMA = c(0, 100),
-    Magnesium = c(0, 3),
-    Zinc = c(0, 200),
-    Copper = c(0, 300)
-  )
 }

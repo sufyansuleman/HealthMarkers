@@ -8,106 +8,58 @@ fasting_is(
   data,
   col_map,
   normalize = c("none", "z", "inverse", "range", "robust"),
-  na_action = c("zero", "warn_zero", "error", "keep"),
-  verbose = FALSE,
+  na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   extreme_limit = 1000,
-  extreme_action = c("warn", "cap", "error", "ignore")
+  extreme_action = c("cap", "NA", "error"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least two columns:
+\item{data}{Data frame with required inputs.}
+
+\item{col_map}{Named list mapping required keys:
 \itemize{
-\item fasting glucose at time 0 (mmol/L), mapped by \code{col_map$G0}
-\item fasting insulin at time 0 (pmol/L), mapped by \code{col_map$I0}
+\item G0: fasting glucose (mmol/L)
+\item I0: fasting insulin (pmol/L)
 }}
 
-\item{col_map}{Named list mapping:
+\item{normalize}{One of: "none","z","inverse","range","robust".}
+
+\item{na_action}{One of:
 \itemize{
-\item \code{G0} -> your fasting glucose column name
-\item \code{I0} -> your fasting insulin column name
+\item "keep"  (retain all rows; indices become NA where inputs missing/non-finite)
+\item "omit"  (drop rows with any missing/non-finite required inputs)
+\item "error" (abort if any required input is missing/non-finite)
 }}
 
-\item{normalize}{One of \code{c("none","z","inverse","range","robust")} controlling
-post-hoc scaling of each index via \code{HealthMarkers::normalize_vec()}. Default "none".}
+\item{check_extreme}{Logical; if TRUE, scan computed indices for large magnitudes.}
 
-\item{na_action}{One of \code{c("ignore","warn","error")} controlling behavior when
-required inputs are missing or non-finite. Default "ignore".}
+\item{extreme_limit}{Positive numeric threshold used when check_extreme = TRUE.}
 
-\item{verbose}{Logical; if \code{TRUE}, prints step-by-step progress and a completion summary.}
+\item{extreme_action}{One of: "cap","NA","error".}
 
-\item{check_extreme}{Logical; if \code{TRUE}, scan computed indices for absolute values
-exceeding \code{extreme_limit}. Default \code{FALSE}.}
-
-\item{extreme_limit}{Positive numeric; magnitude limit for \code{check_extreme}. Default 1e3.}
-
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do
-when extreme values are detected. If "cap", values are truncated to ±\code{extreme_limit}.
-Default "warn".}
-
-\item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings when
-\code{na_action = "warn"}. Default 0.2.}
+\item{verbose}{Logical; if TRUE, emit progress/completion messages.}
 }
 \value{
-A tibble with the 10 fasting-index columns listed above (order preserved).
+Tibble with 10 columns (indices listed above).
 }
 \description{
-Given a data.frame with fasting glucose and insulin, compute the following
-fasting-based indices (directionality preserved as in the original code):
-\itemize{
-\item Fasting_inv = -I0_u
-\item Raynaud = 40 / I0_u
-\item HOMA_IR_inv = -((G0_mg * I0_u) / 22.5)
-\item FIRI = (G0_mg * I0_u) / 25
-\item QUICKI = 1 / (log(G0_mg) + log(I0_u))
-\item Belfiore_basal = 2 / ((I0_u * G0_mg) + 1)
-\item Ig_ratio_basal = -(I0_u / G0_mg)
-\item Isi_basal = 10000 / (G0_mg * I0_u)
-\item Bennett = 1 / (log(I0_u) * log(G0_mg))
-\item HOMA_IR_rev_inv = -((I0_u * G0_mg) / 405)
-}
-}
-\details{
-Units assumed:
-\itemize{
-\item Fasting glucose G0 in mmol/L (converted internally to mg/dL via G0_mg = G0 * 18).
-\item Fasting insulin I0 in pmol/L (converted internally to µU/mL via I0_u = I0 / 6).
-}
-
-Quality controls and options:
-\itemize{
-\item Input validation ensures required mappings exist and columns are present.
-\item Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).
-\item Missing or non-finite inputs are handled via \code{na_action}.
-\item Logs are safely computed (log(x) returns NA for x <= 0).
-\item Optional detection/handling of extreme output values via \code{check_extreme}.
-\item Verbose mode prints step-by-step progress and a completion summary.
-}
+Compute 10 fasting indices from glucose (mmol/L) and insulin (pmol/L):
+Fasting_inv, Raynaud, HOMA_IR_inv, FIRI, QUICKI, Belfiore_basal, Ig_ratio_basal,
+Isi_basal, Bennett, HOMA_IR_rev_inv. Units converted internally:
+G0_mg = G0*18 (mg/dL), I0_u = I0/6 (µU/mL).
 }
 \examples{
-df <- tibble::tibble(
-  G0 = c(5.5, 6.1),   # mmol/L
-  I0 = c(60, 120)     # pmol/L
-)
+# Minimal example (units: G0 in mmol/L, I0 in pmol/L)
+df <- data.frame(G0 = c(5.2, 6.1, 4.8), I0 = c(60, 120, 80))
+res <- fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))
+head(res)
 
-# Defaults (quiet, no normalization), tidy tibble returned
-fasting_is(
-  df,
-  col_map   = list(G0 = "G0", I0 = "I0")
-)
-
-# Verbose with warnings for high missingness, and extreme checking
-fasting_is(
-  df,
-  col_map        = list(G0 = "G0", I0 = "I0"),
-  na_action      = "warn",
-  na_warn_prop   = 0.1,
-  check_extreme  = TRUE,
-  extreme_limit  = 1e3,
-  extreme_action = "warn",
-  verbose        = TRUE
-)
-
+# With NA handling and extreme checking
+df2 <- data.frame(G0 = c(5.0, NA), I0 = c(90, 150))
+fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep",
+           check_extreme = TRUE, extreme_limit = 1e3, extreme_action = "cap")
 }
 \references{
 Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985). Homeostasis model assessment (HOMA): insulin resistance and β-cell function. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
@@ -115,8 +67,7 @@ Katz A, Nambi S, Mather K, Baron AD, Follmann DA, Sullivan G, Quon MJ (2000). Qu
 Raynaud E, Pérez-Martin A, Brun JF, Benhaddad AA, Mercier J (1999). Fasting plasma insulin and insulin resistance indices. Diabetes Metab, 25(6):524–532.
 Avignon A, Boegner C, Sultan A (1999). Simple assessment of insulin sensitivity from fasting insulin and glucose. Int J Obes Relat Metab Disord, 23(5):512–517.
 Belfiore F, Iannello S, Volpicelli G (1998). Insulin sensitivity indices from basal insulin and glucose. Mol Genet Metab, 63(2):134–141.
-Sluiter et al. Glucose tolerance and insulin release a mathematical approach. Diabetes. 1976;25:245–249.
-(Early use of fasting insulin/glucose ratios and log-products; background for Bennett/FIRI-type indices)
-Hanson RL et al. Evaluation of simple indices of insulin sensitivity and insulin secretion for use in epidemiologic studies. Am J Epidemiol. 2000;151(2):190–198.
-Anderson RL et al. Exploration of simple measures of insulin resistance. Am J Epidemiol. 1995;142(7):724–732.
+Sluiter D, Erkelens DW, Reitsma WD, Doorenbos H (1976). Glucose tolerance and insulin release: a mathematical approach. Diabetes, 25:245–249.
+Hanson RL et al. (2000). Evaluation of simple indices of insulin sensitivity and insulin secretion for use in epidemiologic studies. Am J Epidemiol, 151(2):190–198.
+Anderson RL et al. (1995). Exploration of simple measures of insulin resistance. Am J Epidemiol, 142(7):724–732.
 }

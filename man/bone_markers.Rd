@@ -7,12 +7,10 @@
 bone_markers(
   data,
   col_map,
-  verbose = FALSE,
-  na_action = c("zero", "warn_zero", "error"),
-  na_warn_prop = 0.2,
-  check_extreme_sds = FALSE,
+  na_action = c("keep", "omit", "error"),
+  check_extreme = FALSE,
   sds_limit = 6,
-  extreme_sds_action = c("warn", "error", "ignore")
+  extreme_action = c("cap", "NA", "error")
 )
 }
 \arguments{
@@ -24,25 +22,15 @@ bone_markers(
 Optional (passed-through if present and found in data): \code{TBS}, \code{HSA}, \code{PINP}, \code{CTX}, \code{BSAP}, \code{Osteocalcin}.
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress and summary.}
+\item{na_action}{One of "keep", "omit", or "error" controlling how
+missing/non-finite input values are treated.}
 
-\item{na_action}{One of "zero", "warn_zero", or "error" controlling how
-missing/non-finite input values are treated. Default "zero" treats them as
-zero contribution in derived metrics (where applicable) or yields \code{NA} but
-suppresses warnings.}
+\item{check_extreme}{Logical; if \code{TRUE}, scan mapped columns whose key
+names contain "sds" (case-insensitive) for absolute values > \code{sds_limit}.}
 
-\item{na_warn_prop}{Proportion (0–1) threshold to warn about high missingness
-per variable (only when \code{na_action = "warn_zero"}). Default 0.2.}
+\item{sds_limit}{Positive numeric; SDS magnitude limit used when \code{check_extreme} is TRUE.}
 
-\item{check_extreme_sds}{Logical; if \code{TRUE}, scan mapped columns whose key
-names contain "sds" (case-insensitive) for absolute values > \code{sds_limit}.
-Default FALSE.}
-
-\item{sds_limit}{Positive numeric; SDS magnitude limit for \code{check_extreme_sds}.
-Default 6.}
-
-\item{extreme_sds_action}{One of "warn", "error", or "ignore" for what to do
-when extreme SDS-like values are detected. Default "warn".}
+\item{extreme_action}{One of "cap", "NA", or "error" for handling extreme SDS-like values.}
 }
 \value{
 A tibble with columns: \code{OSTA}, \code{ALMI}, \code{FMI}, \code{BMD_Tscore}, and

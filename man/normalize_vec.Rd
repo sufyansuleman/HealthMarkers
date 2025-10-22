@@ -68,16 +68,7 @@ normalize_vec(x, "inverse", invnorm_denominator = "blom")
 
 }
 \references{
-\itemize{
-\item Rank-based inverse normal transform (overview and guidance):
-https://pubmed.ncbi.nlm.nih.gov/22982992/
-\item Robust scaling via median and MAD (outlier-robust standardization):
-Leys C, Ley C, Klein O, Bernard P, Licata L. Detecting outliers: Do not use standard deviation
-around the mean, use median absolute deviation around the median. Front Psychol. 2013;4:241.
-https://pubmed.ncbi.nlm.nih.gov/23964219/
-\item z-scores and SD/SE primer (general background):
-Bland JM, Altman DG. Standard deviations and standard errors. BMJ. 1996;313(7047):41.
-https://pubmed.ncbi.nlm.nih.gov/8664809/
+Beasley TM, Erickson S, Allison DB (2009). Rank-based inverse normal transformations are increasingly used, but are they merited? Behav Genet, 39(2):214–227. \doi{10.1007/s10519-008-9281-0}
+Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use median absolute deviation around the median. Front Psychol, 4:241. \doi{10.3389/fpsyg.2013.00241}
+Bland JM, Altman DG (1996). Standard deviations and standard errors. BMJ, 313(7047):41–42. \doi{10.1136/bmj.313.7047.41}
 }
-}
-\keyword{internal}

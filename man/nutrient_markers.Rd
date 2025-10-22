@@ -10,7 +10,7 @@ nutrient_markers(
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL,
   verbose = FALSE
 )
@@ -32,18 +32,22 @@ across the columns referenced by \code{col_map}.
 }}
 
 \item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness
-warnings on used input columns. Default 0.2.}
+diagnostics on used input columns. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan used input columns for out-of-range
 values (see \code{extreme_rules}). Default FALSE.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") used when extremes are
-detected (only when \code{check_extreme = TRUE}). Default "warn".}
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") used when extremes are
+detected (only when \code{check_extreme = TRUE}). Default "warn".
+\itemize{
+\item "warn": only warn, "cap": truncate to range and warn, "error": abort,
+\item "ignore": no-op, "NA": set flagged inputs to NA.
+}}
 
 \item{extreme_rules}{Optional named list from input keys to c(min,max) ranges. If NULL,
 broad defaults are used (see Details).}
 
-\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary via hm_inform. Default FALSE.}
 }
 \value{
 A tibble with one row per input row and these columns:
@@ -135,12 +139,6 @@ J Diabetes Investig. 2010;1(1–2):43–48. \doi{10.1111/j.2040-1124.2010.00011.
 Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium × phosphate product
 with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556–562.
 \doi{10.1046/j.1523-1755.1998.00005.x} (Calcium–phosphate product)
-
-Validations
-Sullivan JL. Iron and the sex difference in heart disease risk. Lancet. 1981;1(8233):1293–1294.
-\doi{10.1016/S0140-6736(81)92463-6} (Ferritin / iron metabolism)
-Emmett M, Narins RG. Clinical use of the anion gap. Medicine (Baltimore). 1977;56(1):38–54.
-\doi{10.1097/00005792-197701000-00003} (Anion gap)
 Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury.
 J Am Soc Nephrol. 2009;20(3):672–679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
 }

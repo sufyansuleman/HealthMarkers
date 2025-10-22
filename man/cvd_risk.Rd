@@ -13,29 +13,26 @@ cvd_risk(
 )
 }
 \arguments{
-\item{data}{A data frame with the columns required by your chosen \code{model}.}
+\item{data}{Data frame required by your chosen model.}
 
 \item{model}{One of:
 \itemize{
-\item \code{"ALL"} - run every implemented model/marker
-\item Risk calculators: \code{"ASCVD"}, \code{"QRISK3"}, \code{"MESA"},
-\code{"Stroke"}, \code{"RiskScorescvd"}
-\item Lipid markers: \code{"AIP"}, \code{"LDL_PN"}
+\item "ALL"
+\item Risk calculators: "ASCVD","QRISK3","MESA","Stroke","RiskScorescvd"
+\item Lipid markers: "AIP","LDL_PN"
 }}
 
 \item{year}{Risk horizon (10 or 30) for applicable models; ignored for lipid markers.}
 
-\item{...}{Additional arguments passed to the underlying wrapper (e.g. \code{na_action}, \code{na_warn_prop}, \code{col_map}).}
+\item{...}{Forwarded to underlying wrappers (e.g., col_map, na_action).}
 
-\item{verbose}{Logical; if TRUE, prints step-by-step progress and a completion summary.}
+\item{verbose}{Logical; if TRUE, prints progress (legacy; messages now routed via hm_inform).}
 }
 \value{
-A tibble. Risk models return columns \code{model}, \code{year}, \code{risk};
-lipid markers return \code{model}, \code{value}. When \code{model = "ALL"},
-you get one row per sub-model; missing columns are filled with \code{NA}.
+A tibble.
 }
 \description{
 Dispatch to the appropriate risk or marker function, or run all of them.
-Includes basic argument validation, optional progress messages, and robust
-fallback to NA rows if individual calculators fail.
+Includes basic argument validation and robust fallback to NA rows if
+individual calculators fail.
 }

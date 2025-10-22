@@ -304,90 +304,105 @@ cvd_risk_scorescvd <- function(data, ...) {
 
 #' Atherogenic Index of Plasma (AIP)
 #'
-#' Computes \code{log10(TG / HDL_c)} with input validation, optional data-quality
-#' warnings, and verbose progress.
+#' Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 #'
-#' @param data A data frame with numeric columns \code{TG} (mg/dL) and \code{HDL_c} (mg/dL).
-#' @param col_map Named list mapping \code{TG} and \code{HDL_c} to your column names.
-#' @param na_action One of "ignore", "warn", "error" controlling behavior when
-#'   required inputs are missing or non-finite. Default "ignore".
-#' @param na_warn_prop Proportion (0–1) threshold for high-missingness warnings when \code{na_action="warn"}.
-#' @param verbose Logical; if \code{TRUE}, prints a progress message and summary.
-#' @return A tibble with columns \code{model} = \code{"AIP"} and \code{value}.
+#' @param data A data frame with numeric columns TG and HDL_c (mg/dL).
+#' @param col_map Named list mapping required keys:
+#'   - TG: triglycerides
+#'   - HDL_c: HDL cholesterol
+#' @param na_action One of:
+#'   - "keep"  (retain rows; AIP is NA where inputs missing/non-finite)
+#'   - "omit"  (drop rows with any missing/non-finite inputs)
+#'   - "error" (abort if any required input missing/non-finite)
+#' @return A tibble with columns model = "AIP" and value.
 #' @export
-#' @examples
-#' df <- tibble::tibble(TG = c(120, 180), HDL_c = c(50, 40))
-#' cvd_marker_aip(df, verbose = TRUE)
-#'
-#' @references
-#' - Dobiášová M, Frohlich J. The atherogenic index of plasma \eqn{\log(TG/HDL)}:
-#'   relation to lipoprotein particle size. Clin Biochem. 2001;34(7):583–587.
 cvd_marker_aip <- function(data,
                            col_map = list(TG = "TG", HDL_c = "HDL_c"),
-                           na_action = c("ignore","warn","error"),
-                           na_warn_prop = 0.2,
+                           na_action = c("keep","omit","error"),
                            verbose = FALSE) {
   na_action <- match.arg(na_action)
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  .validate_map(col_map, c("TG","HDL_c"), fun = "cvd_marker_aip")
-  .require_cols(data, unlist(col_map[c("TG","HDL_c")]), fun = "cvd_marker_aip")
-  if (verbose) message("-> computing AIP")
-  tg_col <- col_map$TG; hdl_col <- col_map$HDL_c
-  tg  <- data[[tg_col]]
-  hdl <- data[[hdl_col]]
-  qs <- .quality_scan_warn(data, c(tg_col, hdl_col), .warn = (na_action == "warn"), na_warn_prop = na_warn_prop, prefix = "AIP: ")
-  if (na_action == "error") {
-    if (any(!is.finite(tg)) || any(!is.finite(hdl))) stop("AIP: missing or non-finite TG/HDL_c with na_action='error'.")
+
+  # Centralized mapping/column validation (HM-CS v1)
+  hm_validate_inputs(
+    data = data,
+    col_map = as.list(col_map[c("TG","HDL_c")]),
+    required_keys = c("TG","HDL_c"),
+    fn = "cvd_marker_aip"
+  )
+
+  hm_inform("cvd_marker_aip(): computing AIP", level = "inform")
+
+  tg_col <- col_map$TG
+  hdl_col <- col_map$HDL_c
+
+  # Coerce to numeric quietly
+  tg  <- data[[tg_col]];  if (!is.numeric(tg))  suppressWarnings(tg  <- as.numeric(tg))
+  hdl <- data[[hdl_col]]; if (!is.numeric(hdl)) suppressWarnings(hdl <- as.numeric(hdl))
+
+  # NA policy
+  bad <- !is.finite(tg) | !is.finite(hdl)
+  if (na_action == "error" && any(bad, na.rm = TRUE)) {
+    rlang::abort("cvd_marker_aip(): missing/non-finite TG/HDL_c (na_action='error').",
+                 class = "healthmarkers_cvd_error_aip_missing")
+  } else if (na_action == "omit" && any(bad, na.rm = TRUE)) {
+    keep <- stats::complete.cases(tg, hdl) & is.finite(tg) & is.finite(hdl)
+    tg  <- tg[keep]
+    hdl <- hdl[keep]
   }
+
   value <- log10(.safe_div(tg, hdl))
   out <- tibble::tibble(model = "AIP", value = value)
-  if (verbose) {
-    message(sprintf("Completed AIP: %d rows; non-finite vars=%d; high-NA=%d; all-NA=%d",
-                    nrow(out), length(qs$nonfinite), length(qs$high_na), length(qs$all_na)))
-  }
-  return(out)
+
+  hm_inform("cvd_marker_aip(): completed", level = "debug")
+  out
 }
 
 #' LDL Particle Number Estimate (via ApoB)
 #'
-#' Uses circulating ApoB concentration as a proxy for LDL particle number.
-#' Input validation, optional data-quality warnings, and verbose summary included.
+#' Returns ApoB as a proxy for LDL particle number with HM-CS NA handling.
 #'
-#' @param data A data frame with numeric column \code{ApoB} (mg/dL).
-#' @param col_map Named list mapping \code{ApoB} to your column name.
-#' @param na_action One of "ignore","warn","error" for missing/non-finite inputs (default "ignore").
-#' @param na_warn_prop Proportion (0–1) for high-missingness warnings when \code{na_action="warn"}.
-#' @param verbose Logical; if \code{TRUE}, prints a progress message.
-#' @return A tibble with columns \code{model} = \code{"LDL_PN"} and \code{value}.
+#' @param data A data frame with numeric column ApoB (mg/dL).
+#' @param col_map Named list mapping required key:
+#'   - ApoB
+#' @param na_action One of:
+#'   - "keep"  (retain rows; value is NA where input missing/non-finite)
+#'   - "omit"  (drop rows with missing/non-finite input)
+#'   - "error" (abort if input missing/non-finite)
+#' @return A tibble with columns model = "LDL_PN" and value.
 #' @export
-#' @examples
-#' df <- tibble::tibble(ApoB = c(80, 95))
-#' cvd_marker_ldl_particle_number(df, verbose = TRUE)
-#'
-#' @references
-#' - Sniderman AD, et al. Apolipoprotein B and cardiovascular disease: pathophysiology
-#'   and clinical utility as an index of atherogenic particle number. Arterioscler Thromb
-#'   Vasc Biol. 2003;23(10):1723–1731.
 cvd_marker_ldl_particle_number <- function(data,
                                            col_map = list(ApoB = "ApoB"),
-                                           na_action = c("ignore","warn","error"),
-                                           na_warn_prop = 0.2,
+                                           na_action = c("keep","omit","error"),
                                            verbose = FALSE) {
   na_action <- match.arg(na_action)
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  .validate_map(col_map, c("ApoB"), fun = "cvd_marker_ldl_particle_number")
-  .require_cols(data, unlist(col_map["ApoB"]), fun = "cvd_marker_ldl_particle_number")
-  if (verbose) message("-> computing LDL particle number estimate")
+
+  # Centralized mapping/column validation (HM-CS v1)
+  hm_validate_inputs(
+    data = data,
+    col_map = as.list(col_map["ApoB"]),
+    required_keys = c("ApoB"),
+    fn = "cvd_marker_ldl_particle_number"
+  )
+
+  hm_inform("cvd_marker_ldl_particle_number(): computing LDL_PN", level = "inform")
+
   apob_col <- col_map$ApoB
   apob <- data[[apob_col]]
-  qs <- .quality_scan_warn(data, apob_col, .warn = (na_action == "warn"), na_warn_prop = na_warn_prop, prefix = "LDL_PN: ")
-  if (na_action == "error" && any(!is.finite(apob))) stop("LDL_PN: missing or non-finite ApoB with na_action='error'.")
-  out <- tibble::tibble(model = "LDL_PN", value = apob)
-  if (verbose) {
-    message(sprintf("Completed LDL_PN: %d rows; non-finite vars=%d; high-NA=%d; all-NA=%d",
-                    nrow(out), length(qs$nonfinite), length(qs$high_na), length(qs$all_na)))
+  if (!is.numeric(apob)) suppressWarnings(apob <- as.numeric(apob))
+
+  bad <- !is.finite(apob)
+  if (na_action == "error" && any(bad, na.rm = TRUE)) {
+    rlang::abort("cvd_marker_ldl_particle_number(): missing/non-finite ApoB (na_action='error').",
+                 class = "healthmarkers_cvd_error_ldlpn_missing")
+  } else if (na_action == "omit" && any(bad, na.rm = TRUE)) {
+    keep <- is.finite(apob)
+    apob <- apob[keep]
   }
-  return(out)
+
+  out <- tibble::tibble(model = "LDL_PN", value = apob)
+
+  hm_inform("cvd_marker_ldl_particle_number(): completed", level = "debug")
+  out
 }
 
 # ---- dispatcher (exported) -------------------------------------------------
@@ -395,23 +410,18 @@ cvd_marker_ldl_particle_number <- function(data,
 #' Compute cardiovascular risk or marker by selected model
 #'
 #' Dispatch to the appropriate risk or marker function, or run all of them.
-#' Includes basic argument validation, optional progress messages, and robust
-#' fallback to NA rows if individual calculators fail.
+#' Includes basic argument validation and robust fallback to NA rows if
+#' individual calculators fail.
 #'
-#' @param data A data frame with the columns required by your chosen \code{model}.
+#' @param data Data frame required by your chosen model.
 #' @param model One of:
-#'   \itemize{
-#'     \item \code{"ALL"} - run every implemented model/marker
-#'     \item Risk calculators: \code{"ASCVD"}, \code{"QRISK3"}, \code{"MESA"},
-#'           \code{"Stroke"}, \code{"RiskScorescvd"}
-#'     \item Lipid markers: \code{"AIP"}, \code{"LDL_PN"}
-#'   }
+#'   - "ALL"
+#'   - Risk calculators: "ASCVD","QRISK3","MESA","Stroke","RiskScorescvd"
+#'   - Lipid markers: "AIP","LDL_PN"
 #' @param year Risk horizon (10 or 30) for applicable models; ignored for lipid markers.
-#' @param verbose Logical; if TRUE, prints step-by-step progress and a completion summary.
-#' @param ... Additional arguments passed to the underlying wrapper (e.g. \code{na_action}, \code{na_warn_prop}, \code{col_map}).
-#' @return A tibble. Risk models return columns \code{model}, \code{year}, \code{risk};
-#'   lipid markers return \code{model}, \code{value}. When \code{model = "ALL"},
-#'   you get one row per sub-model; missing columns are filled with \code{NA}.
+#' @param ... Forwarded to underlying wrappers (e.g., col_map, na_action).
+#' @param verbose Logical; if TRUE, prints progress (legacy; messages now routed via hm_inform).
+#' @return A tibble.
 #' @export
 cvd_risk <- function(data,
                      model = c("ALL", "ASCVD", "QRISK3", "MESA",
@@ -422,21 +432,26 @@ cvd_risk <- function(data,
   model <- match.arg(model)
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   if (!is.numeric(year) || length(year) != 1L) stop("`year` must be a single numeric (e.g., 10, 30).")
-  if (verbose) message(sprintf("cvd_risk: dispatching model '%s'%s", model, if (model %in% c("ASCVD","Stroke")) paste0(" (year=", as.integer(year), ")") else ""))
+
+  hm_inform(
+    sprintf("cvd_risk: dispatching model '%s'%s",
+            model,
+            if (model %in% c("ASCVD","Stroke")) paste0(" (year=", as.integer(year), ")") else ""),
+    level = if (isTRUE(verbose)) "inform" else "debug"
+  )
 
   if (model == "ALL") {
     all_models <- c("ASCVD", "QRISK3", "MESA", "Stroke", "RiskScorescvd", "AIP", "LDL_PN")
     results <- lapply(all_models, function(m) {
       out <- try(cvd_risk(data, model = m, year = year, ..., verbose = verbose), silent = TRUE)
       if (inherits(out, "try-error") || !is.data.frame(out) || nrow(out) == 0L) {
-        # choose an appropriate year for placeholder
         yr <- if (m %in% c("ASCVD", "Stroke")) as.integer(year) else if (m %in% c("QRISK3", "MESA")) 10L else NA_integer_
         return(.na_row(m, yr))
       }
       out
     })
     out_all <- dplyr::bind_rows(results)
-    if (verbose) message(sprintf("cvd_risk: completed ALL (%d row[s])", nrow(out_all)))
+    hm_inform(sprintf("cvd_risk: completed ALL (%d row[s])", nrow(out_all)), level = if (isTRUE(verbose)) "inform" else "debug")
     return(out_all)
   }
 
@@ -450,6 +465,7 @@ cvd_risk <- function(data,
     "LDL_PN"        = cvd_marker_ldl_particle_number(data, ..., verbose = verbose),
     stop("Unknown model: ", model)
   )
-  if (verbose) message("cvd_risk: done")
-  return(out)
+
+  hm_inform("cvd_risk: done", level = if (isTRUE(verbose)) "inform" else "debug")
+  out
 }

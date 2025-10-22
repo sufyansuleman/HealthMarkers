@@ -38,12 +38,12 @@
 #'   - age -> age (years)
 #'   - sex -> sex (1 = male, 2 = female)
 #' @param normalize One of c("none","z","inverse","range","robust") used by normalize_vec().
-#' @param verbose Logical; if TRUE, prints progress messages.
-#' @param na_action One of c("ignore","warn","error") for missing/non-finite required inputs. Default "ignore".
-#' @param na_warn_prop Proportion (0–1) to flag high missingness when na_action="warn". Default 0.2.
+#' @param verbose Logical; if TRUE, prints progress messages via hm_inform().
+#' @param na_action One of c("keep","omit","error") for missing/non-finite required inputs. Default "keep".
+#' @param na_warn_prop Proportion (0–1) for high-missingness diagnostics (debug). Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan outputs for |value| > extreme_limit. Default FALSE.
 #' @param extreme_limit Positive numeric magnitude threshold for extremes. Default 1e3.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".
 #'
 #' @return A tibble with the OGTT-based index columns listed above.
 #' @importFrom tibble tibble
@@ -92,58 +92,62 @@ ogtt_is <- function(data,
                     col_map,
                     normalize = "none",
                     verbose = FALSE,
-                    na_action = c("ignore","warn","error"),
+                    na_action = c("keep","omit","error"),
                     na_warn_prop = 0.2,
                     check_extreme = FALSE,
                     extreme_limit = 1e3,
-                    extreme_action = c("warn","cap","error","ignore")) {
+                    extreme_action = c("warn","cap","error","ignore","NA")) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
   .ogtt_validate_args(normalize, na_warn_prop, check_extreme, extreme_limit, verbose)
 
-  # Validate presence of required keys/columns
-  validate_inputs(
+  # HM-CS v2: required keys validation
+  hm_validate_inputs(
     data, col_map,
-    fun_name = "ogtt_is",
-    required_keys = c("G0", "I0", "G30", "I30", "G120", "I120", "weight", "bmi", "age", "sex")
+    required_keys = c("G0", "I0", "G30", "I30", "G120", "I120", "weight", "bmi", "age", "sex"),
+    fn = "ogtt_is"
   )
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
 
-  if (isTRUE(verbose)) message("-> ogtt_is: validating and preparing inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> ogtt_is: validating and preparing inputs")
 
-  # Coerce to numeric if needed (warn on NAs introduced)
+  # Coerce required columns to numeric if needed (warn on NAs introduced)
   keys_to_check <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
   for (k in keys_to_check) {
     cn <- col_map[[k]]
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
-      suppressWarnings(data[[cn]] <- as.numeric(old))
-      introduced_na <- sum(is.na(data[[cn]]) & !is.na(old))
-      if (introduced_na > 0) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      suppressWarnings(new <- as.numeric(old))
+      introduced_na <- sum(is.na(new) & !is.na(old))
+      if (introduced_na > 0L) rlang::warn(sprintf("ogtt_is(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
+      data[[cn]] <- new
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # Quality scan and NA policy
-  qs <- .ogtt_quality_scan(
+  # High-missingness diagnostics (debug verbosity)
+  .ogtt_high_missing_diag(
     data,
     vars = unname(unlist(col_map[keys_to_check], use.names = FALSE)),
-    .warn = (na_action == "warn"),
     na_warn_prop = na_warn_prop
   )
+
+  # NA policy on required inputs
+  used_cols <- unname(unlist(col_map[keys_to_check], use.names = FALSE))
   if (na_action == "error") {
-    any_bad <- any(!is.finite(data[[col_map$G0]]))  | any(!is.finite(data[[col_map$I0]]))  |
-               any(!is.finite(data[[col_map$G30]])) | any(!is.finite(data[[col_map$I30]])) |
-               any(!is.finite(data[[col_map$G120]]))| any(!is.finite(data[[col_map$I120]]))|
-               any(!is.finite(data[[col_map$weight]])) |
-               any(!is.finite(data[[col_map$bmi]]))    |
-               any(!is.finite(data[[col_map$age]]))    |
-               any(!is.finite(data[[col_map$sex]]))
-    if (any_bad) stop("ogtt_is: missing or non-finite required inputs with na_action='error'.")
+    has_na <- Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
+    if (any(has_na)) {
+      rlang::abort("ogtt_is(): required inputs contain missing values (na_action='error').",
+                   class = "healthmarkers_ogtt_is_error_missing_values")
+    }
+  } else if (na_action == "omit" && length(used_cols)) {
+    keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> ogtt_is: omitting %d rows with NA in required inputs", sum(!keep)))
+    data <- data[keep, , drop = FALSE]
   }
 
-  if (isTRUE(verbose)) message("-> converting units (glucose mmol/L -> mg/dL; insulin pmol/L -> µU/mL)")
+  if (isTRUE(verbose)) hm_inform(level = "debug", msg = "-> converting units (glucose mmol/L -> mg/dL; insulin pmol/L -> µU/mL)")
 
-  # 1) Extract & convert raw inputs (preserve mixed-use as in prior implementation)
+  # 1) Extract & convert raw inputs
   G0   <- data[[col_map$G0]]   * 18 # mg/dL
   G30  <- data[[col_map$G30]]  * 18
   G120 <- data[[col_map$G120]] * 18
@@ -156,7 +160,7 @@ ogtt_is <- function(data,
   age  <- data[[col_map$age]]
   sex  <- data[[col_map$sex]]
 
-  if (isTRUE(verbose)) message("-> computing indices")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> computing indices")
 
   # Helpers: safe log and safe division
   lg <- function(x) .ogtt_log(x)
@@ -168,7 +172,7 @@ ogtt_is <- function(data,
   I_mean <- rowMeans(cbind(I0, I30, I120), na.rm = TRUE)
   G_mean <- rowMeans(cbind(G0, G30, G120), na.rm = TRUE)
 
-  # 3) Compute indices (match existing formulas; some use unconverted data[])
+  # 3) Compute indices
   out <- tibble::tibble(
     Isi_120 = dv(10000, (G120 * I120)),
     Cederholm_index = dv(75000 + (G0 - G120) * 1.15 * 180 * 0.19 * wt,
@@ -212,18 +216,23 @@ ogtt_is <- function(data,
     extreme_count <- sum(is_ext, na.rm = TRUE)
     if (extreme_count > 0L) {
       if (extreme_action == "error") {
-        stop(sprintf("ogtt_is: %d extreme values beyond ±%g detected.", extreme_count, extreme_limit))
+        rlang::abort(sprintf("ogtt_is: %d extreme values beyond ±%g detected.", extreme_count, extreme_limit),
+                     class = "healthmarkers_ogtt_is_error_extremes")
       } else if (extreme_action == "cap") {
         out[] <- .ogtt_cap_matrix(vals, extreme_limit)
-        warning(sprintf("ogtt_is: capped %d extreme values beyond ±%g.", extreme_count, extreme_limit), call. = FALSE)
+        rlang::warn(sprintf("ogtt_is: capped %d extreme values beyond ±%g.", extreme_count, extreme_limit))
       } else if (extreme_action == "warn") {
-        warning(sprintf("ogtt_is: detected %d extreme values beyond ±%g (not capped).", extreme_count, extreme_limit), call. = FALSE)
+        rlang::warn(sprintf("ogtt_is: detected %d extreme values beyond ±%g (not capped).", extreme_count, extreme_limit))
+      } else if (extreme_action == "NA") {
+        vals[is_ext] <- NA_real_
+        out[] <- vals
+        rlang::warn(sprintf("ogtt_is: set %d extreme values to NA (>|±%g|).", extreme_count, extreme_limit))
       }
       # "ignore": no-op
     }
   }
 
-  # 5) Normalize if requested (preserves prior behavior)
+  # 5) Normalize if requested
   out <- dplyr::mutate(
     out,
     dplyr::across(
@@ -233,10 +242,9 @@ ogtt_is <- function(data,
   )
 
   if (isTRUE(verbose)) {
-    message(sprintf(
-      "Completed ogtt_is: %d rows; non-finite scan -> vars=%d; high-NA=%d; all-NA=%d; extremes=%d",
-      nrow(data),
-      length(qs$nonfinite), length(qs$high_na), length(qs$all_na), extreme_count
+    hm_inform(level = "inform", msg = sprintf(
+      "Completed ogtt_is: %d rows; extremes=%d",
+      nrow(data), extreme_count
     ))
   }
 
@@ -247,41 +255,39 @@ ogtt_is <- function(data,
 
 .ogtt_validate_args <- function(normalize, na_warn_prop, check_extreme, extreme_limit, verbose) {
   ok_norm <- normalize %in% c("none","z","inverse","range","robust")
-  if (!ok_norm) stop("`normalize` must be one of: 'none','z','inverse','range','robust'.")
+  if (!ok_norm) rlang::abort("`normalize` must be one of: 'none','z','inverse','range','robust'.",
+                             class = "healthmarkers_ogtt_is_error_normalize")
   if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) &&
         na_warn_prop >= 0 && na_warn_prop <= 1)) {
-    stop("`na_warn_prop` must be a single numeric in [0, 1].")
+    rlang::abort("`na_warn_prop` must be a single numeric in [0, 1].",
+                 class = "healthmarkers_ogtt_is_error_na_warn_prop")
   }
   if (!(is.logical(check_extreme) && length(check_extreme) == 1L && !is.na(check_extreme))) {
-    stop("`check_extreme` must be a single logical value.")
+    rlang::abort("`check_extreme` must be a single logical value.",
+                 class = "healthmarkers_ogtt_is_error_check_extreme")
   }
   if (!(is.numeric(extreme_limit) && length(extreme_limit) == 1L && is.finite(extreme_limit) && extreme_limit > 0)) {
-    stop("`extreme_limit` must be a single positive finite numeric.")
+    rlang::abort("`extreme_limit` must be a single positive finite numeric.",
+                 class = "healthmarkers_ogtt_is_error_extreme_limit")
   }
   if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
-    stop("`verbose` must be a single logical value.")
+    rlang::abort("`verbose` must be a single logical value.",
+                 class = "healthmarkers_ogtt_is_error_verbose")
   }
   invisible(TRUE)
 }
 
-.ogtt_quality_scan <- function(df, vars, .warn = FALSE, na_warn_prop = 0.2) {
-  nonfin <- character(0); high_na <- character(0); all_na <- character(0)
+.ogtt_high_missing_diag <- function(df, vars, na_warn_prop = 0.2) {
+  if (!length(vars)) return(invisible(TRUE))
   for (v in vars) {
     x <- df[[v]]
-    n_nonfin <- sum(!is.finite(x))
-    if (n_nonfin > 0L) nonfin <- c(nonfin, sprintf("%s(%d non-finite)", v, n_nonfin))
-    x_na <- sum(is.na(x) | !is.finite(x))
-    if (length(x) > 0L && x_na == length(x)) all_na <- c(all_na, v)
-    if (length(x) > 0L && x_na > 0L && (x_na / length(x)) >= na_warn_prop) {
-      high_na <- c(high_na, sprintf("%s(%.1f%% NA)", v, 100 * x_na / length(x)))
+    n <- length(x); if (!n) next
+    pna <- sum(is.na(x)) / n
+    if (pna >= na_warn_prop && pna > 0) {
+      hm_inform(level = "debug", msg = sprintf("ogtt_is(): column '%s' has high missingness (%.1f%%).", v, 100 * pna))
     }
   }
-  if (.warn) {
-    if (length(nonfin)) warning(sprintf("Non-finite values: %s; treated as NA.", paste(nonfin, collapse = ", ")), call. = FALSE)
-    if (length(all_na)) warning(sprintf("Entirely missing variables: %s.", paste(all_na, collapse = ", ")), call. = FALSE)
-    if (length(high_na)) warning(sprintf("High missingness (>= %.0f%%): %s.", 100 * na_warn_prop, paste(high_na, collapse = ", ")), call. = FALSE)
-  }
-  list(nonfinite = nonfin, high_na = high_na, all_na = all_na)
+  invisible(TRUE)
 }
 
 .ogtt_safe_div <- function(num, den) {

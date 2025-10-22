@@ -7,38 +7,28 @@
 cvd_marker_ldl_particle_number(
   data,
   col_map = list(ApoB = "ApoB"),
-  na_action = c("ignore", "warn", "error"),
-  na_warn_prop = 0.2,
+  na_action = c("keep", "omit", "error"),
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data frame with numeric column \code{ApoB} (mg/dL).}
+\item{data}{A data frame with numeric column ApoB (mg/dL).}
 
-\item{col_map}{Named list mapping \code{ApoB} to your column name.}
+\item{col_map}{Named list mapping required key:
+\itemize{
+\item ApoB
+}}
 
-\item{na_action}{One of "ignore","warn","error" for missing/non-finite inputs (default "ignore").}
-
-\item{na_warn_prop}{Proportion (0–1) for high-missingness warnings when \code{na_action="warn"}.}
-
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message.}
+\item{na_action}{One of:
+\itemize{
+\item "keep"  (retain rows; value is NA where input missing/non-finite)
+\item "omit"  (drop rows with missing/non-finite input)
+\item "error" (abort if input missing/non-finite)
+}}
 }
 \value{
-A tibble with columns \code{model} = \code{"LDL_PN"} and \code{value}.
+A tibble with columns model = "LDL_PN" and value.
 }
 \description{
-Uses circulating ApoB concentration as a proxy for LDL particle number.
-Input validation, optional data-quality warnings, and verbose summary included.
-}
-\examples{
-df <- tibble::tibble(ApoB = c(80, 95))
-cvd_marker_ldl_particle_number(df, verbose = TRUE)
-
-}
-\references{
-\itemize{
-\item Sniderman AD, et al. Apolipoprotein B and cardiovascular disease: pathophysiology
-and clinical utility as an index of atherogenic particle number. Arterioscler Thromb
-Vasc Biol. 2003;23(10):1723–1731.
-}
+Returns ApoB as a proxy for LDL particle number with HM-CS NA handling.
 }

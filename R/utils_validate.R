@@ -198,3 +198,34 @@ validate_inputs <- function(data,
 
 # null coalescing
 `%||%` <- function(a, b) if (is.null(a)) b else a
+
+# HM-VS v2: thin wrappers over hm_validate_inputs for legacy entry points
+validate_inputs <- function(data, col_map, required_keys, fn) {
+  hm_validate_inputs(data, col_map, required_keys, fn)
+}
+
+# HM-VS v2: check that mapped columns exist in data (common across functions)
+hm_require_columns <- function(data, col_map, required_keys, fn) {
+  req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
+  if (length(missing_cols)) {
+    rlang::abort(
+      paste0(fn, "(): missing required columns in `data`: ", paste(missing_cols, collapse = ", ")),
+      class = sprintf("healthmarkers_%s_error_missing_columns", fn)
+    )
+  }
+  req_cols
+}
+
+# HM-VS v2: high-missingness diagnostics (debug-level)
+hm_warn_high_missing <- function(data, cols, prop = 0.2, fn = "healthmarkers") {
+  for (cn in intersect(cols, names(data))) {
+    x <- data[[cn]]
+    n <- length(x); if (n == 0L) next
+    pna <- sum(is.na(x)) / n
+    if (pna >= prop && pna > 0) {
+      hm_inform(level = "debug", msg = sprintf("%s(): column '%s' has high missingness (%.1f%%).", fn, cn, 100 * pna))
+    }
+  }
+  invisible(TRUE)
+}

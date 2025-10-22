@@ -12,20 +12,12 @@
 #' @param col_map Named list mapping keys to column names. Required keys:
 #'   - `age`, `weight`, `height`, `ALM`, `FM`, `BMD`, `BMD_ref_mean`, `BMD_ref_sd`
 #'   Optional (passed-through if present and found in data): `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`.
-#' @param verbose Logical; if `TRUE`, prints progress and summary.
-#' @param na_action One of "zero", "warn_zero", or "error" controlling how
-#'   missing/non-finite input values are treated. Default "zero" treats them as
-#'   zero contribution in derived metrics (where applicable) or yields `NA` but
-#'   suppresses warnings.
-#' @param na_warn_prop Proportion (0–1) threshold to warn about high missingness
-#'   per variable (only when `na_action = "warn_zero"`). Default 0.2.
-#' @param check_extreme_sds Logical; if `TRUE`, scan mapped columns whose key
+#' @param na_action One of "keep", "omit", or "error" controlling how
+#'   missing/non-finite input values are treated.
+#' @param check_extreme Logical; if `TRUE`, scan mapped columns whose key
 #'   names contain "sds" (case-insensitive) for absolute values > `sds_limit`.
-#'   Default FALSE.
-#' @param sds_limit Positive numeric; SDS magnitude limit for `check_extreme_sds`.
-#'   Default 6.
-#' @param extreme_sds_action One of "warn", "error", or "ignore" for what to do
-#'   when extreme SDS-like values are detected. Default "warn".
+#' @param sds_limit Positive numeric; SDS magnitude limit used when `check_extreme` is TRUE.
+#' @param extreme_action One of "cap", "NA", or "error" for handling extreme SDS-like values.
 #'
 #' @return A tibble with columns: `OSTA`, `ALMI`, `FMI`, `BMD_Tscore`, and
 #'   optionally `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin` (in that order).
@@ -54,54 +46,44 @@
 bone_markers <- function(
   data,
   col_map,
-  verbose = FALSE,
-  na_action = c("zero", "warn_zero", "error"),
-  na_warn_prop = 0.2,
-  check_extreme_sds = FALSE,
+  na_action = c("keep", "omit", "error"),
+  check_extreme = FALSE,
   sds_limit = 6,
-  extreme_sds_action = c("warn", "error", "ignore")
+  extreme_action = c("cap", "NA", "error")
 ) {
   na_action <- match.arg(na_action)
-  extreme_sds_action <- match.arg(extreme_sds_action)
-  .bm_validate_misc_args(verbose, na_warn_prop, check_extreme_sds, sds_limit)
+  extreme_action <- match.arg(extreme_action)
 
-  if (!is.data.frame(data)) {
-    stop("`data` must be a data.frame or tibble.")
-  }
+  # Centralized validation
   if (!is.list(col_map) || is.null(names(col_map))) {
-    stop("`col_map` must be a named list mapping keys to column names.")
+    rlang::abort("bone_markers(): `col_map` must be a named list mapping keys to column names.",
+                 class = "healthmarkers_bone_error_colmap_type")
   }
   required <- c("age", "weight", "height", "ALM", "FM", "BMD", "BMD_ref_mean", "BMD_ref_sd")
   missing_map <- setdiff(required, names(col_map))
   if (length(missing_map)) {
-    stop(
-      "bone_markers(): missing col_map entries for: ",
-      paste(missing_map, collapse = ", ")
+    rlang::abort(
+      paste0("bone_markers(): missing col_map entries for: ", paste(missing_map, collapse = ", ")),
+      class = "healthmarkers_bone_error_colmap_missing"
     )
   }
-  # Ensure required columns exist
-  validate_inputs(data, col_map,
-    fun_name      = "bone_markers",
-    required_keys = required
+  hm_validate_inputs(
+    data = data,
+    col_map = as.list(col_map[required]),
+    required_keys = required,
+    fn = "bone_markers"
   )
-  if (verbose) message("-> computing bone markers")
-  # Type checks for required columns
+
+  hm_inform("bone_markers(): computing bone markers", level = "inform")
+
+  # Coerce required columns to numeric quietly
   for (k in required) {
     cn <- col_map[[k]]
     if (!is.numeric(data[[cn]])) {
-      stop(sprintf("'%s' column ('%s') must be numeric", k, cn))
+      suppressWarnings(data[[cn]] <- as.numeric(data[[cn]]))
     }
   }
-  # Specific constraints (only enforce positivity on non-missing values;
-  # missing/non-finite handled via `na_action`)
-  ref_sd_vec <- data[[col_map$BMD_ref_sd]]
-  height_vec <- data[[col_map$height]]
-  if (any(ref_sd_vec <= 0, na.rm = TRUE)) {
-    stop("'BMD_ref_sd' must be positive for non-missing rows.")
-  }
-  if (any(height_vec <= 0, na.rm = TRUE)) {
-    stop("'height' must be positive for non-missing rows.")
-  }
+
   n <- nrow(data)
   # extract required
   age <- data[[col_map$age]]
@@ -112,64 +94,72 @@ bone_markers <- function(
   BMD <- data[[col_map$BMD]]
   ref_mean <- data[[col_map$BMD_ref_mean]]
   ref_sd <- data[[col_map$BMD_ref_sd]]
-  # Data quality scans
-  req_vars <- c("age","weight","height","ALM","FM","BMD","BMD_ref_mean","BMD_ref_sd")
-  nonfinite_vars <- character(0)
-  high_na_vars <- character(0)
-  all_na_vars <- character(0)
-  sds_extreme_msgs <- character(0)
-  sds_extreme_count <- 0L
-  for (k in req_vars) {
-    x <- data[[col_map[[k]]]]
-    n_nonfinite <- sum(!is.finite(x))
-    if (n_nonfinite > 0L) nonfinite_vars <- c(nonfinite_vars, sprintf("%s(%d non-finite)", k, n_nonfinite))
-    x_na <- sum(is.na(x) | !is.finite(x))
-    if (x_na == length(x)) all_na_vars <- c(all_na_vars, k)
-    if (length(x) > 0L && (x_na / length(x)) >= na_warn_prop && x_na > 0L) {
-      high_na_vars <- c(high_na_vars, sprintf("%s(%.1f%% NA)", k, 100 * x_na / length(x)))
-    }
+
+  # Constraints
+  if (any(ref_sd <= 0, na.rm = TRUE)) {
+    rlang::abort("bone_markers(): 'BMD_ref_sd' must be positive for non-missing rows.",
+                 class = "healthmarkers_bone_error_refsd_positive")
   }
+  if (any(height <= 0, na.rm = TRUE)) {
+    rlang::abort("bone_markers(): 'height' must be positive for non-missing rows.",
+                 class = "healthmarkers_bone_error_height_positive")
+  }
+
+  # NA row policy across required variables (NA or non-finite)
+  req_df <- data[, unname(unlist(col_map[required])), drop = FALSE]
+  rows_with_na <- !stats::complete.cases(req_df)
+  if (na_action == "error" && any(rows_with_na)) {
+    rlang::abort("bone_markers(): missing/non-finite values present in required inputs (na_action='error').",
+                 class = "healthmarkers_bone_error_missing_values")
+  } else if (na_action == "omit" && any(rows_with_na)) {
+    keep <- !rows_with_na
+    data <- data[keep, , drop = FALSE]
+    age <- age[keep]; weight <- weight[keep]; height <- height[keep]
+    ALM <- ALM[keep]; FM <- FM[keep]; BMD <- BMD[keep]
+    ref_mean <- ref_mean[keep]; ref_sd <- ref_sd[keep]
+    n <- nrow(data)
+  }
+
   # Optional extreme SDS-like check for mapped keys containing 'sds'
-  if (isTRUE(check_extreme_sds)) {
+  if (isTRUE(check_extreme)) {
     sds_keys <- names(col_map)[grepl("sds", names(col_map), ignore.case = TRUE)]
+    total_adj <- 0L
     for (k in sds_keys) {
       cn <- col_map[[k]]
-      if (cn %in% names(data)) {
+      if (!is.null(cn) && cn %in% names(data)) {
         x <- data[[cn]]
-        x[!is.finite(x)] <- NA_real_
-        idx <- which(!is.na(x) & abs(x) > sds_limit)
-        if (length(idx) > 0L) {
-          sds_extreme_count <- sds_extreme_count + length(idx)
-          sds_extreme_msgs <- c(sds_extreme_msgs, sprintf("%s(%d values > |%g|)", k, length(idx), sds_limit))
+        if (!is.numeric(x)) suppressWarnings(x <- as.numeric(x))
+        bad <- is.finite(x) & abs(x) > sds_limit
+        nbad <- sum(bad, na.rm = TRUE)
+        if (nbad > 0) {
+          if (extreme_action == "error") {
+            rlang::abort(
+              sprintf("bone_markers(): extreme SDS-like values detected: %s(%d values > |%g|).",
+                      k, nbad, sds_limit),
+              class = "healthmarkers_bone_error_extreme_sds"
+            )
+          } else if (extreme_action == "NA") {
+            x[bad] <- NA_real_; data[[cn]] <- x; total_adj <- total_adj + nbad
+          } else if (extreme_action == "cap") {
+            x[bad & x > 0] <-  sds_limit
+            x[bad & x < 0] <- -sds_limit
+            data[[cn]] <- x; total_adj <- total_adj + nbad
+          }
         }
       }
     }
+    if (total_adj > 0 && extreme_action %in% c("cap","NA")) {
+      hm_inform(sprintf("bone_markers(): adjusted %d SDS-like extreme values (%s).",
+                        total_adj, extreme_action), level = "inform")
+    }
   }
-  if (na_action == "error") {
-    any_na <- any(vapply(req_vars, function(k) any(is.na(data[[col_map[[k]]]]) | !is.finite(data[[col_map[[k]]]])), logical(1)))
-    if (any_na) stop("Missing or non-finite values present in required inputs and na_action='error'.")
-  }
-  if (verbose) {
-    sds_msg <- if (isTRUE(check_extreme_sds)) sprintf(", SDS extremes=%d", sds_extreme_count) else ""
-    message(sprintf("Quality scan: non-finite in %d var(s), high-NA in %d, all-NA in %d%s.",
-                    length(nonfinite_vars), length(high_na_vars), length(all_na_vars), sds_msg))
-  }
-  # Emit warnings (only when na_action = 'warn_zero')
-  if (na_action == "warn_zero") {
-    if (length(nonfinite_vars)) warning(sprintf("Non-finite values found in: %s; treated as NA.", paste(nonfinite_vars, collapse = ", ")))
-    if (length(all_na_vars)) warning(sprintf("The following variables are entirely missing and contribute 0/NA: %s.", paste(all_na_vars, collapse = ", ")))
-    if (length(high_na_vars)) warning(sprintf("High missingness (>= %.0f%%) in: %s.", 100 * na_warn_prop, paste(high_na_vars, collapse = ", ")))
-  }
-  if (sds_extreme_count > 0L) {
-    if (extreme_sds_action == "error") stop(sprintf("Extreme SDS-like values detected: %s.", paste(sds_extreme_msgs, collapse = "; ")))
-    if (extreme_sds_action == "warn") warning(sprintf("Extreme SDS-like values detected: %s.", paste(sds_extreme_msgs, collapse = "; ")))
-  }
-  if (verbose) message("Deriving OSTA, ALMI, FMI, and BMD_Tscore...")
+
   # compute core indices
   OSTA <- (weight - age) * 0.2
   ALMI <- ALM / (height^2)
   FMI <- FM / (height^2)
   BMD_Tscore <- (BMD - ref_mean) / ref_sd
+
   # helper for optional pass-through
   get_opt <- function(key) {
     if (key %in% names(col_map) && col_map[[key]] %in% names(data)) {
@@ -184,6 +174,7 @@ bone_markers <- function(
   CTX <- get_opt("CTX")
   BSAP <- get_opt("BSAP")
   Osteocalcin <- get_opt("Osteocalcin")
+
   result <- tibble::tibble(
     OSTA,
     ALMI,
@@ -196,30 +187,13 @@ bone_markers <- function(
     BSAP,
     Osteocalcin
   )
-  if (verbose) {
-    message(sprintf(
-      "Completed: %d rows. Outputs: OSTA, ALMI, FMI, BMD_Tscore%s.",
-      n,
-      if (any(c("TBS","HSA","PINP","CTX","BSAP","Osteocalcin") %in% names(col_map))) ", plus optional markers" else ""
-    ))
-  }
-  return(result)
+
+  hm_inform("bone_markers(): completed", level = "inform")
+  result
 }
 
 # ---- internal helpers (not exported) ----
 .bm_validate_misc_args <- function(verbose, na_warn_prop, check_extreme_sds, sds_limit) {
-  if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
-    stop("`verbose` must be a single logical value.")
-  }
-  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop))) {
-    stop("`na_warn_prop` must be a single finite numeric between 0 and 1.")
-  }
-  if (na_warn_prop < 0 || na_warn_prop > 1) stop("`na_warn_prop` must be between 0 and 1.")
-  if (!(is.logical(check_extreme_sds) && length(check_extreme_sds) == 1L && !is.na(check_extreme_sds))) {
-    stop("`check_extreme_sds` must be a single logical value.")
-  }
-  if (!(is.numeric(sds_limit) && length(sds_limit) == 1L && is.finite(sds_limit) && sds_limit > 0)) {
-    stop("`sds_limit` must be a single positive finite numeric.")
-  }
+  # kept for backward compatibility; no-op in HM-CS v1 flow
   invisible(TRUE)
 }

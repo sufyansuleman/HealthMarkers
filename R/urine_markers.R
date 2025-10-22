@@ -83,11 +83,15 @@ urine_markers <- function(data,
     rlang::abort("urine_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_urine_error_data_type")
   }
-  if (isTRUE(verbose)) rlang::inform("-> urine_markers: validating inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> urine_markers: validating inputs")
   t0 <- Sys.time()
 
   # 1) required columns (urine-only core)
   req <- c("urine_albumin", "urine_creatinine")
+  # HM-CS v2: standardized validation using an identity col_map (key -> same-named column)
+  col_map_id <- stats::setNames(as.list(req), req)
+  hm_validate_inputs(data, col_map = col_map_id, required_keys = req, fn = "urine_markers")
+
   missing_cols <- setdiff(req, names(data))
   if (length(missing_cols)) {
     rlang::abort(
@@ -111,16 +115,18 @@ urine_markers <- function(data,
         rlang::warn(sprintf("urine_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
       }
     }
+    # Non-finite to NA for safety
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # 3) High-missingness warnings on required inputs
+  # 3) High-missingness diagnostics on required inputs (debug level)
   for (cn in req) {
     x <- data[[cn]]
     n <- length(x)
     if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("urine_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("urine_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
 
@@ -133,7 +139,7 @@ urine_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> urine_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> urine_markers: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -200,7 +206,7 @@ urine_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> urine_markers: computing markers")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> urine_markers: computing markers")
 
   # 6) Safe division helper with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
@@ -281,7 +287,7 @@ urine_markers <- function(data,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
+    hm_inform(level = "inform", msg = sprintf(
       "Completed urine_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),

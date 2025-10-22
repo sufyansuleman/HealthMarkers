@@ -2,100 +2,96 @@
 % Please edit documentation in R/inflammatory_markers.R
 \name{inflammatory_markers}
 \alias{inflammatory_markers}
-\title{Compute a suite of systemic inflammation indices (with QA, diagnostics, and verbose summaries)}
+\title{Compute inflammatory indices (classic, eosinophil, or both)}
 \usage{
 inflammatory_markers(
   data,
   col_map,
-  na_action = c("error", "keep", "omit"),
-  na_warn_prop = 0.2,
+  panel = c("auto", "classic", "eos", "both"),
+  na_action = c("error", "omit", "keep"),
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble of subject-level data.}
+\item{data}{data.frame or tibble}
 
-\item{col_map}{Named list mapping the following keys to column names in \code{data}:
-\describe{
-\item{\code{neutrophils}}{Neutrophil count (x10^9/L)}
-\item{\code{lymphocytes}}{Lymphocyte count (x10^9/L)}
-\item{\code{monocytes}}{Monocyte count (x10^9/L)}
-\item{\code{eosinophils}}{Eosinophil count (x10^9/L)}
-\item{\code{platelets}}{Platelet count (x10^9/L)}
-\item{\code{CRP}}{C-reactive protein (mg/L)}
-\item{\code{albumin}}{Serum albumin (g/L)}
-\item{\code{ESR} (optional)}{Erythrocyte sedimentation rate (mm/hr)}
-}}
+\item{col_map}{named list mapping keys to column names in \code{data}.
+Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR.}
 
-\item{na_action}{One of \code{c("error","keep","omit")} controlling behavior when required inputs contain missing values.
-Default "error" (preserves previous behavior). "keep" leaves NAs to propagate through ratios; "omit" drops rows with NA
-before computing indices.}
+\item{panel}{one of c("auto","classic","eos","both"). "auto" uses presence of eosinophils key.}
 
-\item{na_warn_prop}{Proportion in \link{0,1} above which per-variable high-missingness warnings are emitted. Default 0.2.}
+\item{na_action}{one of c("error","omit","keep")}
 
-\item{check_extreme}{Logical; if TRUE, scan selected inputs for values outside plausible ranges (see \code{extreme_rules}). Default FALSE.}
+\item{check_extreme}{logical; if TRUE, handle extremes per \code{extreme_action}}
 
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do when extremes are detected
-(used only if \code{check_extreme = TRUE}). If "cap", values are truncated to the allowed range. Default "warn".}
+\item{extreme_action}{one of c("warn","cap","error","ignore","NA")}
 
-\item{extreme_rules}{Optional named list of length-2 numeric ranges c(min,max) for inputs to scan when
-\code{check_extreme = TRUE}. Defaults are broad clinical plausibility ranges; only variables present are checked.}
-
-\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
+\item{verbose}{logical; if TRUE, prints progress messages via hm_inform}
 }
 \value{
-A tibble with columns:
-NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, and ESR (if provided).
+tibble with selected inflammatory indices
 }
 \description{
-Given a data.frame or tibble containing standard CBC-derived counts and acute-phase proteins,
-\code{inflammatory_markers()} computes widely used indices reflecting systemic inflammation,
-immune activation, and nutritional/inflammatory balance:
+Panels:
 \itemize{
-\item NLR (Neutrophil-to-Lymphocyte Ratio)
-\item PLR (Platelet-to-Lymphocyte Ratio)
-\item LMR (Lymphocyte-to-Monocyte Ratio)
-\item NER (Neutrophil-to-Eosinophil Ratio)
-\item SII (Systemic Immune-Inflammation Index = platelets * neutrophils / lymphocytes)
-\item SIRI (Systemic Inflammation Response Index = neutrophils * monocytes / lymphocytes)
-\item PIV (Pan-Immune-Inflammation Value = neutrophils * monocytes * platelets / lymphocytes)
-\item CLR (CRP-to-Lymphocyte Ratio)
-\item CAR (CRP-to-Albumin Ratio)
-\item PCR (Platelet-to-CRP Ratio)
-\item mGPS (modified Glasgow Prognostic Score; CAR- and albumin-based)
-\item ESR passthrough (if provided in col_map)
+\item classic: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category
+\item eos:     NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR (if mapped)
+\item both:    union of classic and eos panels
 }
 }
 \details{
-Units and expectations (no automatic conversion):
+Derived markers:
 \itemize{
-\item Cell counts (neutrophils, lymphocytes, monocytes, eosinophils, platelets): x10^9/L
-\item CRP: mg/L; Albumin: g/L; ESR: mm/hr
+\item NLR  = neutrophils / lymphocytes
+\item PLR  = platelets / lymphocytes
+\item LMR  = lymphocytes / monocytes
+\item dNLR = neutrophils / (WBC - neutrophils) when WBC available
+\item SII  = platelets * neutrophils / lymphocytes
+\item SIRI = neutrophils * monocytes / lymphocytes
+\item AISI = neutrophils * monocytes * platelets / lymphocytes
+\item CRP_category: "low" (<1 mg/L), "moderate" (1–3 mg/L), "high" (>3 mg/L) when CRP available
+\item Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets\emph{neutrophils}monocytes/lymphocytes;
+CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR passthrough.
 }
-
-These indices combine simple blood counts and protein measures to capture innate vs adaptive immunity,
-acute-phase response, and nutritional status. Divisions are performed as in base R; denominators that
-are zero may produce Inf/NaN. To keep default behavior unchanged, we do not modify these by default,
-but we emit a warning summarizing zero denominators. You can pre-clean or cap inputs via \code{check_extreme}.
-
-Default extreme ranges (if \code{extreme_rules = NULL}):
-\itemize{
-\item neutrophils: 0–30, lymphocytes: 0–10, monocytes: 0–5, eosinophils: 0–5 (x10^9/L)
-\item platelets: 50–1000 (x10^9/L)
-\item CRP: 0–300 (mg/L), albumin: 10–60 (g/L), ESR: 0–150 (mm/hr)
 }
+\examples{
+df <- data.frame(
+  neutrophils = c(4, 2),
+  lymphocytes = c(2, 0),
+  monocytes   = c(0.5, 0.3),
+  platelets   = c(200, 150),
+  WBC         = c(7, 4.5),
+  CRP         = c(2.5, 0.8),
+  albumin     = c(40, 42),
+  eosinophils = c(0.2, 0.1),
+  ESR         = c(12, 15)
+)
+cm <- list(
+  neutrophils = "neutrophils", lymphocytes = "lymphocytes", monocytes = "monocytes",
+  platelets = "platelets", WBC = "WBC", CRP = "CRP", albumin = "albumin",
+  eosinophils = "eosinophils", ESR = "ESR"
+)
+# Classic panel (no eosinophils key)
+classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
+inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
+# Eosinophil panel
+inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
+                     check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
+
 }
 \references{
-Zahorec R (2001). Ratio of neutrophil to lymphocyte counts—rapid and simple parameter of systemic inflammation and stress in critically ill. \emph{Intensive Care Med}, 27(2):912–915. \doi{10.1007/s001340051276}
-Hu B, Yang XR, Xu Y, et al. (2014). Systemic immune-inflammation index predicts prognosis of hepatocellular carcinoma. \emph{J Hepatol}, 61(5):1151–1159. \doi{10.1016/j.jhep.2014.06.022}
-Qi X, Zhang S, Shen Y, et al. (2016). Systemic inflammation response index predicts survival in hepatocellular carcinoma patients. \emph{Clin Cancer Res}, 22(13):3311–3318. \doi{10.1158/1078-0432.CCR-15-2822}
-Fucà G, Guarini V, Antoniotti C, et al. (2020). The pan-immune-inflammation value as a predictor of clinical outcomes in metastatic colorectal cancer. \emph{Br J Cancer}, 123(8):1348–1355. \doi{10.1038/s41416-020-1002-5}
-Ranzani OT, Zampieri FG, Forte DN, Azevedo LCP, Park M (2013). C-reactive protein/albumin ratio predicts 90-day mortality of ICU patients. \emph{Crit Care}, 17(4):R130. \doi{10.1186/cc12887}
-McMillan DC (2013). The systemic inflammation-based Glasgow Prognostic Score: a decade of experience. \emph{Clin Nutr}, 32(5):997–1006. \doi{10.1016/j.clnu.2013.03.007}
-}
-\seealso{
-\code{\link[=glycemic_markers]{glycemic_markers()}}, \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=iAge]{iAge()}}
+Zahorec R. Ratio of neutrophil to lymphocyte counts—rapid and simple parameter of systemic inflammation and stress.
+Bratisl Lek Listy. 2001;102(1):5–14.
+Templeton AJ, et al. Prognostic role of neutrophil-to-lymphocyte ratio in solid tumors: a systematic review and meta-analysis.
+J Natl Cancer Inst. 2014;106(6):dju124.
+Hu B, et al. Systemic immune-inflammation index predicts prognosis of patients with hepatocellular carcinoma.
+Ann Surg Oncol. 2014;21(11):3819–27.
+Qi Q, et al. SIRI: a novel systemic inflammation response index for predicting survival in pancreatic cancer.
+Ann Surg Oncol. 2016;23(2):559–568.
+Fois AG, et al. The AISI (aggregate index of systemic inflammation) in COPD. Multidiscip Respir Med. 2020;15:35.
+Proctor MJ, et al. Systemic inflammation-based prognostic scores in cancer: the Glasgow Prognostic Score (mGPS).
+Br J Cancer. 2011;104(4):726–734.
+Pearson TA, et al. Markers of inflammation and CVD: CDC/AHA statement. Circulation. 2003;107(3):499–511.
 }

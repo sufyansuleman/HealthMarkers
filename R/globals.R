@@ -29,7 +29,6 @@
 #'
 #' @return A numeric vector of the same length as x.
 #' @export
-#' @keywords internal
 #' @importFrom stats sd median qnorm mad
 #'
 #' @examples
@@ -42,15 +41,9 @@
 #' normalize_vec(x, "inverse", invnorm_denominator = "blom")
 #'
 #' @references
-#' - Rank-based inverse normal transform (overview and guidance):
-#'   https://pubmed.ncbi.nlm.nih.gov/22982992/
-#' - Robust scaling via median and MAD (outlier-robust standardization):
-#'   Leys C, Ley C, Klein O, Bernard P, Licata L. Detecting outliers: Do not use standard deviation
-#'   around the mean, use median absolute deviation around the median. Front Psychol. 2013;4:241.
-#'   https://pubmed.ncbi.nlm.nih.gov/23964219/
-#' - z-scores and SD/SE primer (general background):
-#'   Bland JM, Altman DG. Standard deviations and standard errors. BMJ. 1996;313(7047):41.
-#'   https://pubmed.ncbi.nlm.nih.gov/8664809/
+#' Beasley TM, Erickson S, Allison DB (2009). Rank-based inverse normal transformations are increasingly used, but are they merited? Behav Genet, 39(2):214–227. \doi{10.1007/s10519-008-9281-0}
+#' Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use median absolute deviation around the median. Front Psychol, 4:241. \doi{10.3389/fpsyg.2013.00241}
+#' Bland JM, Altman DG (1996). Standard deviations and standard errors. BMJ, 313(7047):41–42. \doi{10.1136/bmj.313.7047.41}
 normalize_vec <- function(
   x,
   method = c("none", "z", "inverse", "range", "robust"),
@@ -75,7 +68,8 @@ normalize_vec <- function(
     old <- x
     suppressWarnings(x <- as.numeric(old))
     if (any(is.na(x) & !is.na(old))) {
-      warning("normalize_vec(): input coerced to numeric; NAs introduced.", call. = FALSE)
+      rlang::warn("normalize_vec(): input coerced to numeric; NAs introduced.",
+                  class = "healthmarkers_normalize_warn_coercion")
     }
   }
   x[!is.finite(x)] <- NA_real_
@@ -87,7 +81,10 @@ normalize_vec <- function(
     m <- mean(x, na.rm = na_rm)
     s <- stats::sd(x, na.rm = na_rm)
     if (!is.finite(s) || s == 0) {
-      if (isTRUE(warn_constant)) warning("normalize_vec(z): constant or degenerate input; returning zeros.", call. = FALSE)
+      if (isTRUE(warn_constant)) {
+        rlang::warn("normalize_vec(z): constant or degenerate input; returning zeros.",
+                    class = "healthmarkers_normalize_warn_constant")
+      }
       out <- ifelse(is.na(x), NA_real_, 0)
     } else {
       out <- (x - m) / s
@@ -97,13 +94,17 @@ normalize_vec <- function(
 
   if (method == "range") {
     if (!(is.numeric(feature_range) && length(feature_range) == 2L && all(is.finite(feature_range)))) {
-      stop("normalize_vec(range): `feature_range` must be a finite numeric vector of length 2.")
+      rlang::abort("normalize_vec(range): `feature_range` must be a finite numeric vector of length 2.",
+                   class = "healthmarkers_normalize_error_feature_range")
     }
     lo <- min(feature_range); hi <- max(feature_range)
     xmin <- min(x, na.rm = na_rm); xmax <- max(x, na.rm = na_rm)
     rng <- xmax - xmin
     if (!is.finite(rng) || rng == 0) {
-      if (isTRUE(warn_constant)) warning("normalize_vec(range): constant input; mapping to lower bound.", call. = FALSE)
+      if (isTRUE(warn_constant)) {
+        rlang::warn("normalize_vec(range): constant input; mapping to lower bound.",
+                    class = "healthmarkers_normalize_warn_constant")
+      }
       base <- ifelse(is.na(x), NA_real_, 0)  # maps to lo
     } else {
       base <- (x - xmin) / rng
@@ -116,7 +117,10 @@ normalize_vec <- function(
     med <- stats::median(x, na.rm = na_rm)
     md  <- stats::mad(x, na.rm = na_rm)
     if (!is.finite(md) || md == 0) {
-      if (isTRUE(warn_constant)) warning("normalize_vec(robust): MAD is zero; returning zeros.", call. = FALSE)
+      if (isTRUE(warn_constant)) {
+        rlang::warn("normalize_vec(robust): MAD is zero; returning zeros.",
+                    class = "healthmarkers_normalize_warn_constant")
+      }
       out <- ifelse(is.na(x), NA_real_, 0)
     } else {
       out <- (x - med) / md

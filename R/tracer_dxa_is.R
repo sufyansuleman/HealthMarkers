@@ -81,13 +81,15 @@ tracer_dxa_is <- function(data, col_map,
   }
 
   if (!is.data.frame(data)) {
-    rlang::abort("tracer_dxa_is(): `data` must be a data.frame or tibble.")
+    rlang::abort("tracer_dxa_is(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_tracer_error_data_type")
   }
   if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("tracer_dxa_is(): `col_map` must be a named list mapping keys to column names.")
+    rlang::abort("tracer_dxa_is(): `col_map` must be a named list mapping keys to column names.",
+                 class = "healthmarkers_tracer_error_colmap_type")
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> tracer_dxa_is: validating inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: validating inputs")
   t0 <- Sys.time()
 
   adipose_keys <- c("I0", "rate_palmitate", "rate_glycerol", "fat_mass", "weight", "HDL_c", "bmi")
@@ -98,6 +100,9 @@ tracer_dxa_is <- function(data, col_map,
   full_keys <- c(adipose_keys, "G0","G30","G120","I30","I120","TG","FFA")
 
   required_keys <- if (adipose_only) adipose_keys else full_keys
++
++  # HM-CS v2 standardized validation
++  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "tracer_dxa_is")
 
   # Validate col_map has required keys
   missing_map <- setdiff(required_keys, names(col_map))
@@ -133,10 +138,13 @@ tracer_dxa_is <- function(data, col_map,
         rlang::warn(sprintf("tracer_dxa_is(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
       }
     }
+    # Set non-finite to NA for safety
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
   # High-missingness warnings on required inputs
-  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
+-  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
++  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
 
   # NA policy on required inputs
   if (na_action == "error") {
@@ -147,7 +155,9 @@ tracer_dxa_is <- function(data, col_map,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> tracer_dxa_is: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf(
+      "-> tracer_dxa_is: omitting %d rows with NA in required inputs", sum(!keep)
+    ))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -220,7 +230,7 @@ tracer_dxa_is <- function(data, col_map,
   }
 
   if (adipose_only) {
-    if (isTRUE(verbose)) rlang::inform("-> tracer_dxa_is: adipose-only indices")
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: adipose-only indices")
 
     I0_u <- data[[col_map$I0]] / 6
     Lipo_inv <- -1 * (data[[col_map$rate_glycerol]] * I0_u)
@@ -239,7 +249,7 @@ tracer_dxa_is <- function(data, col_map,
       ATIRI_inv = as.numeric(ATIRI_inv)
     )
   } else {
-    if (isTRUE(verbose)) rlang::inform("-> tracer_dxa_is: computing indices")
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: computing indices")
 
     # Unit conversions
     I0_u   <- data[[col_map$I0]]   / 6
@@ -296,7 +306,7 @@ tracer_dxa_is <- function(data, col_map,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
+    hm_inform(level = "inform", msg = sprintf(
       "Completed tracer_dxa_is: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
@@ -316,7 +326,10 @@ tracer_dxa_is <- function(data, col_map,
     if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("tracer_dxa_is(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf(
+        "tracer_dxa_is(): column '%s' has high missingness (%.1f%%).",
+        cn, 100 * pna
+      ))
     }
   }
   invisible(TRUE)

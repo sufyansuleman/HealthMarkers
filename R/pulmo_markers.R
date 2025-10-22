@@ -45,10 +45,21 @@ pulmo_markers <- function(data,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
                           verbose = FALSE) {
-  equation <- match.arg(equation)
+  # HM-CS v2: validate inputs (data-frame only here)
+  hm_validate_inputs(data, col_map = NULL, required_keys = character(0), fn = "pulmo_markers")
+
+  # Custom equation check (clear error message on unknown)
+  eq <- as.character(equation)[1]
+  if (!eq %in% c("GLI", "GLIgl", "NHANES3")) {
+    rlang::abort(
+      sprintf("pulmo_markers(): unsupported equation '%s'. Choose one of: GLI, GLIgl, NHANES3.", eq),
+      class = "healthmarkers_pulmo_error_equation"
+    )
+  }
+
   na_action <- match.arg(na_action)
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("-> pulmo_markers[%s]: validating inputs", equation))
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> pulmo_markers[%s]: validating inputs", eq))
   t0 <- Sys.time()
 
   # Basic validation and coercion
@@ -64,8 +75,8 @@ pulmo_markers <- function(data,
 
   data <- .pm_coerce_numeric(data, cols = c("age","height","fev1","fvc"))
 
-  # High-missingness warnings on required inputs
-  .pm_warn_high_missing(data, req, na_warn_prop = na_warn_prop)
+  # High-missingness diagnostics on required inputs (debug)
+  .pm_high_missing_diag(data, req, na_warn_prop = na_warn_prop)
 
   # NA policy on required inputs
   if (na_action == "error") {
@@ -76,7 +87,7 @@ pulmo_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> pulmo_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> pulmo_markers: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -97,7 +108,7 @@ pulmo_markers <- function(data,
   # Height auto-detection: any height > 3 -> cm
   height_m <- data$height
   if (any(height_m > 3, na.rm = TRUE)) {
-    if (isTRUE(verbose)) rlang::inform("-> pulmo_markers: converting height from cm to m")
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> pulmo_markers: converting height from cm to m")
     height_m <- height_m / 100
   }
   # Basic plausibility on height
@@ -110,8 +121,8 @@ pulmo_markers <- function(data,
   fvc  <- data$fvc
 
   if (isTRUE(verbose)) {
-    rlang::inform(sprintf("-> pulmo_markers[%s]: sex=%s; eth=%s",
-                          equation,
+    hm_inform(level = "inform", msg = sprintf("-> pulmo_markers[%s]: sex=%s; eth=%s",
+                          eq,
                           paste(sort(unique(sex_code)), collapse = ","),
                           paste(sort(unique(eth_code)), collapse = ",")))
   }
@@ -122,12 +133,23 @@ pulmo_markers <- function(data,
     rlang::abort("pulmo_markers(): package 'rspiro' is required but not installed.",
                  class = "healthmarkers_pulmo_error_missing_pkg")
   }
-  pred_fun   <- get(paste0("pred_",   equation), envir = ns)
-  zscore_fun <- get(paste0("zscore_", equation), envir = ns)
-  lln_fun    <- get(paste0("LLN_",    equation), envir = ns)
+  f_pred   <- paste0("pred_",   eq)
+  f_zscore <- paste0("zscore_", eq)
+  f_lln    <- paste0("LLN_",    eq)
+  if (!all(vapply(c(f_pred, f_zscore, f_lln), exists, logical(1), envir = ns, inherits = FALSE))) {
+    rlang::abort(
+      sprintf("pulmo_markers(): equation '%s' not supported by installed 'rspiro'.", eq),
+      class = "healthmarkers_pulmo_error_equation"
+    )
+  }
+  pred_fun   <- get(f_pred, envir = ns)
+  zscore_fun <- get(f_zscore, envir = ns)
+  lln_fun    <- get(f_lln, envir = ns)
+
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> pulmo_markers: computing markers")
 
   # Compute predicted, z-scores, LLN by equation
-  if (equation == "GLIgl") {
+  if (eq == "GLIgl") {
     fev1_pred <- pred_fun(age, height_m, sex_code, param = "FEV1")
     fvc_pred  <- pred_fun(age, height_m, sex_code, param = "FVC")
     fev1_z    <- zscore_fun(age, height_m, sex_code, FEV1 = fev1)
@@ -154,7 +176,7 @@ pulmo_markers <- function(data,
   fev1_pctpred <- 100 * safe_div(fev1, fev1_pred)
   fvc_pctpred  <- 100 * safe_div(fvc,  fvc_pred)
 
-  # Ratio outputs (preserve prior behavior)
+  # Ratio outputs
   obs_ratio  <- safe_div(fev1, fvc)
   pred_ratio <- safe_div(fev1_pred, fvc_pred)
   # z-score: standardized by distribution of predicted ratio (fallback to NA if sd==0)
@@ -182,9 +204,9 @@ pulmo_markers <- function(data,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
+    hm_inform(level = "inform", msg = sprintf(
       "Completed pulmo_markers[%s]: %d rows; NA/Inf -> %s; elapsed=%.2fs",
-      equation, nrow(out),
+      eq, nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
       elapsed
     ))
@@ -217,13 +239,13 @@ pulmo_markers <- function(data,
   df
 }
 
-.pm_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
+.pm_high_missing_diag <- function(df, cols, na_warn_prop = 0.2) {
   for (cn in cols) {
     x <- df[[cn]]
     if (length(x) == 0L) next
     pna <- sum(is.na(x)) / length(x)
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("pulmo_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("pulmo_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
   invisible(TRUE)
@@ -231,15 +253,17 @@ pulmo_markers <- function(data,
 
 .pm_map_sex <- function(sex) {
   s <- tolower(as.character(sex))
-  # Prefer explicit numeric codes if provided
-  is_num <- suppressWarnings(!is.na(as.numeric(s)))
   out <- rep(NA_integer_, length(s))
-  # numeric interpretations: 1/2 or 0/1
-  out[is_num & s %in% c("1","male","m")] <- 1L
-  out[is_num & s %in% c("2","female","f")] <- 2L
-  # character mappings
+
+  # numeric forms first
+  num <- suppressWarnings(as.numeric(s))
+  out[!is.na(num) & num %in% c(1, 2)] <- as.integer(num[!is.na(num) & num %in% c(1, 2)])
+  out[!is.na(num) & num %in% c(0, 1) & is.na(out)] <- as.integer(num[!is.na(num) & num %in% c(0, 1)]) + 1L
+
+  # character forms
   out[s %in% c("male","m")] <- 1L
   out[s %in% c("female","f")] <- 2L
+
   bad <- sum(is.na(out))
   if (bad > 0) rlang::warn(sprintf("pulmo_markers(): 'sex' has %d unmapped values; set to NA.", bad))
   out

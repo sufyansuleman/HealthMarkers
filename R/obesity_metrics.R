@@ -109,7 +109,7 @@ obesity_indices <- function(data,
   extreme_action <- match.arg(extreme_action)
 
   t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> obesity_indices: validating inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> obesity_indices: validating inputs")
 
   # Capture and quote arguments
   wt_q <- rlang::enquo(weight);  wt_name  <- rlang::quo_name(wt_q)
@@ -133,10 +133,11 @@ obesity_indices <- function(data,
   } else if (na_action == "omit") {
     if (length(used_cols)) {
       keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-      if (isTRUE(verbose)) rlang::inform(sprintf("-> obesity_indices: omitting %d rows with NA in required inputs", sum(!keep)))
+      if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> obesity_indices: omitting %d rows with NA in required inputs", sum(!keep)))
       data <- data[keep, , drop = FALSE]
     }
   }
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> obesity_indices: computing indices")
 
   # Unit-normalized base fields
   out <- data %>%
@@ -291,11 +292,11 @@ obesity_indices <- function(data,
       if (is.character(x)) sum(is.na(x)) else sum(is.na(x) | !is.finite(x))
     }, integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed obesity_indices: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
+    hm_inform(level = "inform", msg = sprintf(
+       "Completed obesity_indices: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
+       nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
+       capped_n, dz_total, elapsed
+     ))
   }
 
   out
@@ -341,7 +342,7 @@ obesity_indices <- function(data,
     x <- df[[cn]]; n <- length(x); if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("obesity_indices(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("obesity_indices(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
   invisible(TRUE)

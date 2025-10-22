@@ -2,73 +2,71 @@
 % Please edit documentation in R/atherogenic_indices.R
 \name{atherogenic_indices}
 \alias{atherogenic_indices}
-\title{Compute Atherogenic and Castelli Indices}
+\title{Compute atherogenic indices}
 \usage{
 atherogenic_indices(
   data,
   col_map,
-  verbose = FALSE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
+  extreme_rules = NULL,
+  normalize = c("none", "log10"),
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{Data frame or tibble containing the lipid panel.}
+\item{data}{data.frame/tibble with lipid columns.}
 
-\item{col_map}{Named list mapping required variables to columns in \code{data}.
-Required names are \code{TC}, \code{HDL_c}, \code{TG}, and \code{LDL_c}.}
+\item{col_map}{named list mapping keys to columns, e.g. list(TG="TG", HDL_c="HDL_c", TC="TC", LDL_c="LDL_c").}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+\item{na_action}{one of c("keep","omit","error").}
 
-\item{na_action}{How to handle missing values. One of \code{"keep"} (default),
-\code{"omit"}, or \code{"error"}.}
+\item{check_extreme}{logical; if TRUE, screen inputs for extremes using \code{extreme_rules}.}
 
-\item{na_warn_prop}{Proportion (0–1) above which a warning about missingness
-is issued for any required column. Default \code{0.2}.}
+\item{extreme_action}{one of c("warn","cap","error","ignore","NA").}
 
-\item{check_extreme}{Logical; if \code{TRUE}, checks inputs against plausible
-ranges given in \code{extreme_rules}.}
+\item{extreme_rules}{optional named list of bounds per key or column, each c(min, max).}
 
-\item{extreme_action}{One of \code{"warn"}, \code{"cap"}, \code{"error"}, or \code{"ignore"}.
-When \code{"cap"}, out‑of‑range values are truncated to allowed limits.}
+\item{normalize}{one of c("none","log10"). Reserved; AIP always uses log10(TG/HDL_c).}
 
-\item{extreme_rules}{Optional named list of plausible ranges for inputs,
-e.g., \code{list(TC = c(50,400), HDL_c = c(10,150), LDL_c = c(10,300), TG = c(20,1000))}.}
+\item{verbose}{logical; prints step messages via hm_inform when TRUE.}
 }
 \value{
-A tibble with three numeric columns: \code{AIP} (the atherogenic index of
-plasma), \code{CRI_I} (Castelli risk index I, TC/HDL) and \code{CRI_II} (Castelli
-risk index II, LDL/HDL). If any denominator is zero or missing, the
-corresponding ratio will be \code{NA}.
+tibble with columns AIP, CRI_I, CRI_II
 }
 \description{
-This helper computes three widely used atherogenic risk indices from a lipid
-panel: the atherogenic index of plasma (AIP) and the Castelli risk indices I
-and II. All ratios are calculated on the raw scale, with AIP being the
-base‑10 logarithm of the triglyceride to HDL cholesterol ratio. These
-indices are useful markers of dyslipidaemia and have been associated with
-non‑alcoholic fatty liver disease and cardiovascular risk. The function
-accepts a data frame and a column mapping for total cholesterol, HDL
-cholesterol, triglycerides and LDL cholesterol. Optionally, missing values
-can be kept, omitted or trigger an error; extreme values may be scanned and
-either warned about, capped into plausible ranges, or raise errors.
+Calculates:
+\itemize{
+\item AIP: Atherogenic Index of Plasma = log10(TG / HDL_c)
+\item CRI_I: Castelli Risk Index I = TC / HDL_c
+\item CRI_II: Castelli Risk Index II = LDL_c / HDL_c
+}
+}
+\details{
+Behavior:
+\itemize{
+\item Required keys: TG, HDL_c. Optional: TC, LDL_c.
+\item NA policy via \code{na_action}: "keep" (default), "omit" (drop rows with any NA in used lipids), "error".
+\item Extreme screening via \code{check_extreme} and \code{extreme_action} ("warn","cap","error","ignore","NA").
+Default bounds (mg/dL): TG \link{0, 10000}, HDL_c \link{0, 1000}, LDL_c \link{0, 10000}, TC \link{0, 10000}.
+\item Emits an info message when completed: "atherogenic_indices(): computed atherogenic indices".
+}
 }
 \examples{
-# Compute AIP and Castelli indices from a small dataset
-dat <- data.frame(TC = c(200, 180), HDL_c = c(50, 60), TG = c(150, 100),
-                  LDL_c = c(120, 90))
-res <- atherogenic_indices(dat, col_map = list(TC = "TC", HDL_c = "HDL_c",
-                                               TG = "TG", LDL_c = "LDL_c"))
-res
+df <- tibble::tibble(TG = c(150, 200),
+                     HDL_c = c(50, 40),
+                     TC = c(200, 220),
+                     LDL_c = c(120, 150))
+cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
+atherogenic_indices(df, col_map = cm)
+
 }
 \references{
-Dobiášová M. Atherogenic index of plasma \link[=log(triglycerides/high-density
-lipoprotein cholesterol)]{log(triglycerides/high-density lipoprotein cholesterol)}: theoretical and practical implications. Clin
-Chem. 2004;50(7):1113–1115. \doi{10.1373/clinchem.2004.033175}
-Njelekela M, Kadewele S, Liu M, et al. Lipid profile and atherogenic
-indices among patients with metabolic syndrome in Dar es Salaam. Afr Health
-Sci. 2016;16(3):687–696. \doi{10.4314/ahs.v16i3.17}
+\itemize{
+\item Dobiasova M. AIP—Atherogenic Index of Plasma \link{log(TG/HDL-C)}: theoretical and practical implications.
+Clin Chem. 2004;50(7):1113–1115.
+\item Castelli WP, et al. HDL cholesterol and other lipids in coronary heart disease. The Framingham Study.
+Am J Med. 1977;62(5):707–714.
+}
 }

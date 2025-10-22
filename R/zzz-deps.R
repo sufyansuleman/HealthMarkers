@@ -38,6 +38,14 @@
   }
 }
 
+.onLoad <- function(libname, pkgname) {
+  # Initialize verbosity option if unset
+  if (is.null(getOption("healthmarkers.verbose"))) {
+    # allowed: "none" | "inform" | "debug"; TRUE treated as "inform"
+    options(healthmarkers.verbose = "none")
+  }
+  invisible(TRUE)
+}
 
 utils::globalVariables(c(
   "chol_total","chol_ldl","chol_hdl","triglycerides","age_year","z_HOMA",

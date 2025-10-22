@@ -2,79 +2,69 @@
 % Please edit documentation in R/liver_fat_markers.R
 \name{liver_fat_markers}
 \alias{liver_fat_markers}
-\title{Compute Hepatic Steatosis Index (HSI) and NAFLD‑Liver Fat Score (LFS)}
+\title{Liver fat surrogates: HSI and NAFLD Liver Fat Score}
 \usage{
 liver_fat_markers(
   data,
-  col_map,
-  verbose = FALSE,
-  na_action = c("keep", "omit", "error"),
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes =
+    "diabetes", MetS = "MetS", insulin = "insulin", I0 = "I0", waist = "waist", TG =
+    "TG", HDL_c = "HDL_c", sbp = "sbp", bp_sys = "bp_sys", bp_treated = "bp_treated",
+    glucose = "glucose", G0 = "G0"),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
+  extreme_rules = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{Data frame or tibble containing the variables listed above.}
+\item{data}{Data frame with needed columns (see col_map).}
 
-\item{col_map}{Named list mapping required variable names to columns in
-\code{data}. See Required variables. Unused entries are ignored.}
+\item{col_map}{Named list mapping:
+\itemize{
+\item Required for HSI: ALT, AST, BMI
+\item Optional direct inputs: sex, diabetes, MetS, insulin
+\item Optional to derive MetS or insulin: I0, waist, TG, HDL_c, sbp, bp_sys, bp_treated, glucose, G0
+}}
 
-\item{verbose}{Logical; if \code{TRUE} prints diagnostic messages.}
+\item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{na_action}{How to handle missing values in required inputs. One of
-\code{"keep"} (default), \code{"omit"} or \code{"error"}.}
+\item{na_warn_prop}{Proportion in \link{0,1} for high-missingness warnings when na_action = "warn". Default 0.2.}
 
-\item{na_warn_prop}{Proportion (0–1) above which a warning is issued
-about missingness in any required column. Default \code{0.2}.}
+\item{check_extreme}{Logical; if TRUE, scan selected inputs for plausible ranges.}
 
-\item{check_extreme}{Logical; if \code{TRUE} scan for implausible AST, ALT,
-BMI and insulin values. See \code{extreme_rules} and \code{extreme_action}.}
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.}
 
-\item{extreme_action}{One of \code{"warn"}, \code{"cap"}, \code{"error"} or
-\code{"ignore"}. When \code{"cap"}, out‑of‑range values are truncated to
-plausible limits.}
+\item{extreme_rules}{Optional named list of c(min,max) to override defaults.}
 
-\item{extreme_rules}{Optional named list specifying plausible ranges for
-\code{ALT}, \code{AST}, \code{BMI}, \code{insulin}. Each element is a length‑2 numeric
-vector \code{c(min, max)}. Default ranges are ALT 5–200 U/L, AST 5–200 U/L,
-BMI 15–60 kg/m², and insulin 1–200 mU/L.}
+\item{verbose}{Logical; if TRUE, prints progress.}
 }
 \value{
-A tibble with two columns: \code{HSI} and \code{NAFLD_LFS}. \code{NA} is
-returned when required inputs are missing or invalid.
+A tibble with columns HSI and NAFLD_LFS.
 }
 \description{
-This function calculates two non‑invasive liver fat scores. The
-Hepatic Steatosis Index (HSI) is defined as 8 × (ALT/AST) + BMI plus a
-sex and diabetes term (+2 if female; +2 if type 2 diabetes). It has been
-validated as a simple screening tool for hepatic steatosis. The
-NAFLD‑Liver Fat Score (LFS) combines metabolic syndrome status,
-diabetes, fasting insulin, AST and the AST/ALT ratio to estimate liver fat
-accumulation. Both indices complement the existing fatty
-liver and fibrosis scores.
+Computes:
+\itemize{
+\item HSI = 8 * (ALT/AST) + BMI + 2 (if female) + 2 (if diabetes)
+\item NAFLD-LFS = -2.89 + 1.18\emph{MetS + 0.45}Type2DM + 0.15\emph{Insulin_u + 0.04}AST - 0.94*(AST/ALT)
+}
+}
+\details{
+Assumptions/units:
+\itemize{
+\item ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to µU/mL via /6).
+\item MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
+\item Type2DM is taken from \code{diabetes} (logical or 0/1).
+}
 }
 \examples{
-df <- data.frame(ALT = c(30, 40), AST = c(20, 35), BMI = c(25, 32),
-                 sex = c(1, 2), diabetes = c(0, 1), MetS = c(1, 0),
-                 insulin = c(15, 20))
-liver_fat_markers(df, col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI",
-                                    sex = "sex", diabetes = "diabetes",
-                                    MetS = "MetS", insulin = "insulin"))
-
+df <- data.frame(ALT=20, AST=25, BMI=27, sex="female", diabetes=FALSE, I0=60)
+liver_fat_markers(df, col_map = list(ALT="ALT", AST="AST", BMI="BMI", sex="sex", diabetes="diabetes", I0="I0"))
 }
 \references{
-Lee JH, Kim D, Kim HJ, et al. Hepatic steatosis index: a simple screening
-tool reflecting nonalcoholic fatty liver disease. Dig Liver Dis.
-2010;42(7):503–508. \doi{10.1016/j.dld.2009.08.002}
-Bedogni G, Bellentani S, Miglioli L, et al. The fatty liver index: a simple
-and accurate predictor of hepatic steatosis in the general population.
-BMC Gastroenterol. 2006;6:33. \doi{10.1186/1471-230X-6-33}
-Kotronen A, Peltonen M, Hakkarainen A, et al. Prediction of non-alcoholic
-fatty liver disease and liver fat using metabolic and genetic factors.
-Gastroenterology. 2009;137(3):865–872. \doi{10.1053/j.gastro.2009.06.005}
-Karczewski J, Grzebyk M, Pokorski J. Liver fat scores for noninvasive
-diagnosis of nonalcoholic fatty liver disease: A clinical review. Rev Med
-Chil. 2023;151(2):256–266. \doi{10.1007/s11739-023-03282-9}
+\itemize{
+\item Hepatic Steatosis Index (HSI) original description.
+\item NAFLD Liver Fat Score (Kotronen et al., 2009).
+}
 }

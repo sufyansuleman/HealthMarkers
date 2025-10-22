@@ -80,6 +80,12 @@ Expected units (no automatic conversion performed):
 \item creatinine_urine: mg/dL
 }
 }
+\examples{
+df <- tibble::tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14)
+cm <- list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN")
+renal_markers(df, cm)
+
+}
 \references{
 Original derivations
 Levey AS, Stevens LA, Schmid CH, et al. A new equation to estimate glomerular filtration rate.

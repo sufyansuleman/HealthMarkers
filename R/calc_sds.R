@@ -92,13 +92,36 @@ calc_sds <- function(
   id_col = NULL,
   sds_cap = 6,
   na_strategy = c("omit","error","keep"),
-  extreme_strategy = c("cap","warn","error"),
+  extreme_strategy = c("cap","warn","error","NA"),  # allow HM-CS 'NA'
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   return = c("data","list"),
-  verbose = FALSE
+  verbose = FALSE,
+  # HM-CS v1 additions (aliases; preferred)
+  na_action = NULL,
+  check_extreme = TRUE,
+  extreme_action = NULL
 ) {
+  # HM-CS v1: map new args -> legacy slots (single combined deprecation if mixed)
+  legacy_msgs <- character()
+  if (!is.null(na_action)) {
+    na_strategy <- match.arg(na_action, c("keep","omit","error"))
+    legacy_msgs <- c(legacy_msgs, "use 'na_action' (alias of 'na_strategy').")
+  }
+  if (!is.null(extreme_action)) {
+    # Accept HM-CS values; map deprecated 'warn' if provided via legacy slot
+    extreme_strategy <- match.arg(extreme_action, c("cap","NA","error"))
+    legacy_msgs <- c(legacy_msgs, "use 'extreme_action' (alias of 'extreme_strategy').")
+  }
+  if (length(legacy_msgs)) {
+    # was: rlang::inform(...)
+    hm_inform(
+      paste0("calc_sds(): HM-CS v1: ", paste(unique(legacy_msgs), collapse = " ")),
+      level = "debug"  # only emits when options(healthmarkers.verbose = "debug")
+    )
+  }
+
   na_strategy <- match.arg(na_strategy)
-  extreme_strategy <- match.arg(extreme_strategy)
+  extreme_strategy <- match.arg(extreme_strategy)  # now includes "NA" via default choices
   return <- match.arg(return)
 
   # --- Input validation ---
@@ -208,27 +231,33 @@ calc_sds <- function(
     # Count missing (after strategy)
     per_var_summary$n_missing[i] <- sum(is.na(out[[v]]))
 
-    # Handle extreme SDS
-    is_extreme <- is.finite(z) & abs(z) > sds_cap
-    n_extreme <- sum(is_extreme, na.rm = TRUE)
-    total_extreme <- total_extreme + n_extreme
+    # Gate SDS extreme handling behind HM-CS check_extreme
+    if (isTRUE(check_extreme)) {
+      is_extreme <- is.finite(z) & abs(z) > sds_cap
+      n_extreme <- sum(is_extreme, na.rm = TRUE)
+      total_extreme <- total_extreme + n_extreme
 
-    if (n_extreme > 0) {
-      if (extreme_strategy == "error") {
-        stop(sprintf("Found %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v))
-      } else if (extreme_strategy == "cap") {
-        z[is_extreme] <- sds_cap * sign(z[is_extreme])
-        w <- sprintf("Capped %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v)
-        warning(w)
-        warns <- c(warns, w)
-      } else if (extreme_strategy == "warn") {
-        w <- sprintf("Detected %d SDS beyond ±%g for `%s` (not capped)", n_extreme, sds_cap, v)
-        warning(w)
-        warns <- c(warns, w)
+      if (n_extreme > 0) {
+        if (identical(extreme_strategy, "error")) {
+          stop(sprintf("Found %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v))
+        } else if (identical(extreme_strategy, "cap")) {
+          z[is_extreme] <- sds_cap * sign(z[is_extreme])
+          w <- sprintf("Capped %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v)
+          warning(w)
+          warns <- c(warns, w)
+        } else if (identical(extreme_strategy, "warn")) {
+          # legacy behavior; HM-CS prefers cap/NA/error; keep for back-compat
+          w <- sprintf("Detected %d SDS beyond ±%g for `%s` (not capped)", n_extreme, sds_cap, v)
+          warning(w)
+          warns <- c(warns, w)
+        } else if (identical(extreme_strategy, "NA")) {  # HM-CS: blank extremes
+          z[is_extreme] <- NA_real_
+        }
       }
+
+      per_var_summary$n_extreme[i] <- n_extreme
     }
 
-    per_var_summary$n_extreme[i] <- n_extreme
     out[[paste0(v, "_sds")]] <- z
   }
 

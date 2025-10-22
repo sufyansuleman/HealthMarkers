@@ -1,212 +1,234 @@
-#' Compute Hepatic Steatosis Index (HSI) and NAFLD‑Liver Fat Score (LFS)
+#' Liver fat surrogates: HSI and NAFLD Liver Fat Score
 #'
-#' This function calculates two non‑invasive liver fat scores. The
-#' Hepatic Steatosis Index (HSI) is defined as 8 × (ALT/AST) + BMI plus a
-#' sex and diabetes term (+2 if female; +2 if type 2 diabetes). It has been
-#' validated as a simple screening tool for hepatic steatosis. The
-#' NAFLD‑Liver Fat Score (LFS) combines metabolic syndrome status,
-#' diabetes, fasting insulin, AST and the AST/ALT ratio to estimate liver fat
-#' accumulation. Both indices complement the existing fatty
-#' liver and fibrosis scores.
+#' Computes:
+#' - HSI = 8 * (ALT/AST) + BMI + 2 (if female) + 2 (if diabetes)
+#' - NAFLD-LFS = -2.89 + 1.18*MetS + 0.45*Type2DM + 0.15*Insulin_u + 0.04*AST - 0.94*(AST/ALT)
 #'
-#' @param data Data frame or tibble containing the variables listed above.
-#' @param col_map Named list mapping required variable names to columns in
-#'   `data`. See Required variables. Unused entries are ignored.
-#' @param verbose Logical; if `TRUE` prints diagnostic messages.
-#' @param na_action How to handle missing values in required inputs. One of
-#'   `"keep"` (default), `"omit"` or `"error"`.
-#' @param na_warn_prop Proportion (0–1) above which a warning is issued
-#'   about missingness in any required column. Default `0.2`.
-#' @param check_extreme Logical; if `TRUE` scan for implausible AST, ALT,
-#'   BMI and insulin values. See `extreme_rules` and `extreme_action`.
-#' @param extreme_action One of `"warn"`, `"cap"`, `"error"` or
-#'   `"ignore"`. When `"cap"`, out‑of‑range values are truncated to
-#'   plausible limits.
-#' @param extreme_rules Optional named list specifying plausible ranges for
-#'   `ALT`, `AST`, `BMI`, `insulin`. Each element is a length‑2 numeric
-#'   vector `c(min, max)`. Default ranges are ALT 5–200 U/L, AST 5–200 U/L,
-#'   BMI 15–60 kg/m², and insulin 1–200 mU/L.
+#' Assumptions/units:
+#' - ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to µU/mL via /6).
+#' - MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
+#' - Type2DM is taken from `diabetes` (logical or 0/1).
 #'
-#' @return A tibble with two columns: `HSI` and `NAFLD_LFS`. `NA` is
-#'   returned when required inputs are missing or invalid.
-#'
-#' @examples
-#' df <- data.frame(ALT = c(30, 40), AST = c(20, 35), BMI = c(25, 32),
-#'                  sex = c(1, 2), diabetes = c(0, 1), MetS = c(1, 0),
-#'                  insulin = c(15, 20))
-#' liver_fat_markers(df, col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI",
-#'                                     sex = "sex", diabetes = "diabetes",
-#'                                     MetS = "MetS", insulin = "insulin"))
-#'
+#' @param data Data frame with needed columns (see col_map).
+#' @param col_map Named list mapping:
+#'   - Required for HSI: ALT, AST, BMI
+#'   - Optional direct inputs: sex, diabetes, MetS, insulin
+#'   - Optional to derive MetS or insulin: I0, waist, TG, HDL_c, sbp, bp_sys, bp_treated, glucose, G0
+#' @param na_action One of c("keep","omit","error","ignore","warn").
+#' @param na_warn_prop Proportion in [0,1] for high-missingness warnings when na_action = "warn". Default 0.2.
+#' @param check_extreme Logical; if TRUE, scan selected inputs for plausible ranges.
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.
+#' @param extreme_rules Optional named list of c(min,max) to override defaults.
+#' @param verbose Logical; if TRUE, prints progress.
+#' @return A tibble with columns HSI and NAFLD_LFS.
 #' @references
-#' Lee JH, Kim D, Kim HJ, et al. Hepatic steatosis index: a simple screening
-#' tool reflecting nonalcoholic fatty liver disease. Dig Liver Dis.
-#' 2010;42(7):503–508. \doi{10.1016/j.dld.2009.08.002}
-#' Bedogni G, Bellentani S, Miglioli L, et al. The fatty liver index: a simple
-#' and accurate predictor of hepatic steatosis in the general population.
-#' BMC Gastroenterol. 2006;6:33. \doi{10.1186/1471-230X-6-33}
-#' Kotronen A, Peltonen M, Hakkarainen A, et al. Prediction of non-alcoholic
-#' fatty liver disease and liver fat using metabolic and genetic factors.
-#' Gastroenterology. 2009;137(3):865–872. \doi{10.1053/j.gastro.2009.06.005}
-#' Karczewski J, Grzebyk M, Pokorski J. Liver fat scores for noninvasive
-#' diagnosis of nonalcoholic fatty liver disease: A clinical review. Rev Med
-#' Chil. 2023;151(2):256–266. \doi{10.1007/s11739-023-03282-9}
-#' @importFrom tibble tibble
-#' @importFrom rlang abort warn inform
+#' - Hepatic Steatosis Index (HSI) original description.
+#' - NAFLD Liver Fat Score (Kotronen et al., 2009).
+#' @examples
+#' df <- data.frame(ALT=20, AST=25, BMI=27, sex="female", diabetes=FALSE, I0=60)
+#' liver_fat_markers(df, col_map = list(ALT="ALT", AST="AST", BMI="BMI", sex="sex", diabetes="diabetes", I0="I0"))
 #' @export
-liver_fat_markers <- function(data, col_map, verbose = FALSE,
-                              na_action = c("keep", "omit", "error"),
-                              na_warn_prop = 0.2,
-                              check_extreme = FALSE,
-                              extreme_action = c("warn", "cap", "error", "ignore"),
-                              extreme_rules = NULL) {
-  na_action <- match.arg(na_action)
+liver_fat_markers <- function(
+  data,
+  col_map = list(ALT="ALT", AST="AST", BMI="BMI", sex="sex", diabetes="diabetes",
+                 MetS="MetS", insulin="insulin", I0="I0", waist="waist", TG="TG", HDL_c="HDL_c",
+                 sbp="sbp", bp_sys="bp_sys", bp_treated="bp_treated",
+                 glucose="glucose", G0="G0"),
+  na_action = c("keep","omit","error","ignore","warn"),
+  na_warn_prop = 0.2,
+  check_extreme = FALSE,
+  extreme_action = c("warn","cap","error","ignore","NA"),
+  extreme_rules = NULL,
+  verbose = FALSE
+) {
+  na_action_raw <- match.arg(na_action)
+  na_action_eff <- if (na_action_raw %in% c("ignore","warn")) "keep" else na_action_raw
   extreme_action <- match.arg(extreme_action)
 
-  # required variables
-  req_vars <- c("ALT", "AST", "BMI", "sex", "diabetes", "MetS", "insulin")
+  # Validate required mapping and data
+  if (!is.data.frame(data)) stop("liver_fat_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+  req <- c("ALT","AST","BMI")
+  missing_keys <- setdiff(req, names(col_map))
+  if (length(missing_keys)) stop("liver_fat_markers(): missing required columns: ", paste(missing_keys, collapse=", "), call.=FALSE)
+  mapped_req <- unname(unlist(col_map[req]))
+  if (any(!nzchar(mapped_req))) {
+    bad <- req[!nzchar(mapped_req)]
+    stop("liver_fat_markers(): missing required columns: ", paste(bad, collapse=", "), call.=FALSE)
+  }
+  miss <- setdiff(mapped_req, names(data))
+  if (length(miss)) stop("liver_fat_markers(): missing required columns: ", paste(miss, collapse=", "), call.=FALSE)
 
-  # Validate col_map (no external helper)
-  if (!is.list(col_map) || is.null(names(col_map))) {
-    rlang::abort("liver_fat_markers(): 'col_map' must be a named list.")
-  }
-  missing_names <- setdiff(req_vars, names(col_map))
-  if (length(missing_names)) {
-    rlang::abort(sprintf(
-      "liver_fat_markers(): 'col_map' missing required names: %s",
-      paste(missing_names, collapse = ", ")
-    ))
-  }
-  mapped_cols <- vapply(req_vars, function(nm) as.character(col_map[[nm]]), character(1))
-  if (anyNA(mapped_cols) || any(!nzchar(mapped_cols))) {
-    rlang::abort("liver_fat_markers(): 'col_map' contains empty or NA column names.")
-  }
-  if (anyDuplicated(mapped_cols)) {
-    rlang::abort("liver_fat_markers(): 'col_map' has duplicated target columns.")
-  }
-  missing_in_data <- setdiff(mapped_cols, names(data))
-  if (length(missing_in_data)) {
-    rlang::abort(sprintf(
-      "liver_fat_markers(): columns not found in 'data': %s",
-      paste(missing_in_data, collapse = ", ")
-    ))
-  }
+  if (isTRUE(verbose)) message("-> liver_fat_markers: coercing inputs to numeric (if needed)")
 
-  # Subset and standardize names
-  df <- data[, mapped_cols, drop = FALSE]
-  names(df) <- req_vars
+  # Columns potentially used directly in formulas
+  direct_keys <- c("ALT","AST","BMI","sex","diabetes","MetS","insulin","I0")
+  # Additional optional used for MetS derivation
+  deriva_keys <- c("waist","TG","HDL_c","sbp","bp_sys","bp_treated","glucose","G0")
+  # Build list of mapped columns present
+  mapped_all <- unlist(col_map[intersect(names(col_map), c(direct_keys, deriva_keys))], use.names = TRUE)
+  used_cols <- unique(mapped_all[!is.na(mapped_all) & nzchar(mapped_all) & mapped_all %in% names(data)])
 
-  # missingness warning
-  if (na_warn_prop > 0) {
-    for (cn in req_vars) {
-      pna <- mean(is.na(df[[cn]]))
-      if (pna >= na_warn_prop && pna > 0) {
-        rlang::warn(sprintf("liver_fat_markers(): column '%s' has high missingness (%.1f%%).",
-                            cn, 100 * pna))
-      }
+  # Coerce numeric-compatible columns; warn if NAs introduced
+  for (cn in used_cols) {
+    if (!is.numeric(data[[cn]])) {
+      old <- data[[cn]]
+      suppressWarnings(new <- as.numeric(old))
+      introduced_na <- sum(is.na(new) & !is.na(old))
+      if (introduced_na > 0L) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      data[[cn]] <- new
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # missing value handling
-  if (na_action == "error") {
-    if (any(vapply(df[req_vars], function(x) any(is.na(x)), logical(1)))) {
-      rlang::abort("liver_fat_markers(): required inputs contain missing values (na_action='error').")
-    }
-  } else if (na_action == "omit") {
-    keep <- Reduce(`&`, lapply(df[req_vars], function(x) !is.na(x)))
-    if (isTRUE(verbose)) {
-      rlang::inform(sprintf("liver_fat_markers(): omitting %d rows with missing required inputs",
-                            sum(!keep)))
-    }
-    df <- df[keep, , drop = FALSE]
+  # NA policy: build used frame for handling
+  used_for_policy <- unique(unname(unlist(col_map[intersect(names(col_map), direct_keys)])))
+  used_for_policy <- used_for_policy[!is.na(used_for_policy) & nzchar(used_for_policy)]
+  if (length(used_for_policy) == 0L) used_for_policy <- mapped_req
+  if (na_action_raw == "warn" && length(used_for_policy)) {
+    dfp <- data[, used_for_policy, drop = FALSE]
+    any_na_cols <- names(which(colSums(is.na(dfp)) > 0))
+    high_na_cols <- names(which(colMeans(is.na(dfp)) >= na_warn_prop))
+    if (length(any_na_cols)) warning(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")), call. = FALSE)
+    if (length(high_na_cols)) warning(sprintf("High missingness (>= %.0f%%): %s.", 100*na_warn_prop, paste(high_na_cols, collapse = ", ")), call. = FALSE)
   }
-  if (nrow(df) == 0L) {
-    return(tibble::tibble(HSI = numeric(), NAFLD_LFS = numeric()))
+  cc_req <- stats::complete.cases(data[, mapped_req, drop = FALSE])
+  if (na_action_eff == "error" && !all(cc_req)) {
+    stop("liver_fat_markers(): missing/non-finite values with na_action='error'.", call.=FALSE)
   }
+  keep <- if (na_action_eff == "omit") cc_req else rep(TRUE, nrow(data))
 
-  # coerce numeric variables except sex and diabetes and MetS
-  num_vars <- setdiff(req_vars, c("sex", "diabetes", "MetS"))
-  for (cn in num_vars) {
-    if (!is.numeric(df[[cn]])) {
-      old <- df[[cn]]
-      suppressWarnings(df[[cn]] <- as.numeric(old))
-      introduced <- sum(is.na(df[[cn]]) & !is.na(old))
-      if (introduced > 0) {
-        rlang::warn(sprintf("liver_fat_markers(): column '%s' coerced to numeric; NAs introduced: %d",
-                            cn, introduced))
-      }
-    }
-  }
+  d <- data[keep, , drop = FALSE]
 
-  # convert sex/diabetes/MetS to numeric indicators
-  for (bn in c("sex", "diabetes", "MetS")) {
-    if (is.character(df[[bn]]) || is.factor(df[[bn]])) {
-      lv <- trimws(toupper(as.character(df[[bn]])))
-      if (bn == "sex") {
-        df[[bn]] <- ifelse(lv %in% c("F", "FEMALE", "2"), 2,
-                           ifelse(lv %in% c("M", "MALE", "1"), 1, NA_real_))
-      } else {
-        df[[bn]] <- ifelse(lv %in% c("YES", "TRUE", "1", "T"), 1,
-                           ifelse(lv %in% c("NO", "FALSE", "0", "F"), 0, NA_real_))
-      }
-    }
-    if (!is.numeric(df[[bn]])) df[[bn]] <- as.numeric(df[[bn]])
-  }
-
-  # check extremes
-  capped_n <- 0L
+  # Optional extreme-value scan/handling (broad defaults)
   if (isTRUE(check_extreme)) {
-    if (is.null(extreme_rules)) {
-      extreme_rules <- list(ALT = c(5, 200), AST = c(5, 200), BMI = c(15, 60), insulin = c(1, 200))
+    rules_def <- list(
+      ALT = c(0, 1000), AST = c(0, 1000), BMI = c(10, 80),
+      insulin = c(0, 500), I0 = c(0, 3000),
+      TG = c(0, 50), HDL_c = c(0, 10), waist = c(30, 250),
+      sbp = c(60, 300), bp_sys = c(60, 300), glucose = c(0, 50), G0 = c(0, 50)
+    )
+    if (is.list(extreme_rules)) {
+      for (nm in intersect(names(extreme_rules), names(rules_def))) rules_def[[nm]] <- extreme_rules[[nm]]
     }
-    ex_counts <- integer(0)
-    for (nm in names(extreme_rules)) {
-      if (!nm %in% names(df)) next
-      rng <- extreme_rules[[nm]]
-      x <- df[[nm]]
+    total_flag <- 0L
+    flags <- list()
+    # name->column map (prefer sbp, else bp_sys)
+    name_to_col <- list(
+      ALT = col_map$ALT, AST = col_map$AST, BMI = col_map$BMI,
+      insulin = col_map$insulin, I0 = col_map$I0, TG = col_map$TG, HDL_c = col_map$HDL_c,
+      waist = col_map$waist, sbp = if (!is.null(col_map$sbp)) col_map$sbp else col_map$bp_sys,
+      bp_sys = col_map$bp_sys, glucose = col_map$glucose, G0 = col_map$G0
+    )
+    for (nm in names(rules_def)) {
+      cn <- name_to_col[[nm]]
+      if (is.null(cn) || !(cn %in% names(d))) next
+      x <- d[[cn]]; rng <- rules_def[[nm]]
       bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      ex_counts[nm] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
-        x[bad & x < rng[1] & is.finite(x)] <- rng[1]
-        x[bad & x > rng[2] & is.finite(x)] <- rng[2]
-        df[[nm]] <- x
-      }
+      flags[[nm]] <- bad
+      total_flag <- total_flag + sum(bad)
     }
-    total_ex <- sum(ex_counts, na.rm = TRUE)
-    if (total_ex > 0) {
+    if (total_flag > 0L) {
       if (extreme_action == "error") {
-        rlang::abort(sprintf("liver_fat_markers(): detected %d extreme input values.", total_ex))
+        stop(sprintf("liver_fat_markers(): %d extreme input values detected.", total_flag), call. = FALSE)
       } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("liver_fat_markers(): capped %d extreme input values into allowed ranges.", total_ex))
+        for (nm in names(flags)) {
+          cn <- name_to_col[[nm]]; if (is.null(cn) || !(cn %in% names(d))) next
+          lo <- rules_def[[nm]][1]; hi <- rules_def[[nm]][2]
+          x <- d[[cn]]; bad <- flags[[nm]]
+          x[bad & is.finite(x) & x < lo] <- lo
+          x[bad & is.finite(x) & x > hi] <- hi
+          d[[cn]] <- x
+        }
+        warning(sprintf("liver_fat_markers(): capped %d extreme input values into allowed ranges.", total_flag), call. = FALSE)
       } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("liver_fat_markers(): detected %d extreme input values (not altered).", total_ex))
+        warning(sprintf("liver_fat_markers(): detected %d extreme input values (not altered).", total_flag), call. = FALSE)
+      } else if (extreme_action == "NA") {
+        for (nm in names(flags)) {
+          cn <- name_to_col[[nm]]; if (is.null(cn) || !(cn %in% names(d))) next
+          bad <- flags[[nm]]; x <- d[[cn]]; x[bad] <- NA_real_; d[[cn]] <- x
+        }
       }
+      # ignore: do nothing
     }
   }
 
-  # safe division
-  sdv <- function(a, b) {
-    res <- a / b
-    res[is.na(a) | is.na(b) | b == 0] <- NA_real_
-    res
+  # Extract helpers from subset
+  getv <- function(k) {
+    nm <- col_map[[k]]
+    if (!is.null(nm) && nzchar(nm) && nm %in% names(d)) d[[nm]] else NULL
+  }
+  ALT <- getv("ALT"); AST <- getv("AST"); BMI <- getv("BMI")
+  sex <- getv("sex"); diabetes <- getv("diabetes")
+  MetS_direct <- getv("MetS"); insulin <- getv("insulin")
+  I0 <- getv("I0"); glucose <- getv("glucose"); G0 <- getv("G0")
+  TG <- getv("TG"); HDL <- getv("HDL_c"); waist <- getv("waist")
+  sbp <- if (!is.null(getv("sbp"))) getv("sbp") else getv("bp_sys")
+  bp_treated <- getv("bp_treated")
+
+  # Helpers
+  sdiv <- function(a,b){ z <- a/b; z[!is.finite(z)] <- NA_real_; z }
+  as01 <- function(x) {
+    if (is.null(x)) return(NULL)
+    if (is.logical(x)) return(as.integer(x))
+    if (is.numeric(x)) return(as.integer(x > 0))
+    xv <- suppressWarnings(as.numeric(x))
+    as.integer(ifelse(is.na(xv), NA, xv > 0))
+  }
+  female_flag <- {
+    if (is.null(sex)) rep(0L, length(BMI))
+    else {
+      # Support 2=female, "female"/"F", TRUE indicates female if logical
+      if (is.numeric(sex)) as.integer(sex == 2)
+      else if (is.logical(sex)) as.integer(sex)
+      else {
+        xchr <- tolower(as.character(sex))
+        as.integer(xchr %in% c("f","female","woman","women"))
+      }
+    }
+  }
+  dm2_flag <- as01(diabetes)
+  if (is.null(dm2_flag)) dm2_flag <- rep(0L, length(BMI))
+
+  # HSI
+  HSI <- 8 * sdiv(ALT, AST) + BMI + ifelse(female_flag == 1L, 2, 0) + ifelse(dm2_flag == 1L, 2, 0)
+
+  # MetS: use direct mapping if available; otherwise derive; else NA
+  derive_mets <- function() {
+    n <- length(BMI)
+    out <- rep(NA_integer_, n)
+    have <- list(waist=!is.null(waist), TG=!is.null(TG), HDL=!is.null(HDL), sbp=!is.null(sbp), glucose=!is.null(glucose) || !is.null(G0))
+    if (!all(unlist(have))) return(out)
+    glu <- if (!is.null(glucose)) glucose else G0
+    low_hdl <- ifelse(female_flag == 1L, HDL < 1.29, HDL < 1.03)
+    crits <- cbind(
+      waist = waist > ifelse(female_flag == 1L, 88, 102),
+      tg    = TG >= 1.7,
+      hdl   = low_hdl,
+      bp    = sbp >= 130 | (if (!is.null(bp_treated)) as01(bp_treated)==1L else FALSE),
+      glu   = glu >= 5.6
+    )
+    as.integer(rowSums(crits, na.rm = TRUE) >= 3)
+  }
+  MetS <- if (!is.null(MetS_direct)) as01(MetS_direct) else derive_mets()
+  if (is.null(MetS)) MetS <- rep(NA_integer_, length(BMI))
+
+  # fasting insulin in µU/mL: prefer direct insulin; else I0/6 if available
+  Ins_u <- if (!is.null(insulin)) {
+    insulin
+  } else if (!is.null(I0)) {
+    I0 / 6
+  } else {
+    rep(NA_real_, length(BMI))
   }
 
-  # compute HSI: 8 × (ALT/AST) + BMI + 2*I(sex == 2) + 2*I(diabetes == 1)
-  alt_ast <- sdv(df$ALT, df$AST)
-  HSI <- 8 * alt_ast + df$BMI + 2 * as.numeric(df$sex == 2) + 2 * as.numeric(df$diabetes == 1)
-
-  # compute NAFLD-LFS: -2.89 + 1.18*MetS + 0.45*diabetes + 0.15*insulin + 0.04*AST – 0.94*(AST/ALT)
-  ast_alt <- sdv(df$AST, df$ALT)
-  NAFLD_LFS <- -2.89 + 1.18 * df$MetS + 0.45 * df$diabetes + 0.15 * df$insulin + 0.04 * df$AST - 0.94 * ast_alt
+  NAFLD_LFS <- -2.89 + 1.18 * MetS + 0.45 * dm2_flag + 0.15 * Ins_u + 0.04 * AST - 0.94 * sdiv(AST, ALT)
 
   out <- tibble::tibble(HSI = as.numeric(HSI), NAFLD_LFS = as.numeric(NAFLD_LFS))
-  if (isTRUE(verbose)) {
-    bad <- sum(is.na(out$HSI) | !is.finite(out$HSI)) + sum(is.na(out$NAFLD_LFS) | !is.finite(out$NAFLD_LFS))
-    rlang::inform(sprintf(
-      "liver_fat_markers(): computed for %d rows; NA/Inf in outputs: %d; capped extremes: %d",
-      nrow(out), bad, capped_n
-    ))
-  }
-  out
+  if (na_action_eff == "omit") return(out)
+
+  # if keep/error, preserve original row count by padding
+  res <- tibble::tibble(HSI = rep(NA_real_, nrow(data)), NAFLD_LFS = rep(NA_real_, nrow(data)))
+  res$HSI[keep] <- out$HSI
+  res$NAFLD_LFS[keep] <- out$NAFLD_LFS
+  res
 }

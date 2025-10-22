@@ -32,17 +32,17 @@
 #' @param col_map Optional named list to map required keys to column names in `data`.
 #'   Keys: c("chol_total","chol_ldl","chol_hdl","triglycerides","age_year",
 #'   "z_HOMA","glucose","HbA1c","bp_sys_z","bp_dia_z"). Default NULL (use same names).
-#' @param na_action One of c("keep","omit","error") controlling missing-data policy.
-#'   Default "keep" to preserve previous behavior:
+#' @param na_action One of c("keep","omit","error","ignore","warn") controlling missing-data policy.
 #'   - "keep": keep NA; outputs become NA where inputs are NA.
 #'   - "omit": drop rows with NA in any required input.
 #'   - "error": abort if any required input contains NA.
+#'   - "ignore"/"warn": aliases of "keep"; "warn" also emits missingness diagnostics.
 #' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness warnings. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") used when extremes are detected
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when extremes are detected
 #'   (only when `check_extreme = TRUE`).
 #'   - "warn": only warn (default), "cap": truncate to range and warn,
-#'   - "error": abort, "ignore": do nothing.
+#'   - "error": abort, "ignore": do nothing, "NA": set flagged inputs to NA.
 #' @param extreme_rules Optional named list of c(min,max) ranges for required keys. If NULL, broad defaults are used.
 #' @param verbose Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.
 #'
@@ -52,50 +52,7 @@
 #' - hyperglycemia
 #' - hypertension
 #'
-#' @details
-#' Notes and assumptions:
-#' - Age-specific triglyceride cutoffs follow pediatric lipid guidance (see NHLBI 2011).
-#' - HbA1c is expected in mmol/mol (IFCC). If your data are in %, convert first:
-#'   mmol/mol = (percent - 2.15) / 0.0915, or switch to % cutoffs externally.
-#' - z_HOMA is a standardized HOMA-IR. The function uses a 1.28 z-threshold (~90th percentile).
-#'   If you need different thresholds, alter inputs upstream.
-#'
 #' @seealso [liver_markers()], [lipid_markers()], [kidney_failure_risk()], [inflammatory_markers()]
-#'
-#' @examples
-#' library(tibble)
-#' df <- tibble(
-#'   chol_total = 6.0,
-#'   chol_ldl = 3.5,
-#'   chol_hdl = 1.0,
-#'   triglycerides = 1.2,
-#'   age_year = 25,
-#'   z_HOMA = 1.5,
-#'   glucose = 5.8,
-#'   HbA1c = 40,
-#'   bp_sys_z = 1.7,
-#'   bp_dia_z = 1.0
-#' )
-#' metabolic_risk_features(df)
-#'
-#' \donttest{
-#' # With diagnostics and capping
-#' metabolic_risk_features(
-#'   df,
-#'   check_extreme = TRUE,
-#'   extreme_action = "cap",
-#'   verbose = TRUE
-#' )
-#' }
-#'
-#' @references
-#' Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985). Homeostasis model assessment: insulin resistance and beta-cell function from fasting plasma glucose and insulin concentrations in man. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
-#' Wallace TM, Levy JC, Matthews DR (2004). Use and abuse of HOMA modeling. Diabetes Care, 27(6):1487–1495. \doi{10.2337/diacare.27.6.1487}
-#' Keskin M, Kurtoglu S, Kendirci M, Atabek ME, Yazici C (2005). Homeostasis model assessment is more reliable than the fasting glucose/insulin ratio and quantitative insulin sensitivity check index for assessing insulin resistance among obese children and adolescents. Pediatrics, 115(4):e500–e503. \doi{10.1542/peds.2004-1921}
-#' Expert Panel on Integrated Guidelines for Cardiovascular Health and Risk Reduction in Children and Adolescents, National Heart, Lung, and Blood Institute (2011). Expert Panel on Integrated Guidelines for Cardiovascular Health and Risk Reduction in Children and Adolescents: Summary Report. Pediatrics, 128 Suppl 5:S213–S256. \doi{10.1542/peds.2009-2107C}
-#' Flynn JT, Kaelber DC, Baker-Smith CM, et al. (2017). Clinical Practice Guideline for Screening and Management of High Blood Pressure in Children and Adolescents. Pediatrics, 140(3):e20171904. \doi{10.1542/peds.2017-1904}
-#' International Expert Committee (2009). International Expert Committee report on the role of the A1C assay in the diagnosis of diabetes. Diabetes Care, 32(7):1327–1334. \doi{10.2337/dc09-9033}
-#'
 #' @importFrom rlang abort warn inform
 #' @importFrom dplyr transmute if_else
 #' @importFrom tibble as_tibble
@@ -103,14 +60,16 @@
 metabolic_risk_features <- function(
   data,
   col_map = NULL,
-  na_action = c("keep","omit","error"),
+  na_action = c("keep","omit","error","ignore","warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore"),
+  extreme_action = c("warn","cap","error","ignore","NA"),
   extreme_rules = NULL,
   verbose = FALSE
 ) {
   na_action <- match.arg(na_action)
+  na_action_raw <- na_action
+  if (na_action %in% c("ignore","warn")) na_action <- "keep"
   extreme_action <- match.arg(extreme_action)
 
   t0 <- Sys.time()
@@ -127,7 +86,6 @@ metabolic_risk_features <- function(
   if (is.null(col_map)) {
     col_map <- stats::setNames(required_cols, required_cols)
   } else {
-    # Ensure all required keys are present
     miss_keys <- setdiff(required_cols, names(col_map))
     if (length(miss_keys)) {
       rlang::abort(
@@ -147,8 +105,22 @@ metabolic_risk_features <- function(
     )
   }
 
-  # High missingness and unit diagnostics
-  .mrf_warn_high_missing(data, mapped_cols, na_warn_prop = na_warn_prop)
+  # HM-CS v2: numeric coercion for required inputs; warn if NAs introduced; set non-finite to NA
+  for (cn in mapped_cols) {
+    if (!is.numeric(data[[cn]])) {
+      old <- data[[cn]]
+      suppressWarnings(new <- as.numeric(old))
+      introduced_na <- sum(is.na(new) & !is.na(old))
+      if (introduced_na > 0L) rlang::warn(sprintf("metabolic_risk_features(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
+      data[[cn]] <- new
+    }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
+  }
+
+  # High missingness diagnostics only when na_action_raw == "warn"
+  if (identical(na_action_raw, "warn")) {
+    .mrf_warn_high_missing(data, mapped_cols, na_warn_prop = na_warn_prop)
+  }
 
   # NA policy
   if (na_action == "error") {
@@ -161,7 +133,7 @@ metabolic_risk_features <- function(
     keep <- !Reduce(`|`, lapply(required_cols, function(k) is.na(data[[col_map[[k]]]])))
     if (isTRUE(verbose)) rlang::inform(sprintf("-> metabolic_risk_features: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
-  } # "keep" leaves NA as-is (default, preserves behavior)
+  }
 
   # Optional extreme scan/capping
   capped_n <- 0L
@@ -178,8 +150,16 @@ metabolic_risk_features <- function(
         rlang::warn(sprintf("metabolic_risk_features(): capped %d extreme input values into allowed ranges.", ex$count))
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("metabolic_risk_features(): detected %d extreme input values (not altered).", ex$count))
+      } else if (extreme_action == "NA") {
+        for (cn in names(ex$flags)) {
+          bad <- ex$flags[[cn]]
+          if (cn %in% names(data)) {
+            xi <- data[[cn]]
+            xi[bad] <- NA_real_
+            data[[cn]] <- xi
+          }
+        }
       }
-      # "ignore": do nothing
     }
   }
 
@@ -197,7 +177,7 @@ metabolic_risk_features <- function(
   SBPz <- data[[col_map$bp_sys_z]]
   DBPz <- data[[col_map$bp_dia_z]]
 
-  # Compute flags (unchanged thresholds; explicit missing handling)
+  # Compute flags
   out <- dplyr::transmute(
     data,
     dyslipidemia = factor(
@@ -282,7 +262,6 @@ metabolic_risk_features <- function(
     if (pna >= na_warn_prop && pna > 0) {
       rlang::warn(sprintf("metabolic_risk_features(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
-    # Basic unit/domain checks (heuristic)
     if (grepl("chol|triglycerides", cn, ignore.case = TRUE)) {
       if (sum(is.finite(x) & x > 30) > 0L) {
         rlang::warn(sprintf("metabolic_risk_features(): '%s' has very large values (>30 mmol/L); check units (mmol/L expected).", cn))
@@ -322,7 +301,7 @@ metabolic_risk_features <- function(
     age_year     = c(0, 120),
     z_HOMA       = c(-5, 5),
     glucose      = c(2, 40),
-    HbA1c        = c(15, 200), # mmol/mol
+    HbA1c        = c(15, 200),
     bp_sys_z     = c(-5, 5),
     bp_dia_z     = c(-5, 5)
   )

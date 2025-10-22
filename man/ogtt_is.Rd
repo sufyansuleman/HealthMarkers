@@ -9,11 +9,11 @@ ogtt_is(
   col_map,
   normalize = "none",
   verbose = FALSE,
-  na_action = c("ignore", "warn", "error"),
+  na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
   extreme_limit = 1000,
-  extreme_action = c("warn", "cap", "error", "ignore")
+  extreme_action = c("warn", "cap", "error", "ignore", "NA")
 )
 }
 \arguments{
@@ -31,17 +31,17 @@ ogtt_is(
 
 \item{normalize}{One of c("none","z","inverse","range","robust") used by normalize_vec().}
 
-\item{verbose}{Logical; if TRUE, prints progress messages.}
+\item{verbose}{Logical; if TRUE, prints progress messages via hm_inform().}
 
-\item{na_action}{One of c("ignore","warn","error") for missing/non-finite required inputs. Default "ignore".}
+\item{na_action}{One of c("keep","omit","error") for missing/non-finite required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion (0–1) to flag high missingness when na_action="warn". Default 0.2.}
+\item{na_warn_prop}{Proportion (0–1) for high-missingness diagnostics (debug). Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan outputs for |value| > extreme_limit. Default FALSE.}
 
 \item{extreme_limit}{Positive numeric magnitude threshold for extremes. Default 1e3.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".}
 }
 \value{
 A tibble with the OGTT-based index columns listed above.

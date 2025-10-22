@@ -18,16 +18,13 @@
 #' - duration: hours
 #' - body_surface_area: m^2
 #'
-#' @param data A data.frame or tibble containing at least:
-#'   - `sweat_chloride` (mmol/L)
-#'   - `sweat_Na`, `sweat_K` (mmol/L)
-#'   - `sweat_lactate` (mmol/L)
-#'   - `weight_before`, `weight_after` (kg)
-#'   - `duration` (h)
-#'   - `body_surface_area` (m^2)
+#' @param data A data.frame or tibble containing sweat assay and anthropometrics.
+#' @param col_map Named list mapping required inputs (defaults assume same names):
+#'   - sweat_chloride, sweat_Na, sweat_K, sweat_lactate,
+#'     weight_before, weight_after, duration, body_surface_area
 #' @param verbose Logical; if `TRUE`, prints progress messages and a completion summary.
 #' @param na_action One of `c("keep","omit","error")` for handling missing values in required inputs. Default "keep".
-#' @param na_warn_prop Proportion [0,1] to trigger high-missingness warnings for required inputs. Default 0.2.
+#' @param na_warn_prop Proportion [0,1] to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
 #' @param extreme_action One of `c("warn","cap","error","ignore")` when extremes detected. Default "warn".
 #' @param extreme_rules Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.
@@ -57,6 +54,16 @@
 #' Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4–S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
 #' Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51–S60. \doi{10.1007/s40279-015-0395-7}
 sweat_markers <- function(data,
+                          col_map = list(
+                            sweat_chloride    = "sweat_chloride",
+                            sweat_Na          = "sweat_Na",
+                            sweat_K           = "sweat_K",
+                            sweat_lactate     = "sweat_lactate",
+                            weight_before     = "weight_before",
+                            weight_after      = "weight_after",
+                            duration          = "duration",
+                            body_surface_area = "body_surface_area"
+                          ),
                           verbose = FALSE,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
@@ -67,24 +74,32 @@ sweat_markers <- function(data,
   extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) {
-    rlang::abort("sweat_markers(): `data` must be a data.frame or tibble.")
+    rlang::abort("sweat_markers(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_sweat_error_data_type")
   }
-  if (isTRUE(verbose)) rlang::inform("-> sweat_markers: validating inputs")
-  t0 <- Sys.time()
 
-  # 1) required columns
-  req <- c(
+  # HM-CS v2: standardized validation
+  required_keys <- c(
     "sweat_chloride", "sweat_Na", "sweat_K", "sweat_lactate",
     "weight_before", "weight_after", "duration", "body_surface_area"
   )
-  missing_cols <- setdiff(req, names(data))
+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "sweat_markers")
+
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> sweat_markers: validating inputs")
+  t0 <- Sys.time()
+
+  # Ensure mapped columns exist
+  req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {
-    rlang::abort(paste0("sweat_markers(): missing columns: ", paste(missing_cols, collapse = ", ")))
+    rlang::abort(
+      paste0("sweat_markers(): missing columns: ", paste(missing_cols, collapse = ", ")),
+      class = "healthmarkers_sweat_error_missing_columns"
+    )
   }
 
-  # 2) Coerce to numeric where needed; warn on NAs introduced
-  to_num <- req
-  for (cn in to_num) {
+  # Coerce to numeric where needed; warn on NAs introduced; non-finite -> NA
+  for (cn in req_cols) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
@@ -93,28 +108,29 @@ sweat_markers <- function(data,
         rlang::warn(sprintf("sweat_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
       }
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # 3) High-missingness warnings
-  for (cn in req) {
+  # High-missingness diagnostics (debug)
+  for (cn in req_cols) {
     x <- data[[cn]]
-    n <- length(x)
-    if (n == 0L) next
+    n <- length(x); if (!n) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("sweat_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("sweat_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
 
-  # 4) NA policy
+  # NA policy
   if (na_action == "error") {
-    has_na <- Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
+    has_na <- Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
     if (any(has_na)) {
-      rlang::abort("sweat_markers(): required inputs contain missing values (na_action='error').")
+      rlang::abort("sweat_markers(): required inputs contain missing values (na_action='error').",
+                   class = "healthmarkers_sweat_error_missing_values")
     }
   } else if (na_action == "omit") {
-    keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> sweat_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    keep <- !Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> sweat_markers: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -128,21 +144,31 @@ sweat_markers <- function(data,
     ))
   }
 
-  # 5) Optional extremes scan/cap
+  # Optional extremes scan/cap (allow rules keyed by keys or by column names)
   capped_n <- 0L
   if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      list(
-        sweat_chloride = c(0, 200),      # mmol/L, broad
-        sweat_Na       = c(0, 200),      # mmol/L
-        sweat_K        = c(0, 40),       # mmol/L
-        sweat_lactate  = c(0, 50),       # mmol/L
-        weight_before  = c(10, 400),     # kg
-        weight_after   = c(10, 400),     # kg
-        duration       = c(0.05, 48),    # h
-        body_surface_area = c(0.3, 3.0)  # m^2
-      )
-    } else extreme_rules
+    default_rules <- list(
+      sweat_chloride = c(0, 200),      # mmol/L, broad
+      sweat_Na       = c(0, 200),      # mmol/L
+      sweat_K        = c(0, 40),       # mmol/L
+      sweat_lactate  = c(0, 50),       # mmol/L
+      weight_before  = c(10, 400),     # kg
+      weight_after   = c(10, 400),     # kg
+      duration       = c(0.05, 48),    # h
+      body_surface_area = c(0.3, 3.0)  # m^2
+    )
+    rules <- if (is.null(extreme_rules)) default_rules else extreme_rules
+
+    # Remap key-named rules to actual column names when needed
+    if (!is.null(names(rules))) {
+      key_to_col <- stats::setNames(req_cols, required_keys)
+      remapped <- list()
+      for (nm in names(rules)) {
+        col_nm <- if (nm %in% names(key_to_col)) key_to_col[[nm]] else nm
+        remapped[[col_nm]] <- rules[[nm]]
+      }
+      rules <- remapped
+    }
 
     ex_counts <- integer(0)
     for (nm in names(rules)) {
@@ -151,7 +177,7 @@ sweat_markers <- function(data,
       x <- data[[nm]]
       bad <- is.finite(x) & (x < rng[1] | x > rng[2])
       ex_counts[nm] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
+      if (extreme_action == "cap" && any(bad, na.rm = TRUE)) {
         x[bad & is.finite(x) & x < rng[1]] <- rng[1]
         x[bad & is.finite(x) & x > rng[2]] <- rng[2]
         data[[nm]] <- x
@@ -160,19 +186,21 @@ sweat_markers <- function(data,
     total_ex <- sum(ex_counts, na.rm = TRUE)
     if (total_ex > 0) {
       if (extreme_action == "error") {
-        rlang::abort(sprintf("sweat_markers(): detected %d extreme input values.", total_ex))
+        rlang::abort(sprintf("sweat_markers(): detected %d extreme input values.", total_ex),
+                     class = "healthmarkers_sweat_error_extremes")
       } else if (extreme_action == "cap") {
         capped_n <- total_ex
         rlang::warn(sprintf("sweat_markers(): capped %d extreme input values into allowed ranges.", total_ex))
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("sweat_markers(): detected %d extreme input values (not altered).", total_ex))
       }
+      # "ignore": no-op
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> sweat_markers: computing markers")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> sweat_markers: computing markers")
 
-  # 6) Safe division helper with consolidated zero-denominator tracking
+  # Safe division helper with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
   safe_div <- function(num, den, label) {
     out <- num / den
@@ -182,22 +210,32 @@ sweat_markers <- function(data,
     out
   }
 
-  # 7) Compute metrics
-  Na_K_ratio <- safe_div(data$sweat_Na, data$sweat_K, "Na_K_ratio")
+  # Compute metrics
+  # Map columns from col_map
+  sc  <- data[[col_map$sweat_chloride]]
+  sNa <- data[[col_map$sweat_Na]]
+  sK  <- data[[col_map$sweat_K]]
+  sla <- data[[col_map$sweat_lactate]]
+  wb  <- data[[col_map$weight_before]]
+  wa  <- data[[col_map$weight_after]]
+  dur <- data[[col_map$duration]]
+  bsa <- data[[col_map$body_surface_area]]
 
-  mass_loss_kg <- data$weight_before - data$weight_after
-  rate_kg_per_h <- safe_div(mass_loss_kg, data$duration, "sweat_rate_duration")
-  sweat_rate <- safe_div(rate_kg_per_h, data$body_surface_area, "sweat_rate_bsa")
+  Na_K_ratio <- safe_div(sNa, sK, "Na_K_ratio")
+
+  mass_loss_kg <- wb - wa
+  rate_kg_per_h <- safe_div(mass_loss_kg, dur, "sweat_rate_duration")
+  sweat_rate <- safe_div(rate_kg_per_h, bsa, "sweat_rate_bsa")
   # 1 kg ~ 1 L water; units become L/m^2/h
 
   out <- tibble::tibble(
-    sweat_chloride = as.numeric(data$sweat_chloride),
+    sweat_chloride = as.numeric(sc),
     Na_K_ratio     = as.numeric(Na_K_ratio),
-    sweat_lactate  = as.numeric(data$sweat_lactate),
+    sweat_lactate  = as.numeric(sla),
     sweat_rate     = as.numeric(sweat_rate)
   )
 
-  # 8) Consolidated zero-denominator warning
+  # Consolidated zero-denominator warning
   dz <- dz_env$counts
   dz_total <- if (length(dz)) sum(unlist(dz), na.rm = TRUE) else 0L
   if (dz_total > 0L) {
@@ -209,7 +247,7 @@ sweat_markers <- function(data,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
+    hm_inform(level = "inform", msg = sprintf(
       "Completed sweat_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),

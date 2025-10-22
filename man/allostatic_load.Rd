@@ -7,14 +7,13 @@
 allostatic_load(
   data,
   thresholds,
-  verbose = FALSE,
-  na_action = c("zero", "warn_zero", "error", "keep"),
-  na_warn_prop = 0.2,
-  check_extreme_sds = FALSE,
+  col_map = NULL,
+  na_action = c("keep", "omit", "error"),
+  check_extreme = FALSE,
+  extreme_action = c("cap", "NA", "error"),
   sds_limit = 6,
-  extreme_sds_action = c("warn", "error", "ignore"),
-  diagnostics = TRUE,
-  return_summary = FALSE
+  return_summary = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -22,21 +21,19 @@ allostatic_load(
 
 \item{thresholds}{named list of scalar numeric cutoffs (names must match columns).}
 
-\item{verbose}{logical; print progress messages.}
+\item{col_map}{optional named list mapping keys in \code{thresholds} to column names in \code{data}.}
 
-\item{na_action}{one of c("zero","warn_zero","error","keep") ("keep" treated as "zero").}
+\item{na_action}{one of c("keep","omit","error") ("keep" treated as "zero" contribution).}
 
-\item{na_warn_prop}{numeric in \link{0,1}; high-missingness warning threshold (default 0.2).}
+\item{check_extreme}{logical; scan columns with name containing "sds" for |value| > sds_limit.}
 
-\item{check_extreme_sds}{logical; scan columns containing "sds" for |value| > sds_limit.}
+\item{extreme_action}{one of c("cap","NA","error") for SDS-like extremes.}
 
 \item{sds_limit}{positive numeric cutoff for SDS-like scan (default 6).}
 
-\item{extreme_sds_action}{one of c("warn","error","ignore") for SDS-like extremes.}
-
-\item{diagnostics}{logical; FALSE suppresses non-critical warnings.}
-
 \item{return_summary}{logical; TRUE returns list(data, summary, warnings).}
+
+\item{verbose}{logical; print progress messages.}
 }
 \value{
 tibble with AllostaticLoad or list when return_summary = TRUE.
@@ -48,21 +45,11 @@ inclusive >= when only one biomarker). Designed to align with HealthMarkers
 HM-CRANIZED conventions: structured validation, diagnostic control, verbose
 reporting, and optional summary output.
 }
-\details{
-Methodological context:
-Allostatic Load is a multisystem cumulative (dis)regulation construct. This
-function operationalizes a threshold-based (count) AL index; other approaches
-(e.g. z-score summation, percentile cut-points, weighted or system-level
-aggregation) exist and may be preferable depending on study aims.
-Thresholds supplied via \code{thresholds} should be justified (e.g. clinical
-cut-points, cohort-specific quartiles, or consensus risk criteria). This
-routine does not derive thresholds—only applies them.
-}
 \references{
 McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238.
 Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268.
-Juster RP et al, Allostatic Load biomarkers: review of measurement issues, Neurosci Biobehav Rev, 2010;35:2–16.
-Wiley JF et al, Methodological considerations in constructing allostatic load indices, Psychoneuroendocrinology, 2021;129:105248.
+Juster RP et al, Neurosci Biobehav Rev, 2010;35:2–16.
+Wiley JF et al, Psychoneuroendocrinology, 2021;129:105248.
 }
 \seealso{
 \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}

@@ -31,17 +31,19 @@
 #' @param weights Named numeric vector of weights for each marker (must sum to 1).
 #'   Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).
 #' @param verbose Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.
-#' @param na_action One of c("omit","keep","error") controlling how missing inputs affect iAge:
-#'   - "omit": ignore NAs in the sum (default; preserves previous behavior).
+#' @param na_action One of c("omit","keep","error","ignore","warn") controlling how missing inputs affect iAge:
+#'   - "omit": ignore NAs in the weighted sum (default; preserves previous behavior).
 #'   - "keep": return NA for rows where any required marker is NA.
 #'   - "error": abort if any required marker contains NA.
-#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high missingness warnings. Default 0.2.
+#'   - "ignore": alias of "omit".
+#'   - "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
 #' @param check_extreme Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") controlling what to do when extremes are detected.
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.
 #'   - "warn": issue a warning, do not modify values (default if check_extreme = TRUE).
 #'   - "cap": truncate values to the allowed range and warn.
 #'   - "error": abort on detection.
 #'   - "ignore": do nothing.
+#'   - "NA": set out-of-range values to NA.
 #' @param extreme_rules Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.
 #'
 #' @return A tibble with one column:
@@ -85,8 +87,8 @@
 #' )
 #'
 #' @references
-#' - Sayed N et al, An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging, Nat Aging, 2021;1:598–610.
-#' - Sayed N et al, Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan, Sci Transl Med, 2023;15(722):eabo4163.
+#' - Sayed N, et al. (2021). An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging. Nat Aging, 1:598–610. \doi{10.1038/s43587-021-00136-0}
+#' - Sayed N, et al. (2023). Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan. Sci Transl Med, 15(722):eabo4163. \doi{10.1126/scitranslmed.abo4163}
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
@@ -95,169 +97,134 @@ iAge <- function(data,
                  col_map,
                  weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
                  verbose = FALSE,
-                 na_action = c("omit", "keep", "error"),
+                 na_action = c("omit", "keep", "error", "ignore", "warn"),
                  na_warn_prop = 0.2,
                  check_extreme = FALSE,
-                 extreme_action = c("warn","cap","error","ignore"),
+                 extreme_action = c("warn","cap","error","ignore","NA"),
                  extreme_rules = NULL) {
-  na_action <- match.arg(na_action)
+  na_action_raw <- match.arg(na_action)
+  na_action <- if (na_action_raw %in% c("ignore","warn")) "omit" else na_action_raw
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  markers <- names(weights)
+  if (!is.data.frame(data)) stop("iAge(): `data` must be a data.frame or tibble.", call. = FALSE)
+  if (isTRUE(verbose)) message("-> iAge: starting")
 
-  # Validate
-  .ia_validate_inputs(
-    data = data,
-    col_map = col_map,
-    weights = weights,
-    na_warn_prop = na_warn_prop,
-    extreme_rules = extreme_rules,
-    markers = markers
-  )
+  markers <- c("CRP","IL6","TNFa")
+  if (is.null(col_map) || !is.list(col_map)) stop("iAge(): `col_map` must be a named list.", call. = FALSE)
+  missing_keys <- setdiff(markers, names(col_map))
+  if (length(missing_keys)) stop("missing required columns: ", paste(missing_keys, collapse = ", "), call. = FALSE)
 
-  if (isTRUE(verbose)) rlang::inform("-> iAge: validating and preparing inputs")
+  used_cols <- vapply(markers, function(m) col_map[[m]], character(1))
+  if (any(!nzchar(used_cols))) {
+    bad <- markers[!nzchar(used_cols)]
+    stop("missing required columns: ", paste(bad, collapse = ", "), call. = FALSE)
+  }
+  missing_cols <- setdiff(unname(used_cols), names(data))
+  if (length(missing_cols)) {
+    stop(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]), call. = FALSE)
+  }
+  used_cols_named <- stats::setNames(unname(used_cols), markers)
 
-  # Coerce mapped columns to numeric (do not alter values; error if non-numeric)
-  for (m in markers) {
-    cn <- col_map[[m]]
-    if (!(cn %in% names(data))) {
-      rlang::abort(
-        message = sprintf("iAge(): column '%s' (for %s) not found in data.", cn, m),
-        class = "healthmarkers_iage_error_missing_column"
-      )
+  # Validate weights: numeric, finite, length 3, names align, sum == 1
+  if (is.null(weights)) stop("iAge(): `weights` must be a numeric vector.", call. = FALSE)
+  if (!is.numeric(weights)) stop("iAge(): `weights` must be numeric.", call. = FALSE)
+  if (length(weights) != length(markers)) stop("iAge(): `weights` must have length 3.", call. = FALSE)
+  if (!is.null(names(weights))) {
+    # reorder if named with all markers
+    if (all(markers %in% names(weights))) {
+      weights <- weights[markers]
     }
+  }
+  if (any(!is.finite(weights))) stop("iAge(): `weights` must be finite numeric values.", call. = FALSE)
+  if (abs(sum(weights) - 1) > 1e-8) stop("iAge(): `weights` must sum to 1.", call. = FALSE)
+
+  if (isTRUE(verbose)) message("-> iAge: coercing inputs to numeric")
+  for (cn in unname(used_cols)) {
     if (!is.numeric(data[[cn]])) {
-      rlang::abort(
-        message = sprintf("iAge(): column '%s' (for %s) must be numeric.", cn, m),
-        class = "healthmarkers_iage_error_nonnumeric"
-      )
+      old <- data[[cn]]
+      suppressWarnings({
+        new <- as.numeric(old)
+      })
+      introduced_na <- sum(is.na(new) & !is.na(old))
+      if (introduced_na > 0L) stop(sprintf("iAge(): mapped column '%s' must be numeric.", cn), call. = FALSE)
+      data[[cn]] <- new
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  used_cols <- unname(vapply(markers, function(m) col_map[[m]], character(1)))
-  # Missingness diagnostics
-  .ia_quality_scan(data, used_cols, na_warn_prop = na_warn_prop)
-
-  # If na_action == "error", fail fast on any NA in required inputs
+  .ia_quality_scan(data, unname(used_cols), na_warn_prop = na_warn_prop, do_warn = (na_action_raw == "warn"))
   if (na_action == "error") {
-    any_na <- any(vapply(used_cols, function(cn) anyNA(data[[cn]]), logical(1)))
-    if (any_na) {
-      rlang::abort(
-        message = "iAge(): missing values detected in required inputs with na_action='error'.",
-        class = "healthmarkers_iage_error_na_inputs"
-      )
+    if (!all(stats::complete.cases(data[, unname(used_cols), drop = FALSE]))) {
+      stop("iAge(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
     }
   }
 
-  # Extreme-value handling
-  capped_n <- 0L
   if (isTRUE(check_extreme)) {
-    rules <- extreme_rules %||% .ia_default_extreme_rules()
-    ex <- .ia_extreme_scan(data, used_cols, rules)
+    rules <- if (is.null(extreme_rules)) .ia_default_extreme_rules() else {
+      def <- .ia_default_extreme_rules()
+      for (nm in intersect(names(extreme_rules), names(def))) def[[nm]] <- extreme_rules[[nm]]
+      def
+    }
+    ex <- .ia_extreme_scan(data, used_cols_named, rules)
     if (ex$count > 0L) {
       if (extreme_action == "error") {
-        rlang::abort(
-          message = sprintf("iAge(): detected %d extreme input values.", ex$count),
-          class = "healthmarkers_iage_error_extremes"
-        )
+        stop(sprintf("iAge(): detected %d extreme input values.", ex$count), call. = FALSE)
       } else if (extreme_action == "cap") {
-        data <- .ia_cap_inputs(data, ex$flags, rules)
-        capped_n <- ex$count
-        rlang::warn(sprintf("iAge(): capped %d extreme input values into allowed ranges.", ex$count))
+        data <- .ia_cap_inputs(data, ex$flags, used_cols_named, rules)
+        warning(sprintf("iAge(): capped %d extreme input values into allowed ranges.", ex$count), call. = FALSE)
       } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("iAge(): detected %d extreme input values (not altered).", ex$count))
+        warning(sprintf("iAge(): detected %d extreme input values (not altered).", ex$count), call. = FALSE)
+      } else if (extreme_action == "NA") {
+        for (mk in names(ex$flags)) {
+          cn <- used_cols_named[[mk]]
+          bad <- ex$flags[[mk]]
+          xi <- data[[cn]]
+          xi[bad] <- NA_real_
+          data[[cn]] <- xi
+        }
       }
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> iAge: computing weighted sum")
+  if (isTRUE(verbose)) message("-> iAge: computing weighted sum")
 
-  # Compute iAge with selected NA strategy (default: omit -> previous behavior)
-  res <- .ia_compute_iage(data, markers, col_map, weights, na_action = na_action)
+  # Build matrix and compute per HM-CS v2 + tests:
+  # - omit/ignore/warn: treat missing markers as 0, do not renormalize weights
+  # - keep: return NA when any marker is NA
+  M <- as.matrix(data[, unname(used_cols), drop = FALSE])
+  w <- as.numeric(weights)
+  if (na_action == "keep") {
+    ok <- stats::complete.cases(M)
+    iage <- rep(NA_real_, nrow(M))
+    if (any(ok)) {
+      M_ok <- M[ok, , drop = FALSE]
+      M_ok[is.na(M_ok)] <- 0
+      iage[ok] <- as.numeric(M_ok %*% w)
+    }
+  } else {
+    M[is.na(M)] <- 0
+    iage <- as.numeric(M %*% w)
+  }
 
-  out <- tibble::tibble(iAge = res)
-
+  out <- tibble::tibble(iAge = iage)
   if (isTRUE(verbose)) {
-    n <- nrow(out)
-    n_na_rows <- sum(!is.finite(res) | is.na(res))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed iAge: %d rows; iAge NA rows=%d; capped=%d; elapsed=%.2fs",
-      n, n_na_rows, capped_n, elapsed
-    ))
+    na_n <- sum(is.na(out$iAge))
+    message(sprintf("Completed iAge: %d rows; NA(iAge)=%d", nrow(out), na_n))
   }
-
-  return(out)
+  out
 }
 
-# ---- internal helpers --------------------------------------------------------
-
-.ia_validate_inputs <- function(data, col_map, weights, na_warn_prop, extreme_rules, markers) {
-  if (!is.data.frame(data)) {
-    rlang::abort("iAge(): `data` must be a data.frame or tibble.", class = "healthmarkers_iage_error_data_type")
-  }
-  if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("iAge(): `col_map` must be a named list of column mappings.", class = "healthmarkers_iage_error_colmap_type")
-  }
-  if (!is.numeric(weights) || any(!is.finite(weights)) || any(weights < 0)) {
-    rlang::abort("iAge(): `weights` must be non-negative finite numeric values.", class = "healthmarkers_iage_error_weights_type")
-  }
-  if (is.null(names(weights)) || length(weights) == 0L) {
-    rlang::abort("iAge(): `weights` must be a named numeric vector.", class = "healthmarkers_iage_error_weights_names")
-  }
-  if (!all(markers %in% names(col_map))) {
-    miss <- setdiff(markers, names(col_map))
-    rlang::abort(sprintf("iAge(): missing `col_map` entries for: %s", paste(miss, collapse = ", ")),
-                 class = "healthmarkers_iage_error_missing_map")
-  }
-  # weights must align to markers and sum to 1
-  if (!all(markers %in% names(weights))) {
-    rlang::abort("iAge(): `weights` must be named for CRP, IL6, TNFa.", class = "healthmarkers_iage_error_weights_markers")
-  }
-  s <- sum(weights)
-  if (!is.finite(s) || abs(s - 1) > 1e-6) {
-    rlang::abort("iAge(): `weights` must sum to 1.", class = "healthmarkers_iage_error_weights_sum")
-  }
-  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) &&
-        na_warn_prop >= 0 && na_warn_prop <= 1)) {
-    rlang::abort("iAge(): `na_warn_prop` must be a single numeric in [0, 1].",
-                 class = "healthmarkers_iage_error_na_warn_prop")
-  }
-  if (!is.null(extreme_rules)) {
-    if (!is.list(extreme_rules)) {
-      rlang::abort("iAge(): `extreme_rules` must be NULL or a named list of c(min,max) numeric ranges.",
-                   class = "healthmarkers_iage_error_extreme_rules_type")
-    }
-    # Quick sanity: if provided, ranges should be length-2 finite numerics
-    for (nm in names(extreme_rules)) {
-      rng <- extreme_rules[[nm]]
-      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)))) {
-        rlang::abort(sprintf("iAge(): `extreme_rules[['%s']]` must be numeric length-2 (finite).", nm),
-                     class = "healthmarkers_iage_error_extreme_rules_value")
-      }
-      if (rng[1] > rng[2]) {
-        rlang::abort(sprintf("iAge(): `extreme_rules[['%s']]` min > max.", nm),
-                     class = "healthmarkers_iage_error_extreme_rules_order")
-      }
-    }
-  }
-  invisible(TRUE)
-}
-
-.ia_quality_scan <- function(df, cols, na_warn_prop = 0.2) {
+.ia_quality_scan <- function(df, cols, na_warn_prop = 0.2, do_warn = TRUE) {
   for (cn in cols) {
     x <- df[[cn]]
-    n <- length(x)
-    if (n == 0L) next
-    pna <- sum(is.na(x)) / n
-    if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("iAge(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+    if (!length(x)) next
+    pna <- mean(is.na(x))
+    if (do_warn && is.finite(pna) && pna >= na_warn_prop && pna > 0) {
+      warning(sprintf("iAge(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna), call. = FALSE)
     }
-    # Basic domain check for negatives (biomarkers expected >= 0)
     neg_n <- sum(is.finite(x) & x < 0)
-    if (neg_n > 0L) {
-      rlang::warn(sprintf("iAge(): column '%s' contains %d negative values; check units.", cn, neg_n))
+    if (do_warn && neg_n > 0L) {
+      warning(sprintf("iAge(): column '%s' contains %d negative values; check units.", cn, neg_n), call. = FALSE)
     }
   }
   invisible(TRUE)
@@ -265,37 +232,32 @@ iAge <- function(data,
 
 .ia_default_extreme_rules <- function() {
   list(
-    CRP  = c(0, 300),   # mg/L
-    IL6  = c(0, 1000),  # pg/mL
-    TNFa = c(0, 1000)   # pg/mL
+    CRP = c(0, 300),
+    IL6 = c(0, 1000),
+    TNFa = c(0, 2000)
   )
 }
 
-.ia_extreme_scan <- function(df, cols, rules) {
-  flags <- list()
-  total <- 0L
-  for (cn in cols) {
-    nm <- names(cols)[which(cols == cn)]
-    # when cols is a character vector, derive name by reverse-lookup from rules
-    nm <- names(rules)[match(cn, cols)]
-    rng <- rules[[nm]]
+.ia_extreme_scan <- function(df, used_cols_named, rules) {
+  flags <- list(); total <- 0L
+  for (mk in names(used_cols_named)) {
+    cn <- used_cols_named[[mk]]
+    if (!mk %in% names(rules)) next
+    rng <- rules[[mk]]
     x <- df[[cn]]
     bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-    flags[[cn]] <- bad
+    flags[[mk]] <- bad
     total <- total + sum(bad)
   }
   list(count = total, flags = flags)
 }
 
-.ia_cap_inputs <- function(df, flags, rules) {
-  for (cn in names(flags)) {
-    bad <- flags[[cn]]
-    nm <- names(rules)[1]
-    # find rule by matching column name to rule key when possible
-    for (k in names(rules)) {
-      if (grepl(k, cn, ignore.case = TRUE)) { nm <- k; break }
-    }
-    rng <- rules[[nm]]
+.ia_cap_inputs <- function(df, flags, used_cols_named, rules) {
+  for (mk in names(flags)) {
+    cn <- used_cols_named[[mk]]
+    if (!mk %in% names(rules)) next
+    bad <- flags[[mk]]
+    rng <- rules[[mk]]
     x <- df[[cn]]
     x[bad & is.finite(x) & x < rng[1]] <- rng[1]
     x[bad & is.finite(x) & x > rng[2]] <- rng[2]
@@ -303,30 +265,3 @@ iAge <- function(data,
   }
   df
 }
-
-.ia_compute_iage <- function(data, markers, col_map, weights, na_action = c("omit","keep","error")) {
-  na_action <- match.arg(na_action)
-  # Build a proper matrix of weighted values (nrow(data) x length(markers))
-  mat <- do.call(
-    cbind,
-    lapply(markers, function(m) weights[[m]] * data[[col_map[[m]]]])
-  )
-  mat <- as.matrix(mat)
-
-  # NA strategy
-  if (na_action == "omit") {
-    # Prior behavior: omit missing contributions in row sum (na.rm = TRUE)
-    out <- rowSums(mat, na.rm = TRUE)
-  } else if (na_action == "keep") {
-    # If any NA in a row, return NA
-    any_na <- apply(mat, 1L, function(r) any(is.na(r)))
-    out <- rowSums(mat, na.rm = FALSE)
-    out[any_na] <- NA_real_
-  } else {
-    # "error" handled upstream; compute without NA
-    out <- rowSums(mat, na.rm = FALSE)
-  }
-  out
-}
-
-`%||%` <- function(a, b) if (is.null(a)) b else a

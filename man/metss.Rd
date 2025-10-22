@@ -11,10 +11,10 @@ metss(
     coef = -0.663), glucose = c(mean = 5.3, sd = 0.6, coef = 0.658), MAP = c(mean = 97,
     sd = 11, coef = 0.466))),
   verbose = FALSE,
-  na_action = c("keep", "omit", "error"),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL,
   diagnostics = TRUE
 )
@@ -28,13 +28,13 @@ is a named numeric vector c(mean=, sd=, coef=).}
 
 \item{verbose}{Logical; print progress.}
 
-\item{na_action}{One of c("keep","omit","error") for required-input NAs. Default "keep".}
+\item{na_action}{One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".}
 
-\item{na_warn_prop}{Proportion (0–1) above which high-missingness warning fires. Default 0.2.}
+\item{na_warn_prop}{Proportion (0–1) above which high-missingness warning fires when na_action='warn'. Default 0.2.}
 
 \item{check_extreme}{Logical; scan for extreme values if TRUE.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".}
 
 \item{extreme_rules}{Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia, TG, HDL_c, glucose).}
 

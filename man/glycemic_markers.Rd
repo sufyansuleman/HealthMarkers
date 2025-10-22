@@ -6,10 +6,11 @@
 \usage{
 glycemic_markers(
   data,
-  na_action = c("ignore", "warn", "error"),
+  col_map = NULL,
+  na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL,
   verbose = FALSE
 )
@@ -22,8 +23,14 @@ Optional if present: glucose (mmol/L), HbA1c (mmol/mol), C_peptide (pmol/L),
 G0 (mmol/L), I0 (pmol/L), leptin (ng/mL), adiponectin (ng/mL).
 }}
 
-\item{na_action}{One of \code{c("ignore","warn","error")} controlling behavior when
-required inputs contain missing or non-finite values. Default "ignore".}
+\item{col_map}{Optional named list mapping keys to column names in \code{data}.
+Required keys: \code{HDL_c}, \code{TG}, \code{BMI}. Optional keys (if present will be used):
+\code{glucose}, \code{HbA1c}, \code{C_peptide}, \code{G0}, \code{I0}, \code{leptin}, \code{adiponectin}.
+If \code{NULL} (default), the function uses columns named exactly as the keys.}
+
+\item{na_action}{One of \code{c("ignore","warn","error","keep","omit")}.
+HM-CS aliases: \code{keep} ≡ \code{ignore}; \code{omit} drops rows with any NA/non-finite
+in used inputs before computing markers. Default "ignore".}
 
 \item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings
 among used columns when \code{na_action = "warn"}. Default 0.2.}
@@ -31,8 +38,9 @@ among used columns when \code{na_action = "warn"}. Default 0.2.}
 \item{check_extreme}{Logical; if \code{TRUE}, scan selected input variables for values
 outside plausible ranges defined in \code{extreme_rules}. Default \code{FALSE}.}
 
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} controlling what to do
-when extreme inputs are detected. If "cap", values are truncated to the allowed range.
+\item{extreme_action}{One of \code{c("warn","cap","error","ignore","NA")} controlling
+how to handle extremes when \code{check_extreme = TRUE}. If "cap", values are
+truncated to the allowed range; if "NA", out-of-range values become NA.
 Default "warn".}
 
 \item{extreme_rules}{Named list of numeric length-2 ranges for inputs to scan when

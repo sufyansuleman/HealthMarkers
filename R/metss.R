@@ -8,7 +8,6 @@
 #' Computes a continuous metabolic syndrome severity z-score using sex- and
 #' race-specific standardized components and coefficients (factor-loading style).
 #'
-#'
 #' Behavior note:
 #'  - Parameters are selected using ONLY the first row's (race, sex) key
 #'    (for backward compatibility). A warning is issued if multiple keys present.
@@ -24,10 +23,10 @@
 #'   list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
 #'   is a named numeric vector c(mean=, sd=, coef=).
 #' @param verbose Logical; print progress.
-#' @param na_action One of c("keep","omit","error") for required-input NAs. Default "keep".
-#' @param na_warn_prop Proportion (0–1) above which high-missingness warning fires. Default 0.2.
+#' @param na_action One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".
+#' @param na_warn_prop Proportion (0–1) above which high-missingness warning fires when na_action='warn'. Default 0.2.
 #' @param check_extreme Logical; scan for extreme values if TRUE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".
 #' @param extreme_rules Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia, TG, HDL_c, glucose).
 #' @param diagnostics Logical; if TRUE (default) emit value/range diagnostic warnings
 #'   (negative, out-of-range checks). Set FALSE to suppress these (e.g., in tests when
@@ -60,15 +59,17 @@ metss <- function(data,
                     )
                   ),
                   verbose = FALSE,
-                  na_action = c("keep","omit","error"),
+                  na_action = c("keep","omit","error","ignore","warn"),
                   na_warn_prop = 0.2,
                   check_extreme = FALSE,
-                  extreme_action = c("warn","cap","error","ignore"),
+                  extreme_action = c("warn","cap","error","ignore","NA"),
                   extreme_rules = NULL,
                   diagnostics = TRUE) {
 
   t0 <- Sys.time()
   na_action <- match.arg(na_action)
+  na_action_raw <- na_action
+  if (na_action %in% c("ignore","warn")) na_action <- "keep"
   extreme_action <- match.arg(extreme_action)
 
   if (isTRUE(verbose)) rlang::inform("-> metss: validating inputs")
@@ -83,7 +84,7 @@ metss <- function(data,
                  class = "healthmarkers_metss_error_missing_columns")
   }
 
-  # Coerce numerics
+  # Coerce numerics and clean non-finite
   num_cols <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose")
   for (cn in num_cols) {
     if (!is.numeric(data[[cn]])) {
@@ -93,6 +94,7 @@ metss <- function(data,
       if (introduced > 0)
         rlang::warn(sprintf("metss(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
   if (!is.numeric(data$sex)) {
     old <- data$sex
@@ -101,9 +103,12 @@ metss <- function(data,
     if (introduced > 0)
       rlang::warn(sprintf("metss(): 'sex' coerced to numeric; NAs introduced: %d", introduced))
   }
+  data$sex[!is.finite(data$sex)] <- NA_real_
 
-  # Missingness warnings
-  .metss_warn_high_missing(data, req, na_warn_prop = na_warn_prop)
+  # Missingness warnings only when na_action_raw == "warn"
+  if (identical(na_action_raw, "warn")) {
+    .metss_warn_high_missing(data, req, na_warn_prop = na_warn_prop)
+  }
   # Basic domain diagnostics (optional)
   if (isTRUE(diagnostics)) {
     .metss_warn_value_diagnostics(data)
@@ -138,14 +143,19 @@ metss <- function(data,
       )
     } else extreme_rules
     ex_counts <- integer(0)
+    flags <- list()
     for (nm in intersect(names(rules), req)) {
       rng <- rules[[nm]]
       x <- data[[nm]]
       bad <- is.finite(x) & (x < rng[1] | x > rng[2])
+      flags[[nm]] <- bad
       ex_counts[nm] <- sum(bad, na.rm = TRUE)
       if (extreme_action == "cap") {
         x[bad & x < rng[1] & is.finite(x)] <- rng[1]
         x[bad & x > rng[2] & is.finite(x)] <- rng[2]
+        data[[nm]] <- x
+      } else if (extreme_action == "NA") {
+        x[bad] <- NA_real_
         data[[nm]] <- x
       }
     }
@@ -160,6 +170,7 @@ metss <- function(data,
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("metss(): detected %d extreme input values (not altered).", total_ex))
       }
+      # "ignore" and "NA": no warning
     }
   }
 

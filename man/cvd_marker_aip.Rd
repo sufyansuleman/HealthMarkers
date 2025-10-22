@@ -7,38 +7,29 @@
 cvd_marker_aip(
   data,
   col_map = list(TG = "TG", HDL_c = "HDL_c"),
-  na_action = c("ignore", "warn", "error"),
-  na_warn_prop = 0.2,
+  na_action = c("keep", "omit", "error"),
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data frame with numeric columns \code{TG} (mg/dL) and \code{HDL_c} (mg/dL).}
+\item{data}{A data frame with numeric columns TG and HDL_c (mg/dL).}
 
-\item{col_map}{Named list mapping \code{TG} and \code{HDL_c} to your column names.}
+\item{col_map}{Named list mapping required keys:
+\itemize{
+\item TG: triglycerides
+\item HDL_c: HDL cholesterol
+}}
 
-\item{na_action}{One of "ignore", "warn", "error" controlling behavior when
-required inputs are missing or non-finite. Default "ignore".}
-
-\item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings when \code{na_action="warn"}.}
-
-\item{verbose}{Logical; if \code{TRUE}, prints a progress message and summary.}
+\item{na_action}{One of:
+\itemize{
+\item "keep"  (retain rows; AIP is NA where inputs missing/non-finite)
+\item "omit"  (drop rows with any missing/non-finite inputs)
+\item "error" (abort if any required input missing/non-finite)
+}}
 }
 \value{
-A tibble with columns \code{model} = \code{"AIP"} and \code{value}.
+A tibble with columns model = "AIP" and value.
 }
 \description{
-Computes \code{log10(TG / HDL_c)} with input validation, optional data-quality
-warnings, and verbose progress.
-}
-\examples{
-df <- tibble::tibble(TG = c(120, 180), HDL_c = c(50, 40))
-cvd_marker_aip(df, verbose = TRUE)
-
-}
-\references{
-\itemize{
-\item Dobiášová M, Frohlich J. The atherogenic index of plasma \eqn{\log(TG/HDL)}:
-relation to lipoprotein particle size. Clin Biochem. 2001;34(7):583–587.
-}
+Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 }

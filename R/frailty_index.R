@@ -32,17 +32,20 @@
 #' @param bins Integer; number of age bins for FI-by-age plots. Default 7.
 #' @param visible Logical; if TRUE and age is provided, di will draw a plot (via
 #'   plot.di()). Default FALSE.
-#' @param na_action One of c("ignore","warn","error") controlling behavior when
-#'   missing values are detected in selected deficit columns before calling di.
+#' @param na_action One of:
+#'   - Legacy: "ignore","warn","error"
+#'   - HM-CS:  "keep","omit" (keep ≡ ignore; omit drops rows with any NA in selected deficits)
 #'   Default "ignore".
 #' @param na_warn_prop Proportion in [0,1] above which a high-missingness warning
 #'   is emitted (per column) when na_action = "warn". Default 0.2.
-#' @param extreme_action One of c("ignore","warn","error","cap") controlling behavior
-#'   when out-of-range values (< 0 or > 1) are found in selected columns BEFORE
-#'   calling di. When rescale = TRUE, many numeric columns may be outside [0,1];
-#'   in that case only values outside [0,1] in logical or already-binary columns
-#'   are considered extreme. If "cap", such values are truncated into [0,1] prior
-#'   to calling di. Default "warn".
+#' @param check_extreme NULL/TRUE/FALSE gate for out-of-range scan:
+#'   - NULL (default): legacy behavior (scan only when rescale = FALSE)
+#'   - TRUE: always scan selected deficits for values < 0 or > 1 before di::di
+#'   - FALSE: never scan for extremes
+#' @param extreme_action One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
+#'   - "cap": truncate to [0,1]
+#'   - "NA": set out-of-range to NA
+#'   Default "warn".
 #' @param return One of c("list","data"). "list" (default) returns the original
 #'   di::di result (backward compatible). "data" returns a tibble with one row
 #'   per individual, columns: di (the frailty index) plus the selected deficit
@@ -87,9 +90,10 @@ frailty_index <- function(data,
                           rescale.avoid = NULL,
                           bins = 7,
                           visible = FALSE,
-                          na_action = c("ignore","warn","error"),
+                          na_action = c("ignore","warn","error","keep","omit"),
                           na_warn_prop = 0.2,
-                          extreme_action = c("warn","ignore","error","cap"),
+                          check_extreme = NULL,
+                          extreme_action = c("warn","ignore","error","cap","NA"),
                           return = c("list","data"),
                           verbose = FALSE) {
   na_action <- match.arg(na_action)
@@ -129,51 +133,84 @@ frailty_index <- function(data,
   if (!is.null(rescale.custom)) .assert_character(rescale.custom, "rescale.custom")
   if (!is.null(rescale.avoid))  .assert_character(rescale.avoid,  "rescale.avoid")
 
-  # Pre-call QA: NA and out-of-range scans
+  # HM-CS v2: debug-only notice when aliases are used
+  if (na_action %in% c("keep","omit") || identical(extreme_action, "NA")) {
+    hm_inform(
+      sprintf("frailty_index(): HM-CS v2 aliases active (na_action=%s%s)",
+              na_action, if (identical(extreme_action, "NA")) ", extreme_action=NA" else ""),
+      level = "debug"
+    )
+  }
+
+  # Select deficits for scanning
   sel_df <- df[, cols, drop = FALSE]
-  qa <- .fi_scan(sel_df, na_warn_prop = na_warn_prop,
-                 consider_range = !isTRUE(rescale))  # only flag range when not rescaling
+
+  # HM-CS: na_action = 'omit' drops rows with any NA in selected deficits
+  if (na_action == "omit") {
+    keep_rows <- stats::complete.cases(sel_df)
+    df <- df[keep_rows, , drop = FALSE]
+    sel_df <- sel_df[keep_rows, , drop = FALSE]
+  }
+
+  # Run QA scans
+  qa_all <- .fi_scan(sel_df, na_warn_prop = na_warn_prop, consider_range = TRUE)
+  # Legacy behavior: only flag range when not rescaling
+  qa_legacy <- .fi_scan(sel_df, na_warn_prop = na_warn_prop, consider_range = !isTRUE(rescale))
+
+  # Start messages
   if (verbose) {
     message(sprintf("frailty_index: starting (%d rows, %d deficits%s)",
                     nrow(df), length(cols), if (!is.null(age)) ", age provided" else ""))
     message(sprintf("- selected deficits: %s", paste(head(cols, 8), collapse = ", ")))
     if (length(cols) > 8) message(sprintf("- ... and %d more", max(0, length(cols) - 8)))
     message(sprintf("- NA scan: %d column(s) with any NA; %d column(s) high-NA (>= %.0f%%)",
-                    length(qa$any_na_cols), length(qa$high_na_cols), 100 * na_warn_prop))
+                    length(qa_all$any_na_cols), length(qa_all$high_na_cols), 100 * na_warn_prop))
     if (!isTRUE(rescale)) {
-      message(sprintf("- out-of-range scan (<0 or >1): %d column(s) flagged", length(qa$out_of_range_cols)))
+      message(sprintf("- out-of-range scan (<0 or >1): %d column(s) flagged", length(qa_all$out_of_range_cols)))
     } else {
       message("- rescale=TRUE: numeric columns may be outside [0,1] pre-rescale (range check skipped)")
     }
+  } else {
+    hm_inform("frailty_index(): computing", level = "debug")
   }
 
-  # NA handling
-  if (na_action == "warn" && (length(qa$any_na_cols) > 0L || length(qa$high_na_cols) > 0L)) {
-    if (length(qa$high_na_cols) > 0L) {
+  # NA handling (legacy + HM-CS keep/omit)
+  if (na_action == "warn" && (length(qa_all$any_na_cols) > 0L || length(qa_all$high_na_cols) > 0L)) {
+    if (length(qa_all$high_na_cols) > 0L) {
       warning(sprintf("High missingness (>= %.0f%%) in: %s.",
-                      100 * na_warn_prop, paste(qa$high_na_cols, collapse = ", ")), call. = FALSE)
+                      100 * na_warn_prop, paste(qa_all$high_na_cols, collapse = ", ")), call. = FALSE)
     } else {
       warning(sprintf("Missing values detected in: %s.",
-                      paste(qa$any_na_cols, collapse = ", ")), call. = FALSE)
+                      paste(qa_all$any_na_cols, collapse = ", ")), call. = FALSE)
     }
   }
-  if (na_action == "error" && length(qa$any_na_cols) > 0L) {
-    stop(sprintf("Missing values present in selected deficits: %s.", paste(qa$any_na_cols, collapse = ", ")))
+  if (na_action %in% c("error") && length(qa_all$any_na_cols) > 0L) {
+    stop(sprintf("Missing values present in selected deficits: %s.", paste(qa_all$any_na_cols, collapse = ", ")))
   }
 
-  # Extreme handling (only meaningful when not rescaling)
-  if (!isTRUE(rescale) && length(qa$out_of_range_cols) > 0L) {
+  # Extremes gating: HM-CS check_extreme overrides legacy rescale gating
+  do_extreme <- if (is.null(check_extreme)) !isTRUE(rescale) else isTRUE(check_extreme)
+  oor_cols <- if (do_extreme) qa_all$out_of_range_cols else qa_legacy$out_of_range_cols
+
+  if (do_extreme && length(oor_cols) > 0L) {
     if (extreme_action == "error") {
-      stop(sprintf("Out-of-range values (<0 or >1) found in: %s.", paste(qa$out_of_range_cols, collapse = ", ")))
+      stop(sprintf("Out-of-range values (<0 or >1) found in: %s.", paste(oor_cols, collapse = ", ")))
     } else if (extreme_action == "warn") {
       warning(sprintf("Out-of-range values (<0 or >1) found in: %s (not altered).",
-                      paste(qa$out_of_range_cols, collapse = ", ")), call. = FALSE)
+                      paste(oor_cols, collapse = ", ")), call. = FALSE)
     } else if (extreme_action == "cap") {
       sel_df <- .cap_01(sel_df)
-      if (verbose) message("- capped out-of-range values to [0,1] in selected deficits")
-      # write back to df for di()
       df[, cols] <- sel_df
-    }
+      if (verbose) message("- capped out-of-range values to [0,1] in selected deficits")
+    } else if (extreme_action == "NA") {
+      for (v in oor_cols) {
+        x <- sel_df[[v]]
+        x[is.finite(x) & (x < 0 | x > 1)] <- NA_real_
+        sel_df[[v]] <- x
+      }
+      df[, cols] <- sel_df
+      if (verbose) message("- set out-of-range values to NA in selected deficits")
+    } # "ignore": do nothing
   }
 
   # Call di::di() safely
@@ -192,7 +229,6 @@ frailty_index <- function(data,
     silent = TRUE
   )
 
-  # On backend error, return a minimal object or stop?
   if (inherits(di_res, "try-error")) {
     stop("di::di() failed. Check inputs or update the 'di' package.")
   }
@@ -209,13 +245,13 @@ frailty_index <- function(data,
     } else {
       message("frailty_index: completed")
     }
+  } else {
+    hm_inform("frailty_index(): completed", level = "debug")
   }
 
-  # Return options
   if (return == "list") {
     return(di_res)
   } else {
-    # Build a tidy tibble with di and selected inputs (age included if present)
     di_vec <- di_res$di
     out <- data.frame(di = as.numeric(di_vec), stringsAsFactors = FALSE)
     keep_cols <- unique(c(cols, age))
@@ -241,9 +277,10 @@ plot_frailty_age <- function(data,
                              rescale.custom = NULL,
                              rescale.avoid = NULL,
                              bins = 7,
-                             na_action = c("ignore","warn","error"),
+                             na_action = c("ignore","warn","error","keep","omit"),
                              na_warn_prop = 0.2,
-                             extreme_action = c("warn","ignore","error","cap"),
+                             check_extreme = NULL,
+                             extreme_action = c("warn","ignore","error","cap","NA"),
                              return = c("list","data"),
                              verbose = FALSE) {
   na_action <- match.arg(na_action)
@@ -261,6 +298,7 @@ plot_frailty_age <- function(data,
     visible         = TRUE,
     na_action       = na_action,
     na_warn_prop    = na_warn_prop,
+    check_extreme   = check_extreme,
     extreme_action  = extreme_action,
     return          = return,
     verbose         = verbose

@@ -2,62 +2,47 @@
 % Please edit documentation in R/ckd_stage.R
 \name{ckd_stage}
 \alias{ckd_stage}
-\title{Classify Chronic Kidney Disease (CKD) Stage and Albuminuria Grade}
+\title{CKD staging (GFR and albuminuria) and KDIGO risk}
 \usage{
 ckd_stage(
   data,
   col_map,
-  include_kdigo = TRUE,
-  verbose = FALSE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2
+  check_extreme = FALSE,
+  extreme_action = c("cap", "NA", "error")
 )
 }
 \arguments{
-\item{data}{Data frame or tibble containing at least an eGFR column and
-optionally a UACR column.}
+\item{data}{Data frame with renal measures.}
 
-\item{col_map}{Named list mapping \code{eGFR} and \code{UACR} to column names in
-\code{data}.  \code{eGFR} is required; \code{UACR} is optional but needed for
-albuminuria staging and KDIGO risk categorisation.}
+\item{col_map}{Named list with required key: eGFR; optional key: UACR.}
 
-\item{include_kdigo}{Logical; if \code{TRUE} (default) returns an additional
-column \code{KDIGO_risk} indicating overall risk (low, moderate, high, very
-high or extremely high) based on the cross‑classification of G and A
-stages.}
+\item{na_action}{One of:
+\itemize{
+\item "keep"  (retain rows; stages become NA where inputs missing)
+\item "omit"  (drop rows with any missing eGFR/UACR that are mapped)
+\item "error" (abort if any mapped input missing)
+}}
 
-\item{verbose}{Logical; if \code{TRUE} prints progress messages.}
+\item{check_extreme}{Logical; if TRUE, screen eGFR/UACR for extreme values.}
 
-\item{na_action}{Handling of missing values: \code{"keep"} (default) retains
-missing results; \code{"omit"} drops rows with missing eGFR or UACR; \code{"error"}
-aborts if missing values are present.}
-
-\item{na_warn_prop}{Proportion threshold for missingness warnings.  Default
-\code{0.2}.}
+\item{extreme_action}{One of:
+\itemize{
+\item "cap"   – winsorize to bounds (eGFR: \link{0, 200}; UACR: \link{0, 5000} mg/g)
+\item "NA"    – replace out-of-range with NA
+\item "error" – abort on any out-of-range value
+}}
 }
 \value{
-A tibble containing \code{CKD_stage} and, if \code{UACR} is supplied, an
-\code{Albuminuria_stage} column and optionally \code{KDIGO_risk}.  Individuals with
-missing eGFR or UACR will have \code{NA} in the corresponding output.
+Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 }
 \description{
-This function categorises individuals into Chronic Kidney Disease (CKD)
-stages G1–G5 based on estimated glomerular filtration rate (eGFR) and
-classifies albuminuria into KDIGO A1–A3 categories based on the urine
-albumin‑to‑creatinine ratio (UACR).  Optionally, an overall KDIGO risk
-category is returned by combining G and A stages following the KDIGO
-heat‑map recommendations.  The function does not compute eGFR or UACR; it
-assumes these values have been calculated previously (see \code{renal_markers()}
-or other helpers).
+Categorizes eGFR into G1–G5, albuminuria into A1–A3 (by UACR mg/g), and maps KDIGO risk.
 }
 \examples{
-df <- data.frame(eGFR = c(95, 70, 50, 35, 10), UACR = c(10, 50, 200, 600, 100))
-ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
-
+df <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
+ckd_stage(df, list(eGFR = "eGFR", UACR = "UACR"))
 }
 \references{
-Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO
-clinical practice guideline for the evaluation and management of chronic
-kidney disease. Kidney Int Suppl. 2013;3(1):1–150.
-\doi{10.1038/kisup.2012.73}
+KDIGO 2012 CKD guideline. \doi{10.1038/kisup.2012.73}
 }

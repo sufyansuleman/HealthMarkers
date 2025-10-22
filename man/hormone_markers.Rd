@@ -7,107 +7,47 @@
 hormone_markers(
   data,
   col_map,
-  na_action = c("ignore", "warn", "error"),
+  na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL,
   verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing hormone measurements.}
+\item{data}{Data frame or tibble with mapped hormone inputs.}
 
-\item{col_map}{Named list mapping keys to column names in \code{data}:
+\item{col_map}{Named list mapping the required keys to column names:
 total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4,
 aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.}
 
-\item{na_action}{One of c("ignore","warn","error") controlling behavior when used inputs
-contain missing or non-finite values. Default "ignore".}
+\item{na_action}{One of "ignore","warn","error","keep","omit". HM-CS: keep ≡ ignore; omit drops rows with any NA in used inputs.}
 
-\item{na_warn_prop}{Proportion in \link{0,1} above which a high-missingness warning is raised
-per variable when na_action = "warn". Default 0.2.}
+\item{na_warn_prop}{Proportion in \link{0,1} for high-missingness warnings when na_action="warn". Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scan selected inputs for values outside plausible
-ranges defined in \code{extreme_rules}. Default FALSE.}
+\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") controlling how extreme
-inputs are handled. If "cap", values are truncated to the allowed range. Default "warn".}
+\item{extreme_action}{One of "warn","cap","error","ignore","NA" when check_extreme=TRUE. "cap" truncates to range; "NA" sets out-of-range to NA.}
 
-\item{extreme_rules}{Optional named list of length-2 numeric ranges (c(min,max)) for inputs
-to scan when check_extreme = TRUE. Defaults are broad clinical plausibility ranges; only
-variables present in data are checked.}
+\item{extreme_rules}{Optional list of c(min,max) per key to override defaults.}
 
-\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
+\item{verbose}{Logical; print progress and completion summary.}
 }
 \value{
-A tibble with columns:
-FAI, LH_FSH, E2_P, T3_T4, ARR, Ins_Glu, GH_IGF1, PRL_T, CAR_slope
+Tibble with the nine ratio markers.
 }
 \description{
-Given a data.frame or tibble with hormone measurements, \code{hormone_markers()}
-returns nine commonly used clinical ratios:
-\enumerate{
+Ratios computed:
+\itemize{
 \item FAI = (total_testosterone / SHBG) * 100
 \item LH_FSH = LH / FSH
-\item E2_P = Estradiol / Progesterone
-\item T3_T4 = Free T3 / Free T4
-\item ARR = Aldosterone / Renin ratio
-\item Ins_Glu = Insulin / Glucagon
-\item GH_IGF1 = Growth Hormone / IGF1
-\item PRL_T = Prolactin / total_testosterone
+\item E2_P = estradiol / progesterone
+\item T3_T4 = free_T3 / free_T4
+\item ARR = aldosterone / renin
+\item Ins_Glu = insulin / glucagon
+\item GH_IGF1 = GH / IGF1
+\item PRL_T = prolactin / total_testosterone
 \item CAR_slope = (cortisol_30 - cortisol_0) / 30
 }
-}
-\details{
-Expected units (no automatic unit conversion):
-\itemize{
-\item total_testosterone, SHBG: nmol/L (FAI dimensionless)
-\item LH, FSH: IU/L
-\item estradiol: pmol/L; progesterone: nmol/L
-\item free_T3, free_T4: pmol/L
-\item aldosterone: ng/dL; renin: (PRA ng/mL/h or PRC mU/L – ensure consistency)
-\item insulin: µIU/mL; glucagon: pmol/L
-\item GH, IGF1: µg/L
-\item cortisol_0, cortisol_30: nmol/L
-}
-}
-\examples{
-df <- tibble::tibble(
-  total_testosterone = c(12, 18),
-  SHBG               = c(30, 40),
-  LH                 = c(8, 9),
-  FSH                = c(5, 4),
-  estradiol          = c(200, 300),
-  progesterone       = c(5, 4),
-  free_T3            = c(4.5, 4.2),
-  free_T4            = c(17, 16),
-  aldosterone        = c(10, 20),
-  renin              = c(1.5, 2.0),
-  insulin            = c(10, 14),
-  glucagon           = c(15, 12),
-  GH                 = c(1.2, 0.9),
-  IGF1               = c(150, 180),
-  prolactin          = c(12, 9),
-  cortisol_0         = c(350, 300),
-  cortisol_30        = c(450, 380)
-)
-map <- list(
-  total_testosterone = "total_testosterone", SHBG = "SHBG",
-  LH = "LH", FSH = "FSH", estradiol = "estradiol", progesterone = "progesterone",
-  free_T3 = "free_T3", free_T4 = "free_T4", aldosterone = "aldosterone", renin = "renin",
-  insulin = "insulin", glucagon = "glucagon", GH = "GH", IGF1 = "IGF1",
-  prolactin = "prolactin", cortisol_0 = "cortisol_0", cortisol_30 = "cortisol_30"
-)
-hormone_markers(df, map, verbose = TRUE)
-
-}
-\references{
-Vermeulen A, Verdonck L, Kaufman JM (1999). A critical evaluation of simple methods for the estimation of free testosterone in serum. J Clin Endocrinol Metab, 84(10):3666–3672. \doi{10.1210/jcem.84.10.6079}
-Taylor AE, McCourt B, Martin KA, et al. (1997). Determinants of abnormal gonadotropin secretion in polycystic ovary syndrome. J Clin Endocrinol Metab, 82(7):2248–2256. \doi{10.1210/jcem.82.7.4047}
-Visser TJ, Friesema ECH, Jansen J, et al. (2010). Thyroid hormone transporters and deiodinases. Thyroid, 20(7):751–758. \doi{10.1089/thy.2010.0075}
-Hiramatsu K, Yamada T, Yukimura Y, et al. (1981). A screening test to identify primary aldosteronism by measuring plasma renin activity and aldosterone concentration. Endocrinol Jpn, 28(5):679–686. \doi{10.1507/endocrj1954.28.679}
-Müller WA, Faloona GR, Unger RH (1971). The effect of insulin and glucagon on glucose production by the isolated perfused rat liver. J Clin Invest, 50(12):2715–2723. \doi{10.1172/JCI106756}
-Juul A, Bang P, Hertel NT, et al. (1994). Serum insulin-like growth factor-I in 1030 healthy subjects: relation to age and sex. Clin Chem, 40(10):1766–1774. \doi{10.1093/clinchem/40.10.1766}
-Pruessner JC, Wolf OT, Hellhammer DH, et al. (1997). Free cortisol levels after awakening: a reliable biological marker for the assessment of adrenocortical activity. Psychoneuroendocrinology, 22(4):295–309. \doi{10.1016/S0306-4530(96)00039-4}
 }

@@ -50,6 +50,11 @@
 #'   eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio, FE_Urea,
 #'   NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP
 #'
+#' @examples
+#' df <- tibble::tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14)
+#' cm <- list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN")
+#' renal_markers(df, cm)
+#'
 #' @references
 #'  Original derivations
 #'  Levey AS, Stevens LA, Schmid CH, et al. A new equation to estimate glomerular filtration rate. 
@@ -83,7 +88,7 @@ renal_markers <- function(data,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
   t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> renal_markers: validating inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> renal_markers: validating inputs")
 
   # 1) Validate mapping and data presence
   required <- c("creatinine", "age", "sex", "race", "BUN")
@@ -94,9 +99,17 @@ renal_markers <- function(data,
       class = "healthmarkers_renal_error_missing_map"
     )
   }
-  validate_inputs(data, col_map,
-                  fun_name = "renal_markers",
-                  required_keys = required)
+  # HM-CS v2 standardized validation
+  hm_validate_inputs(data, col_map, required_keys = required, fn = "renal_markers")
+  # Ensure mapped required columns exist in data
+  req_cols <- unname(unlist(col_map[required], use.names = FALSE))
+  not_in_df <- setdiff(req_cols, names(data))
+  if (length(not_in_df)) {
+    rlang::abort(
+      sprintf("renal_markers(): mapped column(s) not found in data: %s", paste(not_in_df, collapse = ", ")),
+      class = "healthmarkers_renal_error_missing_columns"
+    )
+  }
   .rm_validate_df_numeric(data, col_map, cols = c("creatinine","age","BUN",
                                                   "cystatin_C","urea_serum","creatinine_urine","urea_urine"),
                           warn = TRUE)
@@ -114,7 +127,7 @@ renal_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> renal_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> renal_markers: omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -149,7 +162,7 @@ renal_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> renal_markers: computing markers")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> renal_markers: computing markers")
 
   # 5) Pull and normalize inputs (sex/race mapping)
   Cr   <- data[[col_map$creatinine]] # mg/dL
@@ -254,11 +267,11 @@ renal_markers <- function(data,
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed renal_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
+    hm_inform(level = "inform", msg = sprintf(
+       "Completed renal_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
+       nrow(out),
+       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
+       capped_n, dz_total, elapsed
     ))
   }
 
@@ -292,7 +305,7 @@ renal_markers <- function(data,
     if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("renal_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("renal_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
   invisible(TRUE)

@@ -6,6 +6,8 @@
 \usage{
 saliva_markers(
   data,
+  col_map = list(cort1 = "saliva_cort1", cort2 = "saliva_cort2", cort3 = "saliva_cort3",
+    amylase = "saliva_amylase", glucose = "saliva_glucose"),
   verbose = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
@@ -16,26 +18,28 @@ saliva_markers(
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least:
+\item{data}{A data.frame or tibble with salivary markers.}
+
+\item{col_map}{Named list mapping required inputs. Defaults assume same names:
 \itemize{
-\item \code{saliva_cort1} (nmol/L at wake)
-\item \code{saliva_cort2} (nmol/L ~30 min)
-\item \code{saliva_cort3} (nmol/L ~60 min)
-\item \code{saliva_amylase} (U/mL)
-\item \code{saliva_glucose} (mg/dL)
+\item cort1   -> "saliva_cort1" (nmol/L at wake)
+\item cort2   -> "saliva_cort2" (nmol/L ~30 min)
+\item cort3   -> "saliva_cort3" (nmol/L ~60 min)
+\item amylase -> "saliva_amylase" (U/mL)
+\item glucose -> "saliva_glucose" (mg/dL)
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages.}
+\item{verbose}{Logical; if \code{TRUE}, prints progress messages via hm_inform().}
 
 \item{na_action}{One of \code{c("keep","omit","error")} for required-input NA handling. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings. Default 0.2.}
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness diagnostics (debug). Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 
 \item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
 
-\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults used.}
+\item{extreme_rules}{Optional named list of c(min,max) bounds. If NULL, broad defaults are used (keyed by mapped column names).}
 
 \item{times}{Numeric vector of sampling times (minutes) for CAR AUC. Must align with cort1/2/3. Default c(0,30,60).}
 }
@@ -69,7 +73,8 @@ df <- tibble::tibble(
   saliva_amylase  = 85,
   saliva_glucose  = 4.2
 )
-saliva_markers(df)
+saliva_markers(df)  # uses default col_map
+
 }
 \references{
 Original derivations

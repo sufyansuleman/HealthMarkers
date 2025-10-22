@@ -29,14 +29,16 @@
 #'   - "omit": drop rows with NA in any used input column.
 #'   - "error": abort if any used input contains NA.
 #' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness
-#'   warnings on used input columns. Default 0.2.
+#'   diagnostics on used input columns. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan used input columns for out-of-range
 #'   values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") used when extremes are
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when extremes are
 #'   detected (only when `check_extreme = TRUE`). Default "warn".
+#'   - "warn": only warn, "cap": truncate to range and warn, "error": abort,
+#'   - "ignore": no-op, "NA": set flagged inputs to NA.
 #' @param extreme_rules Optional named list from input keys to c(min,max) ranges. If NULL,
 #'   broad defaults are used (see Details).
-#' @param verbose Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.
+#' @param verbose Logical; if TRUE, prints stepwise messages and a final summary via hm_inform. Default FALSE.
 #'
 #' @details
 #' Recognized `col_map` keys and expected units (no automatic conversion):
@@ -79,12 +81,6 @@
 #'  Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium × phosphate product 
 #'   with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556–562. 
 #'   \doi{10.1046/j.1523-1755.1998.00005.x} (Calcium–phosphate product)
-#'
-#' Validations
-#'  Sullivan JL. Iron and the sex difference in heart disease risk. Lancet. 1981;1(8233):1293–1294. 
-#'   \doi{10.1016/S0140-6736(81)92463-6} (Ferritin / iron metabolism)
-#'  Emmett M, Narins RG. Clinical use of the anion gap. Medicine (Baltimore). 1977;56(1):38–54. 
-#'   \doi{10.1097/00005792-197701000-00003} (Anion gap)
 #'  Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury. 
 #'   J Am Soc Nephrol. 2009;20(3):672–679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
 #' @examples
@@ -120,7 +116,7 @@ nutrient_markers <- function(
   na_action = c("keep","omit","error"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore"),
+  extreme_action = c("warn","cap","error","ignore","NA"),
   extreme_rules = NULL,
   verbose = FALSE
 ) {
@@ -128,22 +124,20 @@ nutrient_markers <- function(
   extreme_action <- match.arg(extreme_action)
 
   t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> nutrient_markers: validating inputs")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> nutrient_markers: validating inputs")
 
-  .nm_validate_args(data, col_map, na_warn_prop, extreme_rules)
+  # HM-CS v2 validation hook; no strictly required keys for this summarizer
+  hm_validate_inputs(data, col_map, required_keys = character(0), fn = "nutrient_markers")
 
-  # Known keys
   keys <- c(
     "ferritin","transferrin_sat","albumin","total_protein",
     "EPA","DHA","Mg","creatinine","glycated_albumin","uric_acid",
     "BUN","phosphate","calcium","Na","K","Cl","HCO3","Tyr","Phe"
   )
 
-  # Default identity mapping if NULL
   if (is.null(col_map)) {
     col_map <- as.list(keys); names(col_map) <- keys
   } else {
-    # Keep only recognized keys; ignore extras with a warning
     extra <- setdiff(names(col_map), keys)
     if (length(extra)) {
       rlang::warn(sprintf("nutrient_markers(): ignoring unrecognized keys in col_map: %s", paste(extra, collapse = ", ")))
@@ -151,10 +145,23 @@ nutrient_markers <- function(
     }
   }
 
-  # Determine used input columns present in data
   mapped <- unlist(col_map, use.names = TRUE)
   used_cols <- intersect(unname(mapped), names(data))
-  .nm_warn_high_missing(data, used_cols, na_warn_prop = na_warn_prop)
+
+  # Coerce used inputs to numeric; NA on non-finite
+  for (cn in used_cols) {
+    if (!is.numeric(data[[cn]])) {
+      old <- data[[cn]]
+      suppressWarnings(new <- as.numeric(old))
+      introduced_na <- sum(is.na(new) & !is.na(old))
+      if (introduced_na > 0L) rlang::warn(sprintf("nutrient_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
+      data[[cn]] <- new
+    }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
+  }
+
+  # High-missingness diagnostics (debug verbosity)
+  .nm_high_missing_diag(data, used_cols, na_warn_prop = na_warn_prop)
 
   # NA policy over used inputs
   if (na_action == "error") {
@@ -165,7 +172,7 @@ nutrient_markers <- function(
     }
   } else if (na_action == "omit" && length(used_cols)) {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> nutrient_markers: omitting %d rows with NA in used inputs", sum(!keep)))
+    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> nutrient_markers: omitting %d rows with NA in used inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -184,12 +191,21 @@ nutrient_markers <- function(
         rlang::warn(sprintf("nutrient_markers(): capped %d extreme input values into allowed ranges.", ex$count))
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("nutrient_markers(): detected %d extreme input values (not altered).", ex$count))
+      } else if (extreme_action == "NA") {
+        for (cn in names(ex$flags)) {
+          bad <- ex$flags[[cn]]
+          if (cn %in% names(data)) {
+            xi <- data[[cn]]
+            xi[bad] <- NA_real_
+            data[[cn]] <- xi
+          }
+        }
       }
       # "ignore": no-op
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> nutrient_markers: computing markers")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> nutrient_markers: computing markers")
 
   n <- nrow(data)
   getcol <- function(key) {
@@ -197,7 +213,6 @@ nutrient_markers <- function(
     if (!is.null(nm) && nm %in% names(data)) data[[nm]] else NULL
   }
 
-  # Track zero denominators per ratio marker
   denom_zero <- list()
 
   safe_div <- function(num, den, label) {
@@ -267,69 +282,34 @@ nutrient_markers <- function(
     Tyr_Phe_Ratio = Tyr_Phe_Ratio
   )
 
-  # Emit a single denominator-zero warning if any occurred
   dz_total <- sum(unlist(denom_zero), na.rm = TRUE)
   if (dz_total > 0L) {
-    which_str <- paste(
-      sprintf("%s=%d", names(denom_zero)[unlist(denom_zero) > 0], unlist(denom_zero)[unlist(denom_zero) > 0]),
-      collapse = ", "
-    )
+    nz <- unlist(denom_zero) > 0
+    which_str <- paste(sprintf("%s=%d", names(denom_zero)[nz], unlist(denom_zero)[nz]), collapse = ", ")
     rlang::warn(sprintf("nutrient_markers(): zero denominators detected in %d cases (%s).", dz_total, which_str))
   }
 
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
     elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed nutrient_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
+    hm_inform(level = "inform", msg = sprintf(
+       "Completed nutrient_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
+       nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
+       capped_n, dz_total, elapsed
+     ))
   }
-
   out
 }
 
 # ---- internal helpers ---------------------------------------------------------
 
-.nm_validate_args <- function(data, col_map, na_warn_prop, extreme_rules) {
-  if (!is.data.frame(data)) {
-    rlang::abort("nutrient_markers(): `data` must be a data.frame or tibble.",
-                 class = "healthmarkers_nm_error_data_type")
-  }
-  if (!is.null(col_map)) {
-    if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-      rlang::abort("nutrient_markers(): `col_map` must be a named list when supplied.",
-                   class = "healthmarkers_nm_error_colmap_type")
-    }
-  }
-  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L &&
-        is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
-    rlang::abort("nutrient_markers(): `na_warn_prop` must be a single numeric in [0, 1].",
-                 class = "healthmarkers_nm_error_na_warn_prop")
-  }
-  if (!is.null(extreme_rules)) {
-    if (!is.list(extreme_rules)) {
-      rlang::abort("nutrient_markers(): `extreme_rules` must be NULL or a named list of c(min,max).",
-                   class = "healthmarkers_nm_error_extreme_rules_type")
-    }
-    for (nm in names(extreme_rules)) {
-      rng <- extreme_rules[[nm]]
-      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)) && rng[1] <= rng[2])) {
-        rlang::abort(sprintf("nutrient_markers(): `extreme_rules[['%s']]` must be numeric length-2 with min <= max.", nm),
-                     class = "healthmarkers_nm_error_extreme_rules_value")
-      }
-    }
-  }
-  invisible(TRUE)
-}
-
-.nm_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
+.nm_high_missing_diag <- function(df, cols, na_warn_prop = 0.2) {
+  if (!length(cols)) return(invisible(TRUE))
   for (cn in cols) {
     x <- df[[cn]]; n <- length(x); if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      rlang::warn(sprintf("nutrient_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
+      hm_inform(level = "debug", msg = sprintf("nutrient_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
   invisible(TRUE)
@@ -376,7 +356,6 @@ nutrient_markers <- function(
 
 .nm_cap_inputs <- function(df, flags, col_map, rules) {
   for (cn in names(flags)) {
-    # Find key by column name
     key <- names(col_map)[match(cn, unlist(col_map, use.names = FALSE))]
     key <- key[!is.na(key)][1]
     if (is.na(key) || is.null(rules[[key]])) next

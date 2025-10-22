@@ -2,95 +2,90 @@
 % Please edit documentation in R/vitamin_markers.R
 \name{vitamin_markers}
 \alias{vitamin_markers}
-\title{Compute Vitamin & Nutrient-Status Indices (HM-CRANIZED)}
+\title{Compute composite vitamin and endocrine marker ratios and z-scores}
 \usage{
 vitamin_markers(
   data,
   col_map,
-  verbose = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  extreme_rules = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble with the mapped columns.}
+\item{data}{A data.frame or tibble with vitamin/analyte columns.}
 
-\item{col_map}{Named list mapping required keys to column names (see above).}
+\item{col_map}{Named list mapping required keys to column names:
+VitD, VitD_ref_mean, VitD_ref_sd, B12, Folate, Ferritin, TSat,
+Cortisol, DHEAS, Testosterone, Estradiol, TSH, free_T4,
+Retinol, Retinol_ref_mean, Retinol_ref_sd, Tocopherol, Total_lipids,
+PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper.}
 
-\item{verbose}{Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.}
+\item{na_action}{One of c("keep","omit","error") for required inputs. Default "keep".}
 
-\item{na_action}{One of c("keep","omit","error") for handling NAs in required inputs. Default "keep".}
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness debug notices. Default 0.2.}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for extremes. Default FALSE.}
+\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 
 \item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
 
-\item{extreme_rules}{Optional named list of c(min,max) bounds keyed by col_map keys. If NULL, broad defaults are used.}
+\item{extreme_rules}{Optional named list of c(min,max) bounds keyed by input keys or column names.}
+
+\item{verbose}{Logical; if TRUE, prints progress messages via hm_inform().}
 }
 \value{
-A tibble with:
+A tibble with columns:
 VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R,
 Retinol_Z, Toco_Lip_R, PIVKA_II, VitC, Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R
 }
 \description{
-Given a data.frame or tibble with vitamin and nutrient labs, \code{vitamin_markers()}
-returns commonly-used z-scores, ratios, and direct measures of vitamin and nutrient status.
+Given serum/plasma vitamins and related analytes, \code{vitamin_markers()} computes:
+\itemize{
+\item VitD_Z: z-score of 25(OH)D using provided reference mean/sd
+\item B12_Fol_Ratio: vitamin B12 / folate
+\item Ferr_TSat_R: ferritin / transferrin saturation (TSat)
+\item Cort_DHEA_R: cortisol / DHEA-S
+\item T_E2_Ratio: testosterone / estradiol
+\item TSH_fT4_R: TSH / free T4
+\item Retinol_Z: z-score of retinol using provided reference mean/sd
+\item Toco_Lip_R: alpha-tocopherol / total lipids
+\item Mg_Zn_R: magnesium / zinc
+\item Cu_Zn_R: copper / zinc
+Plus pass-through: PIVKA_II, VitC, Homocysteine, MMA
+}
 }
 \details{
-Required col_map keys -> column names in \code{data}:
+HM-CS v2:
 \itemize{
-\item VitD (nmol/L), VitD_ref_mean (nmol/L), VitD_ref_sd (nmol/L)
-\item B12 (pmol/L), Folate (nmol/L)
-\item Ferritin (ng/mL), TSat (fraction 0–1)
-\item Cortisol (nmol/L), DHEAS (nmol/L)
-\item Testosterone (nmol/L), Estradiol (pmol/L)
-\item TSH (mIU/L), free_T4 (pmol/L)
-\item Retinol (umol/L), Retinol_ref_mean (umol/L), Retinol_ref_sd (umol/L)
-\item Tocopherol (umol/L), Total_lipids (mmol/L)
-\item PIVKA_II (ng/mL), VitC (umol/L)
-\item Homocysteine (umol/L), MMA (umol/L)
-\item Magnesium (mmol/L), Zinc (umol/L), Copper (umol/L)
+\item Validation via \code{hm_validate_inputs(data, col_map, required_keys, fn)}
+\item User errors via \code{rlang::abort(..., class=...)}
+\item Verbosity via \code{hm_inform(level)} controlled by \code{options(healthmarkers.verbose)}
+\item High-missingness diagnostics at debug level only
 }
+}
+\examples{
+df <- tibble::tibble(
+  VitD = 50, VitD_ref_mean = 40, VitD_ref_sd = 5,
+  B12 = 300, Folate = 15,
+  Ferritin = 100, TSat = 0.25,
+  Cortisol = 200, DHEAS = 100,
+  Testosterone = 12, Estradiol = 120,
+  TSH = 2, free_T4 = 14,
+  Retinol = 0.8, Retinol_ref_mean = 0.9, Retinol_ref_sd = 0.2,
+  Tocopherol = 30, Total_lipids = 3,
+  PIVKA_II = 5, VitC = 60, Homocysteine = 10, MMA = 0.3,
+  Magnesium = 0.8, Zinc = 15, Copper = 15
+)
+cm <- as.list(names(df)); names(cm) <- names(df)
+vitamin_markers(df, cm)
 
-Adds:
-\itemize{
-\item Robust validation and numeric coercion (warn on NAs introduced)
-\item NA handling policies via \code{na_action}
-\item High-missingness diagnostics via \code{na_warn_prop}
-\item Optional extremes scan/cap via \code{check_extreme} and \code{extreme_action}
-\item Safe division with consolidated zero-denominator warnings
-\item Verbose progress and completion summaries
-}
 }
 \references{
-Original derivations
-\itemize{
-\item Holick MF, Binkley NC, Bischoff-Ferrari HA, et al. Evaluation, treatment, and prevention of vitamin D deficiency: an Endocrine Society clinical practice guideline.
-J Clin Endocrinol Metab. 2011;96(7):1911–1930. \doi{10.1210/jc.2011-0385} (Vitamin D reference ranges, z-scores)
-\item Stabler SP. Vitamin B12 deficiency.
-N Engl J Med. 2013;368(2):149–160. \doi{10.1056/NEJMcp1113996} (B12/Folate ratio, MMA, homocysteine)
-\item Traber MG, Atkinson J. Vitamin E, antioxidant and nothing more.
-Free Radic Biol Med. 2007;43(1):4–15. \doi{10.1016/j.freeradbiomed.2007.03.024} (Tocopherol/lipids ratio)
-\item Levine M, Rumsey SC, Daruwala R, Park JB, Wang Y. Criteria and recommendations for vitamin C intake.
-Proc Natl Acad Sci U S A. 1996;93(8):3704–3709. \doi{10.1073/pnas.93.8.3704} (Vitamin C reference values)
-}
-
-Validation and consensus
-\itemize{
-\item Allen LH. Causes of vitamin B12 and folate deficiency.
-Food Nutr Bull. 2008;29(2 Suppl):S20–S34. \doi{10.1177/15648265080292S105} (Validation of B12/Folate ratio)
-\item Arnaud J, Faure H, et al. Longitudinal studies of antioxidant vitamins: correlation of serum α-tocopherol with lipids.
-Am J Clin Nutr. 1991;53(4):884–889. \doi{10.1093/ajcn/53.4.884} (Validation of tocopherol/lipids ratio)
-\item Labrie F, Bélanger A, et al. DHEA and aging: importance of DHEA in sex steroid biosynthesis.
-Endocr Rev. 1997;18(5):713–738. \doi{10.1210/edrv.18.5.0319} (Cortisol/DHEAS ratio context)
-\item Lippi G, Montagnana M, Guidi GC. Biochemical markers of alcoholism.
-Clin Chim Acta. 2006;356(1–2):9–26. \doi{10.1016/j.cca.2005.11.007} (PIVKA-II as marker of vitamin K deficiency)
-\item Prasad AS. Zinc in human health: effect of zinc on immune cells.
-Mol Med. 2008;14(5–6):353–357. \doi{10.2119/2008-00033.Prasad} (Zn and Cu/Zn ratio in health and disease)
-}
+Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266–281. \doi{10.1056/NEJMra070553}
+O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299–316. \doi{10.3390/nu2030299}
+Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500–510. \doi{10.1038/nri3863}
+Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101–163. (endocrine ratios context)
 }

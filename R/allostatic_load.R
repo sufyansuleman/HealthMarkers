@@ -8,25 +8,15 @@
 #' HM-CRANIZED conventions: structured validation, diagnostic control, verbose
 #' reporting, and optional summary output.
 #'
-#' Methodological context:
-#' Allostatic Load is a multisystem cumulative (dis)regulation construct. This
-#' function operationalizes a threshold-based (count) AL index; other approaches
-#' (e.g. z-score summation, percentile cut-points, weighted or system-level
-#' aggregation) exist and may be preferable depending on study aims.
-#' Thresholds supplied via `thresholds` should be justified (e.g. clinical
-#' cut-points, cohort-specific quartiles, or consensus risk criteria). This
-#' routine does not derive thresholds—only applies them.
-#'
 #' @param data data.frame or tibble of numeric biomarker columns.
 #' @param thresholds named list of scalar numeric cutoffs (names must match columns).
-#' @param verbose logical; print progress messages.
-#' @param na_action one of c("zero","warn_zero","error","keep") ("keep" treated as "zero").
-#' @param na_warn_prop numeric in [0,1]; high-missingness warning threshold (default 0.2).
-#' @param check_extreme_sds logical; scan columns containing "sds" for |value| > sds_limit.
+#' @param col_map optional named list mapping keys in `thresholds` to column names in `data`.
+#' @param na_action one of c("keep","omit","error") ("keep" treated as "zero" contribution).
+#' @param check_extreme logical; scan columns with name containing "sds" for |value| > sds_limit.
+#' @param extreme_action one of c("cap","NA","error") for SDS-like extremes.
 #' @param sds_limit positive numeric cutoff for SDS-like scan (default 6).
-#' @param extreme_sds_action one of c("warn","error","ignore") for SDS-like extremes.
-#' @param diagnostics logical; FALSE suppresses non-critical warnings.
 #' @param return_summary logical; TRUE returns list(data, summary, warnings).
+#' @param verbose logical; print progress messages.
 #'
 #' @return tibble with AllostaticLoad or list when return_summary = TRUE.
 #' @seealso \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
@@ -34,167 +24,162 @@
 #' @references
 #' McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238.
 #' Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268.
-#' Juster RP et al, Allostatic Load biomarkers: review of measurement issues, Neurosci Biobehav Rev, 2010;35:2–16.
-#' Wiley JF et al, Methodological considerations in constructing allostatic load indices, Psychoneuroendocrinology, 2021;129:105248.
+#' Juster RP et al, Neurosci Biobehav Rev, 2010;35:2–16.
+#' Wiley JF et al, Psychoneuroendocrinology, 2021;129:105248.
+#'
 #' @export
 allostatic_load <- function(
   data,
   thresholds,
-  verbose = FALSE,
-  na_action = c("zero", "warn_zero", "error", "keep"),
-  na_warn_prop = 0.2,
-  check_extreme_sds = FALSE,
+  col_map = NULL,
+  na_action = c("keep","omit","error"),
+  check_extreme = FALSE,
+  extreme_action = c("cap","NA","error"),
   sds_limit = 6,
-  extreme_sds_action = c("warn", "error", "ignore"),
-  diagnostics = TRUE,
-  return_summary = FALSE
+  return_summary = FALSE,
+  verbose = FALSE
 ) {
   na_action <- match.arg(na_action)
-  if (na_action == "keep") na_action <- "zero"
-  extreme_sds_action <- match.arg(extreme_sds_action)
+  extreme_action <- match.arg(extreme_action)
 
-  collected_warnings <- character()
-
-  .warn <- function(msg) {
-    collected_warnings <<- c(collected_warnings, msg)
-    if (diagnostics) rlang::warn(msg)
-  }
-  .abort <- function(msg, class = NULL) {
-    if (is.null(class)) rlang::abort(msg) else rlang::abort(msg, class = class)
-  }
-  .inform <- function(msg) if (verbose) rlang::inform(msg)
+  hm_inform("allostatic_load(): preparing inputs", level = "debug")
 
   # ---- Validate inputs ----
   if (!is.data.frame(data)) {
-    .abort("`data` must be a data.frame or tibble.", "healthmarkers_allo_error_data_type")
+    rlang::abort("allostatic_load(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_allo_error_data_type")
   }
-  .validate_misc_args(verbose, na_warn_prop, check_extreme_sds, sds_limit)
-
-  if (!is.list(thresholds) || is.null(names(thresholds))) {
-    .abort("`thresholds` must be a named list of numeric cutoffs.", "healthmarkers_allo_error_thr_type")
+  if (length(thresholds) == 0L) {
+    rlang::abort("allostatic_load(): `thresholds` must contain at least one element.",
+                 class = "healthmarkers_allo_error_thr_empty")
   }
-  if (!length(thresholds)) {
-    .abort("`thresholds` must contain at least one element.", "healthmarkers_allo_error_thr_empty")
-  }
-  if (any(!nzchar(names(thresholds)))) {
-    .abort("All `thresholds` must have non-empty names.", "healthmarkers_allo_error_thr_names")
+  if (!is.list(thresholds) || is.null(names(thresholds)) || any(!nzchar(names(thresholds)))) {
+    rlang::abort("allostatic_load(): `thresholds` must be a named list of scalar numeric cutoffs.",
+                 class = "healthmarkers_allo_error_thr_type")
   }
   if (any(duplicated(names(thresholds)))) {
-    .abort("Duplicate names in `thresholds`.", "healthmarkers_allo_error_thr_dupe")
+    rlang::abort("allostatic_load(): duplicate names in `thresholds`.",
+                 class = "healthmarkers_allo_error_thr_dupe")
   }
-  if (!all(vapply(thresholds, .is_scalar_finite_numeric, logical(1)))) {
-    .abort("All threshold entries must be length-1 finite numerics.", "healthmarkers_allo_error_thr_values")
+  if (!all(vapply(thresholds, function(x) is.numeric(x) && length(x) == 1L && is.finite(x), logical(1)))) {
+    rlang::abort("allostatic_load(): each threshold must be a length-1 finite numeric.",
+                 class = "healthmarkers_allo_error_thr_values")
   }
 
   vars <- names(thresholds)
-  missing <- setdiff(vars, names(data))
-  if (length(missing)) {
-    .abort(paste("Missing biomarker columns:", paste(missing, collapse = ", ")),
-           "healthmarkers_allo_error_missing_cols")
-  }
-  for (v in vars) {
-    if (!is.numeric(data[[v]])) {
-      .abort(sprintf("Biomarker '%s' must be numeric.", v),
-             "healthmarkers_allo_error_non_numeric")
-    }
+
+  # Build effective var -> column mapping
+  var_map <- setNames(vars, vars)
+  if (!is.null(col_map)) {
+    stopifnot(is.list(col_map))
+    # user-provided names in col_map override defaults
+    var_map <- c(col_map, var_map)[vars]
   }
 
-  # Zero-row shortcut
+  hm_validate_inputs(
+    data = data,
+    col_map = as.list(var_map),
+    required_keys = vars,
+    fn = "allostatic_load"
+  )
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> allostatic_load: validating inputs")
+
+  # Confirm required columns exist, and capture their names in data
+  req_cols <- unname(unlist(var_map, use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
+  if (length(missing_cols)) {
+    rlang::abort(
+      paste0("allostatic_load(): missing required columns in data: ", paste(missing_cols, collapse = ", ")),
+      class = "healthmarkers_allo_error_missing_columns"
+    )
+  }
+
+  # Coerce only required columns to numeric; non-finite -> NA
+  for (cn in req_cols) {
+    if (!is.numeric(data[[cn]])) {
+      old <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old))
+      introduced <- sum(is.na(data[[cn]]) & !is.na(old))
+      if (introduced > 0) {
+        rlang::warn(sprintf("allostatic_load(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
+      }
+    }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
+  }
+
+  # ---- NA row policy (row-wise over the required columns) ----
+  rows_with_na <- if (length(req_cols)) {
+    Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
+  } else rep(FALSE, nrow(data))
+
+  if (na_action == "error" && any(rows_with_na)) {
+    rlang::abort("allostatic_load(): missing/non-finite values present (na_action='error').",
+                 class = "healthmarkers_allo_error_missing_values")
+  } else if (na_action == "omit" && any(rows_with_na)) {
+    data <- data[!rows_with_na, , drop = FALSE]
+  }
+
+  # Early return if no rows remain
   if (nrow(data) == 0L) {
     out0 <- tibble::tibble(AllostaticLoad = integer(0))
-    if (return_summary) {
-      return(list(
-        data = out0,
-        summary = list(
-          rows = 0L,
-          biomarkers = length(vars),
-            total_flags = 0L,
-            mean_flags = NA_real_
-        ),
-        warnings = character()
-      ))
-    }
-    return(out0)
+    return(if (return_summary) list(
+      data = out0,
+      summary = list(rows = 0L, biomarkers = length(vars), total_flags = 0L, mean_flags = NA_real_),
+      warnings = character()
+    ) else out0)
   }
 
-  # ---- Scan quality / extremes ----
-  high_na <- character()
-  all_na  <- character()
-  nonfinite <- character()
-  sds_ext_msgs <- character()
-  sds_ext_n <- 0L
-
-  for (v in vars) {
-    x <- data[[v]]
-    n_nonf <- sum(!is.finite(x))
-    if (n_nonf) nonfinite <- c(nonfinite, sprintf("%s(%d)", v, n_nonf))
-    bad <- sum(is.na(x) | !is.finite(x))
-    if (bad == length(x)) all_na <- c(all_na, v)
-    if (bad > 0 && bad / length(x) >= na_warn_prop) {
-      high_na <- c(high_na, sprintf("%s(%.1f%%)", v, 100 * bad / length(x)))
-    }
-    if (check_extreme_sds && grepl("sds", v, ignore.case = TRUE)) {
-      x2 <- x
-      x2[!is.finite(x2)] <- NA_real_
-      hits <- sum(!is.na(x2) & abs(x2) > sds_limit)
-      if (hits) {
-        sds_ext_n <- sds_ext_n + hits
-        sds_ext_msgs <- c(sds_ext_msgs, sprintf("%s(%d>|%g|)", v, hits, sds_limit))
+  # ---- Optional SDS-like extreme scan over vars containing "sds" ----
+  if (isTRUE(check_extreme) && length(vars)) {
+    sds_vars <- vars[grepl("sds", vars, ignore.case = TRUE)]
+    for (v in sds_vars) {
+      cn <- var_map[[v]]
+      x <- data[[cn]]
+      bad <- is.finite(x) & abs(x) > sds_limit
+      nbad <- sum(bad, na.rm = TRUE)
+      if (nbad > 0) {
+        if (extreme_action == "error") {
+          rlang::abort(
+            sprintf("allostatic_load(): extreme SDS-like values in '%s' (%d > |%g|).", v, nbad, sds_limit),
+            class = "healthmarkers_allo_error_extreme_sds"
+          )
+        } else if (extreme_action == "NA") {
+          x[bad] <- NA_real_
+          data[[cn]] <- x
+        } else if (extreme_action == "cap") {
+          x[bad & x > 0] <-  sds_limit
+          x[bad & x < 0] <- -sds_limit
+          data[[cn]] <- x
+        }
       }
     }
   }
 
-  if (na_action == "error") {
-    any_bad <- any(vapply(vars, function(v) any(is.na(data[[v]]) | !is.finite(data[[v]])), logical(1)))
-    if (any_bad) {
-      .abort("Missing/non-finite values present (na_action='error').",
-             "healthmarkers_allo_error_missing_values")
-    }
-  } else if (na_action == "warn_zero") {
-    if (length(nonfinite)) .warn(paste("Non-finite in:", paste(nonfinite, collapse = ", ")))
-    if (length(all_na))   .warn(paste("Entirely missing:", paste(all_na, collapse = ", ")))
-    if (length(high_na))  .warn(paste("High missingness:", paste(high_na, collapse = ", ")))
-    if (length(nonfinite) || length(all_na) || length(high_na)) {
-      .warn("Missing/non-finite values detected; treated as zero (na_action='warn_zero').")
-    }
-  }
-
-  if (sds_ext_n) {
-    msg <- paste("Extreme SDS-like values:", paste(sds_ext_msgs, collapse = "; "))
-    if (extreme_sds_action == "error") {
-      .abort(msg, "healthmarkers_allo_error_extreme_sds")
-    } else if (extreme_sds_action == "warn") {
-      .warn(msg)
-    }
-  }
-
-  # ---- Compute ----
+  # ---- Compute flags and sum ----
   inclusive <- length(vars) == 1L
-  .inform(paste("Computing Allostatic Load (rule", if (inclusive) ">=" else ">", ")"))
+  hm_inform(sprintf("allostatic_load(): computing (rule %s)", if (inclusive) ">=" else ">"), level = "inform")
 
-  flag_mat <- vapply(
-    vars,
-    function(v) {
-      x <- data[[v]]
-      x[!is.finite(x)] <- NA_real_
-      th <- thresholds[[v]]
-      flag <- if (inclusive) x >= th else x > th
-      if (na_action %in% c("zero", "warn_zero")) {
-        as.integer(ifelse(is.na(x), 0L, flag))
-      } else {
-        as.integer(flag)
-      }
-    },
-    integer(nrow(data))
-  )
+  flag_cols <- lapply(vars, function(v) {
+    cn <- var_map[[v]]
+    x <- data[[cn]]
+    x[!is.finite(x)] <- NA_real_
+    th <- thresholds[[v]]
+    as.integer(if (inclusive) x >= th else x > th)
+  })
 
-  load <- rowSums(flag_mat, na.rm = TRUE)
-  out <- tibble::tibble(AllostaticLoad = as.integer(load))
+  flag_mat <- if (length(flag_cols)) {
+    fm <- do.call(cbind, flag_cols)
+    colnames(fm) <- vars
+    fm
+  } else {
+    matrix(integer(0), nrow = nrow(data), ncol = 0)
+  }
 
-  .inform(sprintf("Completed: rows=%d biomarkers=%d total_flags=%d mean=%.2f",
-                  nrow(data), length(vars), sum(out$AllostaticLoad), mean(out$AllostaticLoad)))
+  out <- tibble::tibble(AllostaticLoad = as.integer(rowSums(flag_mat, na.rm = TRUE)))
 
-  if (return_summary) {
+  hm_inform("allostatic_load(): computed allostatic load", level = "inform")
+
+  if (isTRUE(return_summary)) {
     return(list(
       data = out,
       summary = list(
@@ -203,33 +188,9 @@ allostatic_load <- function(
         total_flags = sum(out$AllostaticLoad),
         mean_flags = mean(out$AllostaticLoad)
       ),
-      warnings = unique(collected_warnings)
+      warnings = character()
     ))
   }
 
   out
-}
-
-# ---- Helpers ----
-.is_scalar_finite_numeric <- function(x) {
-  is.numeric(x) && length(x) == 1L && is.finite(x)
-}
-
-.validate_misc_args <- function(verbose, na_warn_prop, check_extreme_sds, sds_limit) {
-  if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
-    rlang::abort("`verbose` must be a single logical.")
-  }
-  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop))) {
-    rlang::abort("`na_warn_prop` must be a single finite numeric.")
-  }
-  if (na_warn_prop < 0 || na_warn_prop > 1) {
-    rlang::abort("`na_warn_prop` must be in [0,1].")
-  }
-  if (!(is.logical(check_extreme_sds) && length(check_extreme_sds) == 1L && !is.na(check_extreme_sds))) {
-    rlang::abort("`check_extreme_sds` must be a single logical.")
-  }
-  if (!(is.numeric(sds_limit) && length(sds_limit) == 1L && is.finite(sds_limit) && sds_limit > 0)) {
-    rlang::abort("`sds_limit` must be a single positive finite numeric.")
-  }
-  invisible(TRUE)
 }

@@ -6,6 +6,10 @@
 \usage{
 sweat_markers(
   data,
+  col_map = list(sweat_chloride = "sweat_chloride", sweat_Na = "sweat_Na", sweat_K =
+    "sweat_K", sweat_lactate = "sweat_lactate", weight_before = "weight_before",
+    weight_after = "weight_after", duration = "duration", body_surface_area =
+    "body_surface_area"),
   verbose = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
@@ -15,21 +19,19 @@ sweat_markers(
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least:
+\item{data}{A data.frame or tibble containing sweat assay and anthropometrics.}
+
+\item{col_map}{Named list mapping required inputs (defaults assume same names):
 \itemize{
-\item \code{sweat_chloride} (mmol/L)
-\item \code{sweat_Na}, \code{sweat_K} (mmol/L)
-\item \code{sweat_lactate} (mmol/L)
-\item \code{weight_before}, \code{weight_after} (kg)
-\item \code{duration} (h)
-\item \code{body_surface_area} (m^2)
+\item sweat_chloride, sweat_Na, sweat_K, sweat_lactate,
+weight_before, weight_after, duration, body_surface_area
 }}
 
 \item{verbose}{Logical; if \code{TRUE}, prints progress messages and a completion summary.}
 
 \item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for required inputs. Default 0.2.}
+\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 

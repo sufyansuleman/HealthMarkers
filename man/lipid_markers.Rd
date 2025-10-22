@@ -9,6 +9,10 @@ lipid_markers(
   data,
   col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ApoB = "ApoB",
     ApoA1 = "ApoA1", waist = NULL, BMI = NULL),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
+  check_extreme = FALSE,
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
+  extreme_rules = NULL,
   verbose = FALSE
 )
 }
@@ -27,7 +31,22 @@ lipid_markers(
 \item \code{BMI}   -> (optional) body mass index (kg/m^2)
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints a message about computing markers.}
+\item{na_action}{One of c("keep","omit","error","ignore","warn").
+\itemize{
+\item keep/ignore: compute and propagate NA in outputs
+\item omit: drop rows with NA in required inputs (TC, HDL_c, TG)
+\item error: abort if any required input contains NA
+\item warn: like keep, but emit missingness warnings
+}}
+
+\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values.}
+
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling
+how extremes are handled when check_extreme=TRUE. "cap" truncates to range; "NA" sets flagged values to NA.}
+
+\item{extreme_rules}{Optional named list of c(min,max) per key to override defaults.}
+
+\item{verbose}{Logical; if \code{TRUE}, prints messages about computing markers.}
 }
 \value{
 A tibble with:

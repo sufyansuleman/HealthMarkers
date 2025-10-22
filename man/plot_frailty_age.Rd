@@ -13,9 +13,10 @@ plot_frailty_age(
   rescale.custom = NULL,
   rescale.avoid = NULL,
   bins = 7,
-  na_action = c("ignore", "warn", "error"),
+  na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  extreme_action = c("warn", "ignore", "error", "cap"),
+  check_extreme = NULL,
+  extreme_action = c("warn", "ignore", "error", "cap", "NA"),
   return = c("list", "data"),
   verbose = FALSE
 )
@@ -42,19 +43,29 @@ See di::di documentation for syntax.}
 
 \item{bins}{Integer; number of age bins for FI-by-age plots. Default 7.}
 
-\item{na_action}{One of c("ignore","warn","error") controlling behavior when
-missing values are detected in selected deficit columns before calling di.
-Default "ignore".}
+\item{na_action}{One of:
+\itemize{
+\item Legacy: "ignore","warn","error"
+\item HM-CS:  "keep","omit" (keep ≡ ignore; omit drops rows with any NA in selected deficits)
+Default "ignore".
+}}
 
 \item{na_warn_prop}{Proportion in \link{0,1} above which a high-missingness warning
 is emitted (per column) when na_action = "warn". Default 0.2.}
 
-\item{extreme_action}{One of c("ignore","warn","error","cap") controlling behavior
-when out-of-range values (< 0 or > 1) are found in selected columns BEFORE
-calling di. When rescale = TRUE, many numeric columns may be outside \link{0,1};
-in that case only values outside \link{0,1} in logical or already-binary columns
-are considered extreme. If "cap", such values are truncated into \link{0,1} prior
-to calling di. Default "warn".}
+\item{check_extreme}{NULL/TRUE/FALSE gate for out-of-range scan:
+\itemize{
+\item NULL (default): legacy behavior (scan only when rescale = FALSE)
+\item TRUE: always scan selected deficits for values < 0 or > 1 before di::di
+\item FALSE: never scan for extremes
+}}
+
+\item{extreme_action}{One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
+\itemize{
+\item "cap": truncate to \link{0,1}
+\item "NA": set out-of-range to NA
+Default "warn".
+}}
 
 \item{return}{One of c("list","data"). "list" (default) returns the original
 di::di result (backward compatible). "data" returns a tibble with one row

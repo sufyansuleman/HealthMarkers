@@ -6,19 +6,22 @@
 \usage{
 adiposity_sds(
   data,
+  col_map = NULL,
   ref,
-  na_action = c("omit", "error", "keep"),
-  extreme_action = c("cap", "warn", "error", "ignore"),
+  na_action = c("keep", "omit", "error"),
+  extreme_action = c("cap", "NA", "error", "warn", "ignore"),
   sds_cap = 6,
-  check_raw_extreme = FALSE,
-  raw_extreme_rules = NULL,
-  diagnostics = TRUE,
+  check_extreme = FALSE,
+  extreme_rules = NULL,
+  diagnostics = FALSE,
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   id_col = NULL,
-  verbose = FALSE,
   return_summary = FALSE,
+  verbose = FALSE,
   na_strategy = NULL,
-  extreme_strategy = NULL
+  extreme_strategy = NULL,
+  check_raw_extreme = NULL,
+  raw_extreme_rules = NULL
 )
 }
 \arguments{
@@ -36,13 +39,6 @@ how SDS values exceeding \code{sds_cap} in absolute value are treated.}
 \item{sds_cap}{Positive numeric; absolute cap used when
 \code{extreme_action = "cap"}. Default 6.}
 
-\item{check_raw_extreme}{Logical; if TRUE apply raw-value extreme screening
-using \code{raw_extreme_rules} (before SDS computation).}
-
-\item{raw_extreme_rules}{Optional named list of length-2 numeric vectors
-giving c(min, max) for raw variables; if NULL, broad defaults are used
-for common anthropometric measures (BMI, waist, weight, height, hip, WC, HC).}
-
 \item{diagnostics}{Logical; if TRUE emit informational/warning messages
 (coercions, missingness, extremes). FALSE suppresses non-critical warnings.}
 
@@ -52,14 +48,21 @@ proportion-based diagnostic warnings.}
 
 \item{id_col}{Optional column name used only in verbose summaries.}
 
-\item{verbose}{Logical; if TRUE print progress and completion summaries.}
-
 \item{return_summary}{Logical; if TRUE return a list with elements
 \code{data}, \code{summary}, and \code{warnings} instead of just the SDS tibble.}
+
+\item{verbose}{Logical; if TRUE print progress and completion summaries.}
 
 \item{na_strategy}{Soft-deprecated alias for \code{na_action}.}
 
 \item{extreme_strategy}{Soft-deprecated alias for \code{extreme_action}.}
+
+\item{check_raw_extreme}{Logical; if TRUE apply raw-value extreme screening
+using \code{raw_extreme_rules} (before SDS computation).}
+
+\item{raw_extreme_rules}{Optional named list of length-2 numeric vectors
+giving c(min, max) for raw variables; if NULL, broad defaults are used
+for common anthropometric measures (BMI, waist, weight, height, hip, WC, HC).}
 }
 \value{
 A tibble with one \verb{<var>_SDS} column per reference variable, or a

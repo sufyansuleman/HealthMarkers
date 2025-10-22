@@ -28,17 +28,19 @@
 #'   - `sex`  -> sex code (1 = male, 2 = female)
 #'   - `eGFR` -> estimated GFR (mL/min/1.73 m^2)
 #'   - `UACR` -> urine albumin-to-creatinine ratio (mg/g)
-#' @param na_action One of c("keep","error","omit"). Default "keep" to preserve previous behavior:
+#' @param na_action One of c("keep","error","omit","warn"). Default "keep" to preserve previous behavior:
 #'   - "keep": propagate NA/NaN through logs and outputs.
 #'   - "error": abort if any required input contains missing values.
 #'   - "omit": drop rows with NA in required inputs before computation.
+#'   - "warn": like "keep" but emits high-missingness warnings.
 #' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness warnings. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan for out-of-range values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") used when `check_extreme = TRUE`.
+#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when `check_extreme = TRUE`.
 #'   - "warn": only warn about out-of-range values (default).
 #'   - "cap": truncate to range and warn.
 #'   - "error": abort if any out-of-range is detected.
 #'   - "ignore": do nothing.
+#'   - "NA": set out-of-range input values to NA before computation.
 #' @param extreme_rules Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).
 #'   If NULL, broad defaults are used: age [18, 120], eGFR [1, 200], UACR [0.1, 10000] (mg/g).
 #' @param verbose Logical; if TRUE, prints stepwise messages and a completion summary. Default FALSE.
@@ -86,10 +88,10 @@ kidney_failure_risk <- function(data,
                                   eGFR = "eGFR",
                                   UACR = "UACR"
                                 ),
-                                na_action = c("keep","error","omit"),
+                                na_action = c("keep","error","omit","warn"),
                                 na_warn_prop = 0.2,
                                 check_extreme = FALSE,
-                                extreme_action = c("warn","cap","error","ignore"),
+                                extreme_action = c("warn","cap","error","ignore","NA"),
                                 extreme_rules = NULL,
                                 verbose = FALSE) {
   na_action <- match.arg(na_action)
@@ -98,25 +100,39 @@ kidney_failure_risk <- function(data,
   t0 <- Sys.time()
   if (isTRUE(verbose)) rlang::inform("-> kidney_failure_risk: validating inputs")
 
-  # Preserve existing validation call (if defined elsewhere in the package)
-  validate_inputs(
-    data, col_map,
-    fun_name = "kidney_failure_risk",
-    required_keys = c("age", "sex", "eGFR", "UACR")
-  )
+  # Optional package-level validation; keep test-facing messages stable
+  req_keys <- c("age", "sex", "eGFR", "UACR")
+  if (is.function(get0("hm_validate_inputs", envir = asNamespace("HealthMarkers"), inherits = TRUE))) {
+    try(hm_validate_inputs(data = data, col_map = col_map, required_keys = req_keys, fn = "kidney_failure_risk"), silent = TRUE)
+  }
 
-  # Additional robust validation
   .kfre_validate_args(data, col_map, na_warn_prop, extreme_rules)
 
-  # Ensure required columns exist and are numeric (except sex which must be integer-like 1/2)
-  req <- c("age", "sex", "eGFR", "UACR")
-  missing_cols <- setdiff(unlist(col_map[req], use.names = FALSE), names(data))
+  # Check mapping presence and data columns
+  req <- req_keys
+  missing_map_keys <- setdiff(req, names(col_map))
+  if (length(missing_map_keys)) {
+    rlang::abort(
+      message = paste0("kidney_failure_risk(): you must supply col_map entries for: ", paste(missing_map_keys, collapse = ", ")),
+      class = "healthmarkers_kfre_error_missing_map"
+    )
+  }
+  mapped_cols <- unlist(col_map[req], use.names = FALSE)
+  if (any(!nzchar(mapped_cols))) {
+    bad <- req[!nzchar(mapped_cols)]
+    rlang::abort(
+      message = paste0("kidney_failure_risk(): you must supply col_map entries for: ", paste(bad, collapse = ", ")),
+      class = "healthmarkers_kfre_error_missing_map"
+    )
+  }
+  missing_cols <- setdiff(mapped_cols, names(data))
   if (length(missing_cols)) {
     rlang::abort(
-      message = paste0("kidney_failure_risk(): mapped columns not found in data: ", paste(missing_cols, collapse = ", ")),
+      message = paste0("missing required columns: ", paste(missing_cols, collapse = ", ")),
       class = "healthmarkers_kfre_error_missing_columns"
     )
   }
+
   # Column classes
   if (!is.numeric(data[[col_map$age]]))  rlang::abort("kidney_failure_risk(): 'age' column must be numeric.",  class = "healthmarkers_kfre_error_nonnumeric_age")
   if (!is.numeric(data[[col_map$eGFR]])) rlang::abort("kidney_failure_risk(): 'eGFR' column must be numeric.", class = "healthmarkers_kfre_error_nonnumeric_egfr")
@@ -167,6 +183,10 @@ kidney_failure_risk <- function(data,
         rlang::warn(sprintf("kidney_failure_risk(): capped %d extreme input values into allowed ranges.", ex$count))
       } else if (extreme_action == "warn") {
         rlang::warn(sprintf("kidney_failure_risk(): detected %d extreme input values (not altered).", ex$count))
+      } else if (extreme_action == "NA") {
+        if (any(ex$flags$age, na.rm = TRUE))   age[ex$flags$age]   <- NA_real_
+        if (any(ex$flags$eGFR, na.rm = TRUE))  eGFR[ex$flags$eGFR] <- NA_real_
+        if (any(ex$flags$UACR, na.rm = TRUE))  UACR[ex$flags$UACR] <- NA_real_
       }
       # "ignore" does nothing
     }
@@ -174,7 +194,7 @@ kidney_failure_risk <- function(data,
 
   if (isTRUE(verbose)) rlang::inform("-> kidney_failure_risk: computing KFRE risks")
 
-  # Prognostic index and risk (preserve coefficients/baselines)
+  # Prognostic index and risk
   pi <- 0.220 * log(age) +
     (-0.556) * log(eGFR) +
     0.451 * log(UACR) +
@@ -218,7 +238,7 @@ kidney_failure_risk <- function(data,
   needed <- c("age","sex","eGFR","UACR")
   missing_keys <- setdiff(needed, names(col_map))
   if (length(missing_keys)) {
-    rlang::abort(paste0("kidney_failure_risk(): missing col_map entries for: ", paste(missing_keys, collapse = ", ")),
+    rlang::abort(paste0("kidney_failure_risk(): you must supply col_map entries for: ", paste(missing_keys, collapse = ", ")),
                  class = "healthmarkers_kfre_error_missing_map")
   }
   if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) &&

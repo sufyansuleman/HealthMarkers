@@ -164,9 +164,9 @@ impute_missing <- function(data,
 #' }
 #'
 #' @references
-#' - Rubin DB. Multiple Imputation for Nonresponse in Surveys. Wiley; 1987. (Foundational MI)
-#' - van Buuren S, Groothuis-Oudshoorn K. mice: Multivariate Imputation by Chained Equations in R.
-#'   J Stat Softw. 2011;45(3):1–67. (MICE algorithm and R package)
+#' - Rubin DB (1987). Multiple Imputation for Nonresponse in Surveys. Wiley. \doi{10.1002/9780470316696}
+#' - van Buuren S, Groothuis-Oudshoorn K (2011). mice: Multivariate Imputation by Chained Equations in R.
+#'   Journal of Statistical Software, 45(3):1–67. \doi{10.18637/jss.v045.i03}
 impute_mice <- function(data,
                         m    = 5,
                         cols = NULL,
@@ -267,8 +267,8 @@ impute_mice <- function(data,
 #' }
 #'
 #' @references
-#' - Stekhoven DJ, Bühlmann P. MissForest—non-parametric missing value imputation for mixed-type data.
-#'   Bioinformatics. 2012;28(1):112–118. https://pubmed.ncbi.nlm.nih.gov/22039212/
+#' - Stekhoven DJ, Bühlmann P (2012). MissForest—non-parametric missing value imputation for mixed-type data.
+#'   Bioinformatics, 28(1):112–118. \doi{10.1093/bioinformatics/btr597}
 impute_missforest <- function(data,
                               ntree = 100,
                               cols  = NULL,

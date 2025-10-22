@@ -2,75 +2,66 @@
 % Please edit documentation in R/adiposity_sds_strat.R
 \name{adiposity_sds_strat}
 \alias{adiposity_sds_strat}
-\title{Calculate sex-stratified standardized scores (SDS) for adiposity measures (HM-CRANIZED)}
+\title{Compute sex-stratified standardized scores (SDS) for adiposity measures}
 \usage{
 adiposity_sds_strat(
   data,
+  col_map,
   ref,
-  sex_col = "sex",
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("cap", "NA", "error"),
   extreme_rules = NULL,
   allow_partial = FALSE,
-  diagnostics = TRUE,
-  verbose = FALSE,
   prefix = ""
 )
 }
 \arguments{
-\item{data}{data.frame / tibble containing variables + a sex column.}
+\item{data}{Data frame or tibble with variables and a sex column}
 
-\item{ref}{Named list with elements "M" and "F". Each is a named list of
-numeric vectors c(mean=, sd=). Example:
+\item{col_map}{Named list mapping:
+\itemize{
+\item sex: column name with sex values ("M","F","m","f", 1, 2)
+\item vars: optional named list mapping reference variable names -> data column names.
+If omitted, expects the reference variable names to exist in \code{data}.
+}}
+
+\item{ref}{Named list with elements "M" and "F". Each is a named list of numeric
+vectors c(mean=, sd=) keyed by variable name, e.g.:
 list(
 M = list(BMI = c(mean=23, sd=3.5), waist = c(mean=85, sd=10)),
 F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
 )}
 
-\item{sex_col}{Name of sex column (default "sex"). Values accepted:
-"M","F","m","f", 1,2.}
+\item{na_action}{One of:
+\itemize{
+\item "keep"  – keep rows with NA (propagates to outputs)
+\item "omit"  – drop rows with NA in any required variable
+\item "error" – abort if any required variable has NA
+}}
 
-\item{na_action}{One of c("keep","omit","error") for rows with NA in any
-required measure (default "keep").}
+\item{check_extreme}{Logical; if TRUE, screen raw variables for extremes before SDS}
 
-\item{na_warn_prop}{Proportion (0–1) above which per-variable missingness
-triggers a warning (default 0.2).}
+\item{extreme_action}{One of:
+\itemize{
+\item "cap"   – winsorize to bounds
+\item "NA"    – set out-of-range to NA
+\item "error" – abort on out-of-range
+}}
 
-\item{check_extreme}{Logical; if TRUE perform extreme range screening on
-raw variables before SDS computation.}
+\item{extreme_rules}{Optional named list of c(min, max) per variable (raw scale).
+If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") for handling
-detected extremes (default "warn").}
+\item{allow_partial}{If TRUE, skip variables absent in data (with a warning); if FALSE error}
 
-\item{extreme_rules}{Optional named list of c(min,max) bounds per variable
-(raw scale). If NULL, broad defaults are inferred per variable name
-(supports BMI, waist, weight, height, hip, WC, HC; others skipped).}
-
-\item{allow_partial}{If TRUE and some reference variables are missing in
-data (or vice versa) they are skipped with a warning; if FALSE (default)
-this is an error.}
-
-\item{diagnostics}{Logical; if TRUE (default) emit diagnostic warnings
-(missing ref vars, extreme SDS > 10, etc.).}
-
-\item{verbose}{Logical; if TRUE print progress & summary.}
-
-\item{prefix}{Optional string prepended to output column names (default "").}
+\item{prefix}{Optional prefix for output columns (default "")}
 }
 \value{
-A tibble with one SDS column per retained variable:
-\if{html}{\out{<prefix>}}\if{html}{\out{<var>}}_SDS
+A tibble with one SDS column per retained variable: \if{html}{\out{<prefix>}}\if{html}{\out{<var>}}_SDS
 }
 \description{
-Computes sex-specific z-scores (standard deviation scores) for supplied
-anthropometric variables using reference means/SDs provided separately
-for males and females. Adds extended validation, NA and extreme handling.
-}
-\details{
-SDS = (observed - sex_mean) / sex_sd (with sex-specific mean/sd vectorization).
-Rows dropped only if na_action == "omit" and required var NA present.
+Computes sex-specific SDS (z-scores) for selected anthropometric variables using
+reference means and SDs provided separately for males and females.
 }
 \examples{
 ref <- list(
@@ -78,10 +69,13 @@ ref <- list(
   F = list(BMI = c(mean=22.1, sd=4.2), waist = c(mean=76, sd=11))
 )
 df <- data.frame(BMI=c(25.2,21.8,27.1), waist=c(85,72,95), sex=c("M","F","M"))
-adiposity_sds_strat(df, ref, verbose=TRUE)
-
+adiposity_sds_strat(
+  df,
+  col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
+  ref = ref
+)
 }
 \references{
-WHO Expert Committee. Physical Status: The Use and Interpretation of Anthropometry. WHO Technical Report Series 854. Geneva: World Health Organization; 1995.
-Cole TJ, Green PJ (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10):1305–1319. \doi{10.1002/sim.4780111005}
+Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305–1319. \doi{10.1002/sim.4780111005}
+WHO Expert Committee (1995) Physical Status: The Use and Interpretation of Anthropometry. WHO TRS 854.
 }

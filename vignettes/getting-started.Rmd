@@ -1,8 +1,35 @@
 ---
-title: "Getting Started with HealthMarkers"
+title: "Getting started with HealthMarkers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with HealthMarkers}
+  %\VignetteIndexEntry{Getting started with HealthMarkers}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
+
+```r
+library(HealthMarkers)
+options(healthmarkers.verbose = "inform")
+
+# Example data
+df <- data.frame(
+  TC=5.2, LDL_c=3.2, HDL_c=1.3, TG=1.7,
+  ALT=30, AST=20, BMI=27, sex="F", diabetes=0, insulin=12, MetS=1,
+  GSH=1200, GSSG=20,
+  eGFR=85, UACR=15
+)
+
+col_map <- list(
+  TC="TC", LDL_c="LDL_c", HDL_c="HDL_c", TG="TG",
+  ALT="ALT", AST="AST", BMI="BMI", sex="sex", diabetes="diabetes", insulin="insulin", MetS="MetS",
+  GSH="GSH", GSSG="GSSG",
+  eGFR="eGFR", UACR="UACR"
+)
+
+lip <- atherogenic_indices(df, col_map)
+liv <- liver_fat_markers(df, col_map)
+ox  <- oxidative_markers(df, col_map)
+ckd <- ckd_stage(df, col_map)
+
+marker_summary(lip)
+```

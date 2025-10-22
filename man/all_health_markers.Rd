@@ -12,8 +12,28 @@ all_health_markers(
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
   verbose = TRUE,
-  na_action = NULL
+  na_action = c("keep", "omit", "error")
 )
+}
+\arguments{
+\item{data}{A data.frame or tibble.}
+
+\item{col_map}{Named list for column mapping forwarded to underlying functions.}
+
+\item{which}{"all" or a vector of registry keys (see Details).}
+
+\item{include_insulin}{Logical; include all_insulin_indices() first.}
+
+\item{normalize}{One of c("none","z","inverse","range","robust").}
+
+\item{mode}{One of c("both","IS","IR") passed to insulin indices.}
+
+\item{verbose}{Logical.}
+
+\item{na_action}{One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).}
+}
+\value{
+Data frame with original columns plus many derived markers.
 }
 \description{
 Compute all available HealthMarkers categories
@@ -23,4 +43,17 @@ For academic / clinical references tied to each derived marker or
 index, consult the help pages of the source functions (e.g. ?allostatic_load,
 ?bone_markers, ?vitamin_markers, ?inflammatory_markers, etc.). This
 aggregator provides integration only and does not restate citations.
+}
+\examples{
+df <- data.frame(
+  TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
+  ALT = 30, AST = 20, BMI = 25
+)
+all_health_markers(df, col_map = list(), which = c("lipid","liver"),
+                   include_insulin = FALSE, normalize = "none", mode = "both",
+                   verbose = FALSE, na_action = "keep")
+}
+\references{
+Aggregator wrapper. See underlying function help pages for full references
+across categories included by \code{which}.
 }

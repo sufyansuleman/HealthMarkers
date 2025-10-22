@@ -10,10 +10,10 @@ liver_markers(
     "GGT", age = "age", AST = "AST", ALT = "ALT", platelets = "platelets", albumin =
     "albumin", diabetes = "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
   verbose = FALSE,
-  na_action = c("keep", "omit", "error"),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL
 )
 }

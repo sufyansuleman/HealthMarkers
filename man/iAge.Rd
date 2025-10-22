@@ -9,10 +9,10 @@ iAge(
   col_map,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
   verbose = FALSE,
-  na_action = c("omit", "keep", "error"),
+  na_action = c("omit", "keep", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL
 )
 }
@@ -31,23 +31,24 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 
 \item{verbose}{Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.}
 
-\item{na_action}{One of c("omit","keep","error") controlling how missing inputs affect iAge:
+\item{na_action}{One of c("omit","keep","error","ignore","warn") controlling how missing inputs affect iAge:
 \itemize{
-\item "omit": ignore NAs in the sum (default; preserves previous behavior).
+\item "omit": ignore NAs in the weighted sum (default; preserves previous behavior).
 \item "keep": return NA for rows where any required marker is NA.
 \item "error": abort if any required marker contains NA.
+\item "ignore": alias of "omit".
+\item "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
 }}
-
-\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high missingness warnings. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") controlling what to do when extremes are detected.
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.
 \itemize{
 \item "warn": issue a warning, do not modify values (default if check_extreme = TRUE).
 \item "cap": truncate values to the allowed range and warn.
 \item "error": abort on detection.
 \item "ignore": do nothing.
+\item "NA": set out-of-range values to NA.
 }}
 
 \item{extreme_rules}{Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.}
@@ -124,8 +125,8 @@ iAge(
 }
 \references{
 \itemize{
-\item Sayed N et al, An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging, Nat Aging, 2021;1:598–610.
-\item Sayed N et al, Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan, Sci Transl Med, 2023;15(722):eabo4163.
+\item Sayed N, et al. (2021). An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging. Nat Aging, 1:598–610. \doi{10.1038/s43587-021-00136-0}
+\item Sayed N, et al. (2023). Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan. Sci Transl Med, 15(722):eabo4163. \doi{10.1126/scitranslmed.abo4163}
 }
 }
 \seealso{

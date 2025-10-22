@@ -7,10 +7,10 @@
 kidney_failure_risk(
   data,
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
-  na_action = c("keep", "error", "omit"),
+  na_action = c("keep", "error", "omit", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
+  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   extreme_rules = NULL,
   verbose = FALSE
 )
@@ -26,23 +26,25 @@ kidney_failure_risk(
 \item \code{UACR} -> urine albumin-to-creatinine ratio (mg/g)
 }}
 
-\item{na_action}{One of c("keep","error","omit"). Default "keep" to preserve previous behavior:
+\item{na_action}{One of c("keep","error","omit","warn"). Default "keep" to preserve previous behavior:
 \itemize{
 \item "keep": propagate NA/NaN through logs and outputs.
 \item "error": abort if any required input contains missing values.
 \item "omit": drop rows with NA in required inputs before computation.
+\item "warn": like "keep" but emits high-missingness warnings.
 }}
 
 \item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan for out-of-range values (see \code{extreme_rules}). Default FALSE.}
 
-\item{extreme_action}{One of c("warn","cap","error","ignore") used when \code{check_extreme = TRUE}.
+\item{extreme_action}{One of c("warn","cap","error","ignore","NA") used when \code{check_extreme = TRUE}.
 \itemize{
 \item "warn": only warn about out-of-range values (default).
 \item "cap": truncate to range and warn.
 \item "error": abort if any out-of-range is detected.
 \item "ignore": do nothing.
+\item "NA": set out-of-range input values to NA before computation.
 }}
 
 \item{extreme_rules}{Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).

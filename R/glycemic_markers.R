@@ -32,14 +32,20 @@
 #'   - HDL_c (mmol/L), TG (mmol/L), BMI (kg/m^2)
 #'   Optional if present: glucose (mmol/L), HbA1c (mmol/mol), C_peptide (pmol/L),
 #'   G0 (mmol/L), I0 (pmol/L), leptin (ng/mL), adiponectin (ng/mL).
-#' @param na_action One of `c("ignore","warn","error")` controlling behavior when
-#'   required inputs contain missing or non-finite values. Default "ignore".
+#' @param col_map Optional named list mapping keys to column names in `data`.
+#'   Required keys: `HDL_c`, `TG`, `BMI`. Optional keys (if present will be used):
+#'   `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
+#'   If `NULL` (default), the function uses columns named exactly as the keys.
+#' @param na_action One of `c("ignore","warn","error","keep","omit")`.
+#'   HM-CS aliases: `keep` ≡ `ignore`; `omit` drops rows with any NA/non-finite
+#'   in used inputs before computing markers. Default "ignore".
 #' @param na_warn_prop Proportion (0–1) threshold for high-missingness warnings
 #'   among used columns when `na_action = "warn"`. Default 0.2.
 #' @param check_extreme Logical; if `TRUE`, scan selected input variables for values
 #'   outside plausible ranges defined in `extreme_rules`. Default `FALSE`.
-#' @param extreme_action One of `c("warn","cap","error","ignore")` controlling what to do
-#'   when extreme inputs are detected. If "cap", values are truncated to the allowed range.
+#' @param extreme_action One of `c("warn","cap","error","ignore","NA")` controlling
+#'   how to handle extremes when `check_extreme = TRUE`. If "cap", values are
+#'   truncated to the allowed range; if "NA", out-of-range values become NA.
 #'   Default "warn".
 #' @param extreme_rules Named list of numeric length-2 ranges for inputs to scan when
 #'   `check_extreme = TRUE`. Defaults are broad medical plausibility ranges:
@@ -93,63 +99,125 @@
 #' )
 glycemic_markers <- function(
   data,
-  na_action = c("ignore","warn","error"),
+  col_map = NULL,
+  na_action = c("ignore","warn","error","keep","omit"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore"),
+  extreme_action = c("warn","cap","error","ignore","NA"),
   extreme_rules = NULL,
   verbose = FALSE
 ) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
-  .gm_validate_args(na_warn_prop, check_extreme, extreme_rules, verbose)
 
-  # 1) required core columns
-  req <- c("HDL_c", "TG", "BMI")
-  if (!is.data.frame(data)) stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
-  missing <- setdiff(req, names(data))
-  if (length(missing)) {
-    stop("glycemic_markers(): missing required columns: ", paste(missing, collapse = ", "), call. = FALSE)
+  # HM-CS v2: start message at debug level or console when verbose
+  if (isTRUE(verbose)) {
+    message("glycemic_markers: validating inputs")
+  } else {
+    hm_inform("glycemic_markers(): validating inputs", level = "debug")
   }
 
-  if (verbose) message("-> glycemic_markers: validating inputs")
+  # Normalize col_map to identity if NULL
+  if (is.null(col_map)) {
+    col_map <- list(
+      HDL_c = "HDL_c", TG = "TG", BMI = "BMI",
+      glucose = "glucose", HbA1c = "HbA1c", C_peptide = "C_peptide",
+      G0 = "G0", I0 = "I0", leptin = "leptin", adiponectin = "adiponectin"
+    )
+  }
 
-  # 2) coerce used columns to numeric and report NAs introduced
-  used <- intersect(
-    c(req, "glucose", "HbA1c", "C_peptide", "G0", "I0", "leptin", "adiponectin"),
-    names(data)
-  )
-  warns <- character(0)
-  for (cn in used) {
+  # Pre-check required columns to match expected error message
+  req_keys <- c("HDL_c", "TG", "BMI")
+  req_cols <- unname(unlist(col_map[req_keys]))
+  miss <- setdiff(req_cols, names(data))
+  if (length(miss)) {
+    stop(sprintf("missing required columns: %s", paste(miss, collapse = ", ")), call. = FALSE)
+  }
+
+  # Centralized validation when possible
+  if (is.function(get0("hm_validate_inputs", envir = asNamespace("HealthMarkers")))) {
+    hm_validate_inputs(
+      data = data,
+      col_map = as.list(col_map[req_keys]),
+      required_keys = req_keys,
+      fn = "glycemic_markers"
+    )
+  } else {
+    if (!is.data.frame(data)) stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+  }
+
+  # Determine used keys present in data
+  all_keys <- c(req_keys, "glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")
+  present <- vapply(all_keys, function(k) {
+    nm <- col_map[[k]]
+    !is.null(nm) && nm %in% names(data)
+  }, logical(1))
+  used_keys <- all_keys[present]
+  used_cols <- unname(unlist(col_map[used_keys]))
+
+  if (isTRUE(verbose)) message("-> coercing used columns to numeric")
+
+  # Coerce used columns to numeric and report NAs introduced
+  for (cn in used_cols) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
       introduced_na <- sum(is.na(data[[cn]]) & !is.na(old))
       if (introduced_na > 0) {
-        w <- sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na)
-        warning(w, call. = FALSE)
-        warns <- c(warns, w)
+        warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
       }
     }
   }
 
-  # 3) missingness and non-finite scan on used columns
-  qs <- .gm_quality_scan(data, used, .warn = (na_action == "warn"), na_warn_prop = na_warn_prop)
-  if (na_action == "error") {
-    has_nonfin <- any(vapply(used, function(cn) any(!is.finite(data[[cn]])), logical(1)))
-    if (has_nonfin) stop("glycemic_markers(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+  # Extract vectors via mapping
+  getv <- function(key) if (key %in% used_keys) data[[col_map[[key]]]] else NULL
+
+  HDL_c <- data[[col_map$HDL_c]]
+  TG    <- data[[col_map$TG]]
+  BMI   <- data[[col_map$BMI]]
+
+  glucose     <- getv("glucose")
+  HbA1c       <- getv("HbA1c")
+  C_peptide   <- getv("C_peptide")
+  G0          <- getv("G0")
+  I0          <- getv("I0")
+  leptin      <- getv("leptin")
+  adiponectin <- getv("adiponectin")
+
+  # NA handling
+  used_df <- data[, used_cols, drop = FALSE]
+  nonfin_mask <- vapply(used_cols, function(cn) any(!is.finite(data[[cn]])), logical(1))
+  if (na_action == "warn" && any(nonfin_mask)) {
+    wvars <- paste(used_cols[nonfin_mask], collapse = ", ")
+    warning(sprintf("Non-finite values detected in: %s; treated as NA.", wvars), call. = FALSE)
+  }
+  if (na_action == "error" && any(!stats::complete.cases(used_df))) {
+    stop("glycemic_markers(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+  } else if (na_action == "omit") {
+    keep <- stats::complete.cases(used_df)
+    data <- data[keep, , drop = FALSE]
+    # re-extract after filtering
+    HDL_c <- HDL_c[keep]; TG <- TG[keep]; BMI <- BMI[keep]
+    if (!is.null(glucose))     glucose     <- glucose[keep]
+    if (!is.null(HbA1c))       HbA1c       <- HbA1c[keep]
+    if (!is.null(C_peptide))   C_peptide   <- C_peptide[keep]
+    if (!is.null(G0))          G0          <- G0[keep]
+    if (!is.null(I0))          I0          <- I0[keep]
+    if (!is.null(leptin))      leptin      <- leptin[keep]
+    if (!is.null(adiponectin)) adiponectin <- adiponectin[keep]
   }
 
-  # 4) extreme-value scan and optional handling
+  # Extreme-value scan and optional handling
   if (isTRUE(check_extreme)) {
-    rules <- .gm_default_extreme_rules()
-    if (!is.null(extreme_rules) && is.list(extreme_rules)) {
-      # override defaults with user-supplied ranges
-      for (nm in names(extreme_rules)) {
-        rules[[nm]] <- extreme_rules[[nm]]
+    rules <- if (is.null(extreme_rules)) .gm_default_extreme_rules() else {
+      # overlay defaults with user-supplied ranges
+      def <- .gm_default_extreme_rules()
+      if (is.list(extreme_rules)) {
+        for (nm in names(extreme_rules)) def[[nm]] <- extreme_rules[[nm]]
       }
+      def
     }
-    ex <- .gm_extreme_scan(data, used, rules)
+    ex <- .gm_extreme_scan(data, intersect(used_cols, names(rules)), rules)
     if (ex$count > 0L) {
       if (extreme_action == "error") {
         stop(sprintf("glycemic_markers(): %d extreme input values detected.", ex$count), call. = FALSE)
@@ -158,63 +226,86 @@ glycemic_markers <- function(
         warning(sprintf("glycemic_markers(): capped %d extreme input values into allowed ranges.", ex$count), call. = FALSE)
       } else if (extreme_action == "warn") {
         warning(sprintf("glycemic_markers(): detected %d extreme input values (not altered).", ex$count), call. = FALSE)
+      } else if (extreme_action == "NA") {
+        # set out-of-range to NA
+        for (v in names(ex$flags)) {
+          cn <- v
+          bad <- ex$flags[[v]]
+          x <- data[[cn]]
+          x[bad] <- NA_real_
+          data[[cn]] <- x
+        }
       }
     }
+    # refresh vectors from possibly modified data
+    HDL_c <- data[[col_map$HDL_c]]
+    TG    <- data[[col_map$TG]]
+    BMI   <- data[[col_map$BMI]]
+    if (!is.null(glucose))     glucose     <- data[[col_map$glucose]]
+    if (!is.null(HbA1c))       HbA1c       <- data[[col_map$HbA1c]]
+    if (!is.null(C_peptide))   C_peptide   <- data[[col_map$C_peptide]]
+    if (!is.null(G0))          G0          <- data[[col_map$G0]]
+    if (!is.null(I0))          I0          <- data[[col_map$I0]]
+    if (!is.null(leptin))      leptin      <- data[[col_map$leptin]]
+    if (!is.null(adiponectin)) adiponectin <- data[[col_map$adiponectin]]
   }
 
-  if (verbose) message("-> glycemic_markers: computing markers")
+  if (isTRUE(verbose)) message("-> glycemic_markers: computing markers")
 
   # helpers for safe math
   lg <- function(x) .gm_log(x)
   dv <- function(a, b) .gm_safe_div(a, b)
 
-  # 5) compute markers (preserve original formulas; produce NAs on invalid inputs)
-  SPISE <- dv(600 * (data$HDL_c ^ 0.185), ((data$TG ^ 0.2) * (data$BMI ^ 1.338)))
+  # Unit conversions for indices that require mg/dL
+  TG_mgdl  <- TG * 88.57
 
-  METS_IR <- if ("glucose" %in% names(data)) {
-    num <- lg(2 * data$glucose + data$TG)
-    den <- lg(data$HDL_c)
-    dv(num * data$BMI, den)
+  # compute markers
+  SPISE <- dv(600 * (HDL_c ^ 0.185), ((TG ^ 0.2) * (BMI ^ 1.338)))
+
+  # METS-IR (use mmol/L as in tests; denominator ln(HDL_c) -> NA if HDL_c == 1)
+  METS_IR <- if (!is.null(glucose)) {
+    num <- lg(2 * glucose + TG)
+    den <- lg(HDL_c)
+    dv(num * BMI, den)
   } else {
-    rep(NA_real_, nrow(data))
+    rep(NA_real_, NROW(HDL_c))
   }
 
-  prediabetes <- if ("HbA1c" %in% names(data)) {
-    as.integer(data$HbA1c >= 42)
+  prediabetes <- if (!is.null(HbA1c)) {
+    as.integer(HbA1c >= 42)
   } else {
-    rep(NA_integer_, nrow(data))
+    rep(NA_integer_, NROW(HDL_c))
   }
 
-  diabetes <- if ("HbA1c" %in% names(data)) {
-    as.integer(data$HbA1c >= 48)
+  diabetes <- if (!is.null(HbA1c)) {
+    as.integer(HbA1c >= 48)
   } else {
-    rep(NA_integer_, nrow(data))
+    rep(NA_integer_, NROW(HDL_c))
   }
 
-  HOMA_CP <- if (all(c("C_peptide", "G0") %in% names(data))) {
-    dv(data$G0 * (data$C_peptide / 6), 22.5)
+  HOMA_CP <- if (!is.null(C_peptide) && !is.null(G0)) {
+    dv(G0 * (C_peptide / 6), 22.5)
   } else {
-    rep(NA_real_, nrow(data))
+    rep(NA_real_, NROW(HDL_c))
   }
 
-  LAR <- if (all(c("leptin", "adiponectin") %in% names(data))) {
-    dv(data$leptin, data$adiponectin)
+  LAR <- if (!is.null(leptin) && !is.null(adiponectin)) {
+    dv(leptin, adiponectin)
   } else {
-    rep(NA_real_, nrow(data))
+    rep(NA_real_, NROW(HDL_c))
   }
 
-  ASI <- if (all(c("adiponectin", "I0") %in% names(data))) {
-    dv(data$adiponectin, data$I0)
+  ASI <- if (!is.null(adiponectin) && !is.null(I0)) {
+    dv(adiponectin, I0)
   } else {
-    rep(NA_real_, nrow(data))
+    rep(NA_real_, NROW(HDL_c))
   }
 
-  TyG_index <- if ("glucose" %in% names(data)) {
-    TG_mgdl  <- data$TG * 88.57
-    Glu_mgdl <- data$glucose * 18
+  TyG_index <- if (!is.null(glucose)) {
+    Glu_mgdl <- glucose * 18
     lg((TG_mgdl * Glu_mgdl) / 2)
   } else {
-    rep(NA_real_, nrow(data))
+    rep(NA_real_, NROW(HDL_c))
   }
 
   out <- tibble::tibble(
@@ -228,6 +319,7 @@ glycemic_markers <- function(
     TyG_index = TyG_index
   )
 
+  # Completion summary
   if (isTRUE(verbose)) {
     na_counts <- vapply(out, function(x) sum(!is.finite(x) | is.na(x)), integer(1))
     message(sprintf(
@@ -235,6 +327,8 @@ glycemic_markers <- function(
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", ")
     ))
+  } else {
+    hm_inform(sprintf("glycemic_markers(): completed (%d rows)", nrow(out)), level = "debug")
   }
 
   return(out)
