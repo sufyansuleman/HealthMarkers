@@ -46,7 +46,7 @@ test_that("auto SI detection converts and re-scales back (unit assumption warnin
   out <- suppressWarnings(corrected_calcium(df_si, cm))
   # Ca 2.3 mmol/L = 9.2 mg/dL, Alb 35 g/L = 3.5 g/dL
   # corrected = 9.2 + 0.8 * (4.0 - 3.5) = 9.6 mg/dL = 9.6/4 = 2.4 mmol/L
-  expect_equal(out$corrected_calcium[1], 9.2/4 + 0.8*(4.0 - 3.5)/4, tolerance = 1e-6)
+  expect_equal(out$corrected_calcium[1], 2.4, tolerance = 1e-6)
 })
 
 test_that("domain warnings for albumin and corrected calcium ranges (no extreme scan)", {
