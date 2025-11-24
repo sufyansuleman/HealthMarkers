@@ -107,6 +107,7 @@
 
   # Bone and allostatic load
   add("bone",               "bone_markers",          TRUE)
+  add("corrected_calcium",  "corrected_calcium",     TRUE)
   add("allostatic_load",    "allostatic_load",       FALSE)
 
   # Oxidative stress
