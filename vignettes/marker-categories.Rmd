@@ -1,0 +1,14 @@
+---
+title: "Marker Categories"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Marker Categories}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```r
+library(HealthMarkers)
+# Example aggregator call (provide your dataset and col_map)
+# all_health_markers(df, col_map, which = c("inflammatory","lipid","liver"), include_insulin = FALSE, verbose = FALSE)
+```

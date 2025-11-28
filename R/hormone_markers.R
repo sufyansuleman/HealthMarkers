@@ -45,15 +45,19 @@ hormone_markers <- function(
     "GH","IGF1","prolactin","cortisol_0","cortisol_30"
   )
 
-  # Validate inputs
-  if (!is.data.frame(data)) stop("hormone_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+  # Validate inputs (HM-CS v3)
+  if (!is.data.frame(data)) {
+    rlang::abort("hormone_markers(): `data` must be a data.frame or tibble.", class = "healthmarkers_horm_error_data_type")
+  }
   if (is.null(col_map) || !is.list(col_map)) {
-    stop("hormone_markers(): `col_map` must be a named list.", call. = FALSE)
+    rlang::abort("hormone_markers(): `col_map` must be a named list.", class = "healthmarkers_horm_error_colmap_type")
   }
   # Ensure all required keys exist in col_map
   missing_keys <- setdiff(required, names(col_map))
   if (length(missing_keys)) {
-    stop("missing required columns: ", paste(missing_keys, collapse = ", "), call. = FALSE)
+    # Keep message to satisfy tests
+    rlang::abort(paste0("missing required columns: ", paste(missing_keys, collapse = ", ")),
+                 class = "healthmarkers_horm_error_missing_map")
   }
   # Ensure each mapping is a single non-empty character string
   bad_keys <- vapply(required, function(k) {
@@ -61,18 +65,27 @@ hormone_markers <- function(
     !is.character(v) || length(v) != 1L || !nzchar(v)
   }, logical(1))
   if (any(bad_keys)) {
-    stop("missing required columns: ", paste(required[bad_keys], collapse = ", "), call. = FALSE)
+    rlang::abort(paste0("missing required columns: ", paste(required[bad_keys], collapse = ", ")),
+                 class = "healthmarkers_horm_error_bad_map_values")
   }
   # Mapped columns must exist in data
   used_cols <- unname(vapply(required, function(k) col_map[[k]], character(1)))
   missing_cols <- setdiff(used_cols, names(data))
   if (length(missing_cols)) {
-    stop("missing required columns: ", paste(missing_cols, collapse = ", "), call. = FALSE)
+    rlang::abort(paste0("missing required columns: ", paste(missing_cols, collapse = ", ")),
+                 class = "healthmarkers_horm_error_missing_columns")
+  }
+  # na_warn_prop sanity
+  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
+    rlang::abort("hormone_markers(): `na_warn_prop` must be a single number in [0,1].",
+                 class = "healthmarkers_horm_error_na_warn_prop")
   }
 
   if (isTRUE(verbose)) {
     message(sprintf("-> hormone_markers: starting (%d rows, %d mapped inputs)", nrow(data), length(required)))
-    message("-> hormone_markers: coercing inputs to numeric (if needed)")
+    hm_inform("hormone_markers(): coercing inputs to numeric (if needed)", level = "inform")
+  } else {
+    hm_inform("hormone_markers(): starting", level = "debug")
   }
 
   # Coerce to numeric; warn if NAs introduced; sanitize non-finite to NA
@@ -81,13 +94,15 @@ hormone_markers <- function(
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
       introduced_na <- sum(is.na(data[[cn]]) & !is.na(old))
-      if (introduced_na > 0L) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      if (introduced_na > 0L) {
+        rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na),
+                    class = "healthmarkers_horm_warn_na_coercion")
+      }
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
   # HM-CS: omit rows with any NA in used inputs
-  keep_rows <- rep(TRUE, nrow(data))
   if (na_action_raw == "omit") {
     keep_rows <- stats::complete.cases(data[, used_cols, drop = FALSE])
     data <- data[keep_rows, , drop = FALSE]
@@ -96,11 +111,18 @@ hormone_markers <- function(
   # Missingness QA
   qa <- .hor_quality_scan(data, used_cols, na_warn_prop)
   if (na_action == "warn") {
-    if (length(qa$any_na)) warning(sprintf("Missing values in: %s.", paste(qa$any_na, collapse = ", ")), call. = FALSE)
-    if (length(qa$high_na)) warning(sprintf("High missingness (>= %.0f%%): %s.", 100 * na_warn_prop, paste(qa$high_na, collapse = ", ")), call. = FALSE)
+    if (length(qa$any_na)) {
+      rlang::warn(sprintf("Missing values in: %s.", paste(qa$any_na, collapse = ", ")),
+                  class = "healthmarkers_horm_warn_any_na")
+    }
+    if (length(qa$high_na)) {
+      rlang::warn(sprintf("High missingness (>= %.0f%%): %s.", 100 * na_warn_prop, paste(qa$high_na, collapse = ", ")),
+                  class = "healthmarkers_horm_warn_high_na")
+    }
   }
   if (na_action == "error" && length(qa$any_na)) {
-    stop("hormone_markers(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+    rlang::abort("hormone_markers(): missing or non-finite values in required inputs with na_action='error'.",
+                 class = "healthmarkers_horm_error_missing_values")
   }
 
   # Extreme scan/handling
@@ -111,12 +133,15 @@ hormone_markers <- function(
     flagged_total <- sum(vapply(flags, function(x) sum(x, na.rm = TRUE), integer(1)))
     if (flagged_total > 0L) {
       if (extreme_action == "error") {
-        stop(sprintf("hormone_markers(): %d extreme input values detected.", flagged_total), call. = FALSE)
+        rlang::abort(sprintf("hormone_markers(): %d extreme input values detected.", flagged_total),
+                     class = "healthmarkers_horm_error_extremes")
       } else if (extreme_action == "cap") {
         data <- .hor_cap_inputs(data, flags, col_map, rules)
-        warning(sprintf("hormone_markers(): capped %d extreme input values into allowed ranges.", flagged_total), call. = FALSE)
+        rlang::warn(sprintf("hormone_markers(): capped %d extreme input values into allowed ranges.", flagged_total),
+                    class = "healthmarkers_horm_warn_extremes_capped")
       } else if (extreme_action == "warn") {
-        warning(sprintf("hormone_markers(): detected %d extreme input values (not altered).", flagged_total), call. = FALSE)
+        rlang::warn(sprintf("hormone_markers(): detected %d extreme input values (not altered).", flagged_total),
+                    class = "healthmarkers_horm_warn_extremes_detected")
       } else if (extreme_action == "NA") {
         for (nm in names(flags)) {
           cn <- col_map[[nm]]
@@ -145,14 +170,14 @@ hormone_markers <- function(
   sdiv <- function(a,b) { z <- a / b; z[!is.finite(z)] <- NA_real_; z }
 
   # Compute ratios
-  FAI      <- sdiv(Ttot, SHBG) * 100
-  LH_FSH   <- sdiv(LH, FSH)
-  E2_P     <- sdiv(E2, P4)
-  T3_T4    <- sdiv(T3, T4)
-  ARR      <- sdiv(Aldo, Renin)
-  Ins_Glu  <- sdiv(Ins, Glu)
-  GH_IGF1  <- sdiv(GH, IGF1)
-  PRL_T    <- sdiv(PRL, Ttot)
+  FAI       <- sdiv(Ttot, SHBG) * 100
+  LH_FSH    <- sdiv(LH, FSH)
+  E2_P      <- sdiv(E2, P4)
+  T3_T4     <- sdiv(T3, T4)
+  ARR       <- sdiv(Aldo, Renin)
+  Ins_Glu   <- sdiv(Ins, Glu)
+  GH_IGF1   <- sdiv(GH, IGF1)
+  PRL_T     <- sdiv(PRL, Ttot)
   CAR_slope <- sdiv(Cort30 - Cort0, 30)
 
   out <- tibble::tibble(
@@ -174,7 +199,6 @@ hormone_markers <- function(
       LH_FSH = NA_real_, E2_P = NA_real_, T3_T4 = NA_real_, ARR = NA_real_,
       Ins_Glu = NA_real_, GH_IGF1 = NA_real_, PRL_T = NA_real_, CAR_slope = NA_real_
     )
-    # replicate rows
     res <- res[rep(1, nrow(data)), , drop = FALSE]
     for (nm in names(out)) res[[nm]] <- out[[nm]]
     out <- res
@@ -187,6 +211,8 @@ hormone_markers <- function(
       nrow(out),
       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", ")
     ))
+  } else {
+    hm_inform("hormone_markers(): completed", level = "debug")
   }
 
   out
@@ -217,7 +243,7 @@ hormone_markers <- function(
     free_T3 = c(0, 20),
     free_T4 = c(0, 50),
     aldosterone = c(0, 1000),
-    renin = c(0, 50),      # upper 50 to match test expectation
+    renin = c(0, 50),
     insulin = c(0, 1000),
     glucagon = c(0, 500),
     GH = c(0, 200),

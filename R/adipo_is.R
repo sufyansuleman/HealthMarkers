@@ -1,35 +1,67 @@
 # R/adipo_is.R
 
-#' Compute adipose insulin sensitivity indices
+#' Adipose insulin sensitivity indices (QUICKI, VAI, LAP, TyG, TG/HDL, Belfiore)
 #'
 #' @description
-#' Computes adipose insulin sensitivity/resistance indices from fasting measures:
-#' - Revised_QUICKI = 1 / [log10(insulin µU/mL) + log10(glucose mg/dL) + log10(FFA mmol/L)]
-#' - VAI (sex-specific, inverted so higher = better IS)
-#' - TG_HDL_C_inv = -(TG / HDL) (mg/dL ratios)
-#' - TyG_inv = -ln(TG × glucose / 2)
-#' - LAP (sex-specific, inverted)
-#' - McAuley_index = exp(2.63 − 0.28 ln(insulin) − 0.31 ln(TG))
-#' - Adipo_inv = −(FFA × insulin)
-#' - Belfiore_inv_FFA = − 2 / (insulin × FFA + 1)
-#'
+#' Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
 #' Expected input units (converted internally):
 #' - Glucose G0 mmol/L -> mg/dL (* 18)
 #' - Insulin I0 pmol/L -> µU/mL (/ 6)
 #' - TG mmol/L -> mg/dL (* 88.57)
 #' - HDL mmol/L -> mg/dL (* 38.67)
 #'
-#' @param data Data frame/tibble
-#' @param col_map Named list mapping required keys to column names:
-#'   - G0, I0, TG, HDL_c, FFA, waist, bmi
-#' @param normalize One of: "none","z","inverse","range","robust"
-#' @param na_action One of: "keep","omit","error"
+#' Reported indices (higher magnitude of negative “_inv” values implies worse adipose IR):
+#' - Revised_QUICKI = 1 / [log10(I0[µU/mL]) + log10(G0[mg/dL]) + log10(FFA[mmol/L])]
+#' - VAI (sex-specific; inverted as VAI_*_inv so larger negative = worse)
+#' - TG_HDL_C_inv = -(TG/HDL) in mg/dL
+#' - TyG_inv = -ln(TG[mg/dL] × G0[mg/dL] / 2)
+#' - LAP (sex-specific; inverted)
+#' - McAuley_index = exp(2.63 − 0.28 ln(I0[µU/mL]) − 0.31 ln(TG[mmol/L]))
+#' - Adipo_inv = −(FFA × I0[µU/mL])
+#' - Belfiore_inv_FFA = − 2 / (I0[µU/mL] × FFA + 1)
+#'
+#' @param data Data frame or tibble with required columns mapped by `col_map`
+#' @param col_map Named list mapping keys to columns: G0, I0, TG, HDL_c, FFA, waist, bmi
+#' @param normalize One of c("none","z","inverse","range","robust"); default "none"
+#' @param na_action One of c("keep","omit","error"); default "keep"
 #' @param check_extreme Logical; if TRUE, applies range checks before computing
-#' @param extreme_action One of: "cap","NA","error"
+#' @param extreme_action One of c("cap","NA","error"); default "cap" when `check_extreme = TRUE`
 #' @param extreme_rules Optional named list of c(min,max) per key (in original units)
-#' @return Tibble with columns:
-#' Revised_QUICKI, VAI_Men_inv, VAI_Women_inv, TG_HDL_C_inv, TyG_inv,
-#' LAP_Men_inv, LAP_Women_inv, McAuley_index, Adipo_inv, Belfiore_inv_FFA
+#' @param verbose Logical; when TRUE, emits progress via `hm_inform()`
+#' @param ... Reserved
+#'
+#' @return A tibble with columns:
+#' `Revised_QUICKI`, `VAI_Men_inv`, `VAI_Women_inv`, `TG_HDL_C_inv`, `TyG_inv`,
+#' `LAP_Men_inv`, `LAP_Women_inv`, `McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`
+#'
+#' @references
+#' Katz A, et al. QUICKI. J Clin Endocrinol Metab (2000) \doi{10.1210/jcem.85.5.2402}
+#'
+#' Amato MC, et al. VAI. Diabetes Care (2010) \doi{10.2337/dc09-1825}
+#'
+#' Kahn HS. LAP. BMC Cardiovasc Disord (2005) \doi{10.1186/1471-2261-5-26}
+#'
+#' Guerrero-Romero F, et al. TyG. Diabetes Care (2018) \doi{10.2337/dc18-0010}
+#'
+#' Dobiasova M. Atherogenic indices (TG/HDL concept). Clin Chem Lab Med (2001) \doi{10.1515/CCLM.2001.095}
+#'
+#' Belfiore F, et al. Insulin sensitivity formulations. Mol Genet Metab (1998) \doi{10.1006/mgme.1998.2630}
+#'
+#' Raynaud E, et al. Revised QUICKI concept with NEFA/FFA. Diabetes Care (1999) \doi{10.2337/diacare.22.6.1003}
+#'
+#' @examples
+#' df <- tibble::tibble(
+#'   G0 = c(5.2, 6.1),      # mmol/L
+#'   I0 = c(60, 110),       # pmol/L
+#'   TG = c(1.2, 1.8),      # mmol/L
+#'   HDL_c = c(1.3, 1.0),   # mmol/L
+#'   FFA = c(0.4, 0.6),     # mmol/L
+#'   waist = c(85, 102),    # cm
+#'   bmi = c(24, 31)        # kg/m^2
+#' )
+#' cm <- as.list(names(df)); names(cm) <- names(df)
+#' out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
+#' head(out)
 #' @export
 adipo_is <- function(data,
                      col_map,
@@ -37,20 +69,25 @@ adipo_is <- function(data,
                      na_action = c("keep","omit","error"),
                      check_extreme = FALSE,
                      extreme_action = c("cap","NA","error"),
-                     extreme_rules = NULL) {
+                     extreme_rules = NULL,
+                     verbose = FALSE,
+                     ...) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
   # Validate normalize up front
   allowed_norm <- c("none","z","inverse","range","robust")
   if (!normalize %in% allowed_norm) {
-    stop(sprintf("`normalize` must be one of: %s", paste(allowed_norm, collapse = ", ")), call. = FALSE)
+    rlang::abort(
+      sprintf("`normalize` must be one of: %s", paste(allowed_norm, collapse = ", ")),
+      class = "healthmarkers_adipo_is_error_normalize_arg"
+    )
   }
 
   # Centralized validation
   req <- c("G0","I0","TG","HDL_c","FFA","waist","bmi")
 
-  # Emit test-aligned error before generic helper (message without backticks)
+  # Emit test-aligned error before any generic helper
   nm <- names(col_map)
   if (is.null(nm)) nm <- character(0)
   missing_keys <- setdiff(req, nm)
@@ -62,26 +99,44 @@ adipo_is <- function(data,
     )
   }
 
-  hm_validate_inputs(data, col_map, req, fn = "adipo_is")
-
-  hm_inform("adipo_is(): preparing inputs", level = "debug")
-
-  # Coerce to numeric when needed
+  # Ensure mapped columns exist in data
   mapped_cols <- unname(unlist(col_map[req], use.names = FALSE))
+  not_found <- setdiff(mapped_cols, names(data))
+  if (length(not_found)) {
+    rlang::abort(
+      paste0("adipo_is(): columns not found in data: ", paste(not_found, collapse = ", ")),
+      class = "healthmarkers_adipo_is_error_missing_columns"
+    )
+  }
+
+  # Progress message (hm_inform should gate via options)
+  hm_inform(level = "debug", msg = "adipo_is(): preparing inputs")
+
+  # Coerce to numeric when needed (warn once per column on NA introduction)
   for (key in req) {
     cn <- col_map[[key]]
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
       intro <- sum(is.na(data[[cn]]) & !is.na(old))
-      if (intro > 0) warning(sprintf("adipo_is(): column '%s' coerced to numeric; NAs introduced: %d", cn, intro), call. = FALSE)
+      if (intro > 0) {
+        rlang::warn(
+          sprintf("adipo_is(): column '%s' coerced to numeric; NAs introduced: %d", cn, intro),
+          class = "healthmarkers_adipo_is_warn_na_coercion"
+        )
+      }
     }
   }
 
   # NA handling
   if (na_action == "error") {
     any_na <- Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
-    if (any(any_na)) stop("adipo_is(): required inputs contain missing values (na_action='error').", call. = FALSE)
+    if (any(any_na)) {
+      rlang::abort(
+        "adipo_is(): required inputs contain missing values (na_action='error').",
+        class = "healthmarkers_adipo_is_error_missing_values"
+      )
+    }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
     data <- data[keep, , drop = FALSE]
@@ -126,7 +181,10 @@ adipo_is <- function(data,
       if (nbad > 0) {
         total_ex <- total_ex + nbad
         if (extreme_action == "error") {
-          stop(sprintf("adipo_is(): values out of range for '%s' (%d cases).", key, nbad), call. = FALSE)
+          rlang::abort(
+            sprintf("adipo_is(): values out of range for '%s' (%d cases).", key, nbad),
+            class = "healthmarkers_adipo_is_error_extreme_values"
+          )
         } else if (extreme_action == "NA") {
           x[bad] <- NA_real_
           data[[cn]] <- x
@@ -136,7 +194,10 @@ adipo_is <- function(data,
       }
     }
     if (total_ex > 0 && extreme_action %in% c("cap","NA")) {
-      warning(sprintf("adipo_is(): adjusted %d extreme input values (%s).", total_ex, extreme_action), call. = FALSE)
+      rlang::warn(
+        sprintf("adipo_is(): adjusted %d extreme input values (%s).", total_ex, extreme_action),
+        class = "healthmarkers_adipo_is_warn_extreme_adjust"
+      )
     }
   }
 
@@ -195,6 +256,6 @@ adipo_is <- function(data,
     out[] <- lapply(out, function(x) do.call(norm_fun, list(x = x, method = normalize)))
   }
 
-  hm_inform("adipo_is(): computed adipose indices", level = "debug")
+  hm_inform(level = "debug", msg = "adipo_is(): computed adipose indices")
   out
 }

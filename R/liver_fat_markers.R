@@ -46,19 +46,19 @@ liver_fat_markers <- function(
   extreme_action <- match.arg(extreme_action)
 
   # Validate required mapping and data
-  if (!is.data.frame(data)) stop("liver_fat_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+  if (!is.data.frame(data)) rlang::abort("liver_fat_markers(): `data` must be a data.frame or tibble.")
   req <- c("ALT","AST","BMI")
   missing_keys <- setdiff(req, names(col_map))
-  if (length(missing_keys)) stop("liver_fat_markers(): missing required columns: ", paste(missing_keys, collapse=", "), call.=FALSE)
+  if (length(missing_keys)) rlang::abort(paste("liver_fat_markers(): missing required columns:", paste(missing_keys, collapse=", ")))
   mapped_req <- unname(unlist(col_map[req]))
   if (any(!nzchar(mapped_req))) {
     bad <- req[!nzchar(mapped_req)]
-    stop("liver_fat_markers(): missing required columns: ", paste(bad, collapse=", "), call.=FALSE)
+    rlang::abort(paste("liver_fat_markers(): missing required columns:", paste(bad, collapse=", ")))
   }
   miss <- setdiff(mapped_req, names(data))
-  if (length(miss)) stop("liver_fat_markers(): missing required columns: ", paste(miss, collapse=", "), call.=FALSE)
+  if (length(miss)) rlang::abort(paste("liver_fat_markers(): missing required columns:", paste(miss, collapse=", ")))
 
-  if (isTRUE(verbose)) message("-> liver_fat_markers: coercing inputs to numeric (if needed)")
+  if (isTRUE(verbose)) rlang::inform("-> liver_fat_markers: coercing inputs to numeric (if needed)")
 
   # Columns potentially used directly in formulas
   direct_keys <- c("ALT","AST","BMI","sex","diabetes","MetS","insulin","I0")
@@ -68,13 +68,14 @@ liver_fat_markers <- function(
   mapped_all <- unlist(col_map[intersect(names(col_map), c(direct_keys, deriva_keys))], use.names = TRUE)
   used_cols <- unique(mapped_all[!is.na(mapped_all) & nzchar(mapped_all) & mapped_all %in% names(data)])
 
-  # Coerce numeric-compatible columns; warn if NAs introduced
-  for (cn in used_cols) {
+  # Coerce only numeric-like columns; warn if NAs introduced
+  numeric_like <- intersect(used_cols, unname(unlist(col_map[c("ALT","AST","BMI","insulin","I0","waist","TG","HDL_c","sbp","bp_sys","glucose","G0")])))
+  for (cn in numeric_like) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(new <- as.numeric(old))
       introduced_na <- sum(is.na(new) & !is.na(old))
-      if (introduced_na > 0L) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      if (introduced_na > 0L) rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
       data[[cn]] <- new
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
@@ -88,12 +89,12 @@ liver_fat_markers <- function(
     dfp <- data[, used_for_policy, drop = FALSE]
     any_na_cols <- names(which(colSums(is.na(dfp)) > 0))
     high_na_cols <- names(which(colMeans(is.na(dfp)) >= na_warn_prop))
-    if (length(any_na_cols)) warning(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")), call. = FALSE)
-    if (length(high_na_cols)) warning(sprintf("High missingness (>= %.0f%%): %s.", 100*na_warn_prop, paste(high_na_cols, collapse = ", ")), call. = FALSE)
+    if (length(any_na_cols)) rlang::warn(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")))
+    if (length(high_na_cols)) rlang::warn(sprintf("High missingness (>= %.0f%%): %s.", 100*na_warn_prop, paste(high_na_cols, collapse = ", ")))
   }
   cc_req <- stats::complete.cases(data[, mapped_req, drop = FALSE])
   if (na_action_eff == "error" && !all(cc_req)) {
-    stop("liver_fat_markers(): missing/non-finite values with na_action='error'.", call.=FALSE)
+    rlang::abort("liver_fat_markers(): missing/non-finite values with na_action='error'.")
   }
   keep <- if (na_action_eff == "omit") cc_req else rep(TRUE, nrow(data))
 
@@ -129,7 +130,7 @@ liver_fat_markers <- function(
     }
     if (total_flag > 0L) {
       if (extreme_action == "error") {
-        stop(sprintf("liver_fat_markers(): %d extreme input values detected.", total_flag), call. = FALSE)
+        rlang::abort(sprintf("liver_fat_markers(): %d extreme input values detected.", total_flag))
       } else if (extreme_action == "cap") {
         for (nm in names(flags)) {
           cn <- name_to_col[[nm]]; if (is.null(cn) || !(cn %in% names(d))) next
@@ -139,9 +140,9 @@ liver_fat_markers <- function(
           x[bad & is.finite(x) & x > hi] <- hi
           d[[cn]] <- x
         }
-        warning(sprintf("liver_fat_markers(): capped %d extreme input values into allowed ranges.", total_flag), call. = FALSE)
+        rlang::warn(sprintf("liver_fat_markers(): capped %d extreme input values into allowed ranges.", total_flag))
       } else if (extreme_action == "warn") {
-        warning(sprintf("liver_fat_markers(): detected %d extreme input values (not altered).", total_flag), call. = FALSE)
+        rlang::warn(sprintf("liver_fat_markers(): detected %d extreme input values (not altered).", total_flag))
       } else if (extreme_action == "NA") {
         for (nm in names(flags)) {
           cn <- name_to_col[[nm]]; if (is.null(cn) || !(cn %in% names(d))) next
@@ -177,7 +178,6 @@ liver_fat_markers <- function(
   female_flag <- {
     if (is.null(sex)) rep(0L, length(BMI))
     else {
-      # Support 2=female, "female"/"F", TRUE indicates female if logical
       if (is.numeric(sex)) as.integer(sex == 2)
       else if (is.logical(sex)) as.integer(sex)
       else {

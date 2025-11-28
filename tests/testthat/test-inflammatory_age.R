@@ -46,6 +46,9 @@ test_that("iAge NA handling gives zero for all-NA row with na_action='omit'", {
 # 4) Verbose message
 test_that("iAge verbose prints progress message", {
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
+  old <- getOption("healthmarkers.verbose", "none")
+  on.exit(options(healthmarkers.verbose = old), add = TRUE)
+  options(healthmarkers.verbose = "inform")
   expect_message(
     iAge(df_ok, col_map = col_map, verbose = TRUE),
     "-> iAge: computing weighted sum"

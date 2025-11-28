@@ -2,7 +2,7 @@
 % Please edit documentation in R/bone_markers.R
 \name{bone_markers}
 \alias{bone_markers}
-\title{Compute Bone Health & Body-Composition Markers}
+\title{Compute Bone Health & Body-Composition Markers (HM-CS v3)}
 \usage{
 bone_markers(
   data,
@@ -44,6 +44,13 @@ Given DXA, anthropometry, and optional bone-turnover markers, computes:
 \item FMI: Fat Mass Index = FM / height^2
 \item BMD_Tscore: (BMD - ref_mean) / ref_sd
 and (if in \code{col_map} + data) passes through: TBS, HSA, PINP, CTX, BSAP, Osteocalcin.
+}
+}
+\details{
+Notes:
+\itemize{
+\item Units: height in meters; ALM, FM, weight in kilograms; BMD in g/cm^2; ALMI/FMI in kg/m^2.
+\item Non-finite values are treated as NA; division by zero is prevented by input checks.
 }
 }
 \examples{

@@ -13,7 +13,8 @@ adiposity_sds_strat(
   extreme_action = c("cap", "NA", "error"),
   extreme_rules = NULL,
   allow_partial = FALSE,
-  prefix = ""
+  prefix = "",
+  verbose = FALSE
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ If NULL, broad defaults are applied for common measures (BMI, waist, weight, hei
 \item{allow_partial}{If TRUE, skip variables absent in data (with a warning); if FALSE error}
 
 \item{prefix}{Optional prefix for output columns (default "")}
+
+\item{verbose}{Logical; when TRUE emit progress via package logger; by default logging is controlled by options(healthmarkers.verbose)}
 }
 \value{
 A tibble with one SDS column per retained variable: \if{html}{\out{<prefix>}}\if{html}{\out{<var>}}_SDS

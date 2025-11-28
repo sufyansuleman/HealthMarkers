@@ -1,6 +1,6 @@
 # File: R/bone_markers.R
 
-#' Compute Bone Health & Body-Composition Markers
+#' Compute Bone Health & Body-Composition Markers (HM-CS v3)
 #'
 #' Given DXA, anthropometry, and optional bone-turnover markers, computes:
 #' - OSTA: (weight - age) x 0.2
@@ -8,6 +8,11 @@
 #' - FMI: Fat Mass Index = FM / height^2
 #' - BMD_Tscore: (BMD - ref_mean) / ref_sd
 #' and (if in `col_map` + data) passes through: TBS, HSA, PINP, CTX, BSAP, Osteocalcin.
+#'
+#' Notes:
+#' - Units: height in meters; ALM, FM, weight in kilograms; BMD in g/cm^2; ALMI/FMI in kg/m^2.
+#' - Non-finite values are treated as NA; division by zero is prevented by input checks.
+#'
 #' @param data A `data.frame` or tibble with subject-level DXA/anthropometry data.
 #' @param col_map Named list mapping keys to column names. Required keys:
 #'   - `age`, `weight`, `height`, `ALM`, `FM`, `BMD`, `BMD_ref_mean`, `BMD_ref_sd`
@@ -54,12 +59,15 @@ bone_markers <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  # Centralized validation
+  # Validate mapping object
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("bone_markers(): `col_map` must be a named list mapping keys to column names.",
                  class = "healthmarkers_bone_error_colmap_type")
   }
   required <- c("age", "weight", "height", "ALM", "FM", "BMD", "BMD_ref_mean", "BMD_ref_sd")
+  optional <- c("TBS", "HSA", "PINP", "CTX", "BSAP", "Osteocalcin")
+
+  # Required keys present in col_map
   missing_map <- setdiff(required, names(col_map))
   if (length(missing_map)) {
     rlang::abort(
@@ -67,21 +75,34 @@ bone_markers <- function(
       class = "healthmarkers_bone_error_colmap_missing"
     )
   }
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(col_map[required]),
-    required_keys = required,
-    fn = "bone_markers"
-  )
+
+  # Required columns exist in data
+  req_cols <- unname(unlist(col_map[required], use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
+  if (length(missing_cols)) {
+    rlang::abort(
+      paste0("bone_markers(): missing required columns in data: ", paste(missing_cols, collapse = ", ")),
+      class = "healthmarkers_bone_error_missing_columns"
+    )
+  }
 
   hm_inform("bone_markers(): computing bone markers", level = "inform")
 
-  # Coerce required columns to numeric quietly
-  for (k in required) {
-    cn <- col_map[[k]]
+  # Coerce required and present optional columns to numeric; warn if NAs introduced
+  present_opt_cols <- intersect(unname(unlist(col_map[intersect(optional, names(col_map))], use.names = FALSE)), names(data))
+  for (cn in unique(c(req_cols, present_opt_cols))) {
     if (!is.numeric(data[[cn]])) {
-      suppressWarnings(data[[cn]] <- as.numeric(data[[cn]]))
+      old <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old))
+      introduced <- sum(is.na(data[[cn]]) & !is.na(old))
+      if (introduced > 0) {
+        rlang::warn(
+          sprintf("bone_markers(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced),
+          class = "healthmarkers_bone_warn_na_coercion"
+        )
+      }
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
   n <- nrow(data)
@@ -163,7 +184,7 @@ bone_markers <- function(
   # helper for optional pass-through
   get_opt <- function(key) {
     if (key %in% names(col_map) && col_map[[key]] %in% names(data)) {
-      data[[col_map[[key]]]]
+      as.numeric(data[[ col_map[[key]] ]])
     } else {
       rep(NA_real_, n)
     }
@@ -176,16 +197,16 @@ bone_markers <- function(
   Osteocalcin <- get_opt("Osteocalcin")
 
   result <- tibble::tibble(
-    OSTA,
-    ALMI,
-    FMI,
-    BMD_Tscore,
-    TBS,
-    HSA,
-    PINP,
-    CTX,
-    BSAP,
-    Osteocalcin
+    OSTA = as.numeric(OSTA),
+    ALMI = as.numeric(ALMI),
+    FMI = as.numeric(FMI),
+    BMD_Tscore = as.numeric(BMD_Tscore),
+    TBS = TBS,
+    HSA = HSA,
+    PINP = PINP,
+    CTX = CTX,
+    BSAP = BSAP,
+    Osteocalcin = Osteocalcin
   )
 
   hm_inform("bone_markers(): completed", level = "inform")
@@ -194,6 +215,5 @@ bone_markers <- function(
 
 # ---- internal helpers (not exported) ----
 .bm_validate_misc_args <- function(verbose, na_warn_prop, check_extreme_sds, sds_limit) {
-  # kept for backward compatibility; no-op in HM-CS v1 flow
   invisible(TRUE)
 }

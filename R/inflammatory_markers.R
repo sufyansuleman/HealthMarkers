@@ -121,7 +121,7 @@ inflammatory_markers <- function(data, col_map,
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
 
-  if (isTRUE(verbose)) message("-> inflammatory_markers: computing indices")
+  if (isTRUE(verbose)) rlang::inform("-> inflammatory_markers: computing indices")
 
   supported_keys <- c("neutrophils","lymphocytes","monocytes","platelets","WBC","CRP","albumin","eosinophils","ESR")
   get_col <- function(key) if (key %in% names(col_map)) as.character(col_map[[key]])[1] else NA_character_
@@ -263,7 +263,7 @@ inflammatory_markers <- function(data, col_map,
   }
 
   if (dz_count > 0L) rlang::warn("inflammatory_markers(): zero denominators detected.")
-  if (isTRUE(verbose)) message("inflammatory_markers(): computed inflammatory indices")
+  if (isTRUE(verbose)) rlang::inform("inflammatory_markers(): computed inflammatory indices")
 
   tibble::as_tibble(out)
 }

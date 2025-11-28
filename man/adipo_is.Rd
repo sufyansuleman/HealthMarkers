@@ -2,7 +2,7 @@
 % Please edit documentation in R/adipo_is.R
 \name{adipo_is}
 \alias{adipo_is}
-\title{Compute adipose insulin sensitivity indices}
+\title{Adipose insulin sensitivity indices (QUICKI, VAI, LAP, TyG, TG/HDL, Belfiore)}
 \usage{
 adipo_is(
   data,
@@ -11,45 +11,37 @@ adipo_is(
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   extreme_action = c("cap", "NA", "error"),
-  extreme_rules = NULL
+  extreme_rules = NULL,
+  verbose = FALSE,
+  ...
 )
 }
 \arguments{
-\item{data}{Data frame/tibble}
+\item{data}{Data frame or tibble with required columns mapped by \code{col_map}}
 
-\item{col_map}{Named list mapping required keys to column names:
-\itemize{
-\item G0, I0, TG, HDL_c, FFA, waist, bmi
-}}
+\item{col_map}{Named list mapping keys to columns: G0, I0, TG, HDL_c, FFA, waist, bmi}
 
-\item{normalize}{One of: "none","z","inverse","range","robust"}
+\item{normalize}{One of c("none","z","inverse","range","robust"); default "none"}
 
-\item{na_action}{One of: "keep","omit","error"}
+\item{na_action}{One of c("keep","omit","error"); default "keep"}
 
 \item{check_extreme}{Logical; if TRUE, applies range checks before computing}
 
-\item{extreme_action}{One of: "cap","NA","error"}
+\item{extreme_action}{One of c("cap","NA","error"); default "cap" when \code{check_extreme = TRUE}}
 
 \item{extreme_rules}{Optional named list of c(min,max) per key (in original units)}
+
+\item{verbose}{Logical; when TRUE, emits progress via \code{hm_inform()}}
+
+\item{...}{Reserved}
 }
 \value{
-Tibble with columns:
-Revised_QUICKI, VAI_Men_inv, VAI_Women_inv, TG_HDL_C_inv, TyG_inv,
-LAP_Men_inv, LAP_Women_inv, McAuley_index, Adipo_inv, Belfiore_inv_FFA
+A tibble with columns:
+\code{Revised_QUICKI}, \code{VAI_Men_inv}, \code{VAI_Women_inv}, \code{TG_HDL_C_inv}, \code{TyG_inv},
+\code{LAP_Men_inv}, \code{LAP_Women_inv}, \code{McAuley_index}, \code{Adipo_inv}, \code{Belfiore_inv_FFA}
 }
 \description{
-Computes adipose insulin sensitivity/resistance indices from fasting measures:
-\itemize{
-\item Revised_QUICKI = 1 / \link{log10(insulin µU/mL) + log10(glucose mg/dL) + log10(FFA mmol/L)}
-\item VAI (sex-specific, inverted so higher = better IS)
-\item TG_HDL_C_inv = -(TG / HDL) (mg/dL ratios)
-\item TyG_inv = -ln(TG × glucose / 2)
-\item LAP (sex-specific, inverted)
-\item McAuley_index = exp(2.63 − 0.28 ln(insulin) − 0.31 ln(TG))
-\item Adipo_inv = −(FFA × insulin)
-\item Belfiore_inv_FFA = − 2 / (insulin × FFA + 1)
-}
-
+Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
 Expected input units (converted internally):
 \itemize{
 \item Glucose G0 mmol/L -> mg/dL (* 18)
@@ -57,4 +49,45 @@ Expected input units (converted internally):
 \item TG mmol/L -> mg/dL (* 88.57)
 \item HDL mmol/L -> mg/dL (* 38.67)
 }
+
+Reported indices (higher magnitude of negative “_inv” values implies worse adipose IR):
+\itemize{
+\item Revised_QUICKI = 1 / [log10(I0\link{µU/mL}) + log10(G0\link{mg/dL}) + log10(FFA\link{mmol/L})]
+\item VAI (sex-specific; inverted as VAI_*_inv so larger negative = worse)
+\item TG_HDL_C_inv = -(TG/HDL) in mg/dL
+\item TyG_inv = -ln(TG\link{mg/dL} × G0\link{mg/dL} / 2)
+\item LAP (sex-specific; inverted)
+\item McAuley_index = exp(2.63 − 0.28 ln(I0\link{µU/mL}) − 0.31 ln(TG\link{mmol/L}))
+\item Adipo_inv = −(FFA × I0\link{µU/mL})
+\item Belfiore_inv_FFA = − 2 / (I0\link{µU/mL} × FFA + 1)
+}
+}
+\examples{
+df <- tibble::tibble(
+  G0 = c(5.2, 6.1),      # mmol/L
+  I0 = c(60, 110),       # pmol/L
+  TG = c(1.2, 1.8),      # mmol/L
+  HDL_c = c(1.3, 1.0),   # mmol/L
+  FFA = c(0.4, 0.6),     # mmol/L
+  waist = c(85, 102),    # cm
+  bmi = c(24, 31)        # kg/m^2
+)
+cm <- as.list(names(df)); names(cm) <- names(df)
+out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
+head(out)
+}
+\references{
+Katz A, et al. QUICKI. J Clin Endocrinol Metab (2000) \doi{10.1210/jcem.85.5.2402}
+
+Amato MC, et al. VAI. Diabetes Care (2010) \doi{10.2337/dc09-1825}
+
+Kahn HS. LAP. BMC Cardiovasc Disord (2005) \doi{10.1186/1471-2261-5-26}
+
+Guerrero-Romero F, et al. TyG. Diabetes Care (2018) \doi{10.2337/dc18-0010}
+
+Dobiasova M. Atherogenic indices (TG/HDL concept). Clin Chem Lab Med (2001) \doi{10.1515/CCLM.2001.095}
+
+Belfiore F, et al. Insulin sensitivity formulations. Mol Genet Metab (1998) \doi{10.1006/mgme.1998.2630}
+
+Raynaud E, et al. Revised QUICKI concept with NEFA/FFA. Diabetes Care (1999) \doi{10.2337/diacare.22.6.1003}
 }

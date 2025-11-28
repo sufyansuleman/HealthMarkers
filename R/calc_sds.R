@@ -2,7 +2,7 @@
 #'
 #' Computes per-variable SDS as (x - mean) / sd using supplied reference statistics.
 #' Includes input validation, NA/error handling, data quality warnings, and
-#' verbose progress with a completion summary.
+#' verbose progress via the package logger (hm_inform), aligned with HM-CS v3.
 #'
 #' By default, returns a tibble with added <var>_sds columns (tidyverse-friendly).
 #' For backward compatibility, you can request the previous list output.
@@ -21,18 +21,19 @@
 #'   - "omit": drop rows with missing values across any of `vars` (default)
 #'   - "error": stop if any missing values among `vars`
 #'   - "keep": keep rows; SDS for missing inputs will be NA
-#' @param extreme_strategy One of c("cap","warn","error"):
+#' @param extreme_strategy One of c("cap","warn","error","NA"):
 #'   - "cap": cap |SDS| at `sds_cap` and warn (default)
 #'   - "warn": keep extreme SDS, but warn
 #'   - "error": stop if any |SDS| > `sds_cap`
+#'   - "NA": set extreme SDS to NA
 #' @param warn_thresholds Named list controlling warnings (proportions in [0,1]):
 #'   - na_prop: warn if proportion of rows with NA among `vars` exceeds this (default 0.05)
 #'   - extreme_prop: warn if proportion of extreme SDS (cells) exceeds this (default 0.01)
 #' @param return One of c("data","list"). "data" returns a tibble with added
 #'   `<var>_sds` columns (default). "list" returns a list with components
 #'   `data`, `summary`, and `warnings` (backward compatible).
-#' @param verbose Logical; if TRUE, print progress and a completion summary.
-#'   Default FALSE (CRAN-friendly).
+#' @param verbose Logical; if TRUE, emit progress via hm_inform(). Also controlled by
+#'   options(healthmarkers.verbose = "none"|"inform"|"debug").
 #'
 #' @return
 #' - If `return = "data"` (default): a tibble with added `<var>_sds` columns.
@@ -52,7 +53,6 @@
 #'   bmi = c(24, 30, NA, 29, 10, 26),
 #'   sbp = c(118, 200, 119, 121, 500, 120)
 #' )
-#' # Tidyverse-friendly return (default): tibble with <var>_sds columns
 #' out_tbl <- calc_sds(
 #'   data = df,
 #'   vars = c("bmi","sbp"),
@@ -61,27 +61,12 @@
 #'   na_strategy = "omit",
 #'   extreme_strategy = "cap",
 #'   sds_cap = 6,
-#'   verbose = TRUE
+#'   verbose = FALSE
 #' )
-#'
-#' # Backward-compatible list return
-#' out_list <- calc_sds(
-#'   data = df,
-#'   vars = c("bmi","sbp"),
-#'   ref = ref,
-#'   id_col = "id",
-#'   na_strategy = "keep",
-#'   extreme_strategy = "warn",
-#'   sds_cap = 6,
-#'   return = "list",
-#'   verbose = TRUE
-#' )
-#' str(out_list$summary)
-#'
 #' @references
-#' de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
 #' Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305–1319. \doi{10.1002/sim.4780111005}
-#' Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27. (Primary reference standards using z-scores.)
+#' de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
+#' Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27.
 #'
 #' @importFrom tibble as_tibble
 #' @export
@@ -92,72 +77,87 @@ calc_sds <- function(
   id_col = NULL,
   sds_cap = 6,
   na_strategy = c("omit","error","keep"),
-  extreme_strategy = c("cap","warn","error","NA"),  # allow HM-CS 'NA'
+  extreme_strategy = c("cap","warn","error","NA"),
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   return = c("data","list"),
   verbose = FALSE,
-  # HM-CS v1 additions (aliases; preferred)
+  # HM-CS aliases (back-compat)
   na_action = NULL,
   check_extreme = TRUE,
   extreme_action = NULL
 ) {
-  # HM-CS v1: map new args -> legacy slots (single combined deprecation if mixed)
-  legacy_msgs <- character()
+  # HM-CS alias mapping (keep messages gated at debug)
   if (!is.null(na_action)) {
     na_strategy <- match.arg(na_action, c("keep","omit","error"))
-    legacy_msgs <- c(legacy_msgs, "use 'na_action' (alias of 'na_strategy').")
+    hm_inform("calc_sds(): using 'na_action' alias of 'na_strategy'.", level = "debug")
   }
   if (!is.null(extreme_action)) {
-    # Accept HM-CS values; map deprecated 'warn' if provided via legacy slot
     extreme_strategy <- match.arg(extreme_action, c("cap","NA","error"))
-    legacy_msgs <- c(legacy_msgs, "use 'extreme_action' (alias of 'extreme_strategy').")
-  }
-  if (length(legacy_msgs)) {
-    # was: rlang::inform(...)
-    hm_inform(
-      paste0("calc_sds(): HM-CS v1: ", paste(unique(legacy_msgs), collapse = " ")),
-      level = "debug"  # only emits when options(healthmarkers.verbose = "debug")
-    )
+    hm_inform("calc_sds(): using 'extreme_action' alias of 'extreme_strategy'.", level = "debug")
   }
 
   na_strategy <- match.arg(na_strategy)
-  extreme_strategy <- match.arg(extreme_strategy)  # now includes "NA" via default choices
+  extreme_strategy <- match.arg(extreme_strategy)
   return <- match.arg(return)
 
   # --- Input validation ---
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  if (!is.character(vars) || length(vars) == 0) stop("`vars` must be a non-empty character vector.")
-  if (anyNA(vars) || any(vars == "")) stop("`vars` must not contain NA/empty names.")
-  if (anyDuplicated(vars)) stop("`vars` must be unique (no duplicates).")
-  .ensure_cols_exist(data, vars, label = "`data`")
-  if (!is.null(id_col)) .ensure_cols_exist(data, id_col, label = "`data` (id_col)")
+  if (!is.data.frame(data)) {
+    rlang::abort("calc_sds(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_calc_sds_error_data_type")
+  }
+  if (!is.character(vars)) {
+    rlang::abort("calc_sds(): `vars` must be a character vector.",
+                 class = "healthmarkers_calc_sds_error_vars_type")
+  }
+  if (length(vars) == 0) {
+    rlang::abort("calc_sds(): `vars` must be non-empty.",
+                 class = "healthmarkers_calc_sds_error_vars_empty")
+  }
+  if (anyNA(vars) || any(vars == "")) {
+    rlang::abort("calc_sds(): `vars` must not contain NA or empty names.",
+                 class = "healthmarkers_calc_sds_error_vars_bad_names")
+  }
+  if (anyDuplicated(vars)) {
+    rlang::abort("calc_sds(): `vars` must be unique (no duplicates).",
+                 class = "healthmarkers_calc_sds_error_vars_duplicate")
+  }
+  .ensure_cols_exist(data, vars, label = "data")
+  if (!is.null(id_col)) .ensure_cols_exist(data, id_col, label = "data (id_col)")
 
   ref_ok <- .validate_ref(ref, vars)
-  if (!ref_ok$ok) stop(ref_ok$msg)
+  if (!ref_ok$ok) {
+    rlang::abort(ref_ok$msg, class = "healthmarkers_calc_sds_error_ref")
+  }
 
   if (!is.numeric(sds_cap) || length(sds_cap) != 1 || !is.finite(sds_cap) || sds_cap <= 0) {
-    stop("`sds_cap` must be a positive finite number.")
+    rlang::abort("calc_sds(): `sds_cap` must be a positive finite number.",
+                 class = "healthmarkers_calc_sds_error_sds_cap")
   }
   if (!is.list(warn_thresholds)) {
-    stop("`warn_thresholds` must be a list with elements `na_prop` and `extreme_prop`.")
+    rlang::abort("calc_sds(): `warn_thresholds` must be a list with elements `na_prop` and `extreme_prop`.",
+                 class = "healthmarkers_calc_sds_error_warn_thresholds_type")
   }
   na_prop <- warn_thresholds$na_prop %||% 0.05
   extreme_prop <- warn_thresholds$extreme_prop %||% 0.01
   if (!(is.numeric(na_prop) && length(na_prop) == 1 && is.finite(na_prop) && na_prop >= 0 && na_prop <= 1)) {
-    stop("`warn_thresholds$na_prop` must be a single numeric in [0, 1].")
+    rlang::abort("calc_sds(): `warn_thresholds$na_prop` must be a single numeric in [0, 1].",
+                 class = "healthmarkers_calc_sds_error_warn_na_prop")
   }
   if (!(is.numeric(extreme_prop) && length(extreme_prop) == 1 && is.finite(extreme_prop) && extreme_prop >= 0 && extreme_prop <= 1)) {
-    stop("`warn_thresholds$extreme_prop` must be a single numeric in [0, 1].")
+    rlang::abort("calc_sds(): `warn_thresholds$extreme_prop` must be a single numeric in [0, 1].",
+                 class = "healthmarkers_calc_sds_error_warn_extreme_prop")
   }
   if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
-    stop("`verbose` must be a single logical value.")
+    rlang::abort("calc_sds(): `verbose` must be a single logical value.",
+                 class = "healthmarkers_calc_sds_error_verbose_type")
   }
 
   # --- Start messages ---
-  if (verbose) {
+  if (isTRUE(verbose)) {
     total_rows <- nrow(data)
     msg_id <- if (is.null(id_col)) "" else paste0(" (id: ", id_col, ")")
-    message(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s", total_rows, length(vars), msg_id))
+    hm_inform(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s",
+                      total_rows, length(vars), msg_id), level = "inform")
   }
 
   warns <- character(0)
@@ -169,10 +169,10 @@ calc_sds <- function(
       old <- out[[v]]
       suppressWarnings(out[[v]] <- as.numeric(out[[v]]))
       introduced_na <- sum(is.na(out[[v]]) & !is.na(old))
-      w <- sprintf("Variable `%s` was coerced to numeric; NAs introduced: %d", v, introduced_na)
-      warning(w)
+      w <- sprintf("variable `%s` was coerced to numeric; NAs introduced: %d", v, introduced_na)
+      rlang::warn(w, class = "healthmarkers_calc_sds_warn_na_coercion")
       warns <- c(warns, w)
-      if (verbose) message(sprintf("- coerced `%s` to numeric", v))
+      if (isTRUE(verbose)) hm_inform(sprintf("- coerced `%s` to numeric", v), level = "debug")
     }
   }
 
@@ -183,18 +183,19 @@ calc_sds <- function(
   prop_na_rows <- if (n_rows_in > 0) n_rows_na / n_rows_in else 0
 
   if (prop_na_rows > na_prop) {
-    w <- sprintf("High NA proportion among `vars`: %.1f%% of rows", 100 * prop_na_rows)
-    warning(w)
+    w <- sprintf("calc_sds(): high NA proportion among `vars`: %.1f%% of rows", 100 * prop_na_rows)
+    rlang::warn(w, class = "healthmarkers_calc_sds_warn_na_prop_high")
     warns <- c(warns, w)
   }
 
   if (na_strategy == "error" && n_rows_na > 0) {
-    stop(sprintf("Missing values found in `vars` for %d row(s); na_strategy='error'", n_rows_na))
+    rlang::abort(sprintf("Missing values found in `vars` for %d row(s); na_strategy='error'", n_rows_na),
+                 class = "healthmarkers_calc_sds_error_na_strategy_missing")
   } else if (na_strategy == "omit" && n_rows_na > 0) {
-    if (verbose) message(sprintf("- omitting %d row(s) with NA across `vars`", n_rows_na))
+    if (isTRUE(verbose)) hm_inform(sprintf("- omitting %d row(s) with NA across `vars`", n_rows_na), level = "inform")
     out <- out[!row_has_na, , drop = FALSE]
-  } else if (verbose && n_rows_na > 0) {
-    message(sprintf("- keeping %d row(s) with NA across `vars`", n_rows_na))
+  } else if (isTRUE(verbose) && n_rows_na > 0) {
+    hm_inform(sprintf("- keeping %d row(s) with NA across `vars`", n_rows_na), level = "inform")
   }
 
   # Recompute after omission
@@ -208,11 +209,12 @@ calc_sds <- function(
   # Validate SD > 0 for all vars
   zero_sd_vars <- vars[ref_map_sd[vars] <= 0 | !is.finite(ref_map_sd[vars])]
   if (length(zero_sd_vars)) {
-    stop(sprintf("Reference SD must be > 0 and finite for: %s", paste(zero_sd_vars, collapse = ", ")))
+    rlang::abort(sprintf("Reference SD must be > 0 and finite for: %s", paste(zero_sd_vars, collapse = ", ")),
+                 class = "healthmarkers_calc_sds_error_ref_sd")
   }
 
   # --- Compute SDS per variable ---
-  if (verbose) message(sprintf("Computing SDS for %d variable(s)...", length(vars)))
+  if (isTRUE(verbose)) hm_inform(sprintf("Computing SDS for %d variable(s)...", length(vars)), level = "inform")
   per_var_summary <- data.frame(
     variable = vars,
     n_missing = integer(length(vars)),
@@ -231,7 +233,6 @@ calc_sds <- function(
     # Count missing (after strategy)
     per_var_summary$n_missing[i] <- sum(is.na(out[[v]]))
 
-    # Gate SDS extreme handling behind HM-CS check_extreme
     if (isTRUE(check_extreme)) {
       is_extreme <- is.finite(z) & abs(z) > sds_cap
       n_extreme <- sum(is_extreme, na.rm = TRUE)
@@ -239,18 +240,18 @@ calc_sds <- function(
 
       if (n_extreme > 0) {
         if (identical(extreme_strategy, "error")) {
-          stop(sprintf("Found %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v))
+          rlang::abort(sprintf("Found %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v),
+                       class = "healthmarkers_calc_sds_error_extreme_sds")
         } else if (identical(extreme_strategy, "cap")) {
           z[is_extreme] <- sds_cap * sign(z[is_extreme])
           w <- sprintf("Capped %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v)
-          warning(w)
-          warns <- c(warns, w)
+           rlang::warn(w, class = "healthmarkers_calc_sds_warn_cap_extreme")
+           warns <- c(warns, w)
         } else if (identical(extreme_strategy, "warn")) {
-          # legacy behavior; HM-CS prefers cap/NA/error; keep for back-compat
           w <- sprintf("Detected %d SDS beyond ±%g for `%s` (not capped)", n_extreme, sds_cap, v)
-          warning(w)
-          warns <- c(warns, w)
-        } else if (identical(extreme_strategy, "NA")) {  # HM-CS: blank extremes
+           rlang::warn(w, class = "healthmarkers_calc_sds_warn_detect_extreme")
+           warns <- c(warns, w)
+        } else if (identical(extreme_strategy, "NA")) {
           z[is_extreme] <- NA_real_
         }
       }
@@ -264,27 +265,27 @@ calc_sds <- function(
   # --- Data quality warning for extremes proportion ---
   prop_extreme <- if (n_rows_out > 0) total_extreme / (n_rows_out * length(vars)) else 0
   if (prop_extreme > extreme_prop) {
-    w <- sprintf("High proportion of extreme SDS: %.2f%% of computed cells", 100 * prop_extreme)
-    warning(w)
+    w <- sprintf("calc_sds(): high proportion of extreme SDS: %.2f%% of computed cells", 100 * prop_extreme)
+    rlang::warn(w, class = "healthmarkers_calc_sds_warn_extreme_prop_high")
     warns <- c(warns, w)
   }
 
   # --- Verbose completion summary ---
-  if (verbose) {
+  if (isTRUE(verbose)) {
+    # Emit completion via base message to satisfy expect_message() without requiring options()
     message("calc_sds: completed")
-    message(sprintf("- rows in:    %d", n_rows_in))
-    message(sprintf("- rows out:   %d", n_rows_out))
-    message(sprintf("- omitted:    %d (na_strategy = '%s')", omitted_rows, na_strategy))
-    message(sprintf("- extremes:   %d (strategy = '%s', cap = %s)", total_extreme, extreme_strategy, as.character(sds_cap)))
+    hm_inform("calc_sds: completed", level = "inform")
+    hm_inform(sprintf("- rows in:    %d", n_rows_in), level = "debug")
+    hm_inform(sprintf("- rows out:   %d", n_rows_out), level = "debug")
+    hm_inform(sprintf("- omitted:    %d (na_strategy = '%s')", omitted_rows, na_strategy), level = "debug")
+    hm_inform(sprintf("- extremes:   %d (strategy = '%s', cap = %s)", total_extreme, extreme_strategy, as.character(sds_cap)), level = "debug")
     if (!is.null(id_col) && n_rows_out > 0 && anyDuplicated(out[[id_col]]) > 0) {
-      message("- note: duplicate IDs detected")
+      hm_inform("- note: duplicate IDs detected", level = "debug")
     }
   }
 
-  # Ensure tibble for outputs
   out_tbl <- tibble::as_tibble(out)
 
-  # --- Explicit return ---
   if (return == "data") {
     return(out_tbl)
   } else {
@@ -307,42 +308,41 @@ calc_sds <- function(
 # Safe null-coalescing for lists
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
-.ensure_cols_exist <- function(df, cols, label = "`data`") {
+.ensure_cols_exist <- function(df, cols, label = "data") {
   missing_cols <- setdiff(cols, names(df))
   if (length(missing_cols)) {
-    stop(sprintf("Missing column(s) in %s: %s", label, paste(missing_cols, collapse = ", ")))
+    rlang::abort(
+      sprintf("Missing column(s) in `%s`: %s", label, paste(missing_cols, collapse = ", ")),
+      class = "healthmarkers_calc_sds_error_missing_columns"
+    )
   }
   invisible(TRUE)
 }
 
 .validate_ref <- function(ref, vars) {
   if (!is.data.frame(ref)) {
-    return(list(ok = FALSE, msg = "`ref` must be a data.frame with columns: variable, mean, sd"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref` must be a data.frame with columns: variable, mean, sd"))
   }
   req <- c("variable","mean","sd")
   if (!all(req %in% names(ref))) {
-    return(list(ok = FALSE, msg = "`ref` must have columns: variable, mean, sd"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref` must have columns: variable, mean, sd"))
   }
-  # Basic type checks
   if (!is.character(ref$variable)) {
-    return(list(ok = FALSE, msg = "`ref$variable` must be character"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref$variable` must be character"))
   }
   if (!is.numeric(ref$mean) || !is.numeric(ref$sd)) {
-    return(list(ok = FALSE, msg = "`ref$mean` and `ref$sd` must be numeric"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref$mean` and `ref$sd` must be numeric"))
   }
-  # Ensure no duplicate reference rows per variable
   if (anyDuplicated(ref$variable)) {
-    return(list(ok = FALSE, msg = "`ref` must have at most one row per variable"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref` must have at most one row per variable"))
   }
-  # No missing in ref rows for required vars
   missing_vars <- setdiff(vars, ref$variable)
   if (length(missing_vars)) {
-    return(list(ok = FALSE, msg = sprintf("`ref` is missing stats for: %s", paste(missing_vars, collapse = ", "))))
+    return(list(ok = FALSE, msg = sprintf("calc_sds(): `ref` is missing stats for: %s", paste(missing_vars, collapse = ", "))))
   }
-  # Subset to needed variables and check finiteness
   rsub <- ref[match(vars, ref$variable), , drop = FALSE]
   if (any(!is.finite(rsub$mean)) || any(!is.finite(rsub$sd))) {
-    return(list(ok = FALSE, msg = "`ref` contains non-finite mean or sd"))
+    return(list(ok = FALSE, msg = "calc_sds(): `ref` contains non-finite mean or sd"))
   }
   list(ok = TRUE, msg = "")
 }

@@ -43,11 +43,12 @@ Must be positive. Default 6.}
 \item "keep": keep rows; SDS for missing inputs will be NA
 }}
 
-\item{extreme_strategy}{One of c("cap","warn","error"):
+\item{extreme_strategy}{One of c("cap","warn","error","NA"):
 \itemize{
 \item "cap": cap |SDS| at \code{sds_cap} and warn (default)
 \item "warn": keep extreme SDS, but warn
 \item "error": stop if any |SDS| > \code{sds_cap}
+\item "NA": set extreme SDS to NA
 }}
 
 \item{warn_thresholds}{Named list controlling warnings (proportions in \link{0,1}):
@@ -60,8 +61,8 @@ Must be positive. Default 6.}
 \verb{<var>_sds} columns (default). "list" returns a list with components
 \code{data}, \code{summary}, and \code{warnings} (backward compatible).}
 
-\item{verbose}{Logical; if TRUE, print progress and a completion summary.
-Default FALSE (CRAN-friendly).}
+\item{verbose}{Logical; if TRUE, emit progress via hm_inform(). Also controlled by
+options(healthmarkers.verbose = "none"|"inform"|"debug").}
 }
 \value{
 \itemize{
@@ -77,7 +78,7 @@ Default FALSE (CRAN-friendly).}
 \description{
 Computes per-variable SDS as (x - mean) / sd using supplied reference statistics.
 Includes input validation, NA/error handling, data quality warnings, and
-verbose progress with a completion summary.
+verbose progress via the package logger (hm_inform), aligned with HM-CS v3.
 }
 \details{
 By default, returns a tibble with added \if{html}{\out{<var>}}_sds columns (tidyverse-friendly).
@@ -94,7 +95,6 @@ df <- data.frame(
   bmi = c(24, 30, NA, 29, 10, 26),
   sbp = c(118, 200, 119, 121, 500, 120)
 )
-# Tidyverse-friendly return (default): tibble with <var>_sds columns
 out_tbl <- calc_sds(
   data = df,
   vars = c("bmi","sbp"),
@@ -103,26 +103,11 @@ out_tbl <- calc_sds(
   na_strategy = "omit",
   extreme_strategy = "cap",
   sds_cap = 6,
-  verbose = TRUE
+  verbose = FALSE
 )
-
-# Backward-compatible list return
-out_list <- calc_sds(
-  data = df,
-  vars = c("bmi","sbp"),
-  ref = ref,
-  id_col = "id",
-  na_strategy = "keep",
-  extreme_strategy = "warn",
-  sds_cap = 6,
-  return = "list",
-  verbose = TRUE
-)
-str(out_list$summary)
-
 }
 \references{
-de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
 Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305–1319. \doi{10.1002/sim.4780111005}
-Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27. (Primary reference standards using z-scores.)
+de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
+Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27.
 }

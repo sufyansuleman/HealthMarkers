@@ -32,29 +32,64 @@ ckd_stage <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  # Validate mapping and columns (HM-CS centralized)
+  # Validate mapping and columns (explicit; no hm_validate_inputs)
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("ckd_stage(): `col_map` must be a named list.", class = "healthmarkers_ckd_error_colmap_type")
   }
-  req <- c("eGFR")
-  hm_validate_inputs(data, col_map, req, fn = "ckd_stage")
+  if (is.null(col_map$eGFR) || !nzchar(col_map$eGFR)) {
+    rlang::abort("ckd_stage(): `col_map$eGFR` is required.", class = "healthmarkers_ckd_error_missing_map")
+  }
+  if (!col_map$eGFR %in% names(data)) {
+    rlang::abort(sprintf("ckd_stage(): eGFR column '%s' not found in data.", col_map$eGFR),
+                 class = "healthmarkers_ckd_error_missing_column")
+  }
+  # Optional UACR: include only if column exists; warn if mapped but missing
+  has_uacr_map <- !is.null(col_map$UACR) && nzchar(col_map$UACR)
+  has_uacr_col <- has_uacr_map && (col_map$UACR %in% names(data))
+  if (has_uacr_map && !has_uacr_col) {
+    rlang::warn(sprintf("ckd_stage(): UACR column '%s' not found; albuminuria will be NA.", col_map$UACR),
+                class = "healthmarkers_ckd_warn_uacr_missing_column")
+  }
 
   # Identify optional present inputs to include in NA/extreme policies
-  opt_keys <- character()
-  if (!is.null(col_map$UACR) && col_map$UACR %in% names(data)) opt_keys <- c(opt_keys, "UACR")
-  keys_for_policy <- c(req, opt_keys)
+  keys_for_policy <- c("eGFR", if (has_uacr_col) "UACR")
 
   hm_inform("ckd_stage(): computing stages", level = "inform")
 
-  # Coerce to numeric quietly
-  eGFR <- suppressWarnings(as.numeric(data[[col_map$eGFR]]))
-  UACR <- if ("UACR" %in% keys_for_policy) suppressWarnings(as.numeric(data[[col_map$UACR]])) else rep(NA_real_, length(eGFR))
+  # Coerce to numeric; warn on NA introduction; non-finite -> NA
+  eGFR <- data[[col_map$eGFR]]
+  if (!is.numeric(eGFR)) {
+    old <- eGFR
+    suppressWarnings(eGFR <- as.numeric(eGFR))
+    intro <- sum(is.na(eGFR) & !is.na(old))
+    if (intro > 0) {
+      rlang::warn(sprintf("ckd_stage(): column '%s' coerced to numeric; NAs introduced: %d", col_map$eGFR, intro),
+                  class = "healthmarkers_ckd_warn_na_coercion")
+    }
+  }
+  eGFR[!is.finite(eGFR)] <- NA_real_
+
+  if (has_uacr_col) {
+    UACR <- data[[col_map$UACR]]
+    if (!is.numeric(UACR)) {
+      old <- UACR
+      suppressWarnings(UACR <- as.numeric(UACR))
+      intro <- sum(is.na(UACR) & !is.na(old))
+      if (intro > 0) {
+        rlang::warn(sprintf("ckd_stage(): column '%s' coerced to numeric; NAs introduced: %d", col_map$UACR, intro),
+                    class = "healthmarkers_ckd_warn_na_coercion")
+      }
+    }
+    UACR[!is.finite(UACR)] <- NA_real_
+  } else {
+    UACR <- rep(NA_real_, length(eGFR))
+  }
 
   # NA policy over mapped inputs (required + present optional)
   if (length(keys_for_policy)) {
     vals <- list(eGFR = eGFR)
     if ("UACR" %in% keys_for_policy) vals$UACR <- UACR
-    rows_with_na <- Reduce(`|`, lapply(vals, function(x) is.na(x) | !is.finite(x)))
+    rows_with_na <- Reduce(`|`, lapply(vals, function(x) is.na(x)))
   } else {
     rows_with_na <- rep(FALSE, length(eGFR))
   }

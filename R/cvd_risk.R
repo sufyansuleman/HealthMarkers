@@ -322,22 +322,54 @@ cvd_marker_aip <- function(data,
                            verbose = FALSE) {
   na_action <- match.arg(na_action)
 
-  # Centralized mapping/column validation (HM-CS v1)
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(col_map[c("TG","HDL_c")]),
-    required_keys = c("TG","HDL_c"),
-    fn = "cvd_marker_aip"
-  )
+  # Explicit validation (HM-CS v3)
+  if (!is.data.frame(data)) {
+    rlang::abort("cvd_marker_aip(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_cvd_error_aip_data_type")
+  }
+  if (!is.list(col_map) || is.null(names(col_map))) {
+    rlang::abort("cvd_marker_aip(): `col_map` must be a named list.",
+                 class = "healthmarkers_cvd_error_aip_colmap_type")
+  }
+  req_keys <- c("TG","HDL_c")
+  miss_keys <- setdiff(req_keys, names(col_map))
+  if (length(miss_keys)) {
+    rlang::abort(
+      paste0("cvd_marker_aip(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
+      class = "healthmarkers_cvd_error_aip_missing_map"
+    )
+  }
+  req_cols <- unname(unlist(col_map[req_keys], use.names = FALSE))
+  miss_cols <- setdiff(req_cols, names(data))
+  if (length(miss_cols)) {
+    rlang::abort(
+      paste0("cvd_marker_aip(): missing required columns in data: ", paste(miss_cols, collapse = ", ")),
+      class = "healthmarkers_cvd_error_aip_missing_columns"
+    )
+  }
 
   hm_inform("cvd_marker_aip(): computing AIP", level = "inform")
 
   tg_col <- col_map$TG
   hdl_col <- col_map$HDL_c
 
-  # Coerce to numeric quietly
-  tg  <- data[[tg_col]];  if (!is.numeric(tg))  suppressWarnings(tg  <- as.numeric(tg))
-  hdl <- data[[hdl_col]]; if (!is.numeric(hdl)) suppressWarnings(hdl <- as.numeric(hdl))
+  # Coerce to numeric; warn on NA introduction; non-finite -> NA
+  tg  <- data[[tg_col]]
+  if (!is.numeric(tg)) {
+    old <- tg; suppressWarnings(tg <- as.numeric(old))
+    intro <- sum(is.na(tg) & !is.na(old))
+    if (intro > 0) rlang::warn(sprintf("cvd_marker_aip(): column '%s' coerced to numeric; NAs introduced: %d", tg_col, intro),
+                               class = "healthmarkers_cvd_warn_na_coercion")
+  }
+  hdl <- data[[hdl_col]]
+  if (!is.numeric(hdl)) {
+    old <- hdl; suppressWarnings(hdl <- as.numeric(old))
+    intro <- sum(is.na(hdl) & !is.na(old))
+    if (intro > 0) rlang::warn(sprintf("cvd_marker_aip(): column '%s' coerced to numeric; NAs introduced: %d", hdl_col, intro),
+                               class = "healthmarkers_cvd_warn_na_coercion")
+  }
+  tg[!is.finite(tg)] <- NA_real_
+  hdl[!is.finite(hdl)] <- NA_real_
 
   # NA policy
   bad <- !is.finite(tg) | !is.finite(hdl)
@@ -376,27 +408,42 @@ cvd_marker_ldl_particle_number <- function(data,
                                            verbose = FALSE) {
   na_action <- match.arg(na_action)
 
-  # Centralized mapping/column validation (HM-CS v1)
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(col_map["ApoB"]),
-    required_keys = c("ApoB"),
-    fn = "cvd_marker_ldl_particle_number"
-  )
+  # Explicit validation (HM-CS v3)
+  if (!is.data.frame(data)) {
+    rlang::abort("cvd_marker_ldl_particle_number(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_cvd_error_ldlpn_data_type")
+  }
+  if (!is.list(col_map) || is.null(names(col_map))) {
+    rlang::abort("cvd_marker_ldl_particle_number(): `col_map` must be a named list.",
+                 class = "healthmarkers_cvd_error_ldlpn_colmap_type")
+  }
+  if (is.null(col_map$ApoB) || !nzchar(col_map$ApoB)) {
+    rlang::abort("cvd_marker_ldl_particle_number(): missing col_map entry for ApoB.",
+                 class = "healthmarkers_cvd_error_ldlpn_missing_map")
+  }
+  apob_col <- col_map$ApoB
+  if (!(apob_col %in% names(data))) {
+    rlang::abort(sprintf("cvd_marker_ldl_particle_number(): missing required column in data: %s", apob_col),
+                 class = "healthmarkers_cvd_error_ldlpn_missing_columns")
+  }
 
   hm_inform("cvd_marker_ldl_particle_number(): computing LDL_PN", level = "inform")
 
-  apob_col <- col_map$ApoB
   apob <- data[[apob_col]]
-  if (!is.numeric(apob)) suppressWarnings(apob <- as.numeric(apob))
+  if (!is.numeric(apob)) {
+    old <- apob; suppressWarnings(apob <- as.numeric(old))
+    intro <- sum(is.na(apob) & !is.na(old))
+    if (intro > 0) rlang::warn(sprintf("cvd_marker_ldl_particle_number(): column '%s' coerced to numeric; NAs introduced: %d", apob_col, intro),
+                               class = "healthmarkers_cvd_warn_na_coercion")
+  }
+  apob[!is.finite(apob)] <- NA_real_
 
   bad <- !is.finite(apob)
   if (na_action == "error" && any(bad, na.rm = TRUE)) {
     rlang::abort("cvd_marker_ldl_particle_number(): missing/non-finite ApoB (na_action='error').",
                  class = "healthmarkers_cvd_error_ldlpn_missing")
   } else if (na_action == "omit" && any(bad, na.rm = TRUE)) {
-    keep <- is.finite(apob)
-    apob <- apob[keep]
+    apob <- apob[!bad]
   }
 
   out <- tibble::tibble(model = "LDL_PN", value = apob)

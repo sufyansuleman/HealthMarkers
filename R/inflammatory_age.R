@@ -106,39 +106,38 @@ iAge <- function(data,
   na_action <- if (na_action_raw %in% c("ignore","warn")) "omit" else na_action_raw
   extreme_action <- match.arg(extreme_action)
 
-  if (!is.data.frame(data)) stop("iAge(): `data` must be a data.frame or tibble.", call. = FALSE)
-  if (isTRUE(verbose)) message("-> iAge: starting")
+  if (!is.data.frame(data)) rlang::abort("iAge(): `data` must be a data.frame or tibble.")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: starting")
 
   markers <- c("CRP","IL6","TNFa")
-  if (is.null(col_map) || !is.list(col_map)) stop("iAge(): `col_map` must be a named list.", call. = FALSE)
+  if (is.null(col_map) || !is.list(col_map)) rlang::abort("iAge(): `col_map` must be a named list.")
   missing_keys <- setdiff(markers, names(col_map))
-  if (length(missing_keys)) stop("missing required columns: ", paste(missing_keys, collapse = ", "), call. = FALSE)
+  if (length(missing_keys)) rlang::abort(paste0("missing required columns: ", paste(missing_keys, collapse = ", ")))
 
   used_cols <- vapply(markers, function(m) col_map[[m]], character(1))
   if (any(!nzchar(used_cols))) {
     bad <- markers[!nzchar(used_cols)]
-    stop("missing required columns: ", paste(bad, collapse = ", "), call. = FALSE)
+    rlang::abort(paste0("missing required columns: ", paste(bad, collapse = ", ")))
   }
   missing_cols <- setdiff(unname(used_cols), names(data))
   if (length(missing_cols)) {
-    stop(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]), call. = FALSE)
+    rlang::abort(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]))
   }
   used_cols_named <- stats::setNames(unname(used_cols), markers)
 
-  # Validate weights: numeric, finite, length 3, names align, sum == 1
-  if (is.null(weights)) stop("iAge(): `weights` must be a numeric vector.", call. = FALSE)
-  if (!is.numeric(weights)) stop("iAge(): `weights` must be numeric.", call. = FALSE)
-  if (length(weights) != length(markers)) stop("iAge(): `weights` must have length 3.", call. = FALSE)
+  # Validate weights
+  if (is.null(weights)) rlang::abort("iAge(): `weights` must be a numeric vector.")
+  if (!is.numeric(weights)) rlang::abort("iAge(): `weights` must be numeric.")
+  if (length(weights) != length(markers)) rlang::abort("iAge(): `weights` must have length 3.")
   if (!is.null(names(weights))) {
-    # reorder if named with all markers
     if (all(markers %in% names(weights))) {
       weights <- weights[markers]
     }
   }
-  if (any(!is.finite(weights))) stop("iAge(): `weights` must be finite numeric values.", call. = FALSE)
-  if (abs(sum(weights) - 1) > 1e-8) stop("iAge(): `weights` must sum to 1.", call. = FALSE)
+  if (any(!is.finite(weights))) rlang::abort("iAge(): `weights` must be finite numeric values.")
+  if (abs(sum(weights) - 1) > 1e-8) rlang::abort("iAge(): `weights` must sum to 1.")
 
-  if (isTRUE(verbose)) message("-> iAge: coercing inputs to numeric")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: coercing inputs to numeric")
   for (cn in unname(used_cols)) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
@@ -146,7 +145,7 @@ iAge <- function(data,
         new <- as.numeric(old)
       })
       introduced_na <- sum(is.na(new) & !is.na(old))
-      if (introduced_na > 0L) stop(sprintf("iAge(): mapped column '%s' must be numeric.", cn), call. = FALSE)
+      if (introduced_na > 0L) rlang::abort(sprintf("iAge(): mapped column '%s' must be numeric.", cn))
       data[[cn]] <- new
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
@@ -155,7 +154,7 @@ iAge <- function(data,
   .ia_quality_scan(data, unname(used_cols), na_warn_prop = na_warn_prop, do_warn = (na_action_raw == "warn"))
   if (na_action == "error") {
     if (!all(stats::complete.cases(data[, unname(used_cols), drop = FALSE]))) {
-      stop("iAge(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+      rlang::abort("iAge(): missing or non-finite values in required inputs with na_action='error'.")
     }
   }
 
@@ -168,12 +167,12 @@ iAge <- function(data,
     ex <- .ia_extreme_scan(data, used_cols_named, rules)
     if (ex$count > 0L) {
       if (extreme_action == "error") {
-        stop(sprintf("iAge(): detected %d extreme input values.", ex$count), call. = FALSE)
+        rlang::abort(sprintf("iAge(): detected %d extreme input values.", ex$count))
       } else if (extreme_action == "cap") {
         data <- .ia_cap_inputs(data, ex$flags, used_cols_named, rules)
-        warning(sprintf("iAge(): capped %d extreme input values into allowed ranges.", ex$count), call. = FALSE)
+        rlang::warn(sprintf("iAge(): capped %d extreme input values into allowed ranges.", ex$count))
       } else if (extreme_action == "warn") {
-        warning(sprintf("iAge(): detected %d extreme input values (not altered).", ex$count), call. = FALSE)
+        rlang::warn(sprintf("iAge(): detected %d extreme input values (not altered).", ex$count))
       } else if (extreme_action == "NA") {
         for (mk in names(ex$flags)) {
           cn <- used_cols_named[[mk]]
@@ -186,11 +185,8 @@ iAge <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) message("-> iAge: computing weighted sum")
+  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: computing weighted sum")
 
-  # Build matrix and compute per HM-CS v2 + tests:
-  # - omit/ignore/warn: treat missing markers as 0, do not renormalize weights
-  # - keep: return NA when any marker is NA
   M <- as.matrix(data[, unname(used_cols), drop = FALSE])
   w <- as.numeric(weights)
   if (na_action == "keep") {
@@ -209,7 +205,7 @@ iAge <- function(data,
   out <- tibble::tibble(iAge = iage)
   if (isTRUE(verbose)) {
     na_n <- sum(is.na(out$iAge))
-    message(sprintf("Completed iAge: %d rows; NA(iAge)=%d", nrow(out), na_n))
+    hm_inform(level = "inform", msg = sprintf("Completed iAge: %d rows; NA(iAge)=%d", nrow(out), na_n))
   }
   out
 }
@@ -220,11 +216,11 @@ iAge <- function(data,
     if (!length(x)) next
     pna <- mean(is.na(x))
     if (do_warn && is.finite(pna) && pna >= na_warn_prop && pna > 0) {
-      warning(sprintf("iAge(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna), call. = FALSE)
+      rlang::warn(sprintf("iAge(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
     neg_n <- sum(is.finite(x) & x < 0)
     if (do_warn && neg_n > 0L) {
-      warning(sprintf("iAge(): column '%s' contains %d negative values; check units.", cn, neg_n), call. = FALSE)
+      rlang::warn(sprintf("iAge(): column '%s' contains %d negative values; check units.", cn, neg_n))
     }
   }
   invisible(TRUE)

@@ -168,12 +168,12 @@ adiposity_sds <- function(
   }
 
   # Use centralized validation to check columns exist
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(var_map),   # keys are ref vars, values are data columns
-    required_keys = vars,
-    fn = "adiposity_sds"
-  )
+  #  hm_validate_inputs(
+#    data = data,
+#    col_map = as.list(var_map),   # keys are ref vars, values are data columns
+#    required_keys = vars,
+#    fn = "adiposity_sds"
+#  )
 
   if (!is.null(id_col) && !id_col %in% names(data)) {
     .abort(sprintf("adiposity_sds(): id_col '%s' not found in data.", id_col),
@@ -209,7 +209,7 @@ adiposity_sds <- function(
       cn <- var_map[[v]]
       x <- df[[cn]]
       pna <- mean(is.na(x))
-      na_thresh <- warn_thresholds$na_prop %||% 0.05
+      na_thresh <- rlang::`%||%`(warn_thresholds$na_prop, 0.05)
       if (pna >= na_thresh && pna > 0) {
         .warn(sprintf("adiposity_sds(): '%s' missingness %.1f%%", cn, 100 * pna))
       }
@@ -326,7 +326,7 @@ adiposity_sds <- function(
   denom_cells <- n_rows_out * length(vars)
   if (denom_cells > 0) {
     prop_extreme <- sum(per_var_summary$n_extreme) / denom_cells
-    extreme_prop_thresh <- warn_thresholds$extreme_prop %||% 0.01
+    extreme_prop_thresh <- rlang::`%||%`(warn_thresholds$extreme_prop, 0.01)
     if (prop_extreme > extreme_prop_thresh && sum(per_var_summary$n_extreme) > 0) {
       .warn(sprintf("adiposity_sds(): high extreme SDS proportion %.2f%% (threshold %.2f%%)",
                     100 * prop_extreme, 100 * extreme_prop_thresh))

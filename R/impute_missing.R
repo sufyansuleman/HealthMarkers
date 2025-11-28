@@ -43,22 +43,28 @@ impute_missing <- function(data,
                            verbose  = FALSE) {
   # ---- validations ----
   if (!is.data.frame(data)) {
-    stop("impute_missing(): `data` must be a data.frame or tibble.", call. = FALSE)
+    rlang::abort("impute_missing(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_impute_error_data_type")
   }
   method <- match.arg(method)
   if (!is.numeric(na_warn_prop) || length(na_warn_prop) != 1L ||
       !is.finite(na_warn_prop) || na_warn_prop < 0 || na_warn_prop > 1) {
-    stop("impute_missing(): `na_warn_prop` must be a single numeric in [0, 1].", call. = FALSE)
+    rlang::abort("impute_missing(): `na_warn_prop` must be a single numeric in [0, 1].",
+                 class = "healthmarkers_impute_error_na_warn_prop")
   }
   if (!is.null(cols)) {
     missing_cols <- setdiff(cols, names(data))
     if (length(missing_cols)) {
-      stop("impute_missing(): Some `cols` not in data: ", paste(missing_cols, collapse = ", "), call. = FALSE)
+      rlang::abort(
+        paste("impute_missing(): Some `cols` not in data:", paste(missing_cols, collapse = ", ")),
+        class = "healthmarkers_impute_error_missing_cols"
+      )
     }
   }
   if (method == "constant") {
     if (!is.numeric(constant) || length(constant) != 1L || !is.finite(constant)) {
-      stop("impute_missing(): `constant` must be a single finite numeric when method = 'constant'.", call. = FALSE)
+      rlang::abort("impute_missing(): `constant` must be a single finite numeric when method = 'constant'.",
+                   class = "healthmarkers_impute_error_constant_type")
     }
   }
 
@@ -70,13 +76,16 @@ impute_missing <- function(data,
   }
 
   if (length(cols) == 0L) {
-    if (isTRUE(verbose)) message("-> impute_missing: nothing to impute (no numeric columns with NA).")
+    if (isTRUE(verbose)) hm_inform("impute_missing: nothing to impute (no numeric columns with NA).", level = "inform")
+    else hm_inform("impute_missing(): nothing to impute", level = "debug")
     return(data)
   }
 
   if (isTRUE(verbose)) {
-    message(sprintf("-> impute_missing: starting (%d rows, %d columns to impute, method='%s')",
-                    nrow(data), length(cols), method))
+    hm_inform(sprintf("-> impute_missing: starting (%d rows, %d column(s), method='%s')",
+                      nrow(data), length(cols), method), level = "inform")
+  } else {
+    hm_inform("impute_missing(): starting", level = "debug")
   }
 
   # High-missingness scan
@@ -91,7 +100,8 @@ impute_missing <- function(data,
     vec <- out[[col]]
 
     if (!is.numeric(vec)) {
-      warning(sprintf("impute_missing(): column '%s' is not numeric; skipping.", col), call. = FALSE)
+      rlang::warn(sprintf("impute_missing(): column '%s' is not numeric; skipping.", col),
+                  class = "healthmarkers_impute_warn_non_numeric_skip")
       next
     }
     nas <- is.na(vec)
@@ -107,14 +117,15 @@ impute_missing <- function(data,
     )
 
     if (!is.finite(replacement)) {
-      warning(sprintf("impute_missing(): column '%s' has no non-missing values; cannot compute %s. Skipping.",
-                      col, method), call. = FALSE)
+      rlang::warn(sprintf("impute_missing(): column '%s' has no non-missing values; cannot compute %s. Skipping.",
+                          col, method),
+                  class = "healthmarkers_impute_warn_no_non_missing")
       next
     }
 
     if (isTRUE(verbose)) {
-      message(sprintf(".. impute_missing: '%s' -> replacing %d NA(s) with %s",
-                      col, n_nas, format(replacement)))
+      hm_inform(sprintf(".. impute_missing: '%s' -> replacing %d NA(s) with %s",
+                        col, n_nas, format(replacement)), level = "debug")
     }
 
     vec[nas]   <- replacement
@@ -126,9 +137,12 @@ impute_missing <- function(data,
     total_imp <- sum(imputed_counts)
     by_col <- paste(names(imputed_counts[imputed_counts > 0]),
                     imputed_counts[imputed_counts > 0], sep = "=")
-    message(sprintf("Completed impute_missing: total imputed %d values across %d columns%s",
-                    total_imp, sum(imputed_counts > 0),
-                    if (length(by_col)) paste0(" [", paste(by_col, collapse = ", "), "]") else ""))
+    hm_inform(sprintf("Completed impute_missing: total imputed %d values across %d columns%s",
+                      total_imp, sum(imputed_counts > 0),
+                      if (length(by_col)) paste0(" [", paste(by_col, collapse = ", "), "]") else ""),
+              level = "inform")
+  } else {
+    hm_inform("impute_missing(): completed", level = "debug")
   }
 
   return(out)
@@ -173,13 +187,16 @@ impute_mice <- function(data,
                         verbose = FALSE,
                         ...) {
   if (!is.data.frame(data)) {
-    stop("impute_mice(): `data` must be a data.frame or tibble.", call. = FALSE)
+    rlang::abort("impute_mice(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_impute_error_data_type")
   }
   if (!(is.numeric(m) && length(m) == 1L && is.finite(m) && m >= 1)) {
-    stop("impute_mice(): `m` must be a single numeric >= 1.", call. = FALSE)
+    rlang::abort("impute_mice(): `m` must be a single numeric >= 1.",
+                 class = "healthmarkers_impute_error_m_param")
   }
   if (!requireNamespace("mice", quietly = TRUE)) {
-    stop("impute_mice(): package 'mice' is required but not installed. Please install 'mice'.", call. = FALSE)
+    rlang::abort("impute_mice(): package 'mice' is required but not installed. Please install 'mice'.",
+                 class = "healthmarkers_impute_error_pkg_missing_mice")
   }
 
   # Determine numeric columns to impute
@@ -187,7 +204,10 @@ impute_mice <- function(data,
   if (!is.null(cols)) {
     missing_cols <- setdiff(cols, names(data))
     if (length(missing_cols)) {
-      stop("impute_mice(): Some `cols` not in data: ", paste(missing_cols, collapse = ", "), call. = FALSE)
+      rlang::abort(
+        paste("impute_mice(): Some `cols` not in data:", paste(missing_cols, collapse = ", ")),
+        class = "healthmarkers_impute_error_missing_cols"
+      )
     }
     is_num <- names(data) %in% cols & is_num
   }
@@ -205,12 +225,11 @@ impute_mice <- function(data,
     return(data)
   }
   if (length(target_cols) < 2L) {
-    stop("impute_mice(): need at least two numeric columns with missing values for mice().", call. = FALSE)
+    rlang::abort("impute_mice(): need at least two numeric columns with missing values for mice().",
+                 class = "healthmarkers_impute_error_min_cols_mice")
   }
 
-  if (isTRUE(verbose)) {
-    message(sprintf("-> impute_mice: starting (m=%d, %d columns, %d rows)", m, length(target_cols), nrow(data)))
-  }
+  if (isTRUE(verbose)) hm_inform(sprintf("-> impute_mice: starting (m=%d, %d columns, %d rows)", m, length(target_cols), nrow(data)), level = "inform")
 
   num_data <- data[, target_cols, drop = FALSE]
 
@@ -231,7 +250,10 @@ impute_mice <- function(data,
 
   if (isTRUE(verbose)) {
     total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-    message(sprintf("Completed impute_mice: imputed %d values across %d columns.", total_imp, length(target_cols)))
+    hm_inform(sprintf("Completed impute_mice: imputed %d values across %d columns.", total_imp, length(target_cols)),
+              level = "inform")
+  } else {
+    hm_inform("impute_mice(): completed", level = "debug")
   }
 
   return(out)
@@ -275,13 +297,16 @@ impute_missforest <- function(data,
                               verbose = FALSE,
                               ...) {
   if (!is.data.frame(data)) {
-    stop("impute_missforest(): `data` must be a data.frame or tibble.", call. = FALSE)
+    rlang::abort("impute_missforest(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_impute_error_data_type")
   }
   if (!(is.numeric(ntree) && length(ntree) == 1L && is.finite(ntree) && ntree >= 1)) {
-    stop("impute_missforest(): `ntree` must be a single numeric >= 1.", call. = FALSE)
+    rlang::abort("impute_missforest(): `ntree` must be a single numeric >= 1.",
+                 class = "healthmarkers_impute_error_ntree_param")
   }
   if (!requireNamespace("missForest", quietly = TRUE)) {
-    stop("impute_missforest(): package 'missForest' is required but not installed. Please install 'missForest'.", call. = FALSE)
+    rlang::abort("impute_missforest(): package 'missForest' is required but not installed. Please install 'missForest'.",
+                 class = "healthmarkers_impute_error_pkg_missing_missforest")
   }
 
   # Determine numeric columns to impute
@@ -289,7 +314,9 @@ impute_missforest <- function(data,
   if (!is.null(cols)) {
     missing_cols <- setdiff(cols, names(data))
     if (length(missing_cols)) {
-      stop("impute_missforest(): Some `cols` not in data: ", paste(missing_cols, collapse = ", "), call. = FALSE)
+      rlang::abort(
+        paste("impute_missforest(): Some `cols` not in data:", paste(missing_cols, collapse = ", ")),
+        class = "healthmarkers_impute_error_missing_cols")
     }
     is_num <- names(data) %in% cols & is_num
   }
@@ -307,12 +334,11 @@ impute_missforest <- function(data,
     return(data)
   }
   if (length(target_cols) < 2L) {
-    stop("impute_missforest(): need at least two numeric columns with missing values for missForest().", call. = FALSE)
+    rlang::abort("impute_missforest(): need at least two numeric columns with missing values for missForest().",
+                 class = "healthmarkers_impute_error_min_cols_missforest")
   }
 
-  if (isTRUE(verbose)) {
-    message(sprintf("-> impute_missforest: starting (ntree=%d, %d columns, %d rows)", ntree, length(target_cols), nrow(data)))
-  }
+  if (isTRUE(verbose)) hm_inform(sprintf("-> impute_missforest: starting (ntree=%d, %d columns, %d rows)", ntree, length(target_cols), nrow(data)), level = "inform")
 
   num_data <- data[, target_cols, drop = FALSE]
 
@@ -322,7 +348,8 @@ impute_missforest <- function(data,
       missForest::missForest(num_data, ntree = ntree, verbose = FALSE, ...)
     )
   }, error = function(e) {
-    warning("impute_missforest(): missForest failed; falling back to mean imputation.", call. = FALSE)
+    rlang::warn("impute_missforest(): missForest failed; falling back to mean imputation.",
+                class = "healthmarkers_impute_warn_missforest_failed")
     return(NULL)
   })
 
@@ -331,8 +358,10 @@ impute_missforest <- function(data,
     out <- impute_missing(out, method = "mean", cols = target_cols, verbose = FALSE)
     if (isTRUE(verbose)) {
       total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-      message(sprintf("Completed impute_missforest: fallback mean imputation; imputed %d values across %d columns.",
-                      total_imp, length(target_cols)))
+      hm_inform(sprintf("Completed impute_missforest: fallback mean imputation; imputed %d values across %d columns.",
+                        total_imp, length(target_cols)), level = "inform")
+    } else {
+      hm_inform("impute_missforest(): completed (fallback)", level = "debug")
     }
     return(out)
   }
@@ -341,7 +370,10 @@ impute_missforest <- function(data,
 
   if (isTRUE(verbose)) {
     total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-    message(sprintf("Completed impute_missforest: imputed %d values across %d columns.", total_imp, length(target_cols)))
+    hm_inform(sprintf("Completed impute_missforest: imputed %d values across %d columns.", total_imp, length(target_cols)),
+              level = "inform")
+  } else {
+    hm_inform("impute_missforest(): completed", level = "debug")
   }
 
   return(out)
@@ -357,8 +389,8 @@ impute_missforest <- function(data,
     if (n == 0L) next
     pna <- sum(is.na(x)) / n
     if (pna >= na_warn_prop && pna > 0) {
-      warning(sprintf("impute_missing(): column '%s' has high missingness (%.1f%%).",
-                      cn, 100 * pna), call. = FALSE)
+      rlang::warn(sprintf("impute_missing(): column '%s' has high missingness (%.1f%%).",
+                          cn, 100 * pna), class = "healthmarkers_impute_warn_high_missingness")
     }
   }
   invisible(TRUE)

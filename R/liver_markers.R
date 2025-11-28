@@ -151,14 +151,14 @@ liver_markers <- function(data,
 
   used_cols <- unlist(col_map[required], use.names = FALSE)
 
-  # HM-CS v2: coerce to numeric for all required inputs except diabetes; warn if NAs introduced
+  # HM-CS v3: coerce to numeric for all required inputs except diabetes; warn if NAs introduced
   for (cn in used_cols) {
     if (identical(cn, col_map$diabetes)) next
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(new <- as.numeric(old))
       introduced_na <- sum(is.na(new) & !is.na(old))
-      if (introduced_na > 0L) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      if (introduced_na > 0L) rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
       data[[cn]] <- new
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_

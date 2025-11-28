@@ -126,24 +126,17 @@ glycemic_markers <- function(
     )
   }
 
+  # HM-CS v3: explicit input validation (no hm_validate_inputs)
+  if (!is.data.frame(data)) {
+    stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+  }
+
   # Pre-check required columns to match expected error message
   req_keys <- c("HDL_c", "TG", "BMI")
   req_cols <- unname(unlist(col_map[req_keys]))
   miss <- setdiff(req_cols, names(data))
   if (length(miss)) {
     stop(sprintf("missing required columns: %s", paste(miss, collapse = ", ")), call. = FALSE)
-  }
-
-  # Centralized validation when possible
-  if (is.function(get0("hm_validate_inputs", envir = asNamespace("HealthMarkers")))) {
-    hm_validate_inputs(
-      data = data,
-      col_map = as.list(col_map[req_keys]),
-      required_keys = req_keys,
-      fn = "glycemic_markers"
-    )
-  } else {
-    if (!is.data.frame(data)) stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
   }
 
   # Determine used keys present in data
@@ -217,7 +210,17 @@ glycemic_markers <- function(
       }
       def
     }
-    ex <- .gm_extreme_scan(data, intersect(used_cols, names(rules)), rules)
+    # Remap rule names (keys) to actual column names to support col_map
+    if (!is.null(names(rules))) {
+      remapped <- list()
+      for (nm in names(rules)) {
+        col_nm <- if (!is.null(col_map[[nm]])) col_map[[nm]] else nm
+        remapped[[col_nm]] <- rules[[nm]]
+      }
+      rules <- remapped
+    }
+    vars_to_scan <- intersect(used_cols, names(rules))
+    ex <- .gm_extreme_scan(data, vars_to_scan, rules)
     if (ex$count > 0L) {
       if (extreme_action == "error") {
         stop(sprintf("glycemic_markers(): %d extreme input values detected.", ex$count), call. = FALSE)

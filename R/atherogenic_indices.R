@@ -9,8 +9,9 @@
 #' - Required keys: TG, HDL_c. Optional: TC, LDL_c.
 #' - NA policy via `na_action`: "keep" (default), "omit" (drop rows with any NA in used lipids), "error".
 #' - Extreme screening via `check_extreme` and `extreme_action` ("warn","cap","error","ignore","NA").
-#'   Default bounds (mg/dL): TG [0, 10000], HDL_c [0, 1000], LDL_c [0, 10000], TC [0, 10000].
-#' - Emits an info message when completed: "atherogenic_indices(): computed atherogenic indices".
+#'   Default bounds (mg/dL) used only for screening: TG [0, 10000], HDL_c [0, 1000], LDL_c [0, 10000], TC [0, 10000].
+#'   Note: All indices are unitless ratios; units cancel in computations.
+#' - Emits progress via `hm_inform()` when `verbose = TRUE` or when package option enables logs.
 #'
 #' @param data data.frame/tibble with lipid columns.
 #' @param col_map named list mapping keys to columns, e.g. list(TG="TG", HDL_c="HDL_c", TC="TC", LDL_c="LDL_c").
@@ -24,18 +25,19 @@
 #' @return tibble with columns AIP, CRI_I, CRI_II
 #'
 #' @references
-#' - Dobiasova M. AIP—Atherogenic Index of Plasma [log(TG/HDL-C)]: theoretical and practical implications.
-#'   Clin Chem. 2004;50(7):1113–1115.
-#' - Castelli WP, et al. HDL cholesterol and other lipids in coronary heart disease. The Framingham Study.
-#'   Am J Med. 1977;62(5):707–714.
+#' Dobiasova M (2004). Atherogenic Index of Plasma (AIP) [log(TG/HDL-C)]: theoretical and practical implications. Clin Chem 50(7):1113–1115. \doi{10.1373/clinchem.2004.035220}
+#'
+#' Castelli WP, et al. (1977). HDL cholesterol and other lipids in coronary heart disease: The Framingham Study. Am J Med 62(5):707–714. \doi{10.1016/0002-9343(77)90874-9}
 #'
 #' @examples
-#' df <- tibble::tibble(TG = c(150, 200),
-#'                      HDL_c = c(50, 40),
-#'                      TC = c(200, 220),
-#'                      LDL_c = c(120, 150))
+#' df <- tibble::tibble(
+#'   TG = c(150, 200),
+#'   HDL_c = c(50, 40),
+#'   TC = c(200, 220),
+#'   LDL_c = c(120, 150)
+#' )
 #' cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
-#' atherogenic_indices(df, col_map = cm)
+#' atherogenic_indices(df, col_map = cm, verbose = FALSE)
 #'
 #' @export
 atherogenic_indices <- function(data,
@@ -83,10 +85,17 @@ atherogenic_indices <- function(data,
   req <- c("TG", "HDL_c")
   opt <- c("TC", "LDL_c")
 
-  hm_validate_inputs(data, col_map, required_keys = req, fn = "atherogenic_indices")
+  # Explicit required key presence in col_map (replace hm_validate_inputs)
+  missing_keys <- setdiff(req, names(col_map))
+  if (length(missing_keys)) {
+    rlang::abort(
+      paste0("atherogenic_indices(): missing col_map entries for: ", paste(missing_keys, collapse = ", ")),
+      class = "healthmarkers_atherogenic_indices_error_missing_map"
+    )
+  }
   if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> atherogenic_indices: validating inputs")
 
-  # Required columns presence (custom message format)
+  # Required columns presence
   req_cols <- unname(unlist(col_map[req], use.names = FALSE))
   missing_req <- setdiff(req_cols, names(data))
   if (length(missing_req)) {
@@ -108,7 +117,8 @@ atherogenic_indices <- function(data,
       suppressWarnings(data[[cn]] <- as.numeric(old))
       introduced <- sum(is.na(data[[cn]]) & !is.na(old))
       if (introduced > 0) {
-        rlang::warn(sprintf("atherogenic_indices(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
+        rlang::warn(sprintf("atherogenic_indices(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced),
+                    class = "healthmarkers_atherogenic_indices_warn_na_coercion")
       }
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
@@ -123,13 +133,16 @@ atherogenic_indices <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> atherogenic_indices: omitting %d rows with NA in lipid inputs", sum(!keep)))
+    if (isTRUE(verbose)) {
+      hm_inform(level = "inform",
+                msg = sprintf("-> atherogenic_indices: omitting %d rows with NA in lipid inputs", sum(!keep)))
+    }
     data <- data[keep, , drop = FALSE]
   }
 
   # Early empty
   if (nrow(data) == 0L) {
-    message("atherogenic_indices(): computed atherogenic indices")
+    hm_inform("atherogenic_indices(): computed atherogenic indices", level = "inform")
     return(tibble::tibble(AIP = numeric(), CRI_I = numeric(), CRI_II = numeric()))
   }
 
@@ -183,13 +196,13 @@ atherogenic_indices <- function(data,
     }
     if (total_ex > 0) {
       if (identical(extreme_action, "error")) {
-        rlang::abort("atherogenic_indices(): values out of range.", class = "healthmarkers_atherogenic_indices_error_extremes")
-      } else if (identical(extreme_action, "cap")) {
-        # silently capped to avoid noisy warnings in pipelines/tests
-        # use extreme_action = "warn" to surface a warning without mutation
+        rlang::abort("atherogenic_indices(): values out of range.",
+                     class = "healthmarkers_atherogenic_indices_error_extremes")
       } else if (identical(extreme_action, "warn")) {
-        rlang::warn(sprintf("atherogenic_indices(): detected %d extreme input values (not altered).", total_ex))
+        rlang::warn(sprintf("atherogenic_indices(): detected %d extreme input values (not altered).", total_ex),
+                    class = "healthmarkers_atherogenic_indices_warn_extremes")
       }
+      # cap/NA are silent; 'ignore' makes no changes and no warning
     }
   }
 
@@ -228,12 +241,12 @@ atherogenic_indices <- function(data,
     if (dz_total > 0L) {
       nz <- unlist(dz); nz <- nz[nz > 0]
       lbl <- paste(sprintf("%s=%d", names(nz), nz), collapse = ", ")
-      rlang::warn(sprintf("atherogenic_indices(): zero denominators detected in %d cases (%s).", dz_total, lbl))
+      rlang::warn(sprintf("atherogenic_indices(): zero denominators detected in %d cases (%s).", dz_total, lbl),
+                  class = "healthmarkers_atherogenic_indices_warn_zero_denominator")
     }
   }
 
-  # Completion message for package-level verbosity tests
-  message("atherogenic_indices(): computed atherogenic indices")
+  hm_inform("atherogenic_indices(): computed atherogenic indices", level = "inform")
 
   out
 }

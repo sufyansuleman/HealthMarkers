@@ -30,6 +30,7 @@
 #'   If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).
 #' @param allow_partial If TRUE, skip variables absent in data (with a warning); if FALSE error
 #' @param prefix Optional prefix for output columns (default "")
+#' @param verbose Logical; when TRUE emit progress via package logger; by default logging is controlled by options(healthmarkers.verbose)
 #'
 #' @return A tibble with one SDS column per retained variable: <prefix><var>_SDS
 #'
@@ -57,7 +58,8 @@ adiposity_sds_strat <- function(data,
                                 extreme_action = c("cap","NA","error"),
                                 extreme_rules = NULL,
                                 allow_partial = FALSE,
-                                prefix = "") {
+                                prefix = "",
+                                verbose = FALSE) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
@@ -88,7 +90,7 @@ adiposity_sds_strat <- function(data,
   }
   vars <- vars_M
 
-  # Validate each ref component: numeric with names mean, sd and sd > 0
+  # Validate each ref component
   check_ref_comp <- function(x) {
     if (!is.numeric(x) || is.null(names(x)) || !all(c("mean","sd") %in% names(x))) {
       rlang::abort("adiposity_sds_strat(): ref component must be numeric with names mean, sd.",
@@ -126,7 +128,6 @@ adiposity_sds_strat <- function(data,
   missing_in_data <- setdiff(unname(unlist(var_map, use.names = FALSE)), names(data))
   if (length(missing_in_data)) {
     if (isTRUE(allow_partial)) {
-      # Inform instead of warning to avoid testthat WARNs
       hm_inform(sprintf(
         "adiposity_sds_strat(): skipping %d ref vars absent in data: %s",
         length(missing_in_data), paste(missing_in_data, collapse = ", ")
@@ -148,11 +149,19 @@ adiposity_sds_strat <- function(data,
   hm_inform(sprintf("-> adiposity_sds_strat: processing %d variables for %d rows",
                     length(vars), nrow(data)), level = "inform")
 
-  # Coerce to numeric (quiet)
+  # Coerce to numeric (warn on NA introduction)
   for (v in vars) {
     cn <- var_map[[v]]
     if (!is.numeric(data[[cn]])) {
-      suppressWarnings(data[[cn]] <- as.numeric(data[[cn]]))
+      old <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old))
+      intro <- sum(is.na(data[[cn]]) & !is.na(old))
+      if (intro > 0) {
+        rlang::warn(
+          sprintf("adiposity_sds_strat(): column '%s' coerced to numeric; NAs introduced: %d", cn, intro),
+          class = "healthmarkers_adiposds_warn_na_coercion"
+        )
+      }
     }
   }
 

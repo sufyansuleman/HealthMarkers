@@ -54,7 +54,7 @@ fasting_is <- function(
   extreme_action = c("cap","NA","error"),
   verbose = FALSE
 ) {
-  # Early normalize validation (HM-CS)
+  # Validate normalize early
   allowed_norm <- c("none","z","inverse","range","robust")
   if (length(normalize) == 1L && !normalize %in% allowed_norm) {
     rlang::abort(
@@ -66,13 +66,31 @@ fasting_is <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  # Centralized validation
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(col_map[c("G0","I0")]),
-    required_keys = c("G0","I0"),
-    fn = "fasting_is"
-  )
+  # Explicit input validation (HM-CS v3)
+  if (!is.data.frame(data)) {
+    rlang::abort("fasting_is(): `data` must be a data.frame or tibble.",
+                 class = "healthmarkers_fi_error_data_type")
+  }
+  if (!is.list(col_map) || is.null(names(col_map))) {
+    rlang::abort("fasting_is(): `col_map` must be a named list with entries for G0 and I0.",
+                 class = "healthmarkers_fi_error_colmap_type")
+  }
+  req_keys <- c("G0","I0")
+  missing_keys <- setdiff(req_keys, names(col_map))
+  if (length(missing_keys)) {
+    rlang::abort(
+      paste0("fasting_is(): missing col_map entries for: ", paste(missing_keys, collapse = ", ")),
+      class = "healthmarkers_fi_error_missing_map"
+    )
+  }
+  req_cols <- unname(unlist(col_map[req_keys], use.names = FALSE))
+  missing_cols <- setdiff(req_cols, names(data))
+  if (length(missing_cols)) {
+    rlang::abort(
+      paste0("fasting_is(): missing required columns in data: ", paste(missing_cols, collapse = ", ")),
+      class = "healthmarkers_fi_error_missing_columns"
+    )
+  }
 
   if (!(is.logical(check_extreme) && length(check_extreme) == 1L && !is.na(check_extreme))) {
     rlang::abort("`check_extreme` must be a single logical.", class = "healthmarkers_fi_error_checkextreme")
@@ -81,25 +99,32 @@ fasting_is <- function(
     rlang::abort("`extreme_limit` must be a single positive numeric.", class = "healthmarkers_fi_error_extremlimit")
   }
 
-  if (isTRUE(verbose)) hm_inform("-> fasting_is: validating and preparing inputs", level = "inform") else hm_inform("fasting_is(): preparing inputs", level = "debug")
+  if (isTRUE(verbose)) {
+    hm_inform("-> fasting_is: validating and preparing inputs", level = "inform")
+  } else {
+    hm_inform("fasting_is(): preparing inputs", level = "debug")
+  }
 
-  # Coerce to numeric; warn if NAs introduced
-  for (nm in c("G0","I0")) {
+  # Coerce to numeric; warn if NAs introduced; non-finite -> NA
+  for (nm in req_keys) {
     cn <- col_map[[nm]]
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
-      if (any(is.na(data[[cn]]) & !is.na(old))) {
-        rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced.", cn))
+      introduced <- sum(is.na(data[[cn]]) & !is.na(old))
+      if (introduced > 0) {
+        rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced.", cn),
+                    class = "healthmarkers_fi_warn_na_coercion")
       }
     }
+    data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
   G0 <- data[[col_map$G0]]
   I0 <- data[[col_map$I0]]
 
   # NA policy
-  rows_with_na <- is.na(G0) | !is.finite(G0) | is.na(I0) | !is.finite(I0)
+  rows_with_na <- is.na(G0) | is.na(I0)
   if (na_action == "error" && any(rows_with_na)) {
     rlang::abort("fasting_is(): missing/non-finite inputs with na_action='error'.",
                  class = "healthmarkers_fi_error_missing")
@@ -141,7 +166,7 @@ fasting_is <- function(
     HOMA_IR_rev_inv = -sdiv(I0_u * G0_mg, 405)
   )
 
-  # Extreme handling on outputs (optional)
+  # Optional extreme handling on outputs
   if (isTRUE(check_extreme)) {
     m <- as.matrix(out)
     ext_mask <- is.finite(m) & abs(m) > extreme_limit
@@ -161,13 +186,40 @@ fasting_is <- function(
     }
   }
 
-  # Normalization (if helper exists)
-  if (normalize != "none" && exists("normalize_vec", where = asNamespace("HealthMarkers"))) {
-    norm_fun <- getExportedValue("HealthMarkers", "normalize_vec")
-    out[] <- lapply(out, function(x) do.call(norm_fun, list(x = x, method = normalize)))
+  # Inline normalization
+  if (normalize != "none") {
+    normalize_vec <- function(x, method) {
+      v <- as.numeric(x)
+      nm <- is.na(v)
+      v2 <- v[!nm]
+      if (method == "z") {
+        if (length(v2) < 2) return(rep(NA_real_, length(v)))
+        mu <- mean(v2); sdv <- stats::sd(v2)
+        if (!is.finite(sdv) || sdv == 0) return(rep(NA_real_, length(v)))
+        (v - mu) / sdv
+      } else if (method == "range") {
+        if (length(v2) < 2) return(rep(NA_real_, length(v)))
+        mn <- min(v2); mx <- max(v2)
+        if (!is.finite(mx - mn) || mx - mn == 0) return(rep(NA_real_, length(v)))
+        (v - mn) / (mx - mn)
+      } else if (method == "inverse") {
+        res <- 1 / v
+        res[!is.finite(res)] <- NA_real_
+        res
+      } else if (method == "robust") {
+        if (length(v2) < 2) return(rep(NA_real_, length(v)))
+        med <- stats::median(v2, na.rm = TRUE)
+        madv <- stats::mad(v2, center = med, constant = 1.4826, na.rm = TRUE)
+        if (!is.finite(madv) || madv == 0) return(rep(NA_real_, length(v)))
+        (v - med) / madv
+      } else {
+        v
+      }
+    }
+    out[] <- lapply(out, normalize_vec, method = normalize)
   }
 
-  # Completion message to satisfy test
+  # Completion message (test expects "Completed fasting_is:")
   if (isTRUE(verbose)) {
     message(sprintf("Completed fasting_is: %d rows.", nrow(out)))
   } else {

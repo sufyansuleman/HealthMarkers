@@ -54,5 +54,9 @@ test_that("missing columns reported clearly", {
 test_that("package-level verbosity emits message when enabled globally", {
   dat <- tibble(TG = 150, HDL_c = 50)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
-  expect_message(atherogenic_indices(dat, col_map = cm), "atherogenic_indices\\(\\): computed atherogenic indices")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    atherogenic_indices(dat, col_map = cm),
+    "atherogenic_indices\\(\\): computed atherogenic indices"
+  )
 })

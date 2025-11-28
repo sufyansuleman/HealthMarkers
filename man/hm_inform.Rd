@@ -4,7 +4,7 @@
 \alias{hm_inform}
 \title{Emit package messages honoring options(healthmarkers.verbose)}
 \usage{
-hm_inform(level = c("inform", "debug"), msg)
+hm_inform(level = c("inform", "info", "debug"), msg = NULL)
 }
 \arguments{
 \item{level}{"inform" or "debug"}

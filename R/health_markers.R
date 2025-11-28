@@ -30,17 +30,13 @@
                 class = "healthmarkers_health_markers_warn_bind_rows")
     return(df)
   }
-  # Avoid overwriting existing columns
   keep <- setdiff(names(addon), names(df))
   if (length(keep)) cbind(df, addon[keep]) else df
 }
 
-# Minimal fallback used when metss() is unavailable or fails
+# Fallback for MetS so aggregator never errors
 .hm_mets_fallback <- function(data) {
-  n <- nrow(data)
-  tibble::tibble(
-    MetS_simple = rep(NA_integer_, n)  # placeholder; keeps API stable and tests satisfied
-  )
+  tibble::tibble(MetS_simple = rep(NA_integer_, nrow(data)))
 }
 
 .hm_marker_registry <- function(verbose = FALSE) {
@@ -50,7 +46,7 @@
     if (is.null(f)) {
       if (isTRUE(verbose)) {
         hm_inform(level = "debug",
-                  msg = sprintf("Registry: function '%s' not found; skipping group '%s'.", fun_name, name))
+          msg = sprintf("Registry: function '%s' not found; skipping group '%s'.", fun_name, name))
       }
     } else {
       reg[[name]] <<- list(fun = f, needs_col_map = needs_col_map)
@@ -70,7 +66,7 @@
   # Lipid and atherogenic
   add("lipid",                  "lipid_markers",         FALSE)
   add("atherogenic_indices",    "atherogenic_indices",   TRUE)
-  add("atherogenic",            "atherogenic_indices",   TRUE)  # alias used by tests
+  add("atherogenic",            "atherogenic_indices",   TRUE)  # alias
 
   # Liver
   add("liver",              "liver_markers",         FALSE)
@@ -159,27 +155,23 @@
 }
 
 .hm_safe_call <- function(fun, data, col_map, needs_col_map, verbose, tag, extra_args = list()) {
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = paste0("-> ", tag))
+  if (isTRUE(verbose)) hm_inform(level = "info", msg = paste0("-> ", tag))
 
   args <- list(data)
   fn_formals <- tryCatch(formals(fun), error = function(e) NULL)
   fn_names <- if (is.null(fn_formals)) character(0) else names(fn_formals)
 
-  # Pass col_map only if requested and supported by function signature
   if (isTRUE(needs_col_map) && "col_map" %in% fn_names) args$col_map <- col_map
 
-  # Filter extra arguments to those accepted (or allow all if function has ...)
   if (!is.null(fn_formals)) {
     has_dots <- any(fn_names == "...")
     if (!has_dots) {
       extra_args <- extra_args[intersect(names(extra_args), fn_names)]
     }
   } else {
-    # No formals known; pass nothing extra
     extra_args <- list()
   }
 
-  # Determine if any required args (other than first data arg) are missing
   if (!is.null(fn_formals)) {
     req <- names(fn_formals)[vapply(fn_formals, function(x) identical(x, quote(expr = )), logical(1))]
     first_arg <- if (length(fn_names)) fn_names[1L] else NULL
@@ -188,13 +180,11 @@
     missing_required <- setdiff(req, planned)
     if (length(missing_required)) {
       if (isTRUE(verbose)) hm_inform(level = "debug",
-                                     msg = sprintf("Skipping '%s': missing required args: %s",
-                                                   tag, paste(missing_required, collapse = ", ")))
+        msg = sprintf("Skipping '%s': missing required args: %s", tag, paste(missing_required, collapse = ", ")))
       return(NULL)
     }
   }
 
-  # Call underlying function; suppress warnings if not verbose
   call_fun <- function() do.call(fun, c(args, extra_args))
   if (isTRUE(verbose)) {
     tryCatch(call_fun(), error = function(e) {
@@ -202,9 +192,7 @@
       NULL
     })
   } else {
-    tryCatch(suppressWarnings(call_fun()), error = function(e) {
-      NULL
-    })
+    tryCatch(suppressWarnings(call_fun()), error = function(e) NULL)
   }
 }
 
@@ -372,9 +360,7 @@ metabolic_markers <- function(
     out_m <- .hm_prepare_for_group(out, "mets")
     mets_add <- .hm_safe_call(metss, out_m, col_map, FALSE, verbose, "mets",
                               list(verbose = verbose, na_warn_prop = 0, na_action = na_action))
-    if (is.null(mets_add)) {
-      mets_add <- .hm_mets_fallback(out_m)
-    }
+    if (is.null(mets_add)) mets_add <- .hm_mets_fallback(out_m)
     if (!is.null(mets_add)) out <- .hm_bind_new_cols(out, mets_add)
   }
 
@@ -429,9 +415,7 @@ all_health_markers <- function(
   reg_names <- names(reg)
 
   if (identical(which, "all")) {
-    which_vec <- reg_names
-    # Avoid duplicate work for aliases when requesting 'all'
-    which_vec <- setdiff(which_vec, c("atherogenic_indices"))
+    which_vec <- setdiff(reg_names, c("atherogenic_indices"))
   } else {
     unknown <- setdiff(which, reg_names)
     if (length(unknown)) {

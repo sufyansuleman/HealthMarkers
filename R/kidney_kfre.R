@@ -142,7 +142,12 @@ kidney_failure_risk <- function(data,
   }
 
   # Missingness policy
-  .kfre_warn_high_missing(data, unlist(col_map[req], use.names = FALSE), na_warn_prop = na_warn_prop)
+  .kfre_warn_high_missing(
+    data,
+    unlist(col_map[req], use.names = FALSE),
+    na_warn_prop = na_warn_prop,
+    do_warn_high_missing = identical(na_action, "warn")
+  )
   if (na_action == "error") {
     any_na <- Reduce(`|`, lapply(req, function(k) is.na(data[[col_map[[k]]]])))
     if (any(any_na)) {
@@ -262,16 +267,17 @@ kidney_failure_risk <- function(data,
   invisible(TRUE)
 }
 
-.kfre_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
+.kfre_warn_high_missing <- function(df, cols, na_warn_prop = 0.2, do_warn_high_missing = TRUE) {
   for (cn in cols) {
     x <- df[[cn]]
     n <- length(x)
     if (n == 0L) next
     pna <- sum(is.na(x)) / n
-    if (pna >= na_warn_prop && pna > 0) {
+    # High-missingness warning only when na_action = 'warn'
+    if (isTRUE(do_warn_high_missing) && pna >= na_warn_prop && pna > 0) {
       rlang::warn(sprintf("kidney_failure_risk(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
-    # Diagnostic warnings for domain issues (no automatic conversion)
+    # Diagnostic warnings for domain issues (always on; tests rely on these)
     if (grepl("eGFR", cn, ignore.case = TRUE)) {
       neg <- sum(is.finite(x) & x <= 0)
       if (neg > 0L) rlang::warn(sprintf("kidney_failure_risk(): '%s' contains %d non-positive values; log() undefined.", cn, neg))

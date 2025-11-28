@@ -49,6 +49,7 @@
 #' Lee YH, Jung DH, Park YW, et al. (2020). Triglyceride-glucose-body mass index (TyG-BMI) predicts nonalcoholic fatty liver disease. Int J Obes (Lond), 44(9):2101–2110. \doi{10.1038/s41366-020-0599-7}
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble
+#' @importFrom rlang abort warn inform
 #' @export
 lipid_markers <- function(
   data,
@@ -73,21 +74,21 @@ lipid_markers <- function(
   extreme_action <- match.arg(extreme_action)
 
   # Basic validation
-  if (!is.data.frame(data)) stop("lipid_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
-  if (is.null(col_map) || !is.list(col_map)) stop("lipid_markers(): `col_map` must be a named list.", call. = FALSE)
+  if (!is.data.frame(data)) rlang::abort("lipid_markers(): `data` must be a data.frame or tibble.")
+  if (is.null(col_map) || !is.list(col_map)) rlang::abort("lipid_markers(): `col_map` must be a named list.")
 
   req <- c("TC","HDL_c","TG")
   missing_keys <- setdiff(req, names(col_map))
-  if (length(missing_keys)) stop("missing required columns: ", paste(missing_keys, collapse = ", "), call. = FALSE)
+  if (length(missing_keys)) rlang::abort(paste("missing required columns:", paste(missing_keys, collapse = ", ")))
   mapped_req <- unname(unlist(col_map[req]))
   if (any(!nzchar(mapped_req))) {
     bad <- req[!nzchar(mapped_req)]
-    stop("missing required columns: ", paste(bad, collapse = ", "), call. = FALSE)
+    rlang::abort(paste("missing required columns:", paste(bad, collapse = ", ")))
   }
   missing_cols <- setdiff(mapped_req, names(data))
-  if (length(missing_cols)) stop("missing required columns: ", paste(missing_cols, collapse = ", "), call. = FALSE)
+  if (length(missing_cols)) rlang::abort(paste("missing required columns:", paste(missing_cols, collapse = ", ")))
 
-  if (isTRUE(verbose)) message("-> computing lipid markers")
+  if (isTRUE(verbose)) rlang::inform("-> computing lipid markers")
 
   # Collect used columns (required + present optional + glucose if present)
   optional <- c("LDL_c","ApoB","ApoA1","waist","BMI")
@@ -101,7 +102,7 @@ lipid_markers <- function(
       old <- data[[cn]]
       suppressWarnings(new <- as.numeric(old))
       introduced_na <- sum(is.na(new) & !is.na(old))
-      if (introduced_na > 0L) warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+      if (introduced_na > 0L) rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
       data[[cn]] <- new
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
@@ -110,11 +111,11 @@ lipid_markers <- function(
   # NA policy on required inputs
   cc_req <- stats::complete.cases(data[, mapped_req, drop = FALSE])
   if (na_action_eff == "error" && !all(cc_req)) {
-    stop("lipid_markers(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+    rlang::abort("lipid_markers(): missing or non-finite values in required inputs with na_action='error'.")
   }
   if (na_action_raw == "warn") {
     any_na_cols <- names(which(colSums(is.na(data[, mapped_req, drop = FALSE])) > 0))
-    if (length(any_na_cols)) warning(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")), call. = FALSE)
+    if (length(any_na_cols)) rlang::warn(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")))
   }
   keep_rows <- if (na_action_eff == "omit") cc_req else rep(TRUE, nrow(data))
   d <- data[keep_rows, , drop = FALSE]
@@ -131,12 +132,11 @@ lipid_markers <- function(
       for (nm in intersect(names(extreme_rules), names(rules_def))) rules_def[[nm]] <- extreme_rules[[nm]]
     }
     flags <- list(); total <- 0L
-    used_for_scan <- intersect(names(rules_def), intersect(c(req, optional, "glucose"), names(col_map)))
-    # Add 'glucose' explicitly even if not in col_map
-    used_for_scan <- unique(c(used_for_scan, "glucose"))
+    used_for_scan <- intersect(names(rules_def), c(req, optional, "glucose"))
+    # Build name -> column mapping (add 'glucose' explicitly)
     # Build name -> column mapping
     name_to_col <- c(col_map, list(glucose = "glucose"))
-    for (nm in names(rules_def)) {
+    for (nm in used_for_scan) {
       cn <- name_to_col[[nm]]
       if (is.null(cn) || !(cn %in% names(d))) next
       rng <- rules_def[[nm]]
@@ -147,7 +147,7 @@ lipid_markers <- function(
     }
     if (total > 0L) {
       if (extreme_action == "error") {
-        stop(sprintf("lipid_markers(): %d extreme input values detected.", total), call. = FALSE)
+        rlang::abort(sprintf("lipid_markers(): %d extreme input values detected.", total))
       } else if (extreme_action == "cap") {
         for (nm in names(flags)) {
           cn <- name_to_col[[nm]]
@@ -158,9 +158,9 @@ lipid_markers <- function(
           x[bad & is.finite(x) & x > hi] <- hi
           d[[cn]] <- x
         }
-        warning(sprintf("lipid_markers(): capped %d extreme input values into allowed ranges.", total), call. = FALSE)
+        rlang::warn(sprintf("lipid_markers(): capped %d extreme input values into allowed ranges.", total))
       } else if (extreme_action == "warn") {
-        warning(sprintf("lipid_markers(): detected %d extreme input values (not altered).", total), call. = FALSE)
+        rlang::warn(sprintf("lipid_markers(): detected %d extreme input values (not altered).", total))
       } else if (extreme_action == "NA") {
         for (nm in names(flags)) {
           cn <- name_to_col[[nm]]
@@ -185,7 +185,7 @@ lipid_markers <- function(
   LDL <- if (!is.null(col_map$LDL_c) && (col_map$LDL_c %in% names(d))) {
     d[[col_map$LDL_c]]
   } else {
-    warning("lipid_markers(): estimating LDL_c via Friedewald (TC - HDL - TG/5)", call. = FALSE)
+    rlang::warn("lipid_markers(): estimating LDL_c via Friedewald (TC - HDL - TG/5)")
     TC - HDL - TG / 5
   }
 

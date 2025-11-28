@@ -2,7 +2,7 @@
 % Please edit documentation in R/allostatic_load.R
 \name{allostatic_load}
 \alias{allostatic_load}
-\title{Allostatic Load Index (HM-CRANIZED)}
+\title{Allostatic Load Index}
 \usage{
 allostatic_load(
   data,
@@ -23,7 +23,7 @@ allostatic_load(
 
 \item{col_map}{optional named list mapping keys in \code{thresholds} to column names in \code{data}.}
 
-\item{na_action}{one of c("keep","omit","error") ("keep" treated as "zero" contribution).}
+\item{na_action}{one of c("keep","omit","error") ("keep" treats NA as zero contribution).}
 
 \item{check_extreme}{logical; scan columns with name containing "sds" for |value| > sds_limit.}
 
@@ -33,7 +33,7 @@ allostatic_load(
 
 \item{return_summary}{logical; TRUE returns list(data, summary, warnings).}
 
-\item{verbose}{logical; print progress messages.}
+\item{verbose}{logical; print progress messages via hm_inform() (also gated by options(healthmarkers.verbose)).}
 }
 \value{
 tibble with AllostaticLoad or list when return_summary = TRUE.
@@ -41,15 +41,30 @@ tibble with AllostaticLoad or list when return_summary = TRUE.
 \description{
 Computes a composite Allostatic Load (AL) score by flagging biomarkers that
 exceed user-specified high-risk thresholds (strict > when multiple biomarkers;
-inclusive >= when only one biomarker). Designed to align with HealthMarkers
-HM-CRANIZED conventions: structured validation, diagnostic control, verbose
-reporting, and optional summary output.
+inclusive >= when only one biomarker). Aligned with HM-CS v3: structured
+validation, diagnostic control, verbose reporting, and optional summary output.
+}
+\examples{
+df <- tibble::tibble(
+  SBP = c(118, 142, 130),
+  DBP = c(76, 92, 85),
+  CRP = c(1.2, 4.8, 2.1)
+)
+thr <- list(SBP = 130, DBP = 85, CRP = 3)
+allostatic_load(df, thresholds = thr, na_action = "keep", verbose = FALSE)
+
+# Single biomarker uses inclusive >= rule
+allostatic_load(df, thresholds = list(CRP = 3))
+
 }
 \references{
-McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238.
-Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268.
-Juster RP et al, Neurosci Biobehav Rev, 2010;35:2–16.
-Wiley JF et al, Psychoneuroendocrinology, 2021;129:105248.
+McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238. \doi{10.1016/0165-0173(93)90039-U}
+
+Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268. \doi{10.1001/archinte.157.19.2259}
+
+Juster RP, McEwen BS, Lupien SJ (2010). Allostatic load biomarkers of chronic stress. Neurosci Biobehav Rev, 35:2–16. \doi{10.1016/j.neubiorev.2010.01.006}
+
+Wiley JF, Gruenewald TL, Karlamangla AS, Seeman TE (2021). Modeling allostatic load. Psychoneuroendocrinology, 129:105248. \doi{10.1016/j.psyneuen.2021.105248}
 }
 \seealso{
 \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}

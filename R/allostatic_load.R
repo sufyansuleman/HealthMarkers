@@ -1,31 +1,45 @@
 # File: allostatic_load.R
 #'
-#' Allostatic Load Index (HM-CRANIZED)
+#' Allostatic Load Index
 #'
 #' Computes a composite Allostatic Load (AL) score by flagging biomarkers that
 #' exceed user-specified high-risk thresholds (strict > when multiple biomarkers;
-#' inclusive >= when only one biomarker). Designed to align with HealthMarkers
-#' HM-CRANIZED conventions: structured validation, diagnostic control, verbose
-#' reporting, and optional summary output.
+#' inclusive >= when only one biomarker). Aligned with HM-CS v3: structured
+#' validation, diagnostic control, verbose reporting, and optional summary output.
 #'
 #' @param data data.frame or tibble of numeric biomarker columns.
 #' @param thresholds named list of scalar numeric cutoffs (names must match columns).
 #' @param col_map optional named list mapping keys in `thresholds` to column names in `data`.
-#' @param na_action one of c("keep","omit","error") ("keep" treated as "zero" contribution).
+#' @param na_action one of c("keep","omit","error") ("keep" treats NA as zero contribution).
 #' @param check_extreme logical; scan columns with name containing "sds" for |value| > sds_limit.
 #' @param extreme_action one of c("cap","NA","error") for SDS-like extremes.
 #' @param sds_limit positive numeric cutoff for SDS-like scan (default 6).
 #' @param return_summary logical; TRUE returns list(data, summary, warnings).
-#' @param verbose logical; print progress messages.
+#' @param verbose logical; print progress messages via hm_inform() (also gated by options(healthmarkers.verbose)).
 #'
 #' @return tibble with AllostaticLoad or list when return_summary = TRUE.
 #' @seealso \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
 #'
 #' @references
-#' McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238.
-#' Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268.
-#' Juster RP et al, Neurosci Biobehav Rev, 2010;35:2–16.
-#' Wiley JF et al, Psychoneuroendocrinology, 2021;129:105248.
+#' McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238. \doi{10.1016/0165-0173(93)90039-U}
+#'
+#' Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268. \doi{10.1001/archinte.157.19.2259}
+#'
+#' Juster RP, McEwen BS, Lupien SJ (2010). Allostatic load biomarkers of chronic stress. Neurosci Biobehav Rev, 35:2–16. \doi{10.1016/j.neubiorev.2010.01.006}
+#'
+#' Wiley JF, Gruenewald TL, Karlamangla AS, Seeman TE (2021). Modeling allostatic load. Psychoneuroendocrinology, 129:105248. \doi{10.1016/j.psyneuen.2021.105248}
+#'
+#' @examples
+#' df <- tibble::tibble(
+#'   SBP = c(118, 142, 130),
+#'   DBP = c(76, 92, 85),
+#'   CRP = c(1.2, 4.8, 2.1)
+#' )
+#' thr <- list(SBP = 130, DBP = 85, CRP = 3)
+#' allostatic_load(df, thresholds = thr, na_action = "keep", verbose = FALSE)
+#'
+#' # Single biomarker uses inclusive >= rule
+#' allostatic_load(df, thresholds = list(CRP = 3))
 #'
 #' @export
 allostatic_load <- function(
@@ -68,23 +82,16 @@ allostatic_load <- function(
 
   vars <- names(thresholds)
 
-  # Build effective var -> column mapping
+  # Build effective var -> column mapping (user-provided names in col_map override defaults)
   var_map <- setNames(vars, vars)
   if (!is.null(col_map)) {
     stopifnot(is.list(col_map))
-    # user-provided names in col_map override defaults
     var_map <- c(col_map, var_map)[vars]
   }
 
-  hm_validate_inputs(
-    data = data,
-    col_map = as.list(var_map),
-    required_keys = vars,
-    fn = "allostatic_load"
-  )
   if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> allostatic_load: validating inputs")
 
-  # Confirm required columns exist, and capture their names in data
+  # Confirm required columns exist in data
   req_cols <- unname(unlist(var_map, use.names = FALSE))
   missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {
@@ -94,20 +101,21 @@ allostatic_load <- function(
     )
   }
 
-  # Coerce only required columns to numeric; non-finite -> NA
+  # Coerce required columns to numeric; non-finite -> NA
   for (cn in req_cols) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(data[[cn]] <- as.numeric(old))
       introduced <- sum(is.na(data[[cn]]) & !is.na(old))
       if (introduced > 0) {
-        rlang::warn(sprintf("allostatic_load(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced))
+        rlang::warn(sprintf("allostatic_load(): column '%s' coerced to numeric; NAs introduced: %d", cn, introduced),
+                    class = "healthmarkers_allo_warn_na_coercion")
       }
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # ---- NA row policy (row-wise over the required columns) ----
+  # ---- NA row policy (row-wise over required columns) ----
   rows_with_na <- if (length(req_cols)) {
     Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
   } else rep(FALSE, nrow(data))
