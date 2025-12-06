@@ -1,0 +1,99 @@
+---
+title: "urine_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{urine_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`urine_markers()` computes urine-only renal/tubular metrics: UACR (mg/g), KDIGO albuminuria stage (A1/A2/A3), microalbuminuria flag, UPCR (if urine protein is supplied), urine Na/K ratio (if Na and K available), and creatinine-normalized tubular markers (NGAL, KIM1, NAG, Beta2Micro, A1Micro, IL18, L_FABP when present). Inputs are validated, required columns can be coerced to numeric with warnings, missingness is handled per policy, divisions use safe guards with consolidated zero-denominator warnings, and optional extreme-value scanning/capping is available. Units are assumed; no conversions beyond the coded ratios are performed.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with urine assays.
+- Required columns: `urine_albumin` (mg/L) and `urine_creatinine` (mg/dL). Optional: `urine_protein` (mg/L), `urine_Na`/`urine_K` (mmol/L), and tubular markers `NGAL`, `KIM1`, `NAG`, `beta2_micro`, `a1_micro`, `IL18`, `L_FABP` (assumed mg/L for normalization per g creatinine). Numeric-required columns are coerced when possible; non-finite values become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
+- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics on required inputs (debug level).
+- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
+- `extreme_action = c("warn","cap","error","ignore")`: response to detected extremes; `cap` truncates values and warns.
+- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input/column names.
+- `verbose = FALSE`: emit progress and completion diagnostics.
+
+## Output Description
+
+Returns a tibble with:
+- `UACR`, `albuminuria_stage` (A1/A2/A3), `microalbuminuria` (normal/micro).
+- `UPCR` (mg/g) when `urine_protein` present; otherwise `NA`.
+- `U_Na_K_ratio` when both `urine_Na` and `urine_K` present; otherwise `NA`.
+- Tubular markers per g creatinine: `NGAL_per_gCr`, `KIM1_per_gCr`, `NAG_per_gCr`, `Beta2Micro_per_gCr`, `A1Micro_per_gCr`, `IL18_per_gCr`, `L_FABP_per_gCr` (each `NA` if source column absent).
+
+Safe division sets zero/non-finite denominators to `NA` and tracks a consolidated warning. Albuminuria staging uses UACR cutoffs: A1 < 30 mg/g, A2 30–300, A3 > 300. Microalbuminuria flag is `micro` for 30–300 mg/g, otherwise `normal`.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  urine_albumin = c(25, 450),      # mg/L
+  urine_creatinine = c(1.0, 0.8),  # mg/dL
+  urine_protein = c(120, NA),      # mg/L
+  urine_Na = c(100, 80),
+  urine_K = c(40, 30),
+  NGAL = c(15, 40)
+)
+
+urine_markers(
+  data = df,
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Enable extreme scanning with capping, include tubular markers, and display diagnostics:
+
+```{r}
+df2 <- tibble(
+  urine_albumin = c(20, 120000),   # extreme will be capped
+  urine_creatinine = c(1.2, 0.005),# very low will be capped
+  urine_protein = c(80, 90000),
+  urine_Na = c(90, 500),           # Na extreme for capping demo
+  urine_K = c(35, 210),            # K extreme
+  NGAL = c(10, 200000),
+  KIM1 = c(5, 150000),
+  NAG = c(8, 110000),
+  beta2_micro = c(2, 90000),
+  a1_micro = c(1, 80000),
+  IL18 = c(3, 120000),
+  L_FABP = c(4, 130000)
+)
+
+urine_markers(
+  data = df2,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "keep",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Units are assumed (albumin/protein mg/L; creatinine mg/dL; electrolytes mmol/L); no conversions beyond the ratios are performed.
+- Zero denominators (e.g., very low creatinine) yield `NA` and trigger a consolidated warning listing affected metrics.
+- High missingness on required columns is reported at debug level when exceeding `na_warn_prop`; use `verbose = TRUE` for progress and completion summaries.
+- When optional inputs are absent, corresponding outputs remain `NA`; tubular markers are normalized per g creatinine when available.

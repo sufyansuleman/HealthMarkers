@@ -1,0 +1,101 @@
+---
+title: "frailty_index"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{frailty_index}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`frailty_index()` wraps `di::di()` with input validation, optional QA scans, HM-CS NA/exreme handling, and an optional tidy tibble output. It auto-selects numeric deficits when `cols = NULL` (excluding `age` if provided) and can cap or blank out-of-range values before computing the deficit index (DI).
+
+## Required Inputs
+
+- `data`: data.frame/tibble of deficits (ideally binary/logical or scaled to [0,1]); `age` optional.
+- `cols`: character vector of deficit columns. If `NULL`, all numeric columns are used (excluding `age` if supplied).
+- Package `di` must be installed; otherwise the wrapper aborts.
+
+## Key Arguments
+
+- `invert`: deficits to invert (better health at higher values) before DI calculation.
+- `rescale = TRUE`: allow `di::di()` to rescale non-binary deficits to [0,1].
+- `age`: column name for age (used by `di` plotting/bins; excluded from auto-selected deficits).
+- `bins = 7`, `visible = FALSE`: number of age bins and whether to plot (plots only if age present).
+- `na_action = c("ignore","warn","error","keep","omit")`: missing-data policy; `keep` == `ignore`, `omit` drops rows with any NA in selected deficits.
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"` or verbose.
+- `check_extreme = NULL`: controls out-of-range scan (<0 or >1). `NULL` => scan only when `rescale = FALSE`; `TRUE` => always scan; `FALSE` => never scan.
+- `extreme_action = c("warn","ignore","error","cap","NA")`: response to out-of-range values when scanning (`cap` truncates to [0,1]; `NA` blanks).
+- `return = c("list","data")`: return the raw `di::di` result or a tibble with `di` plus selected deficits (and age if present).
+- `verbose = FALSE`: emit progress and QA summaries.
+
+## Output Description
+
+- `return = "list"` (default): the object from `di::di()`.
+- `return = "data"`: tibble with `di` and the selected deficit columns (post capping/NA) and `age` if provided. Rows may be dropped if `na_action = "omit"`.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+if (requireNamespace("di", quietly = TRUE)) {
+  df <- data.frame(
+    age = c(70, 75, 80),
+    d1 = c(0, 1, 1),
+    d2 = c(0.2, 0.8, 1.0),
+    d3 = c(TRUE, FALSE, TRUE)
+  )
+
+  frailty_index(
+    data = df,
+    cols = NULL,      # auto-select numeric deficits (drops age)
+    age = "age",
+    rescale = TRUE,
+    na_action = "ignore",
+    check_extreme = NULL,
+    extreme_action = "warn",
+    return = "list",
+    verbose = TRUE
+  )
+}
+```
+
+## Extended Example
+
+Drop rows with missing deficits, cap out-of-range values, and return a tibble:
+
+```{r}
+if (requireNamespace("di", quietly = TRUE)) {
+  df2 <- data.frame(
+    age = c(70, 75, 80),
+    d1 = c(0, 1.2, 1),   # out-of-range value will be capped
+    d2 = c(0.2, NA, 0.9)
+  )
+
+  frailty_index(
+    data = df2,
+    cols = c("d1", "d2"),
+    age = "age",
+    rescale = FALSE,
+    na_action = "omit",
+    check_extreme = TRUE,
+    extreme_action = "cap",
+    return = "data",
+    verbose = TRUE
+  )
+}
+```
+
+## Notes / Workflow Integration
+
+- `check_extreme = NULL` mimics legacy behavior: range scan only when `rescale = FALSE`; set `TRUE` to always scan or `FALSE` to skip.
+- `na_action = "keep"`/`"ignore"` retains rows with NA in selected deficits; `"omit"` drops them; `"error"` stops when any selected deficit is missing.
+- `extreme_action = "cap"` truncates deficits to [0,1]; `"NA"` blanks them; `"warn"`/`"ignore"` leave values unchanged; `"error"` stops.
+- `plot_frailty_age()` calls `frailty_index(..., visible = TRUE)` for convenience; provide `age` for plotting.

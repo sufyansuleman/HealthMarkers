@@ -10,7 +10,7 @@ cvd_risk_stroke(data, na_warn_prop = 0.2, verbose = FALSE, ...)
 \item{data}{Data frame with: \code{age}, \code{sex}, \code{race}, \code{smoker},
 \code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.}
 
-\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+\item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}.}
 
 \item{verbose}{Logical; if TRUE, prints progress and a short summary.}
@@ -27,6 +27,6 @@ fallback to NA if the backend errors.
 \references{
 \itemize{
 \item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline
-(Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49–S73.
+(Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49-S73.
 }
 }

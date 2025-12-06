@@ -7,22 +7,24 @@
 alm_bmi_index(
   data,
   col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
+  verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  extreme_rules = NULL
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble with columns for ALM, BMI, and sex.}
+\item{data}{A data.frame or tibble with ALM, BMI, and sex columns.}
 
 \item{col_map}{Named list with:
 \itemize{
-\item alm: appendicular lean mass (kg)
-\item bmi: body mass index (kg/m^2)
-\item sex: "Male"/"Female" (case-insensitive; also accepts first letter m/f)
+\item alm: appendicular lean mass column name (kg)
+\item bmi: body mass index column name (kg/m^2)
+\item sex: sex column name ("Male"/"Female" or m/f; case-insensitive)
 }}
+
+\item{verbose}{Logical; if TRUE, emits progress messages.}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
@@ -30,37 +32,35 @@ alm_bmi_index(
 
 \item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
 
-\item{extreme_rules}{Optional overrides; defaults: list(alm=c(5,40), bmi=c(10,60)).}
-
-\item{verbose}{Logical; if TRUE, emits progress via rlang::inform.}
+\item{extreme_rules}{Optional list with bounds for \code{alm} and \code{bmi}
+(defaults: alm = c(5, 40), bmi = c(10, 60)).}
 }
 \value{
 A tibble with:
 \itemize{
-\item alm_bmi_ratio (numeric)
-\item low_muscle_mass (logical; TRUE if below sex-specific cut-point; NA if sex unknown or ratio NA)
+\item alm_bmi_ratio   (numeric)
+\item low_muscle_mass (logical; TRUE if below sex-specific cut-point;
+NA if sex unknown or ratio NA)
+#' @references
+McLean RR, Shardell MD, Alley DE, et al. (2014).
+Criteria for clinically relevant weakness and low lean mass: FNIH Sarcopenia Project.
+J Gerontol A Biol Sci Med Sci. 69(5):576-583. doi:10.1093/gerona/glu012
 }
+
+Studenski SA, Peters KW, Alley DE, et al. (2014).
+The FNIH Sarcopenia Project: Rationale, Study Description, Conference Recommendations, and Final Estimates.
+J Gerontol A Biol Sci Med Sci. 69(5):564-570. doi:10.1093/gerona/glu013
 }
 \description{
 Calculates the ratio of appendicular lean mass (ALM) to body mass index (BMI),
 and flags low muscle mass based on FNIH Sarcopenia Project cut-points.
 }
 \details{
-The ALM/BMI index indicates muscle mass relative to body size. Low values suggest sarcopenia.
-FNIH Sarcopenia Project cut-points:
+ALM/BMI reflects muscle mass relative to body size. FNIH cut-points:
 \itemize{
-\item Men: ALM/BMI < 0.789
-\item Women: ALM/BMI < 0.512
+\item Men:    ALM/BMI < 0.789
+\item Women:  ALM/BMI < 0.512
 }
 
 ALM should be in kilograms and BMI in kg/m^2.
-}
-\references{
-McLean RR, Shardell MD, Alley DE, et al. (2014).
-Criteria for clinically relevant weakness and low lean mass: FNIH Sarcopenia Project.
-J Gerontol A Biol Sci Med Sci. 69(5):576–583. doi:10.1093/gerona/glu012
-
-Studenski SA, Peters KW, Alley DE, et al. (2014).
-The FNIH Sarcopenia Project: Rationale, Study Description, Conference Recommendations, and Final Estimates.
-J Gerontol A Biol Sci Med Sci. 69(5):564–570. doi:10.1093/gerona/glu013
 }

@@ -1,0 +1,92 @@
+---
+title: "metabolic_risk_features"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{metabolic_risk_features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`metabolic_risk_features()` computes four pediatric-friendly binary risk flags from routine measures: dyslipidemia, insulin resistance, hyperglycemia, and hypertension (BP z-score >95th percentile). It supports NA policies, optional high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and verbose summaries. Units are assumed (no conversion): lipids mmol/L, glucose mmol/L, HbA1c mmol/mol (IFCC), BP z-scores already standardized, age in years, z_HOMA as a z-scored HOMA-IR.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with required numeric columns.
+- `col_map`: optional named list mapping keys (defaults to same names): `chol_total`, `chol_ldl`, `chol_hdl`, `triglycerides`, `age_year`, `z_HOMA`, `glucose`, `HbA1c`, `bp_sys_z`, `bp_dia_z`. Columns must exist for all keys.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
+- `na_warn_prop = 0.2`: high-missingness warning threshold when `na_action = "warn"`.
+- `check_extreme = FALSE`: enable plausible-range scan.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when scanning (`cap` truncates; `NA` blanks values).
+- `extreme_rules = NULL`: override defaults (chol_total 0.5–20; chol_ldl 0.1–15; chol_hdl 0.1–5; triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c 15–200; bp_sys_z/bp_dia_z -5–5).
+- `verbose = FALSE`: emit progress/completion messages.
+
+## Output Description
+
+Returns a tibble with factor columns `dyslipidemia`, `insulin_resistance`, `hyperglycemia`, `hypertension` (levels `0`/`1`). When `na_action = "omit"`, rows with missing required inputs are removed; otherwise those rows yield `NA` flags. Extreme handling can cap or blank inputs before flag computation.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  chol_total = c(5.4, 4.8),
+  chol_ldl = c(3.6, 2.9),
+  chol_hdl = c(0.9, 1.2),
+  triglycerides = c(1.6, 1.0),
+  age_year = c(15, 9),
+  z_HOMA = c(1.5, 0.8),
+  glucose = c(5.8, 5.1),
+  HbA1c = c(40, 35),
+  bp_sys_z = c(1.2, 1.8),
+  bp_dia_z = c(0.5, 1.7)
+)
+
+metabolic_risk_features(
+  data = df,
+  col_map = list(
+    chol_total = "chol_total", chol_ldl = "chol_ldl", chol_hdl = "chol_hdl", triglycerides = "triglycerides",
+    age_year = "age_year", z_HOMA = "z_HOMA", glucose = "glucose", HbA1c = "HbA1c", bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
+  ),
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Scan for extremes, cap, and warn while emitting a completion summary:
+
+```{r}
+metabolic_risk_features(
+  data = df,
+  col_map = list(
+    chol_total = "chol_total", chol_ldl = "chol_ldl", chol_hdl = "chol_hdl", triglycerides = "triglycerides",
+    age_year = "age_year", z_HOMA = "z_HOMA", glucose = "glucose", HbA1c = "HbA1c", bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
+  ),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Lipid thresholds are age-specific for triglycerides: >1.1 mmol/L (age 0–9) or >1.5 mmol/L (age 10–19) flag dyslipidemia.
+- `z_HOMA` should already be standardized; >1.28 (~90th percentile) flags insulin resistance.
+- Hyperglycemia flag uses fasting glucose 5.6–6.9 mmol/L or HbA1c 39–47 mmol/mol (pre-diabetes range).
+- Hypertension flag triggers if either systolic or diastolic BP z-score >1.64 (~95th percentile).
+- High-missingness and unit-sanity warnings appear only when `na_action = "warn"`.

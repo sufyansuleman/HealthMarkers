@@ -1,0 +1,80 @@
+---
+title: "corrected_calcium"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{corrected_calcium}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`corrected_calcium()` applies the Payne formula to compute albumin-adjusted serum calcium. Inputs can be supplied in conventional units (mg/dL calcium, g/dL albumin) or SI (mmol/L calcium, g/L albumin); unit detection is automatic by default. Optional extreme screening flags, caps, or blanks implausible inputs before correction.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with serum calcium and albumin.
+- `col_map`: named list mapping `calcium`/`ca` and `albumin`/`alb` to column names (defaults: `Ca`, `Alb`).
+- Inputs are coerced to numeric; non-finite values become `NA`.
+
+## Key Arguments
+
+- `units = c("auto","conventional","si")`: `auto` infers SI if calcium <= 4 or albumin > 20.
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `keep`).
+- `check_extreme = FALSE`: enable plausible-range checks in working conventional units.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` trims into bounds; `NA` blanks values).
+- `extreme_rules = NULL`: optional list overriding default bounds list(ca_mgdl = c(4,15), alb_gdl = c(2,5)).
+- `verbose = FALSE`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with one column, `corrected_calcium`. With conventional inputs (or `units = "conventional"`), values are in mg/dL; with SI inputs (or SI inferred), values are in mmol/L. When `na_action = "omit"`, rows with missing inputs are dropped; otherwise those rows yield `NA` results.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+labs <- tibble(Ca = c(8.4, 9.6), Alb = c(3.0, 4.2))
+
+corrected_calcium(
+  data = labs,
+  col_map = list(calcium = "Ca", albumin = "Alb"),
+  units = "conventional",
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Use SI inputs, request mmol/L output, and screen for implausible values:
+
+```{r}
+si_labs <- tibble(Ca = c(2.25, 2.55), Alb = c(37, 41))
+
+corrected_calcium(
+  data = si_labs,
+  col_map = list(calcium = "Ca", albumin = "Alb"),
+  units = "si",
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "warn",
+  extreme_rules = NULL,
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- `na_action = "error"` enforces complete inputs; `"omit"` drops incomplete rows; `"keep"`/`"warn"`/`"ignore"` retain rows with `NA` outputs.
+- Auto unit detection issues a warning when SI is inferred; set `units` explicitly to suppress it.
+- Extreme screening uses conventional-unit bounds; `extreme_action` governs whether values are warned, capped, blanked, or error-stopped.
+- Domain warnings fire (without scanning) when conventional albumin is outside 2–5 g/dL or corrected calcium outside ~5–15 mg/dL.

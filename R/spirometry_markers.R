@@ -11,9 +11,9 @@
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #'
 #' @references
-#' Miller MR, Hankinson J, Brusasco V, et al. (2005). Standardisation of spirometry. Eur Respir J. 26(2):319–338. doi:10.1183/09031936.05.00034805
-#' Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3–95-yr age range: the GLI-2012 equations. Eur Respir J. 40(6):1324–1343. doi:10.1183/09031936.00080312
-#' American Thoracic Society. (2002). ATS statement: guidelines for the six-minute walk test. Am J Respir Crit Care Med. 166(1):111–117. doi:10.1164/rccm.166.1.at1102
+#' Miller MR, Hankinson J, Brusasco V, et al. (2005). Standardisation of spirometry. Eur Respir J. 26(2):319-338. doi:10.1183/09031936.05.00034805
+#' Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3-95-yr age range: the GLI-2012 equations. Eur Respir J. 40(6):1324-1343. doi:10.1183/09031936.00080312
+#' American Thoracic Society. (2002). ATS statement: guidelines for the six-minute walk test. Am J Respir Crit Care Med. 166(1):111-117. doi:10.1164/rccm.166.1.at1102
 #' Global Initiative for Chronic Obstructive Lung Disease (GOLD). (2025). Global strategy for the diagnosis, management, and prevention of COPD.
 #' @return Tibble with ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
 #' @export

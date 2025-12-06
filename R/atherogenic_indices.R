@@ -9,7 +9,7 @@
 #' - Required keys: TG, HDL_c. Optional: TC, LDL_c.
 #' - NA policy via `na_action`: "keep" (default), "omit" (drop rows with any NA in used lipids), "error".
 #' - Extreme screening via `check_extreme` and `extreme_action` ("warn","cap","error","ignore","NA").
-#'   Default bounds (mg/dL) used only for screening: TG [0, 10000], HDL_c [0, 1000], LDL_c [0, 10000], TC [0, 10000].
+#'   Default bounds (mg/dL) used only for screening: TG (0, 10000), HDL_c (0, 1000), LDL_c (0, 10000), TC (0, 10000).
 #'   Note: All indices are unitless ratios; units cancel in computations.
 #' - Emits progress via `hm_inform()` when `verbose = TRUE` or when package option enables logs.
 #'
@@ -25,9 +25,9 @@
 #' @return tibble with columns AIP, CRI_I, CRI_II
 #'
 #' @references
-#' Dobiasova M (2004). Atherogenic Index of Plasma (AIP) [log(TG/HDL-C)]: theoretical and practical implications. Clin Chem 50(7):1113–1115. \doi{10.1373/clinchem.2004.035220}
+#' Dobiasova M (2004). Atherogenic Index of Plasma (AIP) log(TG/HDL-C): theoretical and practical implications. Clin Chem 50(7):1113-1115. \doi{10.1373/clinchem.2004.035220}
 #'
-#' Castelli WP, et al. (1977). HDL cholesterol and other lipids in coronary heart disease: The Framingham Study. Am J Med 62(5):707–714. \doi{10.1016/0002-9343(77)90874-9}
+#' Castelli WP, et al. (1977). HDL cholesterol and other lipids in coronary heart disease: The Framingham Study. Am J Med 62(5):707-714. \doi{10.1016/0002-9343(77)90874-9}
 #'
 #' @examples
 #' df <- tibble::tibble(

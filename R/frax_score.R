@@ -9,7 +9,7 @@
 #'   - Required: age, sex
 #'   - Optional binary risk factors: prior_fracture, parent_fracture, steroids,
 #'     rheumatoid, secondary_op, smoker, alcohol
-#'   - Optional: bmd (T-score; if present and in [-5,0], used to adjust risk)
+#'   - Optional: bmd (T-score; if present and in (-5,0], used to adjust risk)
 #' @param country optional country/region code for FRAX calibration (accepted, currently unused).
 #' @param na_action One of c("keep","omit","error","ignore","warn").
 #' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
@@ -18,8 +18,8 @@
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return Tibble with frax_major_percent and frax_hip_percent.
 #' @references
-#' Kanis JA, Johnell O, Oden A, et al. (2008). FRAX and the assessment of fracture probability in men and women from the UK. Osteoporos Int. 19(4):385–397. doi:10.1007/s00198-007-0543-5
-#' Kanis JA, Harvey NC, Johansson H, et al. (2020). Overview of FRAX: a tool for assessing fracture risk. Osteoporos Int. 31(12):2399–2421. doi:10.1007/s00198-020-05373-7
+#' Kanis JA, Johnell O, Oden A, et al. (2008). FRAX and the assessment of fracture probability in men and women from the UK. Osteoporos Int. 19(4):385-397. doi:10.1007/s00198-007-0543-5
+#' Kanis JA, Harvey NC, Johansson H, et al. (2020). Overview of FRAX: a tool for assessing fracture risk. Osteoporos Int. 31(12):2399-2421. doi:10.1007/s00198-020-05373-7
 #' @export
 frax_score <- function(
   data,
@@ -155,7 +155,7 @@ frax_score <- function(
   # Domain warnings (suppress during extreme scan)
   if (!isTRUE(check_extreme)) {
     if (any(is.finite(d_age) & (d_age < 40 | d_age > 90))) {
-      rlang::warn("frax_score(): age outside typical FRAX range (40–90 years) detected.",
+      rlang::warn("frax_score(): age outside typical FRAX range (40-90 years) detected.",
                   class = "healthmarkers_frax_warn_age_range")
     }
     if (!is.null(d_bmd) && any(is.finite(d_bmd) & (d_bmd < -6 | d_bmd > 2))) {

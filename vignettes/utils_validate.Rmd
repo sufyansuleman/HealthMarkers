@@ -1,0 +1,63 @@
+---
+title: "utils_validate"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{utils_validate}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`validate_inputs()` (in `R/zzz-validate_inputs.R`) is a legacy/internal helper to sanity-check a column map against a data frame. It is minimal: it only checks that required lipid marker keys are present and mapped when `fun_name = "lipid_markers"`, and otherwise returns silently. It returns invisibly on success or throws errors on failure.
+
+## Required Inputs
+
+- `data`: data.frame/tibble being validated.
+- `col_map`: named list mapping keys to column names.
+- `fun_name`: character scalar naming the calling function (e.g., `"lipid_markers"`).
+
+## Key Arguments
+
+- `fun_name`: used to pick which keys are required. Currently only `fun_name = "lipid_markers"` is handled, which requires `TG`, `HDL_c`, `LDL_c`, and `TC` to be mapped.
+
+## Output Description
+
+- On success: invisibly returns `TRUE`.
+- On failure: throws an error if required mappings are missing or inputs are malformed.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+df <- data.frame(TG = c(120, 140), HDL_c = c(45, 50), LDL_c = c(90, 110), TC = c(180, 200))
+cm <- list(TG = "TG", HDL_c = "HDL_c", LDL_c = "LDL_c", TC = "TC")
+
+# Basic validation for lipid_markers
+validate_inputs(df, cm, fun_name = "lipid_markers")
+```
+
+## Extended Example
+
+Missing a required lipid marker triggers an error:
+
+```{r}
+try(
+  validate_inputs(
+    data = df,
+    col_map = list(TG = "TG", HDL_c = "HDL_c"),
+    fun_name = "lipid_markers"
+  )
+)
+```
+
+## Notes / Workflow Integration
+
+- Prefer `hm_validate_inputs()` for current marker functions; `validate_inputs()` is retained for backward compatibility with the original lipid marker implementation.
+- Errors are classed via `rlang::abort()`, which can be caught or tested in downstream code.

@@ -1,0 +1,91 @@
+---
+title: "infer_cols"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{infer_cols}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`infer_cols()` scans a data frame and fills a mapping list (keys -> column names) using flexible regex patterns, optional preferred names, and multiple resolution strategies. It can log decisions, handle fuzzy matching, and return either the filled map or a map+log list. Defaults are strict and error on missing or ambiguous matches to preserve backward compatibility. The internal `hm_infer_cols()` provides a simpler exact-name inference with classed errors for package functions when no map is supplied.
+
+## Required Inputs
+
+- `data`: data.frame/tibble whose column names will be matched.
+- `map`: named list where names are target keys (e.g., `G0`, `I0`, `TG`) and values are either `NULL` (to infer) or a user-supplied column name to keep.
+
+## Key Arguments
+
+- `patterns = NULL`: optional named character vector of regex patterns per key; if `NULL`, a built-in separator-tolerant dictionary is used.
+- `prefer = NULL`: optional named list of preferred exact names per key to resolve ties when `strategy = "prefer"`.
+- `strategy = c("error","prefer","first","stable")`: how to resolve multiple matches (`error` aborts; `prefer` uses `prefer` then stable tie-break; `first` takes first in data order; `stable` chooses shortest then alphabetical).
+- `strict = TRUE`: if `TRUE`, missing matches error; if `FALSE`, leaves keys `NULL` and warns.
+- `fuzzy = FALSE`, `max_distance = 0.1`: enable fuzzy matching via `agrep` when regex finds nothing.
+- `ignore_case = TRUE`: case-insensitive matching.
+- `verbose = TRUE`: print mapping decisions; `log_file = NULL` optionally writes a human-readable log.
+- `return = c("map","list")`: return the filled map (default) or a list with `map` and tibble `log`.
+
+`hm_infer_cols(data, patterns, required_keys, verbose)` is a lighter exact-name helper used internally; it aborts if required keys remain unresolved.
+
+## Output Description
+
+- Default: invisibly returns the filled `map` list.
+- With `return = "list"`: returns `list(map = <named list>, log = <tibble>)` where `log` records key, selected column, candidates, and reason.
+- When `strict = TRUE` and no/ambiguous match is found under `strategy = "error"`, an error is thrown; under other strategies, behavior follows the chosen resolution.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  fasting_glucose = c(5.5, 6.1),
+  fasting_insulin = c(60, 88),
+  TG = c(120, 150),
+  `HDL-c` = c(50, 45),
+  age = c(55, 60)
+)
+
+spec <- list(G0 = NULL, I0 = NULL, TG = NULL, HDL_c = NULL)
+
+# Backward-compatible strict inference
+infer_cols(df, spec, verbose = FALSE)
+```
+
+## Extended Example
+
+Resolve ambiguities with preferences, enable fuzzy matching, and capture the log:
+
+```{r}
+log_path <- tempfile(fileext = ".log")
+
+res <- infer_cols(
+  data = df,
+  map = spec,
+  strategy = "prefer",      # use preferred names when multiple hits
+  prefer = list(HDL_c = c("HDL-c", "HDL")),
+  fuzzy = TRUE,               # allow fuzzy fallback if regex misses
+  log_file = log_path,
+  return = "list",
+  verbose = TRUE
+)
+
+res$map      # inferred mapping
+res$log      # tibble of decisions
+log_path     # log file written
+```
+
+## Notes / Workflow Integration
+
+- Keep `strict = TRUE` when you want early errors for missing or ambiguous columns; switch to `strict = FALSE` to allow partial maps with warnings.
+- `strategy` controls tie-breaking; `prefer` plus `prefer` list yields deterministic resolution, while `stable` chooses shortest then alphabetical.
+- Fuzzy matching is off by default to avoid surprises; enable only when column names are noisy.
+- `hm_infer_cols()` is used by package functions when a col_map is missing; it requires explicit candidate name lists and aborts if required keys remain unresolved.

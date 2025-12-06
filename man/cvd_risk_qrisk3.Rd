@@ -13,7 +13,7 @@ cvd_risk_qrisk3(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE)
 
 \item{patid}{Optional vector of patient IDs (default: \code{1:nrow(data)}).}
 
-\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+\item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}.}
 
 \item{verbose}{Logical; if TRUE, prints progress and a short summary.}

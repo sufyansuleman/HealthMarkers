@@ -21,11 +21,11 @@
 #' @seealso \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
 #'
 #' @references
-#' McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209–238. \doi{10.1016/0165-0173(93)90039-U}
+#' McEwen BS, Stellar E (1993). Stress and the individual: mechanisms leading to disease. Brain Res Rev, 17:209-238. \doi{10.1016/0165-0173(93)90039-U}
 #'
-#' Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation—Allostatic Load and its health consequences. Arch Intern Med, 157:2259–2268. \doi{10.1001/archinte.157.19.2259}
+#' Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). Price of adaptation-Allostatic Load and its health consequences. Arch Intern Med, 157:2259-2268. \doi{10.1001/archinte.157.19.2259}
 #'
-#' Juster RP, McEwen BS, Lupien SJ (2010). Allostatic load biomarkers of chronic stress. Neurosci Biobehav Rev, 35:2–16. \doi{10.1016/j.neubiorev.2010.01.006}
+#' Juster RP, McEwen BS, Lupien SJ (2010). Allostatic load biomarkers of chronic stress. Neurosci Biobehav Rev, 35:2-16. \doi{10.1016/j.neubiorev.2010.01.006}
 #'
 #' Wiley JF, Gruenewald TL, Karlamangla AS, Seeman TE (2021). Modeling allostatic load. Psychoneuroendocrinology, 129:105248. \doi{10.1016/j.psyneuen.2021.105248}
 #'

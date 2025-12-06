@@ -88,7 +88,9 @@ hm_coerce_numeric <- function(data, cols, fn = "healthmarkers") {
   data
 }
 
-# Quiet name repair binder (if you need it elsewhere)
+#' Quiet name repair binder (if you need it elsewhere)
+#' @importFrom vctrs vec_as_names
+#' @keywords internal
 hm_bind_cols_quiet <- function(...) {
   dplyr::bind_cols(...,
     .name_repair = ~ vctrs::vec_as_names(., repair = "unique", quiet = TRUE)

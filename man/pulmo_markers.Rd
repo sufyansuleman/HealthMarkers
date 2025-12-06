@@ -16,7 +16,7 @@ pulmo_markers(
 \item{data}{A data.frame or tibble with columns:
 \itemize{
 \item \code{age}       (numeric): years
-\item \code{sex}       (character or numeric): "male"/"female" (case-insensitive) or {1,2}, {0,1}
+\item \code{sex}       (character or numeric): "male"/"female" (case-insensitive) or codes 1/2 or 0/1
 \item \code{height}    (numeric): cm or m (auto-detected)
 \item \code{ethnicity} (character): e.g. "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"
 \item \code{fev1}      (numeric): observed FEV1 in L
@@ -29,7 +29,7 @@ GLIgl ignores ethnicity.}
 \item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in
 required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings on
+\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings on
 required inputs. Default 0.2.}
 
 \item{verbose}{Logical; if \code{TRUE} prints progress messages and a completion summary.}
@@ -53,8 +53,8 @@ auto-detected as cm when any height > 3; otherwise interpreted as metres (no
 automatic unit conversion beyond that heuristic, preserving prior behavior).
 }
 \references{
-Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3–95-yr age range: the GLI equations. Eur Respir J, 40:1324–1343. \doi{10.1183/09031936.00162412}
-Hankinson JL, Odencrantz JR, Fedan KB (1999). Spirometric reference values from a sample of the general U.S. population. Am J Respir Crit Care Med, 159:179–187. \doi{10.1164/ajrccm.159.1.9712108}
+Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3-95-yr age range: the GLI equations. Eur Respir J, 40:1324-1343. \doi{10.1183/09031936.00162412}
+Hankinson JL, Odencrantz JR, Fedan KB (1999). Spirometric reference values from a sample of the general U.S. population. Am J Respir Crit Care Med, 159:179-187. \doi{10.1164/ajrccm.159.1.9712108}
 Bowerman SD, Quanjer PH, et al. (2023). GLI-Global update. Eur Respir J, 61:2201632. \doi{10.1183/13993003.01632-2023}
 }
 \seealso{

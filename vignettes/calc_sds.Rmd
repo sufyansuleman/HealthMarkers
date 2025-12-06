@@ -1,0 +1,97 @@
+---
+title: "calc_sds"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{calc_sds}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`calc_sds()` computes standard deviation scores (z-scores, SDS) for selected variables using supplied reference means and SDs. It validates inputs, handles missingness, optionally screens extremes, and can return either a tibble or a summary list.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing variables to standardize.
+- `vars`: character vector of column names to score (non-empty, unique).
+- `ref`: data.frame with columns `variable`, `mean`, `sd`; exactly one row per `vars` entry with finite mean and sd > 0.
+- `id_col` (optional): identifier used only in diagnostics/messages.
+- Inputs are coerced to numeric; non-finite values become `NA`.
+
+## Key Arguments
+
+- `na_strategy = c("omit","error","keep")`: missing-data policy (aliases: `na_action`).
+- `check_extreme = TRUE`: toggle extreme SDS detection; if FALSE, extremes are neither scanned nor acted on.
+- `extreme_strategy = c("cap","warn","error","NA")`: response to |SDS| > `sds_cap` when extreme checking is on (alias `extreme_action`).
+- `sds_cap = 6`: absolute cap used when `extreme_strategy = "cap"`.
+- `warn_thresholds`: list with `na_prop` and `extreme_prop` (proportions in [0,1]) to trigger warnings for missingness/extremes.
+- `return = c("data","list")`: tibble with `<var>_sds` columns or a list (`data`, `summary`, `warnings`).
+- `verbose = FALSE`: emit progress via `hm_inform()` and messages.
+
+## Output Description
+
+- Default (`return = "data"`): tibble with appended `<var>_sds` columns; rows dropped only when `na_strategy = "omit"`.
+- `return = "list"`: list with `data` (tibble), `summary` (row counts, extremes, per-variable missing/extreme counts), and `warnings` (unique warning messages).
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+ref <- data.frame(
+  variable = c("bmi", "sbp"),
+  mean     = c(25, 120),
+  sd       = c(4, 15)
+)
+
+df <- data.frame(
+  id  = 1:6,
+  bmi = c(24, 30, NA, 29, 10, 26),
+  sbp = c(118, 200, 119, 121, 500, 120)
+)
+
+calc_sds(
+  data = df,
+  vars = c("bmi", "sbp"),
+  ref = ref,
+  id_col = "id",
+  na_strategy = "omit",
+  check_extreme = TRUE,
+  extreme_strategy = "cap",
+  sds_cap = 6,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Keep rows with missing inputs, warn (do not cap) on extremes, request summary list, and relax warning thresholds:
+
+```{r}
+calc_sds(
+  data = df,
+  vars = c("bmi", "sbp"),
+  ref = ref,
+  na_strategy = "keep",
+  check_extreme = TRUE,
+  extreme_strategy = "warn",
+  sds_cap = 5,
+  warn_thresholds = list(na_prop = 0.10, extreme_prop = 0.02),
+  return = "list",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- `ref` must cover every variable in `vars` with finite means and sd > 0; duplicates or missing stats abort.
+- Set `check_extreme = FALSE` to skip extreme detection; otherwise |SDS| > `sds_cap` follow `extreme_strategy`.
+- Non-numeric inputs are coerced to numeric with a warning; non-finite values become NA before scoring.
+- Proportion warnings trigger when missingness (`na_prop`) or extremes (`extreme_prop`) exceed thresholds.
+- Use `na_strategy = "error"` to enforce completeness; `"omit"` drops incomplete rows; `"keep"` retains them with NA SDS.

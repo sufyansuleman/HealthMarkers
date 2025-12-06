@@ -1,0 +1,83 @@
+---
+title: "adiposity_sds"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{adiposity_sds}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`adiposity_sds()` computes SDS (z-scores) for anthropometric variables against a single reference (non-sex-stratified). It validates references, can screen raw values for extremes, handles missingness, and optionally caps extreme SDS.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with variables to standardize.
+- `ref`: named list of numeric `c(mean=, sd=)` for each variable, e.g. `list(BMI = c(mean=23, sd=4))`.
+- `col_map` (optional): list with `vars` to map reference variable names to data columns; defaults to identity mapping.
+- Inputs are coerced to numeric; non-finite become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: row-wise missing-data policy across mapped vars (aliases: `na_strategy`).
+- `check_extreme = FALSE`: optional raw-value screening using `extreme_rules` (defaults cover common anthropometrics such as BMI, waist, weight, height, hip, WC, HC).
+- `extreme_action = c("cap","NA","error","warn","ignore")`: handling for |SDS| > `sds_cap` (aliases: `extreme_strategy`).
+- `sds_cap = 6`: cap magnitude when `extreme_action = "cap"`.
+- `diagnostics`, `warn_thresholds`: control diagnostic warnings for missingness/extremes proportions.
+- `return_summary = FALSE`: if TRUE, return list with `data`, `summary`, `warnings`.
+- `verbose`: emit progress messages.
+
+## Output Description
+
+Default returns a tibble with `<var>_SDS` columns (rows dropped only when `na_action = "omit"`). With `return_summary = TRUE`, returns list with the SDS tibble plus summary counts and warnings.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
+df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
+
+adiposity_sds(
+  data = df,
+  ref = ref,
+  na_action = "keep",
+  check_extreme = FALSE,
+  extreme_action = "cap",
+  sds_cap = 6,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Screen raw extremes, cap SDS, and return summary diagnostics:
+
+```{r}
+adiposity_sds(
+  data = df,
+  ref = ref,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  sds_cap = 5,
+  diagnostics = TRUE,
+  warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
+  return_summary = TRUE,
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- `ref` must include every variable with finite mean and sd > 0; missing stats abort.
+- `na_action = "error"` enforces complete cases; `"omit"` drops incomplete rows; `"keep"` retains rows with `NA` SDS.
+- Raw screening happens before SDS; adjust `extreme_rules` if your data units differ.
+- `extreme_action` controls SDS handling; `warn`/`ignore` are kept for compatibility but deprecated.

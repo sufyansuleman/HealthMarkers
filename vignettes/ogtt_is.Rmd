@@ -1,0 +1,95 @@
+---
+title: "ogtt_is"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ogtt_is}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`ogtt_is()` computes OGTT-based insulin sensitivity indices using glucose/insulin at 0, 30, and 120 minutes plus weight, BMI, age, and sex. Outputs include: Isi_120, Cederholm_index, Gutt_index, Avignon_Si0/Si120/Sim, Modified_stumvoll, Stumvoll_Demographics, Matsuda_AUC, Matsuda_ISI, BigttSi, Ifc_inv, HIRI_inv, and Belfiore_isi_gly. It supports NA policies, optional high-missingness diagnostics, optional extreme screening on outputs with warn/cap/NA/error behaviors, and optional normalization via `normalize_vec()`. Units assumed: glucose mmol/L, insulin pmol/L, weight kg, BMI kg/m^2, age years, sex 1=male/2=female; glucose/insulin are internally converted to mg/dL and muU/mL where formulas require.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with required columns.
+- `col_map`: named list mapping `G0`, `G30`, `G120` (glucose mmol/L), `I0`, `I30`, `I120` (insulin pmol/L), `weight` (kg), `bmi` (kg/m^2), `age` (years), `sex` (1=male/2=female). All mappings must exist and columns be numeric/coercible.
+
+## Key Arguments
+
+- `normalize = c("none","z","inverse","range","robust")`: post-hoc normalization of outputs.
+- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (`omit` drops rows; `error` aborts).
+- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug level).
+- `check_extreme = FALSE`: enable output magnitude scan (|value| > `extreme_limit`).
+- `extreme_limit = 1e3`: magnitude threshold for extremes.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for flagged extremes (`cap` truncates; `NA` blanks values).
+- `verbose = FALSE`: emit progress and completion messages.
+
+## Output Description
+
+Returns a tibble with the indices listed above. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`. Extreme handling applies after computation to cap/warn/blank/error based on magnitude.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  G0 = 5.5, I0 = 60,
+  G30 = 7.8, I30 = 90,
+  G120 = 6.2, I120 = 50,
+  weight = 70, bmi = 24, age = 30, sex = 1
+)
+
+ogtt_is(
+  data = df,
+  col_map = list(
+    G0 = "G0", I0 = "I0",
+    G30 = "G30", I30 = "I30",
+    G120 = "G120", I120 = "I120",
+    weight = "weight", bmi = "bmi",
+    age = "age", sex = "sex"
+  ),
+  normalize = "none",
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Apply output capping for large magnitudes, with verbose diagnostics:
+
+```{r}
+ogtt_is(
+  data = df,
+  col_map = list(
+    G0 = "G0", I0 = "I0",
+    G30 = "G30", I30 = "I30",
+    G120 = "G120", I120 = "I120",
+    weight = "weight", bmi = "bmi",
+    age = "age", sex = "sex"
+  ),
+  normalize = "z",
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_limit = 1e3,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Glucose is multiplied by 18 (mg/dL) and insulin divided by 6 (muU/mL) where formulas require; original units must be mmol/L/pmol/L.
+- Logs are safe: nonpositive arguments yield `NA`.
+- Extreme screening is on outputs (not inputs); adjust `extreme_limit` for your cohort.
+- `normalize` is optional and uses `normalize_vec()` with your chosen method.

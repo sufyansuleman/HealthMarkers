@@ -22,7 +22,7 @@ tracer_dxa_is(
 \item{col_map}{Named list with entries (depending on mode):
 Adipose-only required:
 - I0: fasting insulin (pmol/L)
-- rate_glycerol, rate_palmitate: tracer rates (µmol/min)
+- rate_glycerol, rate_palmitate: tracer rates (mumol/min)
 - fat_mass, weight, bmi: body composition
 - HDL_c: HDL cholesterol (mmol/L)
 Full mode additionally requires:
@@ -35,7 +35,7 @@ Full mode additionally requires:
 
 \item{na_action}{One of c("keep","omit","error") for NA handling on required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings on required inputs. Default 0.2.}
+\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings on required inputs. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 
@@ -66,30 +66,30 @@ Modes:
 Expected units:
 \itemize{
 \item Glucose: mmol/L (internally converted to mg/dL when needed)
-\item Insulin: pmol/L (internally converted to µU/mL via /6)
+\item Insulin: pmol/L (internally converted to muU/mL via /6)
 \item TG: mmol/L (to mg/dL via *88.57); HDL-c: mmol/L (to mg/dL via *38.67)
-\item Tracer rates: µmol/min
+\item Tracer rates: mumol/min
 \item Fat mass, weight: kg; BMI: kg/m^2
 }
 }
 \references{
 Original derivations
 Groop LC, Bonadonna RC, Simonson DC, et al. Different effects of insulin and oral hypoglycemic agents on glucose and lipid metabolism in type II diabetes.
-J Clin Invest. 1989;84(2):578–585. \doi{10.1172/JCI114192} (Tracer-based insulin sensitivity concepts)
+J Clin Invest. 1989;84(2):578-585. \doi{10.1172/JCI114192} (Tracer-based insulin sensitivity concepts)
 Steele R. Influences of glucose loading and of injected insulin on hepatic glucose output.
-Ann N Y Acad Sci. 1959;82(2):420–430. \doi{10.1111/j.1749-6632.1959.tb44923.x} (Tracer methodology framework)
+Ann N Y Acad Sci. 1959;82(2):420-430. \doi{10.1111/j.1749-6632.1959.tb44923.x} (Tracer methodology framework)
 Boston RC, Stefanovski D, Moate PJ, Sumner AE, Watanabe RM, Bergman RN. MINMOD Millennium: a computer program to calculate glucose effectiveness and insulin sensitivity from the frequently sampled IV glucose tolerance test.
-Diabetes Technol Ther. 2003;5(6):1003–1015. \doi{10.1089/152091503322641115} (Modeling insulin sensitivity with FSIGT tracers)
+Diabetes Technol Ther. 2003;5(6):1003-1015. \doi{10.1089/152091503322641115} (Modeling insulin sensitivity with FSIGT tracers)
 Roden M, Price TB, Perseghin G, et al. Mechanism of free fatty acid-induced insulin resistance in humans.
-J Clin Invest. 1996;97(12):2859–2865. \doi{10.1172/JCI118742} (FFA tracer dynamics and insulin resistance)
+J Clin Invest. 1996;97(12):2859-2865. \doi{10.1172/JCI118742} (FFA tracer dynamics and insulin resistance)
 
 Validation studies
 Gastaldelli A, Ferrannini E, Miyazaki Y, Matsuda M, DeFronzo RA. Beta-cell dysfunction and glucose intolerance: results from the San Antonio Metabolism Study.
-Diabetologia. 2004;47(1):31–39. \doi{10.1007/s00125-003-1254-9} (Validation of tracer-derived insulin sensitivity vs. clamp)
+Diabetologia. 2004;47(1):31-39. \doi{10.1007/s00125-003-1254-9} (Validation of tracer-derived insulin sensitivity vs. clamp)
 Karpe F, Dickmann JR, Frayn KN. Fatty acids, obesity, and insulin resistance: time for a reevaluation.
-Diabetes. 2011;60(10):2441–2449. \doi{10.2337/db11-0425} (Adipose tissue tracer validation and interpretation)
+Diabetes. 2011;60(10):2441-2449. \doi{10.2337/db11-0425} (Adipose tissue tracer validation and interpretation)
 Petersen KF, Dufour S, Savage DB, et al. The role of skeletal muscle insulin resistance in the pathogenesis of the metabolic syndrome.
-Proc Natl Acad Sci U S A. 2007;104(31):12587–12594. \doi{10.1073/pnas.0705408104} (Skeletal muscle insulin sensitivity validation)
+Proc Natl Acad Sci U S A. 2007;104(31):12587-12594. \doi{10.1073/pnas.0705408104} (Skeletal muscle insulin sensitivity validation)
 Santomauro AT, Boden G, Silva ME, et al. Overnight lowering of free fatty acids with Acipimox improves insulin resistance and glucose tolerance in obese diabetic and nondiabetic subjects.
-Diabetes. 1999;48(9):1836–1841. \doi{10.2337/diabetes.48.9.1836} (FFA suppression and adipose insulin sensitivity)
+Diabetes. 1999;48(9):1836-1841. \doi{10.2337/diabetes.48.9.1836} (FFA suppression and adipose insulin sensitivity)
 }

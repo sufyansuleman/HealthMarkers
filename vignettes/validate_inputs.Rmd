@@ -1,0 +1,65 @@
+---
+title: "validate_inputs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{validate_inputs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`hm_validate_inputs()` is the HealthMarkers v2 helper that standardizes basic input checks for marker functions. It verifies that `data` is a data.frame/tibble and that required keys are present in a named `col_map` with non-empty mappings. If no required keys are specified, `col_map` may be `NULL` or empty, and the helper returns silently. Errors are raised with function-specific classes for downstream handling.
+
+## Required Inputs
+
+- `data`: data.frame/tibble under validation.
+- `col_map`: named list mapping required keys to column names; may be `NULL` only when `required_keys` is empty.
+- `required_keys`: character vector of keys that must appear in `col_map` with non-empty mappings.
+- `fn`: character scalar identifying the calling function; used to namespace error classes and messages.
+
+## Key Behaviors
+
+- Validates `data` type, aborting if not a data.frame/tibble.
+- Ensures `col_map` is a named list when `required_keys` is non-empty; otherwise allows `NULL`.
+- Confirms all `required_keys` exist in `col_map` and map to non-empty, non-`NA` names.
+- Returns `invisible(TRUE)` on success; otherwise aborts with classed errors like `healthmarkers_<fn>_error_*`.
+
+## Output Description
+
+`hm_validate_inputs()` returns `NULL` (invisibly) on success and throws a classed error on failure. It does not mutate inputs.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+# Valid mapping
+HealthMarkers:::hm_validate_inputs(
+  data = data.frame(x = 1),
+  col_map = list(test = "x"),
+  required_keys = "test",
+  fn = "example_fn"
+)
+
+# Missing map triggers an error
+try(
+  HealthMarkers:::hm_validate_inputs(
+    data = data.frame(x = 1),
+    col_map = list(),
+    required_keys = "test",
+    fn = "example_fn"
+  )
+)
+```
+
+## Notes / Workflow Integration
+
+- Marker functions call `hm_validate_inputs()` early to give consistent, classed errors before deeper processing.
+- When `required_keys` is empty (e.g., summarizers), `col_map` can be omitted; the helper only enforces `data` type.
+- Use `fn` to scope error classes/messages for clearer debugging and downstream handling.

@@ -28,16 +28,16 @@ ckd_stage(
 
 \item{extreme_action}{One of:
 \itemize{
-\item "cap"   – winsorize to bounds (eGFR: \link{0, 200}; UACR: \link{0, 5000} mg/g)
-\item "NA"    – replace out-of-range with NA
-\item "error" – abort on any out-of-range value
+\item "cap"   - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
+\item "NA"    - replace out-of-range with NA
+\item "error" - abort on any out-of-range value
 }}
 }
 \value{
 Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 }
 \description{
-Categorizes eGFR into G1–G5, albuminuria into A1–A3 (by UACR mg/g), and maps KDIGO risk.
+Categorizes eGFR into G1-G5, albuminuria into A1-A3 (by UACR mg/g), and maps KDIGO risk.
 }
 \examples{
 df <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))

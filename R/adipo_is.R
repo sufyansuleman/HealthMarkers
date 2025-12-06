@@ -6,19 +6,19 @@
 #' Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
 #' Expected input units (converted internally):
 #' - Glucose G0 mmol/L -> mg/dL (* 18)
-#' - Insulin I0 pmol/L -> µU/mL (/ 6)
+#' - Insulin I0 pmol/L -> muU/mL (/ 6)
 #' - TG mmol/L -> mg/dL (* 88.57)
 #' - HDL mmol/L -> mg/dL (* 38.67)
 #'
-#' Reported indices (higher magnitude of negative “_inv” values implies worse adipose IR):
-#' - Revised_QUICKI = 1 / [log10(I0[µU/mL]) + log10(G0[mg/dL]) + log10(FFA[mmol/L])]
+#' Reported indices (higher magnitude of negative "_inv" values implies worse adipose IR):
+#' - Revised_QUICKI = 1 / (log10(I0 (muU/mL)) + log10(G0 (mg/dL)) + log10(FFA (mmol/L)))
 #' - VAI (sex-specific; inverted as VAI_*_inv so larger negative = worse)
 #' - TG_HDL_C_inv = -(TG/HDL) in mg/dL
-#' - TyG_inv = -ln(TG[mg/dL] × G0[mg/dL] / 2)
+#' - TyG_inv = -ln(TG (mg/dL) * G0 (mg/dL) / 2)
 #' - LAP (sex-specific; inverted)
-#' - McAuley_index = exp(2.63 − 0.28 ln(I0[µU/mL]) − 0.31 ln(TG[mmol/L]))
-#' - Adipo_inv = −(FFA × I0[µU/mL])
-#' - Belfiore_inv_FFA = − 2 / (I0[µU/mL] × FFA + 1)
+#' - McAuley_index = exp(2.63 - 0.28 ln(I0 (muU/mL)) - 0.31 ln(TG (mmol/L)))
+#' - Adipo_inv = -(FFA * I0 (muU/mL))
+#' - Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 #'
 #' @param data Data frame or tibble with required columns mapped by `col_map`
 #' @param col_map Named list mapping keys to columns: G0, I0, TG, HDL_c, FFA, waist, bmi

@@ -35,7 +35,7 @@ renal_markers(
 \item{na_action}{One of c("keep","omit","error") for handling missing values in
 required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for
+\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings for
 required inputs. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scans selected inputs for out-of-range
@@ -89,19 +89,19 @@ renal_markers(df, cm)
 \references{
 Original derivations
 Levey AS, Stevens LA, Schmid CH, et al. A new equation to estimate glomerular filtration rate.
-Ann Intern Med. 2009;150(9):604–612. \doi{10.7326/0003-4819-150-9-200905050-00006} (CKD-EPI creatinine equation)
+Ann Intern Med. 2009;150(9):604-612. \doi{10.7326/0003-4819-150-9-200905050-00006} (CKD-EPI creatinine equation)
 Inker LA, Schmid CH, Tighiouart H, et al. Estimating glomerular filtration rate from serum cystatin C.
-N Engl J Med. 2012;367(1):20–29. \doi{10.1056/NEJMoa1114248} (CKD-EPI cystatin C equation)
-Inker LA, Eneanya ND, Coresh J, et al. New creatinine- and cystatin C–based equations for estimating GFR without race.
-N Engl J Med. 2021;385(19):1737–1749. \doi{10.1056/NEJMoa2102953} (Race-free CKD-EPI equations)
+N Engl J Med. 2012;367(1):20-29. \doi{10.1056/NEJMoa1114248} (CKD-EPI cystatin C equation)
+Inker LA, Eneanya ND, Coresh J, et al. New creatinine- and cystatin C-based equations for estimating GFR without race.
+N Engl J Med. 2021;385(19):1737-1749. \doi{10.1056/NEJMoa2102953} (Race-free CKD-EPI equations)
 
 Validation and biomarker studies
 Waikar SS, Sabbisetti VS, Bonventre JV. Fractional excretion of urea as a diagnostic index in acute kidney injury.
-Clin J Am Soc Nephrol. 2009;4(4):802–809. \doi{10.2215/CJN.04870908} (FEUrea in AKI)
+Clin J Am Soc Nephrol. 2009;4(4):802-809. \doi{10.2215/CJN.04870908} (FEUrea in AKI)
 Parikh CR, Coca SG, Thiessen-Philbrook H, et al. Urine NGAL as an early predictive biomarker of acute kidney injury.
-J Am Soc Nephrol. 2011;22(12):1737–1747. \doi{10.1681/ASN.2010121302} (NGAL early biomarker)
+J Am Soc Nephrol. 2011;22(12):1737-1747. \doi{10.1681/ASN.2010121302} (NGAL early biomarker)
 Vaidya VS, Ramirez V, Ichimura T, et al. Kidney injury molecule-1 outperforms traditional biomarkers of kidney injury in preclinical models.
-J Clin Invest. 2010;120(11):3771–3783. \doi{10.1172/JCI42242} (KIM-1 tubular injury marker)
-Portilla D, Dent C, Sugaya T, et al. Urinary liver-type fatty acid–binding protein as a biomarker of acute kidney injury.
-Toxicol Sci. 2008;101(2):365–373. \doi{10.1093/toxsci/kfm279} (L-FABP biomarker)
+J Clin Invest. 2010;120(11):3771-3783. \doi{10.1172/JCI42242} (KIM-1 tubular injury marker)
+Portilla D, Dent C, Sugaya T, et al. Urinary liver-type fatty acid-binding protein as a biomarker of acute kidney injury.
+Toxicol Sci. 2008;101(2):365-373. \doi{10.1093/toxsci/kfm279} (L-FABP biomarker)
 }

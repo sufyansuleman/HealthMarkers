@@ -45,21 +45,21 @@ Computes adipose-related insulin sensitivity/resistance indices from fasting inp
 Expected input units (converted internally):
 \itemize{
 \item Glucose G0 mmol/L -> mg/dL (* 18)
-\item Insulin I0 pmol/L -> µU/mL (/ 6)
+\item Insulin I0 pmol/L -> muU/mL (/ 6)
 \item TG mmol/L -> mg/dL (* 88.57)
 \item HDL mmol/L -> mg/dL (* 38.67)
 }
 
-Reported indices (higher magnitude of negative “_inv” values implies worse adipose IR):
+Reported indices (higher magnitude of negative "_inv" values implies worse adipose IR):
 \itemize{
-\item Revised_QUICKI = 1 / [log10(I0\link{µU/mL}) + log10(G0\link{mg/dL}) + log10(FFA\link{mmol/L})]
+\item Revised_QUICKI = 1 / (log10(I0 (muU/mL)) + log10(G0 (mg/dL)) + log10(FFA (mmol/L)))
 \item VAI (sex-specific; inverted as VAI_*_inv so larger negative = worse)
 \item TG_HDL_C_inv = -(TG/HDL) in mg/dL
-\item TyG_inv = -ln(TG\link{mg/dL} × G0\link{mg/dL} / 2)
+\item TyG_inv = -ln(TG (mg/dL) * G0 (mg/dL) / 2)
 \item LAP (sex-specific; inverted)
-\item McAuley_index = exp(2.63 − 0.28 ln(I0\link{µU/mL}) − 0.31 ln(TG\link{mmol/L}))
-\item Adipo_inv = −(FFA × I0\link{µU/mL})
-\item Belfiore_inv_FFA = − 2 / (I0\link{µU/mL} × FFA + 1)
+\item McAuley_index = exp(2.63 - 0.28 ln(I0 (muU/mL)) - 0.31 ln(TG (mmol/L)))
+\item Adipo_inv = -(FFA * I0 (muU/mL))
+\item Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 }
 }
 \examples{

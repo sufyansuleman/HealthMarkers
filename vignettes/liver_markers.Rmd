@@ -1,0 +1,95 @@
+---
+title: "liver_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{liver_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`liver_markers()` computes liver-related indices: FLI, NFS, APRI, FIB-4, BARD, ALBI, and MELD-XI. It validates inputs, supports NA policies, optional high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and verbose diagnostics. Units are assumed (no conversion except bilirubin to umol/L inside ALBI): BMI kg/m^2, waist cm, TG mg/dL, GGT/AST/ALT U/L, platelets 10^9/L, albumin g/L, bilirubin mg/dL, creatinine mg/dL, age years, diabetes 0/1 or logical.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing required labs and anthropometry.
+- `col_map`: named list mapping required keys (defaults shown): `BMI`, `waist`, `triglycerides`, `GGT`, `age`, `AST`, `ALT`, `platelets`, `albumin`, `diabetes`, `bilirubin`, `creatinine`. All must exist; columns should be numeric (non-numeric coerced with warnings; non-finite set to `NA`).
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows with missing required inputs; `error` aborts). `na_warn_prop` controls high-missingness warnings when `na_action = "warn"` (default 0.2).
+- `check_extreme = FALSE`: enable plausible-range scan using defaults or `extreme_rules`.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for flagged extremes when scanning (`cap` truncates; `NA` blanks values).
+- `extreme_rules = NULL`: override defaults (BMI 10–70; waist 40–200 cm; TG 10–1500 mg/dL; GGT 1–2000 U/L; age 18–120; AST 1–5000; ALT 1–5000; platelets 10–1000; albumin 15–60 g/L; bilirubin 0.1–40 mg/dL; creatinine 0.2–20 mg/dL).
+- `verbose = FALSE`: emit stepwise messages and completion summary.
+
+## Output Description
+
+Returns a tibble with columns `FLI`, `NFS`, `APRI`, `FIB4`, `BARD`, `ALBI`, `MELD_XI`. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`. Warnings flag zero denominators (platelets), nonpositive values for logs (TG, GGT, bilirubin, creatinine), and negative ALT for square roots; diabetes is coerced to integer 0/1 with warnings if needed.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  BMI           = c(24, 30),
+  waist         = c(80, 100),
+  triglycerides = c(150, 260),  # mg/dL
+  GGT           = c(30, 55),
+  age           = c(45, 58),
+  AST           = c(25, 60),
+  ALT           = c(20, 45),
+  platelets     = c(250, 190),  # 10^9/L
+  albumin       = c(42, 38),    # g/L
+  diabetes      = c(FALSE, TRUE),
+  bilirubin     = c(1.0, 0.9),  # mg/dL
+  creatinine    = c(0.9, 1.1)   # mg/dL
+)
+
+liver_markers(
+  data = df,
+  col_map = list(
+    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
+    bilirubin = "bilirubin", creatinine = "creatinine"
+  ),
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Scan for extremes and cap while warning; show verbose diagnostics:
+
+```{r}
+liver_markers(
+  data = df,
+  col_map = list(
+    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
+    bilirubin = "bilirubin", creatinine = "creatinine"
+  ),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Triglycerides are expected in mg/dL; no automatic mmol/L conversion. Bilirubin is converted internally to umol/L only for ALBI.
+- Extreme screening uses broad defaults; tighten via `extreme_rules` for cohort-specific ranges.
+- Diabetes is coerced to integer; non 0/1/logical inputs generate a warning.
+- Zero platelets or nonpositive TG/GGT/bilirubin/creatinine (for log) and negative ALT (for sqrt) are warned and yield `NA` in affected ratios/indices.
+- `na_action = "omit"` filters rows; otherwise outputs propagate `NA` when inputs are missing.

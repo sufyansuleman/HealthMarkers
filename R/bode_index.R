@@ -1,13 +1,13 @@
 #' BODE Index (BMI, Obstruction, Dyspnea, Exercise capacity)
 #'
-#' Computes the BODE index (0–10) using FEV1 % predicted, 6-minute walk distance (6MWD),
+#' Computes the BODE index (0-10) using FEV1 % predicted, 6-minute walk distance (6MWD),
 #' mMRC dyspnea scale, and BMI. Higher scores indicate worse prognosis in COPD.
 #'
 #' @details
 #' Scoring components:
-#' FEV1 % predicted: >=65 = 0; 50–64 = 1; 36–49 = 2; <=35 = 3
-#' 6MWD (meters): >=350 = 0; 250–349 = 1; 150–249 = 2; <=149 = 3
-#' mMRC dyspnea: 0–1 = 0; 2 = 1; 3 = 2; 4 = 3
+#' FEV1 % predicted: >=65 = 0; 50-64 = 1; 36-49 = 2; <=35 = 3
+#' 6MWD (meters): >=350 = 0; 250-349 = 1; 150-249 = 2; <=149 = 3
+#' mMRC dyspnea: 0-1 = 0; 2 = 1; 3 = 2; 4 = 3
 #' BMI: >21 = 0; <=21 = 1
 #'
 #' @param data data.frame/tibble with required columns.
@@ -23,7 +23,7 @@
 #'                      Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).
 #' @param verbose logical; TRUE emits messages.
 #' @return tibble with bode_index (integer). NA if any required input missing (unless omitted).
-#' @references Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005–1012.
+#' @references Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005-1012.
 #' @export
 bode_index <- function(
   data,
@@ -147,11 +147,11 @@ bode_index <- function(
   # Domain warnings (skip if check_extreme to reduce noise)
   if (!isTRUE(check_extreme)) {
     if (any(is.finite(d_mmrc) & (d_mmrc < 0 | d_mmrc > 4))) {
-      rlang::warn("bode_index(): mMRC values outside 0–4 detected.",
+      rlang::warn("bode_index(): mMRC values outside 0-4 detected.",
                   class = "healthmarkers_bode_warn_mmrc_range")
     }
     if (any(is.finite(d_fev1) & (d_fev1 < 0 | d_fev1 > 150))) {
-      rlang::warn("bode_index(): FEV1 % predicted values outside 0–150 detected.",
+      rlang::warn("bode_index(): FEV1 % predicted values outside 0-150 detected.",
                   class = "healthmarkers_bode_warn_fev1pct_range")
     }
     if (any(is.finite(d_walk) & (d_walk < 0 | d_walk > 1500))) {

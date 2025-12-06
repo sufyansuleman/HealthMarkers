@@ -47,7 +47,7 @@ Calculates the albumin-adjusted (corrected) serum calcium level, accounting for 
 using the Payne formula.
 }
 \details{
-Payne formula (conventional units): Corrected Ca (mg/dL) = measured Ca (mg/dL) + 0.8 × (4.0 − albumin \link{g/dL}).
+Payne formula (conventional units): Corrected Ca (mg/dL) = measured Ca (mg/dL) + 0.8 * (4.0 - albumin (g/dL)).
 If inputs appear to be in SI units (calcium mmol/L, albumin g/L), they are converted to mg/dL and g/dL
-(using 1 mmol/L ≈ 4 mg/dL; 1 g/L = 0.1 g/dL) for the correction and converted back to mmol/L for output.
+(using 1 mmol/L ~= 4 mg/dL; 1 g/L = 0.1 g/dL) for the correction and converted back to mmol/L for output.
 }

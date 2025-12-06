@@ -70,7 +70,7 @@ list when \code{return_summary = TRUE}.
 }
 \description{
 Computes standard deviation (z) scores for anthropometric variables relative to
-a single (non–sex-stratified) reference set of means and standard deviations.
+a single (non-sex-stratified) reference set of means and standard deviations.
 Includes input validation, optional raw-value extreme screening/capping,
 configurable handling of extreme SDS values, NA row policies, optional concise
 summary output, and optional verbose progress messages.

@@ -1,0 +1,97 @@
+---
+title: "cvd_risk"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cvd_risk}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`cvd_risk()` dispatches to multiple cardiovascular risk calculators and lipid markers. Supported models: ASCVD (Pooled Cohort Equations), QRISK3, MESA CHD, Stroke (PCE stroke), RiskScorescvd, and lipid markers AIP and LDL particle number (ApoB proxy). Optional dependencies live in Suggests; when a required package is missing, that model returns an `NA` row instead of failing. Use `model = "ALL"` to run every model in one call.
+
+## Required Inputs
+
+Inputs depend on the selected `model`:
+- `AIP`: numeric triglycerides `TG` and HDL cholesterol `HDL_c` (mg/dL).
+- `LDL_PN`: numeric `ApoB` (mg/dL), used as LDL particle number proxy.
+- `ASCVD`: `age`, `sex` (1 male, 0 female), `race` ("white","black","other"), `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
+- `MESA`: `race`, `sex`, `age`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `smoker`, `diabetes`.
+- `Stroke`: `age`, `sex`, `race`, `smoker`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `diabetes`, `bmi`.
+- `QRISK3`: inputs as required by `QRISK3::QRISK3_2017()`; `patid` auto-generated if omitted.
+- `RiskScorescvd`: inputs as required by `RiskScorescvd::calc_scores()`.
+
+All models require `data` as a data.frame/tibble. Numeric inputs are coerced; non-finite values become `NA`. Missing columns abort that specific model (or are caught and returned as `NA` rows when running `model = "ALL"`).
+
+## Key Arguments
+
+- `model = c("ALL","ASCVD","QRISK3","MESA","Stroke","RiskScorescvd","AIP","LDL_PN")`: choose calculator/marker.
+- `year`: risk horizon for ASCVD and Stroke (10 or 30 for ASCVD; 10 for Stroke); ignored by lipid markers and QRISK3/MESA.
+- `...`: forwarded to the underlying model wrappers (e.g., `col_map`, `na_action` for markers, `patid` for QRISK3).
+- `verbose = FALSE`: emit progress via `hm_inform()`.
+
+## Output Description
+
+Returns a tibble. For risk calculators, columns include `model`, `year`, and `risk` (percentage). For lipid markers, columns include `model` and `value`. When `model = "ALL"`, results are row-bound across models; any model that fails validation or lacks its optional package contributes an `NA` row placeholder.
+
+## Minimal Reproducible Example
+
+Compute AIP (no optional packages required):
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+lipids <- tibble(TG = c(150, 90), HDL_c = c(40, 60))
+
+cvd_risk(
+  data = lipids,
+  model = "AIP",
+  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Run multiple models when optional packages are available; otherwise they yield `NA` rows. Provide columns needed by ASCVD/Stroke/MESA and a placeholder for QRISK3 extras:
+
+```{r}
+patients <- tibble(
+  age = c(55, 63), sex = c(1, 0), race = c("white", "black"), smoker = c(FALSE, TRUE),
+  total_chol = c(200, 180), HDL_c = c(50, 55), sbp = c(130, 150), bp_treated = c(FALSE, TRUE),
+  diabetes = c(FALSE, FALSE), bmi = c(27, 31), TG = c(150, 120), ApoB = c(95, 110)
+)
+
+# Run AIP and LDL particle number without external deps
+cvd_risk(patients, model = "AIP")
+cvd_risk(patients, model = "LDL_PN", col_map = list(ApoB = "ApoB"))
+
+# Conditionally run ASCVD and Stroke if PooledCohort is installed
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  cvd_risk(patients, model = "ASCVD", year = 10)
+  cvd_risk(patients, model = "Stroke", year = 10)
+}
+
+# Conditionally run MESA and QRISK3 if their packages are present
+if (requireNamespace("CVrisk", quietly = TRUE)) {
+  cvd_risk(patients, model = "MESA")
+}
+if (requireNamespace("QRISK3", quietly = TRUE)) {
+  cvd_risk(patients, model = "QRISK3")
+}
+```
+
+## Notes / Workflow Integration
+
+- Optional dependencies: PooledCohort (ASCVD, Stroke), QRISK3, CVrisk (MESA), RiskScorescvd. Missing packages lead to model-specific `NA` rows when caught; install to compute risks.
+- Lipid markers support `na_action = "keep"|"omit"|"error"` via `...`; non-numeric inputs are coerced with warnings and non-finite values set to `NA`.
+- `model = "ALL"` iterates over every model; any model errors are caught and replaced with placeholders to keep the result rectangular.
+- ASCVD/Stroke use sex coded 1/0 (male/female) and PCE conventions; QRISK3 inputs are passed through without full pre-validation.

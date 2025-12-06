@@ -13,7 +13,7 @@
 #' - SII  = platelets * neutrophils / lymphocytes
 #' - SIRI = neutrophils * monocytes / lymphocytes
 #' - AISI = neutrophils * monocytes * platelets / lymphocytes
-#' - CRP_category: "low" (<1 mg/L), "moderate" (1–3 mg/L), "high" (>3 mg/L) when CRP available
+#' - CRP_category: "low" (<1 mg/L), "moderate" (1-3 mg/L), "high" (>3 mg/L) when CRP available
 #' - Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets*neutrophils*monocytes/lymphocytes;
 #'   CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR passthrough.
 #'
@@ -52,18 +52,18 @@
 #'                      check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
 #'
 #' @references
-#' Zahorec R. Ratio of neutrophil to lymphocyte counts—rapid and simple parameter of systemic inflammation and stress.
-#'   Bratisl Lek Listy. 2001;102(1):5–14.
+#' Zahorec R. Ratio of neutrophil to lymphocyte counts-rapid and simple parameter of systemic inflammation and stress.
+#'   Bratisl Lek Listy. 2001;102(1):5-14.
 #' Templeton AJ, et al. Prognostic role of neutrophil-to-lymphocyte ratio in solid tumors: a systematic review and meta-analysis.
 #'   J Natl Cancer Inst. 2014;106(6):dju124.
 #' Hu B, et al. Systemic immune-inflammation index predicts prognosis of patients with hepatocellular carcinoma.
-#'   Ann Surg Oncol. 2014;21(11):3819–27.
+#'   Ann Surg Oncol. 2014;21(11):3819-27.
 #' Qi Q, et al. SIRI: a novel systemic inflammation response index for predicting survival in pancreatic cancer.
-#'   Ann Surg Oncol. 2016;23(2):559–568.
+#'   Ann Surg Oncol. 2016;23(2):559-568.
 #' Fois AG, et al. The AISI (aggregate index of systemic inflammation) in COPD. Multidiscip Respir Med. 2020;15:35.
 #' Proctor MJ, et al. Systemic inflammation-based prognostic scores in cancer: the Glasgow Prognostic Score (mGPS).
-#'   Br J Cancer. 2011;104(4):726–734.
-#' Pearson TA, et al. Markers of inflammation and CVD: CDC/AHA statement. Circulation. 2003;107(3):499–511.
+#'   Br J Cancer. 2011;104(4):726-734.
+#' Pearson TA, et al. Markers of inflammation and CVD: CDC/AHA statement. Circulation. 2003;107(3):499-511.
 #'
 #' @export
 inflammatory_markers <- function(data, col_map,

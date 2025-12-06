@@ -31,7 +31,7 @@ across the columns referenced by \code{col_map}.
 \item "error": abort if any used input contains NA.
 }}
 
-\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness
+\item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness
 diagnostics on used input columns. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan used input columns for out-of-range
@@ -100,10 +100,10 @@ Recognized \code{col_map} keys and expected units (no automatic conversion):
 }
 
 Default \code{extreme_rules} (inputs) are broad and intended for unit/entry checks:
-ferritin \link{0, 2000}, transferrin_sat \link{0, 100}, albumin \link{10, 60}, total_protein \link{40, 100},
-EPA \link{0, 20}, DHA \link{0, 20}, Mg \link{0.2, 3}, creatinine \link{20, 2000}, glycated_albumin \link{0, 60},
-uric_acid \link{50, 1000}, BUN \link{1, 150}, phosphate \link{0.1, 5}, calcium \link{0.5, 4},
-Na \link{100, 200}, K \link{2, 8}, Cl \link{70, 130}, HCO3 \link{5, 45}, Tyr \link{10, 300}, Phe \link{20, 300}.
+ferritin (0, 2000), transferrin_sat (0, 100), albumin (10, 60), total_protein (40, 100),
+EPA (0, 20), DHA (0, 20), Mg (0.2, 3), creatinine (20, 2000), glycated_albumin (0, 60),
+uric_acid (50, 1000), BUN (1, 150), phosphate (0.1, 5), calcium (0.5, 4),
+Na (100, 200), K (2, 8), Cl (70, 130), HCO3 (5, 45), Tyr (10, 300), Phe (20, 300).
 }
 \examples{
 df <- tibble::tibble(
@@ -133,12 +133,12 @@ nutrient_markers(df, verbose = TRUE)
 \references{
 Original derivations
 Harris WS, von Schacky C. The Omega-3 Index: a new risk factor for death from coronary heart disease?
-Prostaglandins Leukot Essent Fatty Acids. 2004;71(5):263–270. \doi{10.1016/j.plefa.2004.05.011} (Omega-3 Index)
+Prostaglandins Leukot Essent Fatty Acids. 2004;71(5):263-270. \doi{10.1016/j.plefa.2004.05.011} (Omega-3 Index)
 Koga M, Kasayama S. Clinical impact of glycated albumin as another glycemic control marker.
-J Diabetes Investig. 2010;1(1–2):43–48. \doi{10.1111/j.2040-1124.2010.00011.x} (Glycated Albumin \%)
-Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium × phosphate product
-with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556–562.
-\doi{10.1046/j.1523-1755.1998.00005.x} (Calcium–phosphate product)
+J Diabetes Investig. 2010;1(1-2):43-48. \doi{10.1111/j.2040-1124.2010.00011.x} (Glycated Albumin \%)
+Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium * phosphate product
+with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556-562.
+\doi{10.1046/j.1523-1755.1998.00005.x} (Calcium-phosphate product)
 Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury.
-J Am Soc Nephrol. 2009;20(3):672–679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
+J Am Soc Nephrol. 2009;20(3):672-679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
 }

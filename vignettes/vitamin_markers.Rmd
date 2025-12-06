@@ -1,0 +1,96 @@
+---
+title: "vitamin_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vitamin_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`vitamin_markers()` computes composite vitamin/endocrine ratios and z-scores from serum/plasma analytes: `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`, plus pass-through `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`. It validates mappings, coerces required columns to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extremes, and uses safe division with consolidated zero-denominator warnings. No unit conversion beyond the provided ratios/z-scores is applied; supply inputs in consistent assay units.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with vitamin/analyte columns.
+- `col_map`: named list mapping required keys (all must be provided): `VitD`, `VitD_ref_mean`, `VitD_ref_sd`, `B12`, `Folate`, `Ferritin`, `TSat`, `Cortisol`, `DHEAS`, `Testosterone`, `Estradiol`, `TSH`, `free_T4`, `Retinol`, `Retinol_ref_mean`, `Retinol_ref_sd`, `Tocopherol`, `Total_lipids`, `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`, `Magnesium`, `Zinc`, `Copper`. Mapped columns must exist; non-numeric columns are coerced to numeric with warnings when NAs are introduced; non-finite values become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy for required inputs.
+- `na_warn_prop = 0.2`: proportion threshold for high-missingness diagnostics (debug level).
+- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
+- `extreme_action = c("warn","cap","error","ignore")`: handling when extremes are detected; `cap` truncates values and warns.
+- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names or column names.
+- `verbose = FALSE`: emit progress and completion diagnostics.
+
+## Output Description
+
+Returns a tibble with:
+- `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`.
+- Pass-through: `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`.
+
+Safe division sets zero/non-finite denominators to `NA` and records a consolidated warning. Z-scores use supplied reference means/SDs; ensure SDs are positive/non-zero.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  VitD = c(50, 30), VitD_ref_mean = c(40, 40), VitD_ref_sd = c(5, 5),
+  B12 = c(300, 280), Folate = c(15, 12),
+  Ferritin = c(100, 80), TSat = c(0.25, 0.22),
+  Cortisol = c(200, 180), DHEAS = c(100, 90),
+  Testosterone = c(12, 10), Estradiol = c(120, 110),
+  TSH = c(2, 2.5), free_T4 = c(14, 13),
+  Retinol = c(0.8, 0.7), Retinol_ref_mean = c(0.9, 0.9), Retinol_ref_sd = c(0.2, 0.2),
+  Tocopherol = c(30, 28), Total_lipids = c(3, 2.8),
+  PIVKA_II = c(5, 6), VitC = c(60, 55), Homocysteine = c(10, 11), MMA = c(0.3, 0.35),
+  Magnesium = c(0.8, 0.78), Zinc = c(15, 14), Copper = c(15, 14)
+)
+
+cm <- as.list(names(df)); names(cm) <- names(df)
+
+vitamin_markers(
+  data = df,
+  col_map = cm,
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Enable extreme scanning with capping and show verbose diagnostics:
+
+```{r}
+df2 <- df
+# Introduce some extremes for demo
+df2$TSat[2] <- 2.0
+df2$Zinc[1] <- 2000
+
+vitamin_markers(
+  data = df2,
+  col_map = cm,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "keep",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- All required keys must be mapped; the function does not provide defaults.
+- Units should be consistent with your study; no automatic conversion is performed beyond the ratios/z-scores. Ensure reference SDs are > 0 to avoid `NA` in z-scores.
+- Zero denominators in ratios (e.g., TSat, free_T4, Zinc) yield `NA` and trigger a consolidated warning.
+- `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
+- Extreme scanning uses broad default bounds; customize via `extreme_rules` or disable via `check_extreme = FALSE`.

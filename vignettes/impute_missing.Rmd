@@ -1,0 +1,82 @@
+---
+title: "impute_missing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{impute_missing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`impute_missing()` provides simple, deterministic, per-column imputation for numeric variables (mean, median, zero, or a constant). Companion helpers `impute_mice()` (multiple imputation via `mice`) and `impute_missforest()` (random-forest imputation via `missForest`) offer more advanced options. All functions validate inputs, restrict to numeric columns, warn on high missingness, and leave non-numeric columns untouched. Optional verbosity reports progress and counts of imputed values. `mice` and `missForest` are optional dependencies; explicit errors are thrown if they are unavailable when requested.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with potential missing values.
+
+Function-specific:
+- `impute_missing()`: no additional required args; operates on numeric columns with NAs or user-specified `cols`.
+- `impute_mice()`: requires `mice` package installed; needs at least two numeric columns with NAs.
+- `impute_missforest()`: requires `missForest` package installed; needs at least two numeric columns with NAs.
+
+## Key Arguments
+
+- `method` (impute_missing): one of `"mean"`, `"median"`, `"zero"`, `"constant"`; when `constant`, supply `constant` scalar.
+- `cols`: optional character vector of columns to impute; defaults to all numeric columns containing any `NA`.
+- `na_warn_prop = 0.2`: threshold to emit high-missingness warnings per column (impute_missing only).
+- `m` (impute_mice): number of multiple imputations (default 5).
+- `ntree` (impute_missforest): number of trees per forest (default 100).
+- `verbose = FALSE`: emit progress and completion summaries.
+- `...`: passed to `mice::mice()` or `missForest::missForest()` for advanced control.
+
+## Output Description
+
+All helpers return a data.frame/tibble of the same dimensions as input, with only selected numeric columns modified at `NA` positions. Non-selected or non-numeric columns are unchanged. If no eligible columns or NAs are found, the original data is returned.
+
+- `impute_missing()`: deterministic fill per column; warns and skips when a column has no non-NA values (mean/median undefined) or is non-numeric.
+- `impute_mice()`: runs chained equations; returns the first completed dataset; errors if fewer than two numeric columns with NAs.
+- `impute_missforest()`: RF-based imputation; on error falls back to `impute_missing(method = "mean")` for targeted columns with a warning.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(a = c(1, NA, 3), b = c(NA, 5, 2), c = letters[1:3])
+
+# Deterministic mean imputation on numeric columns with NAs
+impute_missing(df, method = "mean", verbose = FALSE)
+```
+
+## Extended Example
+
+Use multiple imputation (`mice`) and random forest (`missForest`) when available, restricting to selected columns:
+
+```{r}
+if (requireNamespace("mice", quietly = TRUE)) {
+  impute_mice(df, m = 2, cols = c("a", "b"), verbose = TRUE)
+} else {
+  message("Install 'mice' to run impute_mice().")
+}
+
+if (requireNamespace("missForest", quietly = TRUE)) {
+  impute_missforest(df, ntree = 50, cols = c("a", "b"), verbose = TRUE)
+} else {
+  message("Install 'missForest' to run impute_missforest().")
+}
+```
+
+## Notes / Workflow Integration
+
+- Only numeric columns are imputed; non-numeric columns in `cols` are skipped with a warning.
+- High-missingness per column is reported at debug/ warning level (`impute_missing`) when proportion exceeds `na_warn_prop`.
+- `impute_mice()` and `impute_missforest()` require at least two numeric columns with NAs; otherwise they abort to avoid poorly posed models.
+- Random-forest imputation can be slow on wide or high-NA data; consider starting with `impute_missing()` for quick checks.
+- All helpers leave non-NA values unchanged and preserve input dimensions.

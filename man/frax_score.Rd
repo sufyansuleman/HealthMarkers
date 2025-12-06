@@ -23,7 +23,7 @@ frax_score(
 \item Required: age, sex
 \item Optional binary risk factors: prior_fracture, parent_fracture, steroids,
 rheumatoid, secondary_op, smoker, alcohol
-\item Optional: bmd (T-score; if present and in \link{-5,0}, used to adjust risk)
+\item Optional: bmd (T-score; if present and in (-5,0], used to adjust risk)
 }}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
@@ -47,6 +47,6 @@ using a simplified, non-validated approximation based on FRAX risk factors.
 This is for development/demo only and does not implement the proprietary FRAX algorithm.
 }
 \references{
-Kanis JA, Johnell O, Oden A, et al. (2008). FRAX and the assessment of fracture probability in men and women from the UK. Osteoporos Int. 19(4):385–397. doi:10.1007/s00198-007-0543-5
-Kanis JA, Harvey NC, Johansson H, et al. (2020). Overview of FRAX: a tool for assessing fracture risk. Osteoporos Int. 31(12):2399–2421. doi:10.1007/s00198-020-05373-7
+Kanis JA, Johnell O, Oden A, et al. (2008). FRAX and the assessment of fracture probability in men and women from the UK. Osteoporos Int. 19(4):385-397. doi:10.1007/s00198-007-0543-5
+Kanis JA, Harvey NC, Johansson H, et al. (2020). Overview of FRAX: a tool for assessing fracture risk. Osteoporos Int. 31(12):2399-2421. doi:10.1007/s00198-020-05373-7
 }

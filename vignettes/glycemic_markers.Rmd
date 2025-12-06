@@ -1,0 +1,87 @@
+---
+title: "glycemic_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{glycemic_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`glycemic_markers()` computes SPISE, METS_IR, prediabetes/diabetes flags (HbA1c), HOMA_CP, LAR, ASI, and TyG_index from fasting labs and anthropometry. It validates required lipids/BMI, coerces numeric inputs, applies HM-CS NA/extreme policies, and uses safe log/division helpers.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with required columns HDL cholesterol (`HDL_c`, mmol/L), triglycerides (`TG`, mmol/L), and body mass index (`BMI`, kg/m^2).
+- Optional columns (used if present/mapped): `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
+- `col_map`: optional named list remapping keys above; defaults assume matching names.
+- Inputs are coerced to numeric; non-finite values become `NA`.
+
+## Key Arguments
+
+- `na_action = c("ignore","warn","error","keep","omit")`: missing-data policy (`keep` == `ignore`; `omit` drops rows with any missing/non-finite used inputs before computation).
+- `na_warn_prop = 0.2`: high-missingness warning threshold when `na_action = "warn"`.
+- `check_extreme = FALSE`: scan used inputs for plausibility ranges.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates to bounds; `NA` blanks values).
+- `extreme_rules = NULL`: override default broad ranges (HDL_c 0.1–5, TG 0.1–20, BMI 10–80, glucose/G0 2–30, HbA1c 20–200, C_peptide 0–5000, I0 0–3000, leptin 0–200, adiponectin 0–300).
+- `verbose = FALSE`: emit progress and completion summaries.
+
+## Output Description
+
+Returns a tibble with columns: `SPISE`, `METS_IR`, `prediabetes`, `diabetes`, `HOMA_CP`, `LAR`, `ASI`, `TyG_index`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` outputs.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+labs <- tibble(
+  HDL_c = c(1.0, 1.3),
+  TG = c(1.3, 2.0),
+  BMI = c(24, 30),
+  glucose = c(5.6, 7.1),
+  HbA1c = c(44, 38),
+  C_peptide = c(300, 500),
+  G0 = c(5.5, 6.2),
+  I0 = c(60, 120),
+  leptin = c(10, 20),
+  adiponectin = c(8, 5)
+)
+
+glycemic_markers(
+  data = labs,
+  col_map = NULL,
+  na_action = "ignore",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Warn on missingness, scan for extremes with capping, and keep rows intact:
+
+```{r}
+glycemic_markers(
+  data = labs,
+  na_action = "warn",
+  na_warn_prop = 0.1,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Units: HDL_c/TG in mmol/L; BMI kg/m^2; glucose/G0 mmol/L (TyG converts to mg/dL internally); HbA1c mmol/mol; C_peptide/I0 pmol/L; leptin/adiponectin ng/mL.
+- HOMA_CP uses the package’s operational formula: `(G0 * (C_peptide/6)) / 22.5`.
+- `na_action = "error"` enforces complete inputs; `omit` drops incomplete rows; `ignore`/`keep` retain rows with NA outputs.
+- Extreme screening supports warn/cap/NA/error behaviors; rules can be overridden per variable.

@@ -3,13 +3,13 @@
 #' Compute liver-related indices (FLI, NFS, APRI, FIB-4, BARD, ALBI, MELD-XI) with validation and diagnostics
 #'
 #' Given routine labs and anthropometry, computes:
-#' - FLI      — Fatty Liver Index (Bedogni et al. 2006)
-#' - NFS      — NAFLD Fibrosis Score (Angulo et al. 2007)
-#' - APRI     — AST-to-Platelet Ratio Index
-#' - FIB4     — Fibrosis-4 Index
-#' - BARD     — BMI-AST/ALT-Diabetes score
-#' - ALBI     — Albumin-Bilirubin score
-#' - MELD_XI  — MELD excluding INR
+#' - FLI      - Fatty Liver Index (Bedogni et al. 2006)
+#' - NFS      - NAFLD Fibrosis Score (Angulo et al. 2007)
+#' - APRI     - AST-to-Platelet Ratio Index
+#' - FIB4     - Fibrosis-4 Index
+#' - BARD     - BMI-AST/ALT-Diabetes score
+#' - ALBI     - Albumin-Bilirubin score
+#' - MELD_XI  - MELD excluding INR
 #'
 #' Enhancements:
 #' - Robust input validation (columns present, types) with informative errors.
@@ -19,7 +19,7 @@
 #'
 #' Units (no automatic conversion):
 #' - BMI: kg/m^2; Waist: cm; TG: mg/dL; GGT/AST/ALT: U/L; Platelets: 10^9/L; Albumin: g/L; Bilirubin: mg/dL; Creatinine: mg/dL.
-#' - ALBI uses bilirubin in µmol/L internally (converted as bilirubin[mg/dL] * 17.1).
+#' - ALBI uses bilirubin in mumol/L internally (converted as bilirubin (mg/dL) * 17.1).
 #'
 #' @param data A data.frame or tibble containing your liver and anthropometry data.
 #' @param col_map Named list mapping these keys -> column names in `data`:
@@ -32,7 +32,7 @@
 #'   - "keep": leave NAs; they propagate to outputs.
 #'   - "omit": drop rows with NA in any required input.
 #'   - "error": abort if any required input contains NA.
-#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness warnings. Default 0.2.
+#' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see `extreme_rules`). Default FALSE.
 #' @param extreme_action One of c("warn","cap","error","ignore") when extremes are detected (only used if `check_extreme = TRUE`).
 #'   - "warn": only warn (default), "cap": truncate to allowed range, "error": abort, "ignore": do nothing.
@@ -46,9 +46,9 @@
 #' - NFS      = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes + 0.99*(AST/ALT) - 0.013*platelets - 0.66*albumin
 #' - APRI     = (AST / 40) / platelets * 100   [ULN(AST)=40 U/L]
 #' - FIB-4    = (age * AST) / (platelets * sqrt(ALT))
-#' - BARD     = 1 if BMI≥28, +1 if AST/ALT≥0.8, +1 if diabetes present; sum in {0,1,2,3}
-#' - ALBI     = 0.66*log10(bilirubin[µmol/L]) - 0.0852*albumin[g/L]
-#' - MELD-XI  = 5.11*ln(bilirubin[mg/dL]) + 11.76*ln(creatinine[mg/dL]) + 9.44
+#' - BARD     = 1 if BMI>=28, +1 if AST/ALT>=0.8, +1 if diabetes present; sum in 0,1,2,3
+#' - ALBI     = 0.66*log10(bilirubin (mumol/L)) - 0.0852*albumin (g/L)
+#' - MELD-XI  = 5.11*ln(bilirubin (mg/dL)) + 11.76*ln(creatinine (mg/dL)) + 9.44
 #'
 #' @seealso [inflammatory_markers()], [kidney_failure_risk()], [iAge()]
 #'
@@ -82,12 +82,12 @@
 #'
 #' @references
 #' Bedogni G, Bellentani S, Miglioli L, et al. (2006). The Fatty Liver Index: a simple and accurate predictor of hepatic steatosis in the general population. BMC Gastroenterol, 6:33. \doi{10.1186/1471-230X-6-33}
-#' Angulo P, Hui JM, Marchesini G, et al. (2007). The NAFLD fibrosis score: a noninvasive system that identifies liver fibrosis in patients with NAFLD. Hepatology, 45(4):846–854. \doi{10.1002/hep.21496}
-#' Wai CT, Greenson JK, Fontana RJ, et al. (2003). A simple noninvasive index can predict both significant fibrosis and cirrhosis in patients with chronic hepatitis C. Hepatology, 38(2):518–526. \doi{10.1053/jhep.2003.50346}
-#' Sterling RK, Lissen E, Clumeck N, et al. (2006). Development of a simple noninvasive index to predict significant fibrosis in patients with HIV/HCV coinfection (FIB-4). Hepatology, 43(6):1317–1325. \doi{10.1002/hep.21178}
-#' Harrison SA, Oliver D, Arnold HL, et al. (2008). Development and validation of a simple NAFLD clinical scoring system for predicting advanced fibrosis (BARD). Hepatology, 47(1):154–160. \doi{10.1002/hep.21984}
-#' Johnson PJ, Berhane S, Kagebayashi C, et al. (2015). Assessment of liver function in patients with hepatocellular carcinoma: the ALBI grade. J Clin Oncol, 33(6):550–558. \doi{10.1200/JCO.2014.57.9151}
-#' Heuman DM, Abou-Assi SG, Habib A, et al. (2007). MELD-XI: a modified model for end-stage liver disease to exclude INR. Liver Transpl, 13(6):861–869. \doi{10.1002/lt.21030}
+#' Angulo P, Hui JM, Marchesini G, et al. (2007). The NAFLD fibrosis score: a noninvasive system that identifies liver fibrosis in patients with NAFLD. Hepatology, 45(4):846-854. \doi{10.1002/hep.21496}
+#' Wai CT, Greenson JK, Fontana RJ, et al. (2003). A simple noninvasive index can predict both significant fibrosis and cirrhosis in patients with chronic hepatitis C. Hepatology, 38(2):518-526. \doi{10.1053/jhep.2003.50346}
+#' Sterling RK, Lissen E, Clumeck N, et al. (2006). Development of a simple noninvasive index to predict significant fibrosis in patients with HIV/HCV coinfection (FIB-4). Hepatology, 43(6):1317-1325. \doi{10.1002/hep.21178}
+#' Harrison SA, Oliver D, Arnold HL, et al. (2008). Development and validation of a simple NAFLD clinical scoring system for predicting advanced fibrosis (BARD). Hepatology, 47(1):154-160. \doi{10.1002/hep.21984}
+#' Johnson PJ, Berhane S, Kagebayashi C, et al. (2015). Assessment of liver function in patients with hepatocellular carcinoma: the ALBI grade. J Clin Oncol, 33(6):550-558. \doi{10.1200/JCO.2014.57.9151}
+#' Heuman DM, Abou-Assi SG, Habib A, et al. (2007). MELD-XI: a modified model for end-stage liver disease to exclude INR. Liver Transpl, 13(6):861-869. \doi{10.1002/lt.21030}
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform

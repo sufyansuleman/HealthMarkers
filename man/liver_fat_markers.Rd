@@ -30,7 +30,7 @@ liver_fat_markers(
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{na_warn_prop}{Proportion in \link{0,1} for high-missingness warnings when na_action = "warn". Default 0.2.}
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} for high-missingness warnings when na_action = "warn". Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan selected inputs for plausible ranges.}
 
@@ -53,7 +53,7 @@ Computes:
 \details{
 Assumptions/units:
 \itemize{
-\item ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to µU/mL via /6).
+\item ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via /6).
 \item MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
 \item Type2DM is taken from \code{diabetes} (logical or 0/1).
 }

@@ -21,13 +21,13 @@
 #' @return A tibble with one column: nfl_value (numeric; same units as input).
 #'
 #' @references
-#' Simrén J, Ashton NJ, Blennow K, Zetterberg H, et al. (2022).
+#' Simren J, Ashton NJ, Blennow K, Zetterberg H, et al. (2022).
 #' Reference values for plasma neurofilament light in healthy individuals.
 #' Brain Commun. 4(4):fcac174. doi:10.1093/braincomms/fcac174
 #'
 #' Disanto G, Barro C, Benkert P, et al. (2017).
 #' Serum neurofilament light: A biomarker of neuronal damage in multiple sclerosis.
-#' Neurology. 88(9):861–867. doi:10.1212/WNL.0000000000003663
+#' Neurology. 88(9):861-867. doi:10.1212/WNL.0000000000003663
 #'
 #' @export
 nfl_marker <- function(

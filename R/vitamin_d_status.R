@@ -1,12 +1,12 @@
 #' Vitamin D Status Category
 #'
-#' Categorizes vitamin D status based on serum 25-hydroxyvitamin D [25(OH)D] levels.
+#' Categorizes vitamin D status based on serum 25-hydroxyvitamin D (25(OH)D) levels.
 #'
 #' @details
 #' Serum 25(OH)D is the standard biomarker for vitamin D status. This function classifies
 #' levels (assumed in ng/mL) into categories:
 #' - Deficient (< 20 ng/mL)
-#' - Insufficient (20–29 ng/mL)
+#' - Insufficient (20-29 ng/mL)
 #' - Sufficient (>= 30 ng/mL)
 #'
 #' Note: Ensure input units are ng/mL. If values appear extremely high (e.g., median > 150),
@@ -31,7 +31,7 @@
 #'
 #' Holick MF, Binkley NC, Bischoff-Ferrari HA, et al. (2011).
 #' Evaluation, Treatment, and Prevention of Vitamin D Deficiency: an Endocrine Society Clinical Practice Guideline.
-#' J Clin Endocrinol Metab. 96(7):1911–1930. doi:10.1210/jc.2011-0385
+#' J Clin Endocrinol Metab. 96(7):1911-1930. doi:10.1210/jc.2011-0385
 #'
 #' @export
 vitamin_d_status <- function(
@@ -151,7 +151,7 @@ vitamin_d_status <- function(
 
   if (isTRUE(verbose)) rlang::inform("-> vitamin_d_status: computing status")
 
-  # Simple status bands (ng/mL): <20 Deficient, 20–29 Insufficient, >=30 Sufficient
+  # Simple status bands (ng/mL): <20 Deficient, 20-29 Insufficient, >=30 Sufficient
   status <- ifelse(is.na(d_vitd), NA_character_,
             ifelse(d_vitd < 20, "Deficient",
             ifelse(d_vitd < 30, "Insufficient", "Sufficient")))

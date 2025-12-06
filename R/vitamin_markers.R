@@ -28,7 +28,7 @@
 #'   Retinol, Retinol_ref_mean, Retinol_ref_sd, Tocopherol, Total_lipids,
 #'   PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper.
 #' @param na_action One of c("keep","omit","error") for required inputs. Default "keep".
-#' @param na_warn_prop Proportion [0,1] to trigger high-missingness debug notices. Default 0.2.
+#' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness debug notices. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
 #' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
 #' @param extreme_rules Optional named list of c(min,max) bounds keyed by input keys or column names.
@@ -55,10 +55,10 @@
 #' vitamin_markers(df, cm)
 #'
 #' @references
-#' Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266–281. \doi{10.1056/NEJMra070553}
-#' O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299–316. \doi{10.3390/nu2030299}
-#' Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500–510. \doi{10.1038/nri3863}
-#' Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101–163. (endocrine ratios context)
+#' Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266-281. \doi{10.1056/NEJMra070553}
+#' O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299-316. \doi{10.3390/nu2030299}
+#' Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500-510. \doi{10.1038/nri3863}
+#' Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101-163. (endocrine ratios context)
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform

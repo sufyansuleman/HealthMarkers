@@ -18,7 +18,13 @@ all_health_markers(
 \arguments{
 \item{data}{A data.frame or tibble.}
 
-\item{col_map}{Named list for column mapping forwarded to underlying functions.}
+\item{col_map}{Named list for column mapping forwarded to underlying functions.
+If \code{col_map} is \code{NULL} or missing, \code{all_health_markers()} calls
+\code{\link[=hm_infer_cols]{hm_infer_cols()}} once at the top level to guess a column map from common
+synonyms (for example \code{TG} vs \code{triglycerides}, \code{BMI} vs \code{bmi},
+\code{HDL_c} vs \code{HDL}). The inferred \code{col_map} is then reused for all groups
+that require it, and an error is thrown if required keys (e.g. \code{TG},
+\code{HDL_c}, \code{LDL_c}, \code{TC}, \code{BMI}, \code{age}, \code{sex}) cannot be inferred.}
 
 \item{which}{"all" or a vector of registry keys (see Details).}
 
@@ -37,6 +43,16 @@ Data frame with original columns plus many derived markers.
 }
 \description{
 Compute all available HealthMarkers categories
+}
+\details{
+Common group names for \code{which} include:
+\itemize{
+\item \code{"lipid"}, \code{"liver"}, \code{"glycemic"}, \code{"mets"}, \code{"oxidative"}
+\item \code{"bone"}, \code{"allostatic_load"}, \code{"nutrient"}, \code{"vitamin"}, \code{"vitamin_d_status"}
+\item \code{"renal"}, \code{"ckd_stage"}, \code{"kidney_kfre"}
+\item \code{"frailty_index"}, \code{"charlson"}, \code{"sarc_f"}
+\item \code{"nfl"}, \code{"iAge"}, \code{"calcium_corrected"}, \code{"kyn_trp"}
+}
 }
 \note{
 For academic / clinical references tied to each derived marker or

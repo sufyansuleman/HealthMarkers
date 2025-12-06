@@ -1,0 +1,94 @@
+---
+title: "health_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{health_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+Aggregators for derived markers:
+- `all_insulin_indices()` collects fasting/OGTT/adipose/tracer insulin sensitivity/resistance panels.
+- `metabolic_markers()` binds selected groups (insulin, adiposity_sds, cardio, lipid, liver, glycemic, MetS).
+- `all_health_markers()` is the comprehensive dispatcher across all registered marker groups, with optional auto `col_map` inference and insulin panel inclusion.
+All wrappers use `.hm_safe_call()` to avoid hard failures; missing/failed groups are skipped with optional verbose summaries.
+
+## Required Inputs
+
+- `data`: data.frame/tibble of raw labs/anthropometry; specific needs depend on chosen groups. Insulin panels require glucose/insulin mappings; lipid/liver/glycemic/MetS groups need their respective inputs (see underlying function vignettes).
+- `col_map`: named list mapping required keys; for `all_health_markers()` it can be omitted/NULL to auto-infer common columns (TG, HDL_c, LDL_c, TC, BMI, age, sex, etc.).
+
+## Key Arguments
+
+- `normalize = c("none","z","inverse","range","robust")`: forwarded to insulin indices (and stored for some groups).
+- `mode = c("both","IS","IR")`: insulin panels return IS, IR, or both.
+- `na_action = c("keep","omit","error")`: forwarded to underlying calculators (HM-CS v2 semantics).
+- `metabolic_markers(which)`: choose subset of groups; defaults include insulin, adiposity_sds, cardio, lipid, liver, glycemic, mets.
+- `all_health_markers(which)`: "all" (default) or a vector of registry keys (lipid, liver, glycemic, mets, oxidative, bone, allostatic_load, nutrient, vitamin, vitamin_d_status, renal, ckd_stage, kidney_kfre, frailty_index, charlson, sarc_f, nfl, iAge, calcium_corrected, kyn_trp, etc.).
+- `include_insulin` (all_health_markers): prepend insulin panel unless FALSE.
+- `verbose`: emit mapping summaries, group status, and debug/info messages.
+
+## Output Description
+
+- `all_insulin_indices()`: tibble of IS (and optional IR_) columns.
+- `metabolic_markers()`: original data with appended group columns.
+- `all_health_markers()`: original data plus all requested groups; skipped/failed groups leave data unchanged. Column binding skips duplicates.
+
+## Minimal Reproducible Example
+
+Bind lipid and liver panels without insulin (to avoid missing glucose/insulin inputs):
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+labs <- tibble(
+  TC = c(200, 180), LDL_c = c(120, 100), HDL_c = c(50, 60), TG = c(150, 110),
+  ALT = c(30, 25), AST = c(20, 18), BMI = c(25, 27),
+  age = c(45, 52), sex = c("F", "M")
+)
+
+metabolic_markers(
+  data = labs,
+  col_map = list(),
+  which = c("lipid", "liver"),
+  normalize = "none",
+  mode = "both",
+  verbose = FALSE,
+  na_action = "keep"
+)
+```
+
+## Extended Example
+
+Run comprehensive aggregation with auto-inferred column map, include insulin panel, and request specific groups:
+
+```{r}
+all_health_markers(
+  data = labs,
+  col_map = list(
+    TC = "TC", LDL_c = "LDL_c", HDL_c = "HDL_c", TG = "TG",
+    ALT = "ALT", AST = "AST", BMI = "BMI", age = "age", sex = "sex"
+  ),
+  which = c("lipid", "liver"),
+  include_insulin = FALSE,     # set TRUE if insulin inputs available and mapped
+  normalize = "none",
+  mode = "both",
+  verbose = TRUE,
+  na_action = "keep"
+)
+```
+
+## Notes / Workflow Integration
+
+- Auto `col_map` inference (all_health_markers) uses `hm_infer_cols()` with default exact patterns; required keys (TG, HDL_c, LDL_c, TC, BMI, age, sex) must be inferable or supplied explicitly.
+- Groups relying on optional packages (e.g., `cvd_risk` for cardio) are skipped gracefully if backends are unavailable.
+- `.hm_bind_new_cols` avoids overwriting existing columns; only new marker columns are appended.
+- Insulin group aliases in the registry are consolidated via `include_insulin`; setting it TRUE runs `all_insulin_indices()` once and skips other insulin_* entries.

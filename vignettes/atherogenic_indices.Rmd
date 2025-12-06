@@ -1,0 +1,86 @@
+---
+title: "atherogenic_indices"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{atherogenic_indices}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`atherogenic_indices()` computes three lipid ratios: AIP = log10(TG/HDL_c), Castelli Risk Index I (TC/HDL_c), and Castelli Risk Index II (LDL_c/HDL_c). It validates required lipids, optionally screens extremes, and handles zero denominators safely.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with lipid columns.
+- `col_map`: named list with required `TG`, `HDL_c`; optional `TC`, `LDL_c` enable Castelli indices.
+- Units: any consistent lipid units (mg/dL or mmol/L); ratios are unitless. Non-numeric are coerced with warning; non-finite become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: handling of missing required lipid inputs.
+- `check_extreme = FALSE`: enable raw-range screening.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: response when extremes detected (only if screening on).
+- `extreme_rules = NULL`: optional bounds (defaults mg/dL: TG 0–10000, HDL_c 0–1000, LDL_c 0–10000, TC 0–10000). Provide in your units.
+- `verbose`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with:
+- `AIP = log10(TG / HDL_c)`
+- `CRI_I = TC / HDL_c` (NA if TC not mapped/present)
+- `CRI_II = LDL_c / HDL_c` (NA if LDL_c not mapped/present)
+
+Rows drop only when `na_action = "omit"`; zero HDL denominators yield `NA` and are counted in a warning.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+lipids <- tibble(
+  TG    = c(150, 200, 90),
+  HDL_c = c(50, 40, 55),
+  TC    = c(200, 220, 180),
+  LDL_c = c(120, 150, 110)
+)
+
+col_map <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
+
+atherogenic_indices(
+  data = lipids,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = FALSE,
+  extreme_action = "warn",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Cap extreme inputs, drop incomplete rows, and compute all ratios:
+
+```{r}
+atherogenic_indices(
+  data = lipids,
+  col_map = col_map,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- Use `na_action = "error"` when lipid inputs must be complete; otherwise choose `"omit"` or `"keep"` based on tolerance for missing outputs.
+- Set `extreme_rules` in your lipid units; defaults assume mg/dL but ratios are unitless.
+- Zero HDL leads to NA ratios with a warning; consider pre-cleaning or capping very low HDL values if completeness is required.

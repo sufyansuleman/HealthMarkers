@@ -1,7 +1,7 @@
 #' CKD staging (GFR and albuminuria) and KDIGO risk
 #'
 #' @description
-#' Categorizes eGFR into G1–G5, albuminuria into A1–A3 (by UACR mg/g), and maps KDIGO risk.
+#' Categorizes eGFR into G1-G5, albuminuria into A1-A3 (by UACR mg/g), and maps KDIGO risk.
 #'
 #' @param data Data frame with renal measures.
 #' @param col_map Named list with required key: eGFR; optional key: UACR.
@@ -11,9 +11,9 @@
 #'   - "error" (abort if any mapped input missing)
 #' @param check_extreme Logical; if TRUE, screen eGFR/UACR for extreme values.
 #' @param extreme_action One of:
-#'   - "cap"   – winsorize to bounds (eGFR: [0, 200]; UACR: [0, 5000] mg/g)
-#'   - "NA"    – replace out-of-range with NA
-#'   - "error" – abort on any out-of-range value
+#'   - "cap"   - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
+#'   - "NA"    - replace out-of-range with NA
+#'   - "error" - abort on any out-of-range value
 #'
 #' @return Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 #' @references

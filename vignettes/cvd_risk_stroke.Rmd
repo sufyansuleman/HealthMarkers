@@ -1,0 +1,70 @@
+---
+title: "cvd_risk_stroke"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cvd_risk_stroke}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`cvd_risk_stroke()` wraps `PooledCohort::predict_10yr_stroke_risk()` (PCE stroke component), adding input checks and quiet fallback to `NA` on backend errors. It computes 10-year stroke risk.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with columns `age`, `sex` (1 male, 0 female), `race`, `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
+- PooledCohort package must be installed; otherwise the function aborts.
+- Inputs are passed to the backend; non-finite values are treated as `NA` there. With `verbose = TRUE`, a quality scan reports non-finite/high-NA counts.
+
+## Key Arguments
+
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `verbose = TRUE`.
+- `verbose = FALSE`: emit progress and input-quality counts.
+- `...`: forwarded to `PooledCohort::predict_10yr_stroke_risk()` (uses equation_version = "Goff_2013" internally).
+
+## Output Description
+
+Returns a tibble with columns `model = "Stroke"`, `year = 10`, and `risk` (percentage). Backend errors yield an `NA` row.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+patient <- tibble(
+  age = 55, sex = 1, race = "white", smoker = FALSE,
+  total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
+  diabetes = FALSE, bmi = 27
+)
+
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  cvd_risk_stroke(
+    data = patient,
+    na_warn_prop = 0.2,
+    verbose = TRUE
+  )
+}
+```
+
+## Extended Example
+
+Silence progress and pass through additional arguments if needed:
+
+```{r}
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  cvd_risk_stroke(patient, verbose = FALSE)
+}
+```
+
+## Notes / Workflow Integration
+
+- Ensure `PooledCohort` is installed; otherwise the wrapper aborts. When called via `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
+- Inputs use PCE conventions (mg/dL lipids, mmHg SBP, sex 1/0). No unit conversion is applied.
+- Uses `equation_version = "Goff_2013"` to align with PCE stroke equations and avoid PREVENT CKD inputs.

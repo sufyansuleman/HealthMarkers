@@ -1,0 +1,94 @@
+---
+title: "lipid_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{lipid_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`lipid_markers()` computes common lipid panel ratios plus VAI, LAP, and TyG-BMI. Required inputs are total cholesterol (TC), HDL-C, and triglycerides (TG); optional inputs include measured LDL-C, ApoB/ApoA1, waist, BMI, and glucose. The function offers NA policies, optional extreme screening with warn/cap/NA/error behaviors, and verbose messaging. Units are assumed to match the inputs provided; no unit conversion is performed (except internal mg/dL conversion for TyG-BMI).
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing lipid (and optional anthropometry/glucose) columns.
+- `col_map`: named list mapping at least `TC`, `HDL_c`, `TG` (defaults: same names). Optional mappings: `LDL_c`, `ApoB`, `ApoA1`, `waist`, `BMI`. Columns must exist for any mapping supplied.
+- Required columns must be numeric; non-numeric are coerced with warnings if NAs are introduced.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
+- `check_extreme = FALSE`: enable plausible-range scan.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when scanning (`cap` truncates; `NA` blanks values).
+- `extreme_rules = NULL`: override defaults for scanned inputs (e.g., TC 0–50, HDL 0–10, TG 0–50, LDL 0–50, ApoB 0–10, ApoA1 0–10, waist 30–250 cm, BMI 10–80 kg/m^2, glucose 0–50 mmol/L).
+- `verbose = FALSE`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with:
+- Required outputs: `non_HDL_c`, `remnant_c`, `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`, `ApoB_ApoA1` (Apo ratio only if both ApoB/ApoA1 provided).
+- Optional outputs: `VAI_Men`/`VAI_Women` (needs waist and BMI), `LAP_Men`/`LAP_Women` (needs waist), `TyG_BMI` (needs glucose and BMI).
+- When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`.
+- If `LDL_c` is missing, LDL is estimated via Friedewald (TC - HDL - TG/5).
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  TC     = c(5.2, 6.1, 4.8),
+  HDL_c  = c(1.3, 1.1, 1.6),
+  TG     = c(1.5, 2.4, 1.1),
+  LDL_c  = c(3.2, 3.8, 2.6),
+  ApoB   = c(0.9, 1.1, 0.7),
+  ApoA1  = c(1.4, 1.2, 1.5),
+  waist  = c(90, 105, 82),
+  BMI    = c(27, 31, 24),
+  glucose = c(5.2, 6.0, 4.8)
+)
+
+lipid_markers(
+  data = df,
+  col_map = list(
+    TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c",
+    ApoB = "ApoB", ApoA1 = "ApoA1", waist = "waist", BMI = "BMI"
+  ),
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Scan for extremes and cap while warning; include TyG-BMI using glucose:
+
+```{r}
+lipid_markers(
+  data = df,
+  col_map = list(
+    TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c",
+    ApoB = "ApoB", ApoA1 = "ApoA1", waist = "waist", BMI = "BMI"
+  ),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- TG/HDL/LDL/TC inputs are assumed in mmol/L; LAP uses TG directly, and TyG-BMI converts TG/glucose to mg/dL internally.
+- Extreme screening ranges are broad; adjust `extreme_rules` for cohort-specific limits.
+- Only rows with required inputs present are used when `na_action = "omit"`; otherwise outputs propagate `NA`.
+- VAI requires both waist and BMI; TyG-BMI requires glucose and BMI; Friedewald estimation is used when LDL is not supplied.

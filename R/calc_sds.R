@@ -26,7 +26,7 @@
 #'   - "warn": keep extreme SDS, but warn
 #'   - "error": stop if any |SDS| > `sds_cap`
 #'   - "NA": set extreme SDS to NA
-#' @param warn_thresholds Named list controlling warnings (proportions in [0,1]):
+#' @param warn_thresholds Named list controlling warnings (proportions in \eqn{[0,1]}):
 #'   - na_prop: warn if proportion of rows with NA among `vars` exceeds this (default 0.05)
 #'   - extreme_prop: warn if proportion of extreme SDS (cells) exceeds this (default 0.01)
 #' @param return One of c("data","list"). "data" returns a tibble with added
@@ -64,9 +64,9 @@
 #'   verbose = FALSE
 #' )
 #' @references
-#' Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305–1319. \doi{10.1002/sim.4780111005}
+#' Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305-1319. \doi{10.1002/sim.4780111005}
 #' de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
-#' Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27.
+#' Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1-27.
 #'
 #' @importFrom tibble as_tibble
 #' @export
@@ -240,15 +240,15 @@ calc_sds <- function(
 
       if (n_extreme > 0) {
         if (identical(extreme_strategy, "error")) {
-          rlang::abort(sprintf("Found %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v),
+          rlang::abort(sprintf("Found %d SDS beyond +/-%g for `%s`", n_extreme, sds_cap, v),
                        class = "healthmarkers_calc_sds_error_extreme_sds")
         } else if (identical(extreme_strategy, "cap")) {
           z[is_extreme] <- sds_cap * sign(z[is_extreme])
-          w <- sprintf("Capped %d SDS beyond ±%g for `%s`", n_extreme, sds_cap, v)
+          w <- sprintf("Capped %d SDS beyond +/-%g for `%s`", n_extreme, sds_cap, v)
            rlang::warn(w, class = "healthmarkers_calc_sds_warn_cap_extreme")
            warns <- c(warns, w)
         } else if (identical(extreme_strategy, "warn")) {
-          w <- sprintf("Detected %d SDS beyond ±%g for `%s` (not capped)", n_extreme, sds_cap, v)
+          w <- sprintf("Detected %d SDS beyond +/-%g for `%s` (not capped)", n_extreme, sds_cap, v)
            rlang::warn(w, class = "healthmarkers_calc_sds_warn_detect_extreme")
            warns <- c(warns, w)
         } else if (identical(extreme_strategy, "NA")) {

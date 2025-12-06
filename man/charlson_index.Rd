@@ -30,7 +30,7 @@ hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges (binary 0–1).}
+\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).}
 
 \item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
 
@@ -58,9 +58,9 @@ leukemia, lymphoma, diabetes with complications
 
 To avoid double counting paired conditions, the following use the maximum applicable weight:
 \itemize{
-\item Diabetes: max(1 × diabetes without complications, 2 × diabetes with complications)
-\item Liver disease: max(1 × mild liver disease, 3 × moderate/severe liver disease)
-\item Cancer: max(2 × non-metastatic solid tumor, 6 × metastatic solid tumor)
+\item Diabetes: max(1 * diabetes without complications, 2 * diabetes with complications)
+\item Liver disease: max(1 * mild liver disease, 3 * moderate/severe liver disease)
+\item Cancer: max(2 * non-metastatic solid tumor, 6 * metastatic solid tumor)
 }
 
 Age points are not included here and can be added separately if needed.

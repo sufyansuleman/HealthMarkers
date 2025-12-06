@@ -26,7 +26,7 @@ PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper.}
 
 \item{na_action}{One of c("keep","omit","error") for required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness debug notices. Default 0.2.}
+\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness debug notices. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 
@@ -84,8 +84,8 @@ vitamin_markers(df, cm)
 
 }
 \references{
-Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266–281. \doi{10.1056/NEJMra070553}
-O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299–316. \doi{10.3390/nu2030299}
-Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500–510. \doi{10.1038/nri3863}
-Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101–163. (endocrine ratios context)
+Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266-281. \doi{10.1056/NEJMra070553}
+O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299-316. \doi{10.3390/nu2030299}
+Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500-510. \doi{10.1038/nri3863}
+Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101-163. (endocrine ratios context)
 }

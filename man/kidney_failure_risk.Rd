@@ -34,7 +34,7 @@ kidney_failure_risk(
 \item "warn": like "keep" but emits high-missingness warnings.
 }}
 
-\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
+\item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan for out-of-range values (see \code{extreme_rules}). Default FALSE.}
 
@@ -48,15 +48,15 @@ kidney_failure_risk(
 }}
 
 \item{extreme_rules}{Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).
-If NULL, broad defaults are used: age \link{18, 120}, eGFR \link{1, 200}, UACR \link{0.1, 10000} (mg/g).}
+If NULL, broad defaults are used: age (18, 120), eGFR (1, 200), UACR (0.1, 10000) (mg/g).}
 
 \item{verbose}{Logical; if TRUE, prints stepwise messages and a completion summary. Default FALSE.}
 }
 \value{
 A tibble with:
 \itemize{
-\item \code{KFRE_2yr} risk (0–1) at 2 years
-\item \code{KFRE_5yr} risk (0–1) at 5 years
+\item \code{KFRE_2yr} risk (0-1) at 2 years
+\item \code{KFRE_5yr} risk (0-1) at 5 years
 }
 }
 \description{
@@ -112,10 +112,10 @@ kidney_failure_risk(
 
 }
 \references{
-Tangri N, Stevens LA, Griffith J, et al. (2011). A predictive model for progression of chronic kidney disease to kidney failure. JAMA, 305(15):1553–1559. \doi{10.1001/jama.2011.451}
-Tangri N, Grams ME, Levey AS, et al. (2016). Multinational assessment of accuracy of equations for predicting risk of kidney failure: a meta-analysis. JAMA, 315(2):164–174. \doi{10.1001/jama.2015.18202}
-Matsushita K, van der Velde M, Astor BC, et al. (2015). Estimated glomerular filtration rate and albuminuria for prediction of kidney failure: a collaborative meta-analysis. Ann Intern Med, 162(4):247–255. \doi{10.7326/M14-3312}
-Tangri N, Inker LA, Tighiouart H, et al. (2020). Validation of the kidney failure risk equation in advanced CKD. Kidney Int, 97(5):995–1004. \doi{10.1016/j.kint.2019.12.009}
+Tangri N, Stevens LA, Griffith J, et al. (2011). A predictive model for progression of chronic kidney disease to kidney failure. JAMA, 305(15):1553-1559. \doi{10.1001/jama.2011.451}
+Tangri N, Grams ME, Levey AS, et al. (2016). Multinational assessment of accuracy of equations for predicting risk of kidney failure: a meta-analysis. JAMA, 315(2):164-174. \doi{10.1001/jama.2015.18202}
+Matsushita K, van der Velde M, Astor BC, et al. (2015). Estimated glomerular filtration rate and albuminuria for prediction of kidney failure: a collaborative meta-analysis. Ann Intern Med, 162(4):247-255. \doi{10.7326/M14-3312}
+Tangri N, Inker LA, Tighiouart H, et al. (2020). Validation of the kidney failure risk equation in advanced CKD. Kidney Int, 97(5):995-1004. \doi{10.1016/j.kint.2019.12.009}
 }
 \seealso{
 \code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=iAge]{iAge()}}, \code{\link[=impute_missing]{impute_missing()}}

@@ -2,7 +2,7 @@
 #' Calculate standardized scores (SDS) for adiposity measures
 #'
 #' Computes standard deviation (z) scores for anthropometric variables relative to
-#' a single (non–sex-stratified) reference set of means and standard deviations.
+#' a single (non-sex-stratified) reference set of means and standard deviations.
 #' Includes input validation, optional raw-value extreme screening/capping,
 #' configurable handling of extreme SDS values, NA row policies, optional concise
 #' summary output, and optional verbose progress messages.
@@ -308,13 +308,13 @@ adiposity_sds <- function(
     total_extreme <<- total_extreme + n_ext
     if (n_ext > 0) {
       if (extreme_action == "error") {
-        .abort(sprintf("adiposity_sds(): %d SDS beyond ±%g for '%s'.", n_ext, sds_cap, v),
+        .abort(sprintf("adiposity_sds(): %d SDS beyond +/-%g for '%s'.", n_ext, sds_cap, v),
                "healthmarkers_adiposds_error_sds_extreme")
       } else if (extreme_action == "cap") {
         sds[is_extreme_sds] <- sds_cap * sign(sds[is_extreme_sds])
-        .warn(sprintf("adiposity_sds(): capped %d SDS beyond ±%g for '%s'.", n_ext, sds_cap, v))
+        .warn(sprintf("adiposity_sds(): capped %d SDS beyond +/-%g for '%s'.", n_ext, sds_cap, v))
       } else if (extreme_action == "warn") {
-        .warn(sprintf("adiposity_sds(): %d SDS beyond ±%g for '%s' (not capped).", n_ext, sds_cap, v))
+        .warn(sprintf("adiposity_sds(): %d SDS beyond +/-%g for '%s' (not capped).", n_ext, sds_cap, v))
       } # NA or ignore -> leave as-is
     }
     sds

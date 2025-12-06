@@ -20,7 +20,7 @@ kyn_trp_ratio(
 \item{col_map}{Named list with:
 \itemize{
 \item kynurenine: column for kynurenine (nmol/L)
-\item tryptophan: column for tryptophan (µmol/L)
+\item tryptophan: column for tryptophan (mumol/L)
 }}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
@@ -41,18 +41,18 @@ A tibble with one column: kyn_trp_ratio (numeric).
 Computes the ratio of kynurenine to tryptophan, a marker of IDO activity and immune activation.
 }
 \details{
-KTR is calculated as Kyn (nmol/L) divided by Trp (µmol/L). Elevated KTR indicates
+KTR is calculated as Kyn (nmol/L) divided by Trp (mumol/L). Elevated KTR indicates
 increased tryptophan catabolism via the kynurenine pathway, often reflecting
 inflammation and cell-mediated immune activation.
 
-Inputs should already be in Kyn (nmol/L) and Trp (µmol/L).
+Inputs should already be in Kyn (nmol/L) and Trp (mumol/L).
 }
 \references{
-Fuchs D, Möller AA, Reibnegger G, Werner ER, Werner-Felmayer G, Dierich MP, Wachter H. (1998).
+Fuchs D, Moller AA, Reibnegger G, Werner ER, Werner-Felmayer G, Dierich MP, Wachter H. (1998).
 Serum kynurenine-to-tryptophan ratio increases with disease progression in HIV-1 infection.
-Clin Chem. 44(4):858–862. PMID:9555676
+Clin Chem. 44(4):858-862. PMID:9555676
 
-Damerell V, Midttun Ø, Ulvik A, et al. (2025).
-Circulating tryptophan–kynurenine metabolites and mortality.
-Int J Cancer. 156(3):552–565. doi:10.1002/ijc.35183
+Damerell V, Midttun O, Ulvik A, et al. (2025).
+Circulating tryptophan-kynurenine metabolites and mortality.
+Int J Cancer. 156(3):552-565. doi:10.1002/ijc.35183
 }

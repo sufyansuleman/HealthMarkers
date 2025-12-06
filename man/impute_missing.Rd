@@ -23,7 +23,7 @@ numeric columns in \code{data} that contain at least one NA.}
 
 \item{constant}{Numeric; single value to use when \code{method = "constant"}.}
 
-\item{na_warn_prop}{Numeric in \link{0,1}; threshold for high-missingness warnings per column.
+\item{na_warn_prop}{Numeric in \eqn{[0,1]}; threshold for high-missingness warnings per column.
 Default 0.2.}
 
 \item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}

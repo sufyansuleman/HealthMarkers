@@ -6,7 +6,7 @@
 #' - dyslipidemia
 #' - insulin_resistance
 #' - hyperglycemia (prediabetes-range glycemia)
-#' - hypertension (BP ≥95th percentile via z > 1.64)
+#' - hypertension (BP >=95th percentile via z > 1.64)
 #'
 #' By default, behavior matches prior implementation: required columns are
 #' validated, NA values are kept (propagate to outputs), no extreme-value
@@ -14,12 +14,12 @@
 #'
 #' Units and criteria (no automatic unit conversion):
 #' - Lipids (mmol/L): total cholesterol > 5.2 OR LDL-C > 3.4 OR HDL-C < 1.0 OR
-#'   triglycerides > 1.1 (age 0–9) OR > 1.5 (age 10–19) => dyslipidemia = 1.
-#' - Insulin resistance: z_HOMA > 1.28 (≈90th percentile) => insulin_resistance = 1.
+#'   triglycerides > 1.1 (age 0-9) OR > 1.5 (age 10-19) => dyslipidemia = 1.
+#' - Insulin resistance: z_HOMA > 1.28 (~=90th percentile) => insulin_resistance = 1.
 #'   z_HOMA is a within-sample or external z-score of HOMA-IR.
 #' - Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in (39, 47) mmol/mol
 #'   => hyperglycemia = 1.
-#' - Hypertension: either BP z-score > 1.64 (≈95th percentile) for systolic or diastolic
+#' - Hypertension: either BP z-score > 1.64 (~=95th percentile) for systolic or diastolic
 #'   => hypertension = 1.
 #'
 #' @param data A data.frame or tibble containing at least these numeric columns:
@@ -37,7 +37,7 @@
 #'   - "omit": drop rows with NA in any required input.
 #'   - "error": abort if any required input contains NA.
 #'   - "ignore"/"warn": aliases of "keep"; "warn" also emits missingness diagnostics.
-#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for high-missingness warnings. Default 0.2.
+#' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see `extreme_rules`). Default FALSE.
 #' @param extreme_action One of c("warn","cap","error","ignore","NA") used when extremes are detected
 #'   (only when `check_extreme = TRUE`).

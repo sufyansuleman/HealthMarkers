@@ -1,0 +1,74 @@
+---
+title: "cvd_risk_ascvd"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cvd_risk_ascvd}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`cvd_risk_ascvd()` wraps the ACC/AHA Pooled Cohort Equations (PCE) via `PooledCohort`, adding input validation and quiet fallback to `NA` on backend errors. Supports 10- and 30-year horizons.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with columns `age`, `sex` (1 male, 0 female), `race` ("white","black","other"), `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
+- PooledCohort package must be installed; otherwise the function aborts.
+- Inputs are used as provided; non-finite values are treated as `NA` by the backend. Optional `verbose` triggers a simple quality scan summary.
+
+## Key Arguments
+
+- `year`: risk horizon; must be 10 or 30.
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `verbose = TRUE`.
+- `verbose = FALSE`: emit progress and input-quality counts.
+- `...`: forwarded to `PooledCohort::predict_10yr_ascvd_risk()` or `predict_30yr_ascvd_risk()`.
+
+## Output Description
+
+Returns a tibble with columns `model = "ASCVD"`, `year`, and `risk` (percentage). If the backend errors, an `NA` row is returned.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+patient <- tibble(
+  age = 55, sex = 1, race = "white", smoker = FALSE,
+  total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
+  diabetes = FALSE, bmi = 27
+)
+
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  cvd_risk_ascvd(
+    data = patient,
+    year = 10,
+    na_warn_prop = 0.2,
+    verbose = TRUE
+  )
+}
+```
+
+## Extended Example
+
+Compute both 10- and 30-year risks and capture quiet failures as `NA`:
+
+```{r}
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  out10 <- cvd_risk_ascvd(patient, year = 10, verbose = FALSE)
+  out30 <- cvd_risk_ascvd(patient, year = 30, verbose = FALSE)
+  rbind(out10, out30)
+}
+```
+
+## Notes / Workflow Integration
+
+- Ensure `PooledCohort` is installed; otherwise the function aborts. When called through `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
+- `sex` is coded 1/0 (male/female) and `smoker`, `bp_treated`, `diabetes` are treated as logical before passing to the backend.
+- No unit conversion is performed; inputs must be in the units expected by PCE (mg/dL lipids, mmHg SBP).

@@ -14,9 +14,9 @@
 #' - 6 points: metastatic solid tumor, AIDS/HIV
 #'
 #' To avoid double counting paired conditions, the following use the maximum applicable weight:
-#' - Diabetes: max(1 × diabetes without complications, 2 × diabetes with complications)
-#' - Liver disease: max(1 × mild liver disease, 3 × moderate/severe liver disease)
-#' - Cancer: max(2 × non-metastatic solid tumor, 6 × metastatic solid tumor)
+#' - Diabetes: max(1 * diabetes without complications, 2 * diabetes with complications)
+#' - Liver disease: max(1 * mild liver disease, 3 * moderate/severe liver disease)
+#' - Cancer: max(2 * non-metastatic solid tumor, 6 * metastatic solid tumor)
 #'
 #' Age points are not included here and can be added separately if needed.
 #'
@@ -26,7 +26,7 @@
 #'   hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv.
 #' @param verbose Logical; if TRUE, emits progress messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (binary 0–1).
+#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).
 #' @param extreme_action One of c("warn","cap","error","ignore","NA").
 #' @param extreme_rules Optional overrides (applied per key); default bounds c(0,1) for all.
 #'

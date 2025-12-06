@@ -5,7 +5,7 @@
 #' - NAFLD-LFS = -2.89 + 1.18*MetS + 0.45*Type2DM + 0.15*Insulin_u + 0.04*AST - 0.94*(AST/ALT)
 #'
 #' Assumptions/units:
-#' - ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to µU/mL via /6).
+#' - ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via /6).
 #' - MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
 #' - Type2DM is taken from `diabetes` (logical or 0/1).
 #'
@@ -15,7 +15,7 @@
 #'   - Optional direct inputs: sex, diabetes, MetS, insulin
 #'   - Optional to derive MetS or insulin: I0, waist, TG, HDL_c, sbp, bp_sys, bp_treated, glucose, G0
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param na_warn_prop Proportion in [0,1] for high-missingness warnings when na_action = "warn". Default 0.2.
+#' @param na_warn_prop Proportion in \eqn{[0,1]} for high-missingness warnings when na_action = "warn". Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan selected inputs for plausible ranges.
 #' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.
 #' @param extreme_rules Optional named list of c(min,max) to override defaults.
@@ -212,7 +212,7 @@ liver_fat_markers <- function(
   MetS <- if (!is.null(MetS_direct)) as01(MetS_direct) else derive_mets()
   if (is.null(MetS)) MetS <- rep(NA_integer_, length(BMI))
 
-  # fasting insulin in µU/mL: prefer direct insulin; else I0/6 if available
+  # fasting insulin in muU/mL: prefer direct insulin; else I0/6 if available
   Ins_u <- if (!is.null(insulin)) {
     insulin
   } else if (!is.null(I0)) {

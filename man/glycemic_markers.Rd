@@ -29,10 +29,10 @@ Required keys: \code{HDL_c}, \code{TG}, \code{BMI}. Optional keys (if present wi
 If \code{NULL} (default), the function uses columns named exactly as the keys.}
 
 \item{na_action}{One of \code{c("ignore","warn","error","keep","omit")}.
-HM-CS aliases: \code{keep} ≡ \code{ignore}; \code{omit} drops rows with any NA/non-finite
+HM-CS aliases: \code{keep} == \code{ignore}; \code{omit} drops rows with any NA/non-finite
 in used inputs before computing markers. Default "ignore".}
 
-\item{na_warn_prop}{Proportion (0–1) threshold for high-missingness warnings
+\item{na_warn_prop}{Proportion (0-1) threshold for high-missingness warnings
 among used columns when \code{na_action = "warn"}. Default 0.2.}
 
 \item{check_extreme}{Logical; if \code{TRUE}, scan selected input variables for values
@@ -80,7 +80,7 @@ Assumed units (no automatic conversion of inputs except where noted):
 \item BMI: kg/m^2
 \item glucose, G0: mmol/L (TyG internally converts glucose to mg/dL via 18)
 \item HbA1c: mmol/mol
-\item C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin µU/mL; see notes)
+\item C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin muU/mL; see notes)
 \item leptin, adiponectin: ng/mL
 }
 
@@ -97,8 +97,8 @@ Quality controls and options:
 Notes on HOMA_CP:
 \itemize{
 \item This function retains the package's existing operational formula:
-HOMA_CP = (G0 \link{mmol/L} * (C_peptide \link{pmol/L} / 6)) / 22.5
-which mirrors HOMA-IR’s structure using a 6 pmol/µU scaling used for insulin.
+HOMA_CP = (G0 (mmol/L) * (C_peptide (pmol/L) / 6)) / 22.5
+which mirrors HOMA-IR's structure using a 6 pmol/muU scaling used for insulin.
 Users should verify unit conventions for their datasets; alternative C-peptide
 HOMA implementations exist (e.g., HOMA2-CP).
 }
@@ -127,11 +127,11 @@ glycemic_markers(df,
 }
 \references{
 \itemize{
-\item Paulmichl K, et al. (2016). SPISE: Single-Point Insulin Sensitivity Estimator. Clin Chem, 62(9):1211–1219.
-\item Bello-Chavolla OY, et al. (2018). METS-IR score. Eur J Endocrinol, 178(5):533–544.
-\item Frühbeck G, et al. (2018). Adiponectin-leptin ratio. Adipocyte, 7(1):57–62.
-\item Matthews DR, et al. (1985). HOMA. Diabetologia, 28(7):412–419. \doi{10.1007/BF00280883}
-\item Simental-Mendía LE, et al. (2008). TyG index. Metab Syndr Relat Disord, 6(2):89–95. \doi{10.1089/met.2007.0038}
-\item Yang X, et al. (2006). Adiponectin/insulin ratio. Diabetes Res Clin Pract, 73(2):293–299.
+\item Paulmichl K, et al. (2016). SPISE: Single-Point Insulin Sensitivity Estimator. Clin Chem, 62(9):1211-1219.
+\item Bello-Chavolla OY, et al. (2018). METS-IR score. Eur J Endocrinol, 178(5):533-544.
+\item Fruhbeck G, et al. (2018). Adiponectin-leptin ratio. Adipocyte, 7(1):57-62.
+\item Matthews DR, et al. (1985). HOMA. Diabetologia, 28(7):412-419. \doi{10.1007/BF00280883}
+\item Simental-Mendia LE, et al. (2008). TyG index. Metab Syndr Relat Disord, 6(2):89-95. \doi{10.1089/met.2007.0038}
+\item Yang X, et al. (2006). Adiponectin/insulin ratio. Diabetes Res Clin Pract, 73(2):293-299.
 }
 }

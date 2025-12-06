@@ -22,9 +22,9 @@ hormone_markers(
 total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4,
 aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.}
 
-\item{na_action}{One of "ignore","warn","error","keep","omit". HM-CS: keep ≡ ignore; omit drops rows with any NA in used inputs.}
+\item{na_action}{One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore; omit drops rows with any NA in used inputs.}
 
-\item{na_warn_prop}{Proportion in \link{0,1} for high-missingness warnings when na_action="warn". Default 0.2.}
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} for high-missingness warnings when na_action="warn". Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.}
 

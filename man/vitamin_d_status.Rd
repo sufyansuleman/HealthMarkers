@@ -39,14 +39,14 @@ vitamin_d_status(
 A tibble with one column: vitamin_d_status (ordered factor with levels "Deficient","Insufficient","Sufficient").
 }
 \description{
-Categorizes vitamin D status based on serum 25-hydroxyvitamin D \link{25(OH)D} levels.
+Categorizes vitamin D status based on serum 25-hydroxyvitamin D (25(OH)D) levels.
 }
 \details{
 Serum 25(OH)D is the standard biomarker for vitamin D status. This function classifies
 levels (assumed in ng/mL) into categories:
 \itemize{
 \item Deficient (< 20 ng/mL)
-\item Insufficient (20–29 ng/mL)
+\item Insufficient (20-29 ng/mL)
 \item Sufficient (>= 30 ng/mL)
 }
 
@@ -59,5 +59,5 @@ Dietary Reference Intakes for Calcium and Vitamin D. National Academies Press. d
 
 Holick MF, Binkley NC, Bischoff-Ferrari HA, et al. (2011).
 Evaluation, Treatment, and Prevention of Vitamin D Deficiency: an Endocrine Society Clinical Practice Guideline.
-J Clin Endocrinol Metab. 96(7):1911–1930. doi:10.1210/jc.2011-0385
+J Clin Endocrinol Metab. 96(7):1911-1930. doi:10.1210/jc.2011-0385
 }

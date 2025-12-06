@@ -14,7 +14,7 @@ cvd_risk_ascvd(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...)
 
 \item{year}{Risk horizon: 10 or 30.}
 
-\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+\item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}; underlying backend handles NA as per its API.}
 
 \item{verbose}{Logical; if TRUE, prints progress and a short summary.}
@@ -43,6 +43,6 @@ if (requireNamespace("PooledCohort", quietly = TRUE)) {
 \itemize{
 \item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline on the
 Assessment of Cardiovascular Risk: a report of the ACC/AHA Task Force on Practice
-Guidelines. Circulation. 2014;129(25 Suppl 2):S49–S73. (Pooled Cohort Equations)
+Guidelines. Circulation. 2014;129(25 Suppl 2):S49-S73. (Pooled Cohort Equations)
 }
 }

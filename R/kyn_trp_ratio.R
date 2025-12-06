@@ -3,16 +3,16 @@
 #' Computes the ratio of kynurenine to tryptophan, a marker of IDO activity and immune activation.
 #'
 #' @details
-#' KTR is calculated as Kyn (nmol/L) divided by Trp (µmol/L). Elevated KTR indicates
+#' KTR is calculated as Kyn (nmol/L) divided by Trp (mumol/L). Elevated KTR indicates
 #' increased tryptophan catabolism via the kynurenine pathway, often reflecting
 #' inflammation and cell-mediated immune activation.
 #'
-#' Inputs should already be in Kyn (nmol/L) and Trp (µmol/L).
+#' Inputs should already be in Kyn (nmol/L) and Trp (mumol/L).
 #'
 #' @param data A data.frame or tibble with kynurenine and tryptophan concentrations.
 #' @param col_map Named list with:
 #'   - kynurenine: column for kynurenine (nmol/L)
-#'   - tryptophan: column for tryptophan (µmol/L)
+#'   - tryptophan: column for tryptophan (mumol/L)
 #' @param na_action One of c("keep","omit","error","ignore","warn").
 #' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
 #' @param extreme_action One of c("warn","cap","error","ignore","NA").
@@ -22,13 +22,13 @@
 #' @return A tibble with one column: kyn_trp_ratio (numeric).
 #'
 #' @references
-#' Fuchs D, Möller AA, Reibnegger G, Werner ER, Werner-Felmayer G, Dierich MP, Wachter H. (1998).
+#' Fuchs D, Moller AA, Reibnegger G, Werner ER, Werner-Felmayer G, Dierich MP, Wachter H. (1998).
 #' Serum kynurenine-to-tryptophan ratio increases with disease progression in HIV-1 infection.
-#' Clin Chem. 44(4):858–862. PMID:9555676
+#' Clin Chem. 44(4):858-862. PMID:9555676
 #'
-#' Damerell V, Midttun Ø, Ulvik A, et al. (2025).
-#' Circulating tryptophan–kynurenine metabolites and mortality.
-#' Int J Cancer. 156(3):552–565. doi:10.1002/ijc.35183
+#' Damerell V, Midttun O, Ulvik A, et al. (2025).
+#' Circulating tryptophan-kynurenine metabolites and mortality.
+#' Int J Cancer. 156(3):552-565. doi:10.1002/ijc.35183
 #'
 #' @export
 kyn_trp_ratio <- function(
@@ -160,7 +160,7 @@ kyn_trp_ratio <- function(
 
   # High ratio warning
   if (any(is.finite(ratio) & ratio > 100)) {
-    rlang::warn("kyn_trp_ratio(): very high ratios (>100) detected; check units (Kyn nmol/L, Trp µmol/L).",
+    rlang::warn("kyn_trp_ratio(): very high ratios (>100) detected; check units (Kyn nmol/L, Trp mumol/L).",
                 class = "healthmarkers_ktr_warn_ratio_high")
   }
 

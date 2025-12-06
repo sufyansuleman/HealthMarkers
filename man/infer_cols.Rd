@@ -53,7 +53,7 @@ matches leave map[\link{key}] as NULL and issue a warning.}
 \item{fuzzy}{Logical; if TRUE and no regex matches are found, attempt a fuzzy match
 with agrep using \code{max_distance}. Default FALSE.}
 
-\item{max_distance}{Numeric in \link{0,1} passed to agrep when fuzzy = TRUE. Default 0.1.}
+\item{max_distance}{Numeric in \eqn{[0,1]} passed to agrep when fuzzy = TRUE. Default 0.1.}
 
 \item{return}{One of c("map","list"). "map" (default) invisibly returns the
 filled mapping list. "list" returns a list(map = ..., log = tibble) for auditing.}

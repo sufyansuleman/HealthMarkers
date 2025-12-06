@@ -10,7 +10,7 @@ cvd_risk_mesa(data, na_warn_prop = 0.2, verbose = FALSE, ...)
 \item{data}{Data frame with: \code{race}, \code{sex}, \code{age}, \code{total_chol},
 \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{smoker}, \code{diabetes}.}
 
-\item{na_warn_prop}{Proportion (0–1) to flag high missingness warnings (default 0.2).
+\item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}.}
 
 \item{verbose}{Logical; if TRUE, prints progress and a short summary.}
@@ -34,6 +34,6 @@ if (requireNamespace("CVrisk", quietly = TRUE)) {
 \itemize{
 \item McClelland RL, et al. Ten-year coronary heart disease risk prediction using
 coronary artery calcium and traditional risk factors: the MESA risk score.
-Circulation. 2015;131(5):402–409.
+Circulation. 2015;131(5):402-409.
 }
 }

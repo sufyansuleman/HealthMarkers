@@ -1,0 +1,69 @@
+---
+title: "cvd_marker_ldl_particle_number"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cvd_marker_ldl_particle_number}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`cvd_marker_ldl_particle_number()` returns ApoB as a proxy for LDL particle number with HM-CS missing-data handling. Inputs are validated and coerced to numeric; non-finite values are set to `NA`.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing ApoB (mg/dL).
+- `col_map`: named list mapping `ApoB` to the column name (default: `ApoB`).
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy for ApoB (`keep` retains NA outputs; `omit` drops rows; `error` aborts on missing/non-finite values).
+- `col_map`: rename the ApoB column if needed.
+- `verbose = FALSE`: emit progress via `hm_inform()`.
+
+## Output Description
+
+Returns a tibble with columns `model = "LDL_PN"` and `value` (ApoB). Rows are dropped only when `na_action = "omit"`; otherwise missing/non-finite inputs yield `NA` values.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+apob <- tibble(ApoB = c(95, 110))
+
+cvd_marker_ldl_particle_number(
+  data = apob,
+  col_map = list(ApoB = "ApoB"),
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Drop rows with missing ApoB and compute the proxy on a renamed column:
+
+```{r}
+apob2 <- tibble(ApolipoproteinB = c(95, NA, 80))
+
+cvd_marker_ldl_particle_number(
+  data = apob2,
+  col_map = list(ApoB = "ApolipoproteinB"),
+  na_action = "omit",
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- Non-numeric ApoB inputs are coerced with a warning; non-finite values become `NA` before applying the NA policy.
+- Use `na_action = "error"` to enforce complete ApoB values; `omit` to filter missing rows; `keep` to retain NA outputs.
+- Units are assumed mg/dL; the function performs no unit conversion.

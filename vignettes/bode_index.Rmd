@@ -1,0 +1,96 @@
+---
+title: "bode_index"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{bode_index}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`bode_index()` computes the 0–10 BODE score from FEV1 percent predicted, 6-minute walk distance (6MWD), mMRC dyspnea, and BMI. You may supply FEV1% directly, derive it from raw and predicted FEV1, or pass a precomputed percent-predicted column. Optional NA and extreme handling mirrors other helpers.
+
+Component scoring:
+- FEV1 % predicted: >=65 -> 0; 50–64 -> 1; 36–49 -> 2; <=35 -> 3
+- 6MWD (m): >=350 -> 0; 250–349 -> 1; 150–249 -> 2; <=149 -> 3
+- mMRC: 0–1 -> 0; 2 -> 1; 3 -> 2; 4 -> 3
+- BMI: >21 -> 0; <=21 -> 1
+
+## Required Inputs
+
+- `data`: data.frame/tibble with spirometry, 6MWD, mMRC, and BMI.
+- `col_map`: named list with `sixmwd`, `mmrc`, `bmi`, and exactly one FEV1 source:
+  - `fev1_pct` (percent predicted provided), or
+  - both `fev1` and `fev1_pred` (derive percent predicted), or
+  - `fev1_pp` (already percent predicted from another helper).
+- Inputs must be numeric; non-numeric are coerced with a warning, non-finite become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
+- `check_extreme = FALSE`: enable range screening (defaults: FEV1% 10–140, 6MWD 50–800 m, mMRC 0–4, BMI 10–60).
+- `extreme_action = c("warn","cap","error","ignore","NA")`: response if extremes detected (`cap` trims to bounds; `NA` blanks values).
+- `extreme_rules = NULL`: optional custom bounds list matching the keys above.
+- `verbose = FALSE`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with `bode_index` plus component columns: `fev1_pct`, `fev1_score`, `walk_score`, `mmrc_score`, `bmi_score`. With `na_action = "omit"`, rows with incomplete required inputs are dropped; otherwise scores for those rows are `NA`.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+bode_df <- tibble(
+  FEV1pct = c(70, 55, 40, 30),
+  Walk_m  = c(380, 320, 200, 120),
+  mMRC    = c(1, 2, 3, 4),
+  BMI     = c(23, 20, 19, 28),
+  FEV1    = c(2.0, 1.6, 1.2, 0.9),
+  FEV1_pred = c(2.5, 2.2, 2.0, 1.8)
+)
+
+col_map <- list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI")
+
+bode_index(
+  data = bode_df,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = FALSE,
+  extreme_action = "warn",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Derive FEV1% from raw and predicted values, screen for extremes, cap outliers, and drop incomplete rows:
+
+```{r}
+bode_index(
+  data = bode_df,
+  col_map = list(
+    fev1 = "FEV1", fev1_pred = "FEV1_pred",
+    sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI"
+  ),
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- Supply exactly one FEV1 source; missing all three options raises an error.
+- Domain warnings for implausible ranges are issued when `check_extreme = FALSE`; enable screening to cap, blank, or error on extreme values.
+- `na_action = "error"` stops if any required inputs are missing; use `"omit"` to drop such rows or `"keep"`/`"warn"`/`"ignore"` to retain them with `NA` scores.
+- Extreme screening occurs before scoring and uses `extreme_rules` bounds when provided.

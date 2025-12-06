@@ -1,0 +1,97 @@
+---
+title: "pulmo_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{pulmo_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`pulmo_markers()` wraps `rspiro` reference equations (GLI, GLI-Global, NHANES3) to compute predicted normals, z-scores, percent predicted, and lower limits of normal (LLN) for FEV1, FVC, and the FEV1/FVC ratio. Inputs are validated, numeric columns are coerced as needed, missingness is handled per policy, and heights are auto-interpreted as cm when any value exceeds 3 (otherwise treated as metres).
+
+## Required Inputs
+
+- `data`: data.frame/tibble with columns `age` (years), `sex` ("male"/"female" or 1/2 or 0/1), `height` (cm or m), `ethnicity` (text labels such as "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"), `fev1` (L), and `fvc` (L). Required columns must exist; numeric-required columns are coerced with warnings when NAs are introduced.
+
+## Key Arguments
+
+- `equation = c("GLI", "GLIgl", "NHANES3")`: reference set; `GLIgl` ignores ethnicity.
+- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (propagate, drop rows, or abort).
+- `na_warn_prop = 0.2`: proportion threshold to emit high-missingness diagnostics (debug level).
+- `verbose = FALSE`: print progress, omission counts, and completion diagnostics.
+
+## Output Description
+
+Returns a tibble with predicted values, z-scores, percent-predicted, and LLN for FEV1 and FVC, plus observed/predicted ratios:
+- `fev1_pred`, `fev1_z`, `fev1_pctpred`, `fev1_LLN`
+- `fvc_pred`, `fvc_z`, `fvc_pctpred`, `fvc_LLN`
+- `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`, `fev1_fvc_LLN`
+
+`fev1_fvc_LLN` is currently `NA` (not returned by `rspiro`). Ratio z-scores use the sample mean/SD of predicted ratios; if SD is zero or non-finite, z-scores become `NA`. Percent-predicted fields use safe division; zero/non-finite denominators yield `NA`.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+if (requireNamespace("rspiro", quietly = TRUE)) {
+  df <- tibble(
+    age = c(45, 60),
+    sex = c("male", "female"),
+    height = c(175, 160),  # cm; auto-converted because values > 3
+    ethnicity = c("Caucasian", "African-American"),
+    fev1 = c(3.1, 2.4),
+    fvc = c(4.0, 3.0)
+  )
+
+  pulmo_markers(
+    data = df,
+    equation = "GLI",
+    na_action = "keep",
+    verbose = FALSE
+  )
+} else {
+  message("Install 'rspiro' to run pulmo_markers().")
+}
+```
+
+## Extended Example
+
+Omit rows with missing required inputs, use GLI-Global (ethnicity-agnostic), and display progress:
+
+```{r}
+if (requireNamespace("rspiro", quietly = TRUE)) {
+  df2 <- tibble(
+    age = c(50, 70, NA),
+    sex = c(1, 2, 1),
+    height = c(1.70, 1.62, 1.68),  # m; no conversion because all <= 3
+    ethnicity = c("Other/Mixed", "Caucasian", "Caucasian"),
+    fev1 = c(2.8, 2.1, 2.5),
+    fvc = c(3.5, 2.8, NA)
+  )
+
+  pulmo_markers(
+    data = df2,
+    equation = "GLIgl",
+    na_action = "omit",
+    verbose = TRUE
+  )
+}
+```
+
+## Notes / Workflow Integration
+
+- Requires the `rspiro` package; an explicit error is thrown if it is absent or the chosen equation is unsupported in the installed version.
+- Height heuristic: any height > 3 is assumed cm and converted to metres; non-positive heights trigger a warning and yield `NA` outputs.
+- Sex mapping accepts 1/2, 0/1 (shifted to 1/2), and "male"/"female"; unmapped values warn and become `NA`.
+- Ethnicity mapping defaults unknown values to code 5 ("Other/Mixed") with a warning; `GLIgl` ignores ethnicity.
+- When `na_action = "error"`, any missing required input aborts; `omit` drops those rows; `keep` propagates `NA` into outputs.
+- High missingness on required columns is reported at debug level when it exceeds `na_warn_prop`; set `verbose = TRUE` to see progress and completion summaries.

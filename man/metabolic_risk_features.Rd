@@ -38,7 +38,7 @@ Keys: c("chol_total","chol_ldl","chol_hdl","triglycerides","age_year",
 \item "ignore"/"warn": aliases of "keep"; "warn" also emits missingness diagnostics.
 }}
 
-\item{na_warn_prop}{Numeric in \link{0,1}; per-variable threshold for high-missingness warnings. Default 0.2.}
+\item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see \code{extreme_rules}). Default FALSE.}
 
@@ -68,7 +68,7 @@ Compute four binary risk flags from routine clinical measures:
 \item dyslipidemia
 \item insulin_resistance
 \item hyperglycemia (prediabetes-range glycemia)
-\item hypertension (BP ≥95th percentile via z > 1.64)
+\item hypertension (BP >=95th percentile via z > 1.64)
 }
 }
 \details{
@@ -79,12 +79,12 @@ checks or capping are applied, and a tibble with 0/1 factor flags is returned.
 Units and criteria (no automatic unit conversion):
 \itemize{
 \item Lipids (mmol/L): total cholesterol > 5.2 OR LDL-C > 3.4 OR HDL-C < 1.0 OR
-triglycerides > 1.1 (age 0–9) OR > 1.5 (age 10–19) => dyslipidemia = 1.
-\item Insulin resistance: z_HOMA > 1.28 (≈90th percentile) => insulin_resistance = 1.
+triglycerides > 1.1 (age 0-9) OR > 1.5 (age 10-19) => dyslipidemia = 1.
+\item Insulin resistance: z_HOMA > 1.28 (~=90th percentile) => insulin_resistance = 1.
 z_HOMA is a within-sample or external z-score of HOMA-IR.
 \item Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in (39, 47) mmol/mol
 => hyperglycemia = 1.
-\item Hypertension: either BP z-score > 1.64 (≈95th percentile) for systolic or diastolic
+\item Hypertension: either BP z-score > 1.64 (~=95th percentile) for systolic or diastolic
 => hypertension = 1.
 }
 }

@@ -39,16 +39,16 @@ Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).}
 tibble with bode_index (integer). NA if any required input missing (unless omitted).
 }
 \description{
-Computes the BODE index (0–10) using FEV1 \% predicted, 6-minute walk distance (6MWD),
+Computes the BODE index (0-10) using FEV1 \% predicted, 6-minute walk distance (6MWD),
 mMRC dyspnea scale, and BMI. Higher scores indicate worse prognosis in COPD.
 }
 \details{
 Scoring components:
-FEV1 \% predicted: >=65 = 0; 50–64 = 1; 36–49 = 2; <=35 = 3
-6MWD (meters): >=350 = 0; 250–349 = 1; 150–249 = 2; <=149 = 3
-mMRC dyspnea: 0–1 = 0; 2 = 1; 3 = 2; 4 = 3
+FEV1 \% predicted: >=65 = 0; 50-64 = 1; 36-49 = 2; <=35 = 3
+6MWD (meters): >=350 = 0; 250-349 = 1; 150-249 = 2; <=149 = 3
+mMRC dyspnea: 0-1 = 0; 2 = 1; 3 = 2; 4 = 3
 BMI: >21 = 0; <=21 = 1
 }
 \references{
-Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005–1012.
+Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005-1012.
 }

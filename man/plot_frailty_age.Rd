@@ -23,7 +23,7 @@ plot_frailty_age(
 }
 \arguments{
 \item{data}{A data.frame or tibble of health deficits (ideally binary/logical or
-scaled to \link{0,1}). Non-binary numeric columns can be rescaled by di::di when
+scaled to \eqn{[0,1]}). Non-binary numeric columns can be rescaled by di::di when
 rescale = TRUE.}
 
 \item{cols}{Character vector of deficit column names to use. If NULL (default),
@@ -32,7 +32,7 @@ all numeric columns are used except age (if supplied).}
 \item{invert}{Character vector of column names whose values should be inverted
 by di::di (e.g., where higher values indicate better health).}
 
-\item{rescale}{Logical; if TRUE, non-binary columns will be rescaled to \link{0,1}
+\item{rescale}{Logical; if TRUE, non-binary columns will be rescaled to \eqn{[0,1]}
 by di::di. Default TRUE.}
 
 \item{age}{Optional name of the column holding age (used by di for plotting and
@@ -46,11 +46,11 @@ See di::di documentation for syntax.}
 \item{na_action}{One of:
 \itemize{
 \item Legacy: "ignore","warn","error"
-\item HM-CS:  "keep","omit" (keep ≡ ignore; omit drops rows with any NA in selected deficits)
+\item HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
 Default "ignore".
 }}
 
-\item{na_warn_prop}{Proportion in \link{0,1} above which a high-missingness warning
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
 is emitted (per column) when na_action = "warn". Default 0.2.}
 
 \item{check_extreme}{NULL/TRUE/FALSE gate for out-of-range scan:
@@ -62,7 +62,7 @@ is emitted (per column) when na_action = "warn". Default 0.2.}
 
 \item{extreme_action}{One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
 \itemize{
-\item "cap": truncate to \link{0,1}
+\item "cap": truncate to \eqn{[0,1]}
 \item "NA": set out-of-range to NA
 Default "warn".
 }}

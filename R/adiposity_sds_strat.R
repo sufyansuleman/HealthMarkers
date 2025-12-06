@@ -18,14 +18,14 @@
 #'     F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
 #'   )
 #' @param na_action One of:
-#'   - "keep"  – keep rows with NA (propagates to outputs)
-#'   - "omit"  – drop rows with NA in any required variable
-#'   - "error" – abort if any required variable has NA
+#'   - "keep"  - keep rows with NA (propagates to outputs)
+#'   - "omit"  - drop rows with NA in any required variable
+#'   - "error" - abort if any required variable has NA
 #' @param check_extreme Logical; if TRUE, screen raw variables for extremes before SDS
 #' @param extreme_action One of:
-#'   - "cap"   – winsorize to bounds
-#'   - "NA"    – set out-of-range to NA
-#'   - "error" – abort on out-of-range
+#'   - "cap"   - winsorize to bounds
+#'   - "NA"    - set out-of-range to NA
+#'   - "error" - abort on out-of-range
 #' @param extreme_rules Optional named list of c(min, max) per variable (raw scale).
 #'   If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).
 #' @param allow_partial If TRUE, skip variables absent in data (with a warning); if FALSE error
@@ -35,7 +35,7 @@
 #' @return A tibble with one SDS column per retained variable: <prefix><var>_SDS
 #'
 #' @references
-#' Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305–1319. \doi{10.1002/sim.4780111005}
+#' Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305-1319. \doi{10.1002/sim.4780111005}
 #' WHO Expert Committee (1995) Physical Status: The Use and Interpretation of Anthropometry. WHO TRS 854.
 #'
 #' @examples

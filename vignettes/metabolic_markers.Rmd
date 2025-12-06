@@ -1,0 +1,80 @@
+---
+title: "metabolic_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{metabolic_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`metabolic_markers()` aggregates several marker groups by calling the underlying calculators and binding their outputs to your data. Supported groups include insulin indices, adiposity SDS, cardiometabolic risk (cvd_risk), lipid panel markers, liver indices, glycemic markers, and metabolic syndrome (`metss`). It forwards NA policy and normalization options to the underlying functions, optionally computes insulin sensitivity/resistance modes, and logs progress when `verbose = TRUE`. No unit conversion is performed in this wrapper; see each underlying function for expected units.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing the variables needed by the selected groups.
+- `col_map`: named list of column mappings forwarded to the underlying functions (e.g., TC/HDL/TG for lipids, BMI/waist for liver, glucose/insulin for glycemic/insulin). Keys depend on the selected groups; missing required columns in a group cause that group to be skipped or error per underlying function.
+
+## Key Arguments
+
+- `which = c("insulin","adiposity_sds","cardio","lipid","liver","glycemic","mets")`: groups to compute; multiple allowed.
+- `normalize = c("none","z","inverse","range","robust")`: normalization forwarded to insulin indices when `mode` includes IS/IR.
+- `mode = c("both","IS","IR")`: controls whether insulin sensitivity, resistance, or both are returned from insulin indices.
+- `na_action = c("keep","omit","error")`: missing-data policy forwarded to underlying calculators (HM-CS v2 style).
+- `verbose = TRUE`: emit progress/debug messages; failures are silenced unless verbose.
+
+## Output Description
+
+Returns the original `data` with additional columns for each requested group that completes successfully. Insulin outputs are added first (if selected), followed by each group in `which`. Groups that fail validation or are unavailable are skipped silently (or noted when verbose). `mode = "IR"` returns inverted insulin indices; `mode = "IS"` returns sensitivity; `both` binds both.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  TC = c(5.2, 6.1), HDL_c = c(1.3, 1.0), TG = c(1.5, 2.2), LDL_c = c(3.2, 3.6),
+  ALT = c(30, 40), AST = c(25, 35), BMI = c(26, 31), waist = c(90, 102),
+  glucose = c(5.2, 6.1), insulin = c(60, 95)
+)
+
+metabolic_markers(
+  data = df,
+  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ALT = "ALT", AST = "AST", BMI = "BMI", waist = "waist", glucose = "glucose", insulin = "insulin"),
+  which = c("lipid","liver","glycemic"),
+  normalize = "none",
+  mode = "both",
+  verbose = FALSE,
+  na_action = "keep"
+)
+```
+
+## Extended Example
+
+Include metabolic syndrome flags and insulin indices, omitting rows with missing required inputs:
+
+```{r}
+metabolic_markers(
+  data = df,
+  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ALT = "ALT", AST = "AST", BMI = "BMI", waist = "waist", glucose = "glucose", insulin = "insulin"),
+  which = c("lipid","liver","mets"),
+  normalize = "z",
+  mode = "both",
+  verbose = TRUE,
+  na_action = "omit"
+)
+```
+
+## Notes / Workflow Integration
+
+- Each group enforces its own required columns and NA/extreme handling; this wrapper does not override those rules.
+- `cvd_risk` (cardio group) is called in a try-catch; failures are skipped with a debug message when `verbose = TRUE`.
+- The `metss` group uses `metss()` and falls back to an internal `_hm_mets_fallback()` if needed.
+- `col_map` is reused across groups; ensure mappings cover all selected group requirements (e.g., triglycerides name differs across functions: `TG` vs `triglycerides`).

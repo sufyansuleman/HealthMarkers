@@ -1,0 +1,85 @@
+---
+title: "adiposity_sds_strat"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{adiposity_sds_strat}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`adiposity_sds_strat()` computes sex-specific SDS (z-scores) for anthropometric variables using separate male and female reference means/SDs. It validates mappings, handles missingness, optionally screens raw inputs for extremes, and supports partial variable inclusion.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with a sex column and variables to standardize.
+- `col_map`: list with `sex` (required) and optional `vars` mapping ref variable names to data columns.
+- `ref`: list with elements `M` and `F`; each is a named list of `c(mean=, sd=)` per variable. Both sexes must define the same variable set.
+- Sex values accepted: "M"/"F" (case-insensitive) or 1/2; others error.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: row-wise policy for missing required inputs.
+- `check_extreme = FALSE`: raw-value screening using `extreme_rules` (defaults cover BMI, waist, weight, height, hip, WC, HC).
+- `extreme_action = c("cap","NA","error")`: handling for out-of-range raw values when screening is enabled.
+- `allow_partial = FALSE`: if TRUE, skips ref variables absent in `data` (with a message); if FALSE, missing variables abort.
+- `prefix`: optional prefix for output column names.
+- `verbose`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with one SDS column per retained variable: `<prefix><var>_SDS`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` SDS.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+ref <- list(
+  M = list(BMI = c(mean=24.5, sd=3.8), waist = c(mean=88, sd=12)),
+  F = list(BMI = c(mean=22.1, sd=4.2), waist = c(mean=76, sd=11))
+)
+
+df <- data.frame(BMI=c(25.2,21.8,27.1), waist=c(85,72,95), sex=c("M","F","M"))
+
+adiposity_sds_strat(
+  data = df,
+  col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
+  ref = ref,
+  na_action = "keep",
+  check_extreme = FALSE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Allow partial variables, screen extremes, cap out-of-range values, and drop incomplete rows:
+
+```{r}
+adiposity_sds_strat(
+  data = df,
+  col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
+  ref = ref,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  allow_partial = TRUE,
+  prefix = "s_",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- `col_map$sex` is required; missing or unmapped sex values abort.
+- `allow_partial = TRUE` skips ref variables missing in `data`; otherwise all mapped variables must exist.
+- Extreme screening occurs on raw values before SDS; adjust `extreme_rules` if your units differ.
+- Use `na_action = "error"` to enforce completeness; `"omit"` drops incomplete rows; `"keep"` retains them with `NA` outputs.

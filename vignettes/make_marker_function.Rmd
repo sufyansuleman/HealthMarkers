@@ -1,0 +1,94 @@
+---
+title: "make_marker_function"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{make_marker_function}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`make_marker_function()` scaffolds a new marker function with validation, optional extreme handling, and basic computation wiring. The exported implementation installs a callable function in the current environment (and returns its name invisibly); it does not write files. It uses `hm_validate_inputs`/`hm_inform` and expects a `compute_body` list containing the core expression that assigns `out`.
+
+## Required Inputs
+
+- `name`: character scalar for the new function name.
+- `required_keys`: character vector of required `col_map` keys the generated function will expect.
+- `compute_body`: list with components used inside the generated function:
+  - `default_rules`: optional list of extreme-value bounds (used when `include_extremes = TRUE`).
+  - `empty_out`: object to return when zero rows remain (e.g., `tibble::tibble(result = numeric())`).
+  - `expr`: quoted expression that must create an `out` object (a tibble/data.frame).
+- `defaults`: optional list merged into generated formals (e.g., default `col_map`).
+- `include_extremes`: logical; if TRUE, enables extreme-value scanning using `default_rules`.
+
+## Key Arguments
+
+- `defaults`: optional list of default formals to merge into the generated function.
+- `include_extremes = TRUE`: whether to wire in extreme-value handling using `compute_body$default_rules`.
+
+## Output Description
+
+Returns the generated function name invisibly after assigning the function into the calling environment. The generated function performs validation/NA/extreme handling, then runs your `compute_body$expr` to produce `out`.
+
+## Minimal Reproducible Example
+
+Generate a basic scaffold for a fictional marker needing `A` and `B` columns:
+
+```{r}
+library(HealthMarkers)
+
+compute_body <- list(
+  default_rules = list(A = c(0, 100), B = c(0, 100)),
+  empty_out = tibble::tibble(result = numeric()),
+  expr = quote({
+    out <- tibble::tibble(result = data[[col_map$A]] + data[[col_map$B]])
+  })
+)
+
+make_marker_function(
+  name = "my_marker",
+  required_keys = c("A", "B"),
+  compute_body = compute_body,
+  defaults = list(col_map = list(A = "A", B = "B"))
+)
+
+# Generated function is now available
+my_marker(data.frame(A = 1:3, B = 5:7))
+```
+
+## Extended Example
+
+Use the builder to attach a richer compute body and defaults (illustrative):
+
+```{r}
+compute_body <- list(
+  default_rules = list(A = c(0, 100), B = c(0, 50)),
+  empty_out = tibble::tibble(result = numeric()),
+  expr = quote({
+    a <- data[[col_map$A]]
+    b <- data[[col_map$B]]
+    out <- tibble::tibble(result = a + b)
+  })
+)
+
+make_marker_function(
+  name = "my_marker_vs",
+  required_keys = c("A", "B"),
+  compute_body = compute_body,
+  defaults = list(col_map = list(A = "A", B = "B")),
+  include_extremes = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- The generator installs the function into the calling environment; persist it yourself with `usethis::use_r()`/`writeLines()` if desired.
+- `compute_body$expr` must assign an `out` object (tibble/data.frame); the scaffold handles validation and NA/extreme policies.
+- Extreme handling is only active when `include_extremes = TRUE` and `default_rules`/`extreme_rules` are supplied.
+- Adjust `required_keys` and default `col_map` to mirror your input expectations; numeric coercion and NA policies are already included in the scaffold.

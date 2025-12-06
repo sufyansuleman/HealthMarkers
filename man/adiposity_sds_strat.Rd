@@ -36,18 +36,18 @@ F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
 
 \item{na_action}{One of:
 \itemize{
-\item "keep"  – keep rows with NA (propagates to outputs)
-\item "omit"  – drop rows with NA in any required variable
-\item "error" – abort if any required variable has NA
+\item "keep"  - keep rows with NA (propagates to outputs)
+\item "omit"  - drop rows with NA in any required variable
+\item "error" - abort if any required variable has NA
 }}
 
 \item{check_extreme}{Logical; if TRUE, screen raw variables for extremes before SDS}
 
 \item{extreme_action}{One of:
 \itemize{
-\item "cap"   – winsorize to bounds
-\item "NA"    – set out-of-range to NA
-\item "error" – abort on out-of-range
+\item "cap"   - winsorize to bounds
+\item "NA"    - set out-of-range to NA
+\item "error" - abort on out-of-range
 }}
 
 \item{extreme_rules}{Optional named list of c(min, max) per variable (raw scale).
@@ -79,6 +79,6 @@ adiposity_sds_strat(
 )
 }
 \references{
-Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305–1319. \doi{10.1002/sim.4780111005}
+Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305-1319. \doi{10.1002/sim.4780111005}
 WHO Expert Committee (1995) Physical Status: The Use and Interpretation of Anthropometry. WHO TRS 854.
 }

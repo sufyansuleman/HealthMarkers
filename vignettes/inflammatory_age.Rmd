@@ -1,0 +1,81 @@
+---
+title: "inflammatory_age"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{inflammatory_age}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`iAge()` computes a simplified inflammatory age proxy as a weighted sum of CRP, IL6, and TNFa. It supports NA policies, optional high-missingness warnings, and optional extreme-value scanning with warn/cap/NA/error behaviors. Inputs are assumed in mg/L (CRP) and pg/mL (IL6, TNFa); no unit conversion is performed.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with inflammatory markers.
+- `col_map`: named list mapping `CRP`, `IL6`, `TNFa` to column names.
+- Inputs are coerced to numeric; non-finite values become `NA` (or error on coercion).
+
+## Key Arguments
+
+- `weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34)`: numeric weights summing to 1 (reordered by names if provided).
+- `na_action = c("omit","keep","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `omit`; `keep` returns NA when any required input is NA; `error` aborts).
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"`.
+- `check_extreme = FALSE`: enable range scan.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes (`cap` truncates; `NA` blanks values).
+- `extreme_rules = NULL`: override default bounds (CRP 0–300 mg/L; IL6 0–1000 pg/mL; TNFa 0–2000 pg/mL).
+- `verbose = FALSE`: emit progress and summary.
+
+## Output Description
+
+Returns a tibble with one column, `iAge`. Rows are dropped only when `na_action = "omit"`? Actually, omit keeps rows but ignores NAs in sum: with `na_action = "keep"`, rows with missing inputs yield `NA`; default `omit`/`ignore`/`warn` perform weighted sum ignoring NAs (missing markers contribute 0 after NA-to-0 for the sum).
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  CRP  = c(1.2, 3.5, NA),
+  IL6  = c(2.0, 4.1, 1.5),
+  TNFa = c(1.0, 1.8, 0.9)
+)
+
+iAge(
+  data = df,
+  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
+  na_action = "omit",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Keep NA when any marker is missing, scan for extremes, and cap into bounds:
+
+```{r}
+iAge(
+  data = df,
+  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
+  weights = c(CRP = 0.4, IL6 = 0.3, TNFa = 0.3),
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Weights must be numeric, length 3, and sum to 1; named weights are reordered to CRP/IL6/TNFa if named correctly.
+- `na_action = "keep"` preserves NA when any marker is missing; `omit`/`ignore`/`warn` treat missing markers as 0 in the weighted sum (original behavior); `error` enforces completeness.
+- Extreme screening uses broad defaults; customize `extreme_rules` for cohort-specific bounds.
+- This is a linear proxy inspired by the iAge concept; not equivalent to the original machine-learning iAge model.

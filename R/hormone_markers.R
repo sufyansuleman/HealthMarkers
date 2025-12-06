@@ -17,8 +17,8 @@
 #' @param col_map Named list mapping the required keys to column names:
 #'   total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4,
 #'   aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.
-#' @param na_action One of "ignore","warn","error","keep","omit". HM-CS: keep ≡ ignore; omit drops rows with any NA in used inputs.
-#' @param na_warn_prop Proportion in [0,1] for high-missingness warnings when na_action="warn". Default 0.2.
+#' @param na_action One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore; omit drops rows with any NA in used inputs.
+#' @param na_warn_prop Proportion in \eqn{[0,1]} for high-missingness warnings when na_action="warn". Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.
 #' @param extreme_action One of "warn","cap","error","ignore","NA" when check_extreme=TRUE. "cap" truncates to range; "NA" sets out-of-range to NA.
 #' @param extreme_rules Optional list of c(min,max) per key to override defaults.

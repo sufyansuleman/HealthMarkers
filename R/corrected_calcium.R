@@ -4,9 +4,9 @@
 #' using the Payne formula.
 #'
 #' @details
-#' Payne formula (conventional units): Corrected Ca (mg/dL) = measured Ca (mg/dL) + 0.8 × (4.0 − albumin [g/dL]).
+#' Payne formula (conventional units): Corrected Ca (mg/dL) = measured Ca (mg/dL) + 0.8 * (4.0 - albumin (g/dL)).
 #' If inputs appear to be in SI units (calcium mmol/L, albumin g/L), they are converted to mg/dL and g/dL
-#' (using 1 mmol/L ≈ 4 mg/dL; 1 g/L = 0.1 g/dL) for the correction and converted back to mmol/L for output.
+#' (using 1 mmol/L ~= 4 mg/dL; 1 g/L = 0.1 g/dL) for the correction and converted back to mmol/L for output.
 #'
 #' @param data A data.frame or tibble containing serum calcium and albumin.
 #' @param col_map Named list with `calcium` and `albumin` indicating column names.
@@ -209,13 +209,13 @@ corrected_calcium <- function(
   if (units == "conventional" && !si_inferred && !isTRUE(check_extreme)) {
     if (any(is.finite(alb_work_gdl) & (alb_work_gdl < 2 | alb_work_gdl > 5))) {
       rlang::warn(
-        "corrected_calcium(): albumin outside typical 2–5 g/dL range; correction accuracy may be affected.",
+        "corrected_calcium(): albumin outside typical 2-5 g/dL range; correction accuracy may be affected.",
         class = "healthmarkers_calcium_warn_albumin_range"
       )
     }
     if (any(is.finite(corr_mgdl) & (corr_mgdl < 5 | corr_mgdl > 15))) {
       rlang::warn(
-        "corrected_calcium(): corrected calcium outside typical 5–15 mg/dL range detected.",
+        "corrected_calcium(): corrected calcium outside typical 5-15 mg/dL range detected.",
         class = "healthmarkers_calcium_warn_corrected_range"
       )
     }

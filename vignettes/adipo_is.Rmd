@@ -1,0 +1,85 @@
+---
+title: "adipo_is"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{adipo_is}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`adipo_is()` computes adipose-related insulin sensitivity/resistance indices from fasting glucose, insulin, lipids, FFA, and adiposity. Units are converted internally (glucose mmol/L→mg/dL, insulin pmol/L→µU/mL, TG mmol/L→mg/dL, HDL mmol/L→mg/dL). Optional normalization can be applied to outputs.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with fasting markers.
+- `col_map`: named list for `G0`, `I0`, `TG`, `HDL_c`, `FFA`, `waist`, `bmi`.
+- Inputs are coerced to numeric; non-finite become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy.
+- `check_extreme = FALSE`: enable range screening (defaults: G0 2–30 mmol/L, I0 5–3000 pmol/L, TG 0.1–20 mmol/L, HDL_c 0.2–5 mmol/L, FFA 0.05–3 mmol/L, waist 30–250 cm, bmi 10–80 kg/m^2).
+- `extreme_action = c("cap","NA","error")`: handling when extremes detected (only used if screening is on).
+- `normalize = c("none","z","inverse","range","robust")`: optional post-hoc normalization of outputs.
+- `verbose`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with: `Revised_QUICKI`, `VAI_Men_inv`, `VAI_Women_inv`, `TG_HDL_C_inv`, `TyG_inv`, `LAP_Men_inv`, `LAP_Women_inv`, `McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`. "_inv" metrics are negated so more negative implies worse adipose IR.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  G0 = c(5.2, 6.1),      # mmol/L
+  I0 = c(60, 110),       # pmol/L
+  TG = c(1.2, 1.8),      # mmol/L
+  HDL_c = c(1.3, 1.0),   # mmol/L
+  FFA = c(0.4, 0.6),     # mmol/L
+  waist = c(85, 102),    # cm
+  bmi = c(24, 31)        # kg/m^2
+)
+cm <- as.list(names(df)); names(cm) <- names(df)
+
+adipo_is(
+  data = df,
+  col_map = cm,
+  na_action = "keep",
+  check_extreme = FALSE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Screen for extremes, cap to defaults, and drop incomplete rows:
+
+```{r}
+adipo_is(
+  data = df,
+  col_map = cm,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  normalize = "none",
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- All seven inputs must be mapped; missing mappings or columns abort.
+- Extreme screening is on the raw units before internal conversions; adjust `extreme_rules` if your units differ.
+- Non-positive TG/HDL/FFA/insulin/glucose values yield `NA` in log-based formulas.
+- `normalize = "none"` keeps native scales; other methods call `normalize_vec()` when available.

@@ -1,0 +1,58 @@
+---
+title: "marker_summary"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{marker_summary}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`marker_summary()` provides quick descriptive statistics (mean, SD, IQR) for numeric columns returned by marker functions. It validates input type, optionally emits progress messages, and returns a tidy tibble.
+
+## Required Inputs
+
+- `x`: data.frame/tibble, typically output from marker functions. Must contain at least one numeric column to produce summaries.
+
+## Key Arguments
+
+- `verbose = FALSE`: when `TRUE`, prints start/completion messages and counts all-NA variables.
+
+## Output Description
+
+Returns a tibble with columns `variable`, `mean`, `sd`, and `iqr` for each numeric column in `x`. If no numeric columns are present, returns an empty tibble (0 rows).
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  marker1 = c(1.1, 2.3, NA, 4.0),
+  marker2 = c(10, 12, 11, 9),
+  group   = c("a", "a", "b", "b")
+)
+
+marker_summary(df)
+```
+
+## Extended Example
+
+Enable verbose messages:
+
+```{r}
+marker_summary(df, verbose = TRUE)
+```
+
+## Notes / Workflow Integration
+
+- Only numeric columns are summarized; non-numeric columns are ignored.
+- Missing values are removed for each statistic via `na.rm = TRUE`.
+- Use after marker pipelines to get a quick quality check or to feed into reporting tables.

@@ -1,0 +1,80 @@
+---
+title: "fasting_is"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fasting_is}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`fasting_is()` computes 10 fasting insulin sensitivity/resistance indices from glucose (mmol/L) and insulin (pmol/L): `Fasting_inv`, `Raynaud`, `HOMA_IR_inv`, `FIRI`, `QUICKI`, `Belfiore_basal`, `Ig_ratio_basal`, `Isi_basal`, `Bennett`, `HOMA_IR_rev_inv`. Inputs are converted internally to mg/dL (glucose) and muU/mL (insulin). Optional normalization can be applied to all outputs, and extreme magnitudes can be screened/capped/NAed.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with fasting glucose and insulin.
+- `col_map`: named list with `G0` (glucose, mmol/L) and `I0` (insulin, pmol/L).
+- Inputs are coerced to numeric; non-finite values become `NA` before calculation.
+
+## Key Arguments
+
+- `normalize = c("none","z","inverse","range","robust")`: post-computation normalization applied columnwise.
+- `na_action = c("keep","omit","error")`: missing-data policy (`keep` retains NA outputs; `omit` drops rows with missing required inputs; `error` aborts).
+- `check_extreme = FALSE`: scan outputs for `abs(value) > extreme_limit`.
+- `extreme_limit = 1e3`: positive threshold for extreme detection.
+- `extreme_action = c("cap","NA","error")`: response to extremes when scanning (`cap` trims to ±limit; `NA` blanks; `error` aborts).
+- `verbose = FALSE`: emit progress via `hm_inform()` and messages.
+
+## Output Description
+
+Returns a tibble with 10 columns (indices listed above). Rows are dropped only when `na_action = "omit"`; otherwise rows with missing inputs yield `NA` values. Normalization, if requested, is applied to each column after optional extreme handling.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+labs <- tibble(G0 = c(5.2, 6.1, 4.8), I0 = c(60, 120, 80))
+
+fasting_is(
+  data = labs,
+  col_map = list(G0 = "G0", I0 = "I0"),
+  na_action = "keep",
+  normalize = "none",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Drop rows with missing inputs, cap large magnitudes, and return z-normalized indices:
+
+```{r}
+labs2 <- tibble(G0 = c(5.0, NA, 7.5), I0 = c(90, 150, 30))
+
+fasting_is(
+  data = labs2,
+  col_map = list(G0 = "G0", I0 = "I0"),
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_limit = 1e3,
+  extreme_action = "cap",
+  normalize = "z",
+  verbose = FALSE
+)
+```
+
+## Notes / Workflow Integration
+
+- Units must be mmol/L (glucose) and pmol/L (insulin); the function converts internally to mg/dL and muU/mL.
+- Use `na_action = "error"` to enforce complete inputs; `omit` to filter; `keep` to retain rows with NA outputs.
+- Extreme screening occurs before normalization; choose `extreme_action` to cap, blank, or fail on large magnitudes.
+- Normalization per column: `z` (mean/SD), `range` (0–1), `inverse` (1/x), `robust` ((x-median)/MAD), or `none`.

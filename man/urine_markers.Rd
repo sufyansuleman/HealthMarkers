@@ -21,7 +21,7 @@ urine_markers(
 
 \item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \link{0,1} to trigger high-missingness warnings for required inputs. Default 0.2.}
+\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.}
 
 \item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
 
@@ -79,24 +79,24 @@ urine_markers(df)
 \subsection{Original derivations}{
 \itemize{
 \item Mogensen CE. Microalbuminuria predicts clinical proteinuria and early mortality in maturity-onset diabetes.
-N Engl J Med. 1984;310(6):356–360. \doi{10.1056/NEJM198402093100602} (UACR and microalbuminuria concept)
+N Engl J Med. 1984;310(6):356-360. \doi{10.1056/NEJM198402093100602} (UACR and microalbuminuria concept)
 \item Ginsberg JM, Chang BS, Matarese RA, Garella S. Use of single voided urine samples to estimate quantitative proteinuria.
-N Engl J Med. 1983;309(25):1543–1546. \doi{10.1056/NEJM198312223092503} (UPCR derivation and validation)
-\item Bökenkamp A, Domanetzki M, Zinck R, Schumann G, Byrd D, Brodehl J. Reference values for urinary albumin excretion in healthy children.
-Pediatr Nephrol. 1998;12(6):478–483. \doi{10.1007/s004670050480} (Albumin excretion normative values)
+N Engl J Med. 1983;309(25):1543-1546. \doi{10.1056/NEJM198312223092503} (UPCR derivation and validation)
+\item Bokenkamp A, Domanetzki M, Zinck R, Schumann G, Byrd D, Brodehl J. Reference values for urinary albumin excretion in healthy children.
+Pediatr Nephrol. 1998;12(6):478-483. \doi{10.1007/s004670050480} (Albumin excretion normative values)
 }
 }
 
 \subsection{Validation and consensus}{
 \itemize{
 \item Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease.
-Kidney Int Suppl. 2013;3(1):1–150. \doi{10.1038/kisup.2012.73} (Albuminuria stages A1–A3; UACR cutoffs)
+Kidney Int Suppl. 2013;3(1):1-150. \doi{10.1038/kisup.2012.73} (Albuminuria stages A1-A3; UACR cutoffs)
 \item de Zeeuw D, Parving HH, Henning RH. Microalbuminuria as an early marker for cardiovascular disease.
-J Am Soc Nephrol. 2006;17(8):2100–2105. \doi{10.1681/ASN.2006040388} (Prognostic validation of UACR)
+J Am Soc Nephrol. 2006;17(8):2100-2105. \doi{10.1681/ASN.2006040388} (Prognostic validation of UACR)
 \item Ichimura T, Hung CC, Yang SA, Stevens JL, Bonventre JV. Kidney injury molecule-1: a tissue and urinary biomarker for nephrotoxicant-induced renal injury.
-Am J Physiol Renal Physiol. 2004;286(3):F552–F563. \doi{10.1152/ajprenal.00285.2002} (KIM-1 as tubular marker)
-\item Portilla D, Dent C, Sugaya T, et al. Liver fatty acid–binding protein as a biomarker of acute kidney injury after cardiac surgery.
-Kidney Int. 2008;73(4):465–472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
+Am J Physiol Renal Physiol. 2004;286(3):F552-F563. \doi{10.1152/ajprenal.00285.2002} (KIM-1 as tubular marker)
+\item Portilla D, Dent C, Sugaya T, et al. Liver fatty acid-binding protein as a biomarker of acute kidney injury after cardiac surgery.
+Kidney Int. 2008;73(4):465-472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
 }
 }
 }

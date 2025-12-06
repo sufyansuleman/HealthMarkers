@@ -51,7 +51,7 @@ Methods:
 \itemize{
 \item "none": return input as-is (no coercion; fully backward compatible).
 \item "z": z-score (mean 0, sd 1). Constant vectors return zeros (non-NA entries).
-\item "range": min–max to a target interval (default \link{0,1}). Constant vectors return
+\item "range": min-max to a target interval (default \eqn{[0,1]}). Constant vectors return
 the lower bound (mapped from zeros).
 \item "robust": median/MAD scaling. Constant vectors (MAD=0) return zeros.
 \item "inverse": rank-based inverse normal transform (normal scores).
@@ -68,7 +68,7 @@ normalize_vec(x, "inverse", invnorm_denominator = "blom")
 
 }
 \references{
-Beasley TM, Erickson S, Allison DB (2009). Rank-based inverse normal transformations are increasingly used, but are they merited? Behav Genet, 39(2):214–227. \doi{10.1007/s10519-008-9281-0}
+Beasley TM, Erickson S, Allison DB (2009). Rank-based inverse normal transformations are increasingly used, but are they merited? Behav Genet, 39(2):214-227. \doi{10.1007/s10519-008-9281-0}
 Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use median absolute deviation around the median. Front Psychol, 4:241. \doi{10.3389/fpsyg.2013.00241}
-Bland JM, Altman DG (1996). Standard deviations and standard errors. BMJ, 313(7047):41–42. \doi{10.1136/bmj.313.7047.41}
+Bland JM, Altman DG (1996). Standard deviations and standard errors. BMJ, 313(7047):41-42. \doi{10.1136/bmj.313.7047.41}
 }

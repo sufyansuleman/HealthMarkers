@@ -81,7 +81,7 @@
 #'   \code{smoker} (logical), \code{total_chol}, \code{HDL_c}, \code{sbp},
 #'   \code{bp_treated} (logical), \code{diabetes} (logical), \code{bmi}.
 #' @param year Risk horizon: 10 or 30.
-#' @param na_warn_prop Proportion (0–1) to flag high missingness warnings (default 0.2).
+#' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}; underlying backend handles NA as per its API.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
 #' @param ... Passed to the underlying PooledCohort function.
@@ -100,7 +100,7 @@
 #' @references
 #' - Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline on the
 #'   Assessment of Cardiovascular Risk: a report of the ACC/AHA Task Force on Practice
-#'   Guidelines. Circulation. 2014;129(25 Suppl 2):S49–S73. (Pooled Cohort Equations)
+#'   Guidelines. Circulation. 2014;129(25 Suppl 2):S49-S73. (Pooled Cohort Equations)
 cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
@@ -146,7 +146,7 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
 #'
 #' @param data A data frame with variables required by \code{QRISK3::QRISK3_2017()}.
 #' @param patid Optional vector of patient IDs (default: \code{1:nrow(data)}).
-#' @param na_warn_prop Proportion (0–1) to flag high missingness warnings (default 0.2).
+#' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
 #' @param ... Passed to \code{QRISK3::QRISK3_2017()}.
@@ -184,7 +184,7 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #'
 #' @param data Data frame with: \code{race}, \code{sex}, \code{age}, \code{total_chol},
 #'   \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{smoker}, \code{diabetes}.
-#' @param na_warn_prop Proportion (0–1) to flag high missingness warnings (default 0.2).
+#' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
 #' @param ... Passed to \code{CVrisk::chd_10y_mesa()}.
@@ -198,7 +198,7 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' @references
 #' - McClelland RL, et al. Ten-year coronary heart disease risk prediction using
 #'   coronary artery calcium and traditional risk factors: the MESA risk score.
-#'   Circulation. 2015;131(5):402–409.
+#'   Circulation. 2015;131(5):402-409.
 cvd_risk_mesa <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("CVrisk")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
@@ -240,7 +240,7 @@ cvd_risk_mesa <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
 #'
 #' @param data Data frame with: \code{age}, \code{sex}, \code{race}, \code{smoker},
 #'   \code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.
-#' @param na_warn_prop Proportion (0–1) to flag high missingness warnings (default 0.2).
+#' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
 #' @param ... Passed to \code{PooledCohort::predict_10yr_stroke_risk()}.
@@ -249,7 +249,7 @@ cvd_risk_mesa <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
 #'
 #' @references
 #' - Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline
-#'   (Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49–S73.
+#'   (Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49-S73.
 cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")

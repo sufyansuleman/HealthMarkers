@@ -1,0 +1,99 @@
+---
+title: "liver_fat_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{liver_fat_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`liver_fat_markers()` computes two hepatic fat surrogates: Hepatic Steatosis Index (HSI) and NAFLD Liver Fat Score (NAFLD_LFS). It supports NA policies, high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and verbose messages. Units are assumed: ALT/AST in U/L, BMI in kg/m^2, fasting insulin `insulin` in muU/mL (or `I0` in pmol/L, internally divided by 6), glucose in mmol/L. No unit conversion is performed for other inputs.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing liver enzymes and anthropometry.
+- `col_map`: named list; required mappings `ALT`, `AST`, `BMI` (defaults same names). Optional: `sex`, `diabetes`, `MetS`, `insulin`, `I0`, `waist`, `TG`, `HDL_c`, `sbp`, `bp_sys`, `bp_treated`, `glucose`, `G0`.
+- Required columns must exist and be numeric (non-numeric are coerced with warnings; non-finite set to `NA`).
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows with missing required inputs; `error` aborts).
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"`.
+- `check_extreme = FALSE`: enable plausible-range scan.
+- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when scanning (`cap` truncates; `NA` blanks values).
+- `extreme_rules = NULL`: override defaults (ALT/AST 0–1000 U/L; BMI 10–80; insulin 0–500 muU/mL; I0 0–3000 pmol/L; TG 0–50; HDL-C 0–10; waist 30–250 cm; SBP 60–300 mmHg; glucose/G0 0–50 mmol/L).
+- `verbose = FALSE`: emit progress messages.
+
+## Output Description
+
+Returns a tibble with `HSI` and `NAFLD_LFS`. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise those rows yield `NA` outputs. HSI uses sex (female +2) and diabetes (+2) flags; NAFLD_LFS uses MetS (direct or derived), diabetes flag, insulin (muU/mL), AST, and AST/ALT ratio.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  ALT = c(25, 32),
+  AST = c(22, 28),
+  BMI = c(27, 31),
+  sex = c("female", "male"),
+  diabetes = c(FALSE, TRUE),
+  I0 = c(60, 90) # pmol/L
+)
+
+liver_fat_markers(
+  data = df,
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes = "diabetes", I0 = "I0"),
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Derive MetS (waist/TG/HDL/SBP/glucose present), scan extremes, and cap while warning:
+
+```{r}
+df_ext <- tibble(
+  ALT = c(35, 1100),
+  AST = c(30, 900),
+  BMI = c(29, 33),
+  sex = c("female", "male"),
+  diabetes = c(FALSE, TRUE),
+  waist = c(95, 112),
+  TG = c(2.0, 6.5),
+  HDL_c = c(1.1, 0.9),
+  sbp = c(128, 150),
+  glucose = c(5.8, 7.2)
+)
+
+liver_fat_markers(
+  data = df_ext,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes = "diabetes",
+    waist = "waist", TG = "TG", HDL_c = "HDL_c", sbp = "sbp", glucose = "glucose"
+  ),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Sex flag: numeric 2 or text female/f/woman sets the +2 term; others treated as male.
+- Diabetes flag accepts logical or numeric >0; mapped to 0/1; same flag used in NAFLD_LFS.
+- MetS is used directly if provided; otherwise derived (waist, TG, HDL-C, SBP/bp_sys/bp_treated, glucose/G0). If inputs are insufficient, MetS stays `NA`.
+- Insulin preference: `insulin` (muU/mL) if mapped; else `I0/6` when `I0` (pmol/L) is provided.
+- Extreme screening ranges are broad defaults; adjust `extreme_rules` for cohort-specific plausibility.

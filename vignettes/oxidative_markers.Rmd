@@ -1,0 +1,66 @@
+---
+title: "oxidative_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{oxidative_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`oxidative_markers()` computes the glutathione redox ratio `GSH_GSSG_Ratio` from reduced (GSH) and oxidized (GSSG) glutathione. It validates inputs, supports NA policies, offers high-missingness diagnostics, and can emit verbose progress messages. No unit conversion is performed; inputs should already be in consistent assay units.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing GSH and GSSG.
+- `col_map`: named list mapping `GSH` and `GSSG` (defaults to same names). Columns must exist and be numeric/coercible; non-finite values become `NA`.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
+- `verbose = FALSE`: emit progress and completion messages.
+
+## Output Description
+
+Returns a tibble with one column `GSH_GSSG_Ratio`. Division by zero/non-finite denominators yields `NA`. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise those rows produce `NA` ratios.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(GSH = c(5, 3), GSSG = c(1, 0.5))
+
+oxidative_markers(
+  data = df,
+  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Drop rows with missing inputs and show verbose summary:
+
+```{r}
+oxidative_markers(
+  data = df,
+  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  na_action = "omit",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- If GSSG is zero or non-finite, the ratio is set to `NA`.
+- High missingness in inputs is reported at debug level; enable `verbose = TRUE` for progress and completion summaries.
+- Use consistent assay units for GSH and GSSG; this function does not adjust units.

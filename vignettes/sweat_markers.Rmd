@@ -1,0 +1,118 @@
+---
+title: "sweat_markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sweat_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`sweat_markers()` computes sweat chloride, sodium/potassium ratio, sweat lactate, and sweat rate (L/m^2/h) from sweat assays and simple anthropometrics. Inputs are validated, required columns are coerced to numeric with warnings when NAs are introduced, missingness is handled per policy, safe divisions avoid Inf/NaN with consolidated zero-denominator warnings, and optional extreme-value scanning/capping is available. No unit conversion is performed; provide inputs in expected units.
+
+## Required Inputs
+
+- `data`: data.frame/tibble containing sweat measurements and body metrics.
+- `col_map`: named list mapping required keys (defaults assume identical names): `sweat_chloride`, `sweat_Na`, `sweat_K`, `sweat_lactate`, `weight_before`, `weight_after`, `duration` (hours), `body_surface_area` (m^2). Mapped columns must exist; non-numeric columns are coerced with warnings on introduced NAs.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy for required inputs.
+- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug level).
+- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
+- `extreme_action = c("warn","cap","error","ignore")`: handling when extremes are detected; `cap` truncates values and warns.
+- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names or actual column names.
+- `verbose = FALSE`: emit progress and completion diagnostics.
+
+## Output Description
+
+Returns a tibble with:
+- `sweat_chloride`: mapped chloride (mmol/L).
+- `Na_K_ratio`: sodium/potassium ratio using safe division; zero/non-finite denominators yield `NA`.
+- `sweat_lactate`: mapped lactate (mmol/L).
+- `sweat_rate`: estimated sweat rate as (weight_before - weight_after) / duration / body_surface_area; uses safe division, assumes 1 kg  1 L.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  sweat_chloride = c(45, 60),
+  sweat_Na = c(55, 70),
+  sweat_K = c(5, 4),
+  sweat_lactate = c(4.8, 5.2),
+  weight_before = c(70.0, 80.0),
+  weight_after = c(69.5, 79.2),
+  duration = c(1.0, 1.5),
+  body_surface_area = c(1.9, 2.1)
+)
+
+sweat_markers(
+  data = df,
+  col_map = list(
+    sweat_chloride = "sweat_chloride",
+    sweat_Na = "sweat_Na",
+    sweat_K = "sweat_K",
+    sweat_lactate = "sweat_lactate",
+    weight_before = "weight_before",
+    weight_after = "weight_after",
+    duration = "duration",
+    body_surface_area = "body_surface_area"
+  ),
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Enable extreme scanning with capping and show verbose diagnostics:
+
+```{r}
+df2 <- tibble(
+  cl = c(180, 250),     # second value will be capped
+  na = c(60, 10),
+  k = c(4, 0.5),
+  lac = c(6, 60),       # extreme lactate will be capped
+  w_before = c(75, 90),
+  w_after = c(74.2, 89.0),
+  dur = c(1, 0.2),
+  bsa = c(2.0, 1.8)
+)
+
+cm2 <- list(
+  sweat_chloride = "cl",
+  sweat_Na = "na",
+  sweat_K = "k",
+  sweat_lactate = "lac",
+  weight_before = "w_before",
+  weight_after = "w_after",
+  duration = "dur",
+  body_surface_area = "bsa"
+)
+
+sweat_markers(
+  data = df2,
+  col_map = cm2,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "keep",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Units assumed: electrolytes/lactate in mmol/L; weight in kg; duration in hours; body surface area in m^2. No conversions performed.
+- Safe divisions set zero/non-finite denominators to `NA` and issue a consolidated warning listing affected metrics.
+- `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
+- Extreme scanning uses broad defaults; supply `extreme_rules` to tailor bounds or disable via `check_extreme = FALSE`.
+- High missingness warnings are emitted at debug level when proportions exceed `na_warn_prop`; set `verbose = TRUE` for progress and completion summaries.

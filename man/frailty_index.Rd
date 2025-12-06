@@ -24,7 +24,7 @@ frailty_index(
 }
 \arguments{
 \item{data}{A data.frame or tibble of health deficits (ideally binary/logical or
-scaled to \link{0,1}). Non-binary numeric columns can be rescaled by di::di when
+scaled to \eqn{[0,1]}). Non-binary numeric columns can be rescaled by di::di when
 rescale = TRUE.}
 
 \item{cols}{Character vector of deficit column names to use. If NULL (default),
@@ -33,7 +33,7 @@ all numeric columns are used except age (if supplied).}
 \item{invert}{Character vector of column names whose values should be inverted
 by di::di (e.g., where higher values indicate better health).}
 
-\item{rescale}{Logical; if TRUE, non-binary columns will be rescaled to \link{0,1}
+\item{rescale}{Logical; if TRUE, non-binary columns will be rescaled to \eqn{[0,1]}
 by di::di. Default TRUE.}
 
 \item{age}{Optional name of the column holding age (used by di for plotting and
@@ -50,11 +50,11 @@ plot.di()). Default FALSE.}
 \item{na_action}{One of:
 \itemize{
 \item Legacy: "ignore","warn","error"
-\item HM-CS:  "keep","omit" (keep ≡ ignore; omit drops rows with any NA in selected deficits)
+\item HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
 Default "ignore".
 }}
 
-\item{na_warn_prop}{Proportion in \link{0,1} above which a high-missingness warning
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
 is emitted (per column) when na_action = "warn". Default 0.2.}
 
 \item{check_extreme}{NULL/TRUE/FALSE gate for out-of-range scan:
@@ -66,7 +66,7 @@ is emitted (per column) when na_action = "warn". Default 0.2.}
 
 \item{extreme_action}{One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
 \itemize{
-\item "cap": truncate to \link{0,1}
+\item "cap": truncate to \eqn{[0,1]}
 \item "NA": set out-of-range to NA
 Default "warn".
 }}
@@ -121,9 +121,9 @@ if (requireNamespace("di", quietly = TRUE)) {
 
 }
 \references{
-Mitnitski AB, Mogilner AJ, Rockwood K (2001). Accumulation of deficits as a proxy measure of aging. Sci World J, 1:323–336. \doi{10.1100/tsw.2001.58}
-Rockwood K, Mitnitski A (2007). Frailty in relation to the accumulation of deficits. J Gerontol A Biol Sci Med Sci, 62(7):722–727. \doi{10.1093/gerona/62.7.722}
+Mitnitski AB, Mogilner AJ, Rockwood K (2001). Accumulation of deficits as a proxy measure of aging. Sci World J, 1:323-336. \doi{10.1100/tsw.2001.58}
+Rockwood K, Mitnitski A (2007). Frailty in relation to the accumulation of deficits. J Gerontol A Biol Sci Med Sci, 62(7):722-727. \doi{10.1093/gerona/62.7.722}
 Searle SD, Mitnitski A, Gahbauer EA, Gill TM, Rockwood K. A standard procedure for creating a frailty index. BMC Geriatr. 2008;8:24. \doi{10.1186/1471-2318-8-24}
-Rockwood K, Theou O. Using the clinical frailty scale in allocating scarce health care resources. Can Geriatr J. 2020;23(3):210–215. \doi{10.5770/cgj.23.463}
-Cesari M, Gambassi G, van Kan GA, Vellas B. The frailty phenotype and the frailty index: different instruments for different purposes. Age Ageing. 2014;43(1):10–12. \doi{10.1093/ageing/aft160}
+Rockwood K, Theou O. Using the clinical frailty scale in allocating scarce health care resources. Can Geriatr J. 2020;23(3):210-215. \doi{10.5770/cgj.23.463}
+Cesari M, Gambassi G, van Kan GA, Vellas B. The frailty phenotype and the frailty index: different instruments for different purposes. Age Ageing. 2014;43(1):10-12. \doi{10.1093/ageing/aft160}
 }

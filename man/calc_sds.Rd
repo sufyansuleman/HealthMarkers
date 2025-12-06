@@ -51,7 +51,7 @@ Must be positive. Default 6.}
 \item "NA": set extreme SDS to NA
 }}
 
-\item{warn_thresholds}{Named list controlling warnings (proportions in \link{0,1}):
+\item{warn_thresholds}{Named list controlling warnings (proportions in \eqn{[0,1]}):
 \itemize{
 \item na_prop: warn if proportion of rows with NA among \code{vars} exceeds this (default 0.05)
 \item extreme_prop: warn if proportion of extreme SDS (cells) exceeds this (default 0.01)
@@ -107,7 +107,7 @@ out_tbl <- calc_sds(
 )
 }
 \references{
-Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305–1319. \doi{10.1002/sim.4780111005}
+Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305-1319. \doi{10.1002/sim.4780111005}
 de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
-Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1–27.
+Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1-27.
 }

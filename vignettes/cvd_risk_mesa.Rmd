@@ -1,0 +1,69 @@
+---
+title: "cvd_risk_mesa"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cvd_risk_mesa}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`cvd_risk_mesa()` wraps `CVrisk::chd_10y_mesa()` with input validation, optional input-quality summaries, and quiet fallback to `NA` if the backend errors. It computes 10-year CHD risk from the MESA score.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with columns `race`, `sex`, `age`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `smoker`, `diabetes`.
+- CVrisk package must be installed; otherwise the function aborts. It also tries to load `mesa_coef` internally for some CVrisk versions.
+
+## Key Arguments
+
+- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `verbose = TRUE` (uses a quality scan; no coercion is applied beyond backend handling).
+- `verbose = FALSE`: emit progress and input-quality counts.
+- `...`: forwarded to `CVrisk::chd_10y_mesa()`.
+
+## Output Description
+
+Returns a tibble with columns `model = "MESA"`, `year = 10`, and `risk`. If the backend errors or returns nothing, an `NA` row is returned.
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+patients <- tibble(
+  race = c("white", "black"), sex = c(1, 0), age = c(55, 63),
+  total_chol = c(200, 180), HDL_c = c(50, 55), sbp = c(130, 150),
+  bp_treated = c(FALSE, TRUE), smoker = c(FALSE, TRUE), diabetes = c(FALSE, FALSE)
+)
+
+if (requireNamespace("CVrisk", quietly = TRUE)) {
+  cvd_risk_mesa(
+    data = patients,
+    na_warn_prop = 0.2,
+    verbose = TRUE
+  )
+}
+```
+
+## Extended Example
+
+Silence progress and pass through additional arguments to `CVrisk::chd_10y_mesa()` if needed:
+
+```{r}
+if (requireNamespace("CVrisk", quietly = TRUE)) {
+  cvd_risk_mesa(patients, verbose = FALSE)
+}
+```
+
+## Notes / Workflow Integration
+
+- Ensure `CVrisk` is installed; otherwise this wrapper aborts. When called via `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
+- Inputs are assumed to match MESA requirements (units per CVrisk); no unit conversion is performed.
+- A simple quality scan reports non-finite/high-NA counts when `verbose = TRUE`; values are otherwise passed through to the backend.

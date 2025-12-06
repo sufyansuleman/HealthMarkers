@@ -24,7 +24,7 @@
 #'     weight_before, weight_after, duration, body_surface_area
 #' @param verbose Logical; if `TRUE`, prints progress messages and a completion summary.
 #' @param na_action One of `c("keep","omit","error")` for handling missing values in required inputs. Default "keep".
-#' @param na_warn_prop Proportion [0,1] to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.
+#' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
 #' @param extreme_action One of `c("warn","cap","error","ignore")` when extremes detected. Default "warn".
 #' @param extreme_rules Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.
@@ -49,10 +49,10 @@
 #' sweat_markers(df)
 #'
 #' @references
-#' Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis. Pediatrics. 1959;23(3):545–549. (Sweat chloride test origin)
-#' Dill DB, Costill DL. Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration. J Appl Physiol. 1974;37(2):247–248. \doi{10.1152/jappl.1974.37.2.247}
-#' Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4–S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
-#' Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51–S60. \doi{10.1007/s40279-015-0395-7}
+#' Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis. Pediatrics. 1959;23(3):545-549. (Sweat chloride test origin)
+#' Dill DB, Costill DL. Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration. J Appl Physiol. 1974;37(2):247-248. \doi{10.1152/jappl.1974.37.2.247}
+#' Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4-S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
+#' Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51-S60. \doi{10.1007/s40279-015-0395-7}
 sweat_markers <- function(data,
                           col_map = list(
                             sweat_chloride    = "sweat_chloride",

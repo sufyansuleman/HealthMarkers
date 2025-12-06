@@ -1,0 +1,116 @@
+---
+title: "tracer_dxa_is"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{tracer_dxa_is}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`tracer_dxa_is()` computes tracer/DXA-based insulin sensitivity indices. Two modes are supported: adipose-only (when only adipose keys are mapped) and full (when OGTT glucose/insulin and lipid markers are provided). It validates inputs, coerces required columns to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extreme values, and uses safe division/logs to avoid non-finite outputs. Units must be supplied as expected; no conversions beyond those coded in the function.
+
+## Required Inputs
+
+- `data`: data.frame/tibble with tracer, DXA, and (optionally) OGTT measures.
+- `col_map`: named list of required keys. Adipose-only requires `I0`, `rate_glycerol`, `rate_palmitate`, `fat_mass`, `weight`, `HDL_c`, `bmi`. Full mode additionally requires `G0`, `G30`, `G120`, `I30`, `I120`, `TG`, `FFA`. All mapped columns must exist; numeric-required columns are coerced with warnings when NAs are introduced; non-finite values become `NA`.
+
+Expected units: glucose mmol/L; insulin pmol/L (internally /6 to µU/mL); TG mmol/L (×88.57 to mg/dL); HDL-c mmol/L (×38.67 to mg/dL); tracer rates µmol/min; fat mass/weight kg; BMI kg/m^2.
+
+## Key Arguments
+
+- `na_action = c("keep","omit","error")`: missing-data policy on required inputs.
+- `na_warn_prop = 0.2`: high-missingness diagnostic threshold (debug level).
+- `check_extreme = FALSE`: enable input extreme scanning.
+- `extreme_action = c("warn","cap","error","ignore")`: handling for detected extremes; `cap` truncates and warns.
+- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names; defaults are broad and depend on mode.
+- `verbose = FALSE`: emit progress and completion diagnostics.
+
+## Output Description
+
+- Adipose-only mode returns `LIRI_inv`, `Lipo_inv`, `ATIRI_inv`.
+- Full mode returns `I_AUC`, `FFA_AUC`, `tracer_palmitate_SI`, `tracer_glycerol_SI`, `LIRI_inv`, `Lipo_inv`, `ATIRI_inv`.
+
+Safe division sets zero/non-finite denominators to `NA` and tracks a consolidated warning. Logs are “safe”—non-positive inputs become `NA` before logging.
+
+## Minimal Reproducible Example
+
+Adipose-only mode (no OGTT series):
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble(
+  I0 = c(60, 80),              # pmol/L
+  rate_glycerol = c(150, 180), # µmol/min
+  rate_palmitate = c(120, 140),
+  fat_mass = c(25, 30),        # kg
+  weight = c(70, 82),          # kg
+  HDL_c = c(1.2, 1.0),         # mmol/L
+  bmi = c(24, 27)
+)
+
+tracer_dxa_is(
+  data = df,
+  col_map = list(
+    I0 = "I0",
+    rate_glycerol = "rate_glycerol",
+    rate_palmitate = "rate_palmitate",
+    fat_mass = "fat_mass",
+    weight = "weight",
+    HDL_c = "HDL_c",
+    bmi = "bmi"
+  ),
+  na_action = "keep",
+  verbose = FALSE
+)
+```
+
+## Extended Example
+
+Full mode with OGTT and lipid inputs; enable extreme capping and show diagnostics:
+
+```{r}
+df2 <- tibble(
+  G0 = c(5.0, 6.2), G30 = c(8.1, 9.5), G120 = c(6.7, 8.8),
+  I0 = c(55, 90),   I30 = c(220, 260), I120 = c(150, 200),
+  TG = c(1.1, 1.8), HDL_c = c(1.3, 0.9), FFA = c(0.5, 0.7),
+  rate_glycerol = c(140, 200), rate_palmitate = c(110, 190),
+  fat_mass = c(24, 32), weight = c(72, 85), bmi = c(25, 28)
+)
+
+cm2 <- list(
+  G0 = "G0", G30 = "G30", G120 = "G120",
+  I0 = "I0", I30 = "I30", I120 = "I120",
+  TG = "TG", HDL_c = "HDL_c", FFA = "FFA",
+  rate_glycerol = "rate_glycerol",
+  rate_palmitate = "rate_palmitate",
+  fat_mass = "fat_mass",
+  weight = "weight",
+  bmi = "bmi"
+)
+
+tracer_dxa_is(
+  data = df2,
+  col_map = cm2,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "keep",
+  verbose = TRUE
+)
+```
+
+## Notes / Workflow Integration
+
+- Mode selection is automatic: if only adipose keys are mapped (and OGTT keys not fully present), adipose-only outputs are produced; otherwise full-mode outputs are computed.
+- Zero denominators in rate/fat-mass divisions trigger a consolidated warning and yield `NA`.
+- `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
+- Extreme scanning uses broad defaults (`.tx_default_extreme_rules`); override via `extreme_rules` or disable scanning.
+- Safe logs mean non-positive inputs for logged terms become `NA`; ensure inputs are in expected units to avoid unintended `NA`.

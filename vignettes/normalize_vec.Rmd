@@ -1,0 +1,68 @@
+---
+title: "normalize_vec"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{normalize_vec}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+`normalize_vec()` provides common normalization schemes for numeric vectors, handling constants, NAs, and non-finite values robustly. Supported methods: `none`, `z`, `range`, `robust`, and rank-based `inverse` normal scores. NA positions are preserved; optional warnings highlight coercion or constant inputs. Used throughout insulin/glycemic utilities.
+
+## Required Inputs
+
+- `x`: numeric (or numeric-coercible) vector. Non-numeric inputs are coerced with warnings if NAs are introduced; non-finite values are set to `NA`.
+
+## Key Arguments
+
+- `method = c("none","z","inverse","range","robust")`: normalization scheme.
+- `na_rm = TRUE`: remove NAs when estimating statistics (mean, sd, etc.).
+- `feature_range = c(0,1)`: target interval for `range` scaling.
+- `invnorm_denominator = c("n","n+1","blom")`: denominator for inverse-normal transform; default Rankit (`n`).
+- `ties = c("average","first","last","random","max","min")`: ranking method for `inverse`.
+- `warn_constant = TRUE`: warn when input is constant and zeros/lower bound are returned.
+
+## Output Description
+
+Returns a numeric vector of the same length as `x`, normalized per method. NAs remain at their original positions. Constant inputs yield zeros (or lower bound for `range`).
+
+## Minimal Reproducible Example
+
+```{r}
+library(HealthMarkers)
+
+x <- c(1, 2, 3, NA, 5)
+
+normalize_vec(x, "none")
+normalize_vec(x, "z")
+normalize_vec(x, "range", feature_range = c(-1, 1))
+normalize_vec(x, "robust")
+normalize_vec(x, "inverse")  # Rankit
+```
+
+## Extended Example
+
+Change inverse-normal denominator and tie handling:
+
+```{r}
+normalize_vec(
+  x,
+  method = "inverse",
+  invnorm_denominator = "blom",
+  ties = "random"
+)
+```
+
+## Notes / Workflow Integration
+
+- `method = "none"` returns input untouched (no coercion/cleanup).
+- Constant vectors trigger warnings (unless `warn_constant = FALSE`) and return zeros/lower bound.
+- For `range`, values map linearly into `feature_range`; constant inputs map to the lower bound.
+- For `inverse`, probabilities are clamped away from 0/1 to avoid infinities.

@@ -40,9 +40,11 @@
 #' - If return_map = TRUE: invisibly returns the normalized mapping (list with character or NULL entries).
 #'
 #' @examples
+#' \dontrun{
+#' # This is an internal helper - see validate_inputs() from zzz-validate_inputs.R for the exported version
 #' df <- tibble::tibble(G0 = c(5.5, 6.1), I0 = c(60, 88))
-#' # OK: required keys present and columns exist
 #' validate_inputs(df, list(G0 = "G0", I0 = "I0"), fun_name = "fasting_is")
+#' }
 #'
 #' # Return normalized map
 #' validate_inputs(df, list(G0 = " G0 ", I0 = "I0"), fun_name = "fasting_is", return_map = TRUE)
@@ -53,6 +55,7 @@
 #' }
 #'
 #' @keywords internal
+#' @noRd
 validate_inputs <- function(data,
                             col_map,
                             fun_name = "",

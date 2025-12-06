@@ -1,18 +1,3 @@
-#' @title   Compute all insulin-sensitivity (and optionally resistance) indices
-#' @description
-#' `all_insulin_indices()` calls the four IS calculators
-#' (`fasting_is()`, `ogtt_is()`, `adipo_is()`, `tracer_dxa_is()`) and then
-#' optionally inverts them to IR measures.
-#'
-#' @param data A data.frame or tibble of raw measurements.
-#' @param col_map Named list with keys G0,I0,G30,I30,G120,I120,TG,HDL_c,FFA,waist,weight,bmi,age,sex,rate_palmitate,rate_glycerol,fat_mass.
-#' @param normalize One of c("none","z","inverse","range","robust").
-#' @param mode One of c("IS","IR","both"). "IR" returns only inverted IR, "IS" only the original IS, "both" returns both with IR_ prefix.
-#' @param verbose Logical.
-#' @param na_action One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).
-#' @return A tibble of IS (and/or IR_) columns.
-#' @export
-# -----------------------------
 # Internal registry & utilities
 # -----------------------------
 # Helper: normalize choices
@@ -107,6 +92,23 @@
 
   # Oxidative stress
   add("oxidative",          "oxidative_markers",     TRUE)
+
+  # Frailty / comorbidity / functional
+  add("frailty_index",      "frailty_index",        FALSE)
+  add("charlson",           "charlson_index",       TRUE)
+  add("sarc_f",             "sarc_f_score",         TRUE)
+
+  # Neuro / aging markers
+  add("nfl",                "nfl_marker",           TRUE)
+  add("inflammatory_age",   "inflammatory_age",     FALSE)  # already present
+  add("iAge",               "iAge",                 TRUE)
+
+  # Micronutrient / vitamin sub-panels
+  add("vitamin_d_status",   "vitamin_d_status",     TRUE)
+
+  # Single biochemical ratios / corrections
+  add("calcium_corrected",  "corrected_calcium",    TRUE)
+  add("kyn_trp",            "kyn_trp_ratio",        TRUE)
 
   reg
 }
@@ -216,6 +218,7 @@
 #' @references
 #' Aggregator wrapper. See underlying function help pages for full references:
 #' fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
+#' @export
 #' @examples
 #' df <- data.frame(
 #'   G0 = 5.2, I0 = 60, G30 = 7.5, I30 = 90, G120 = 6.2, I120 = 80,
@@ -288,6 +291,7 @@ all_insulin_indices <- function(
 #' @references
 #' Aggregator wrapper. See underlying function help pages for full references:
 #' all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
+#' @export
 #' @examples
 #' df <- data.frame(
 #'   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
@@ -377,8 +381,24 @@ metabolic_markers <- function(
 #' ?bone_markers, ?vitamin_markers, ?inflammatory_markers, etc.). This
 #' aggregator provides integration only and does not restate citations.
 #'
+#' @details
+#' Common group names for `which` include:
+#' \itemize{
+#'   \item \code{"lipid"}, \code{"liver"}, \code{"glycemic"}, \code{"mets"}, \code{"oxidative"}
+#'   \item \code{"bone"}, \code{"allostatic_load"}, \code{"nutrient"}, \code{"vitamin"}, \code{"vitamin_d_status"}
+#'   \item \code{"renal"}, \code{"ckd_stage"}, \code{"kidney_kfre"}
+#'   \item \code{"frailty_index"}, \code{"charlson"}, \code{"sarc_f"}
+#'   \item \code{"nfl"}, \code{"iAge"}, \code{"calcium_corrected"}, \code{"kyn_trp"}
+#' }
+#'
 #' @param data A data.frame or tibble.
 #' @param col_map Named list for column mapping forwarded to underlying functions.
+#'   If `col_map` is `NULL` or missing, `all_health_markers()` calls
+#'   [hm_infer_cols()] once at the top level to guess a column map from common
+#'   synonyms (for example `TG` vs `triglycerides`, `BMI` vs `bmi`,
+#'   `HDL_c` vs `HDL`). The inferred `col_map` is then reused for all groups
+#'   that require it, and an error is thrown if required keys (e.g. `TG`,
+#'   `HDL_c`, `LDL_c`, `TC`, `BMI`, `age`, `sex`) cannot be inferred.
 #' @param which "all" or a vector of registry keys (see Details).
 #' @param include_insulin Logical; include all_insulin_indices() first.
 #' @param normalize One of c("none","z","inverse","range","robust").
@@ -389,6 +409,7 @@ metabolic_markers <- function(
 #' @references
 #' Aggregator wrapper. See underlying function help pages for full references
 #' across categories included by `which`.
+#' @export
 #' @examples
 #' df <- data.frame(
 #'   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
@@ -407,9 +428,42 @@ all_health_markers <- function(
   verbose = TRUE,
   na_action = c("keep","omit","error")
 ) {
+  orig_col_map <- if (missing(col_map)) NULL else col_map
+
   normalize <- .hm_normalize_choice(normalize, c("none","z","inverse","range","robust"))
   mode <- .hm_normalize_choice(mode, c("both","IS","IR"))
   na_action <- match.arg(na_action)
+
+  # Auto-infer col_map if not supplied
+  if (missing(col_map) || is.null(col_map)) {
+    patterns <- .hm_default_col_patterns_exact()
+
+    required <- c("TG","HDL_c","LDL_c","TC","BMI","age","sex")
+
+    col_map <- hm_infer_cols(
+      data,
+      patterns      = patterns,
+      required_keys = intersect(names(patterns), required),
+      verbose       = isTRUE(verbose)
+    )
+  }
+
+  if (isTRUE(verbose)) {
+    user_keys <- if (is.null(orig_col_map)) character(0) else
+      names(orig_col_map)[!vapply(orig_col_map, is.null, logical(1))]
+
+    kinds <- ifelse(names(col_map) %in% user_keys, "user", "inferred")
+
+    mapping_str <- paste(
+      sprintf("%s->%s (%s)", names(col_map), unlist(col_map), kinds),
+      collapse = ", "
+    )
+
+    hm_inform(
+      level = "inform",
+      msg   = sprintf("Column mapping summary: %s", mapping_str)
+    )
+  }
 
   reg <- .hm_marker_registry(verbose = isTRUE(verbose))
   reg_names <- names(reg)
@@ -428,34 +482,82 @@ all_health_markers <- function(
   }
 
   out <- data
+  group_status <- list()
 
-  # Optional insulin panel
   if (isTRUE(include_insulin)) {
     ins <- .hm_safe_call(
       all_insulin_indices, out, col_map, TRUE, verbose, "insulin_panel",
-      extra_args = list(normalize = normalize, mode = mode, verbose = verbose, na_action = na_action)
+      extra_args = list(
+        normalize = normalize,
+        mode      = mode,
+        verbose   = verbose,
+        na_action = na_action
+      )
     )
-    out <- .hm_bind_new_cols(out, ins)
+    if (!is.null(ins)) {
+      out <- .hm_bind_new_cols(out, ins)
+      group_status[["insulin_panel"]] <- "ok"
+    } else {
+      group_status[["insulin_panel"]] <- "skipped_or_failed"
+    }
   }
 
-  # Other groups
   for (grp in which_vec) {
-    # Skip detailed insulin_* groups when panel already ran
-    if (isTRUE(include_insulin) && startsWith(grp, "insulin_")) next
+    if (isTRUE(include_insulin) && startsWith(grp, "insulin_")) {
+      group_status[[grp]] <- "skipped (covered by insulin_panel)"
+      next
+    }
 
     entry <- reg[[grp]]
-    if (is.null(entry)) next
+    if (is.null(entry)) {
+      group_status[[grp]] <- "skipped (not in registry)"
+      next
+    }
 
     data2 <- .hm_prepare_for_group(out, grp)
-    if (identical(grp, "liver") && "triglycerides" %in% names(data2) && !("triglycerides" %in% names(out))) {
+    if (identical(grp, "liver") &&
+        "triglycerides" %in% names(data2) &&
+        !("triglycerides" %in% names(out))) {
       out$triglycerides <- data2$triglycerides
     }
     addon <- .hm_safe_call(
       entry$fun, data2, col_map, entry$needs_col_map, verbose, grp,
-      # Only pass common extras; .hm_safe_call will drop ones not accepted
-      extra_args = list(verbose = verbose, na_action = na_action, normalize = normalize)
+      extra_args = list(
+        verbose   = verbose,
+        na_action = na_action,
+        normalize = normalize
+      )
     )
-    out <- .hm_bind_new_cols(out, addon)
+    if (!is.null(addon)) {
+      out <- .hm_bind_new_cols(out, addon)
+      group_status[[grp]] <- "ok"
+    } else {
+      group_status[[grp]] <- "skipped_or_failed"
+    }
+  }
+
+  if (isTRUE(verbose) && length(group_status)) {
+    ok    <- names(group_status)[group_status == "ok"]
+    other <- names(group_status)[group_status != "ok"]
+
+    parts <- character()
+    if (length(ok)) {
+      parts <- c(parts, sprintf("computed: %s", paste(ok, collapse = ", ")))
+    }
+    if (length(other)) {
+      detail <- paste(
+        sprintf("%s (%s)", other, unlist(group_status[other])),
+        collapse = "; "
+      )
+      parts <- c(parts, sprintf("skipped/failed: %s", detail))
+    }
+
+    if (length(parts)) {
+      hm_inform(
+        level = "inform",
+        msg   = sprintf("all_health_markers(): summary - %s", paste(parts, collapse = " | "))
+      )
+    }
   }
 
   out
