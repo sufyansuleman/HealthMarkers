@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `frax_score()` provides a simplified, non-validated approximation of FRAX 10-year fracture risk (major osteoporotic and hip) from FRAX-like risk factors. It normalizes sex labels, handles optional BMD T-scores, applies HM-CS NA/extreme policies, and returns NA rows when inputs are incomplete (unless omitted). Optional extreme screening can warn, cap, blank, or error on age/BMD outside plausible ranges.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with at least age and sex.
 - `col_map`: named list with `age` and `sex` (defaults: `Age`, `Sex`). Optional keys: `prior_fracture`, `parent_fracture`, `steroids`, `rheumatoid`, `secondary_op`, `smoker`, `alcohol`, `bmd` (T-score).
 - Sex codes are normalized from first letter (`m`/`f`) or `1`/`0`; unknown codes yield NA and warn.
 - Numeric-like columns are coerced; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
 - `check_extreme = FALSE`: enable range scan (age, BMD).
@@ -32,11 +32,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `country = NULL`: accepted but unused placeholder.
 - `verbose = FALSE`: emit progress via `inform`/`hm_inform`.
 
-## Output Description
+## Output
 
 Returns a tibble with `frax_major_percent`, `frax_hip_percent`, plus `frax_sex_norm`, `frax_age_used`, `frax_bmd_tscore`. With `na_action = "omit"`, rows missing required inputs are dropped; otherwise they produce `NA` outputs. This is a placeholder estimator, not the proprietary FRAX algorithm.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -64,7 +64,7 @@ frax_score(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing required inputs and cap age/BMD into bounds:
 
@@ -80,7 +80,7 @@ frax_score(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - This is a simplified placeholder and not a substitute for official FRAX calculators.
 - `na_action = "error"` enforces complete age/sex; `"omit"` drops incomplete rows; `"keep"`/`"warn"` retain rows with NA outputs.

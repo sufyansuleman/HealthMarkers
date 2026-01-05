@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `tracer_dxa_is()` computes tracer/DXA-based insulin sensitivity indices. Two modes are supported: adipose-only (when only adipose keys are mapped) and full (when OGTT glucose/insulin and lipid markers are provided). It validates inputs, coerces required columns to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extreme values, and uses safe division/logs to avoid non-finite outputs. Units must be supplied as expected; no conversions beyond those coded in the function.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with tracer, DXA, and (optionally) OGTT measures.
 - `col_map`: named list of required keys. Adipose-only requires `I0`, `rate_glycerol`, `rate_palmitate`, `fat_mass`, `weight`, `HDL_c`, `bmi`. Full mode additionally requires `G0`, `G30`, `G120`, `I30`, `I120`, `TG`, `FFA`. All mapped columns must exist; numeric-required columns are coerced with warnings when NAs are introduced; non-finite values become `NA`.
 
 Expected units: glucose mmol/L; insulin pmol/L (internally /6 to µU/mL); TG mmol/L (×88.57 to mg/dL); HDL-c mmol/L (×38.67 to mg/dL); tracer rates µmol/min; fat mass/weight kg; BMI kg/m^2.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy on required inputs.
 - `na_warn_prop = 0.2`: high-missingness diagnostic threshold (debug level).
@@ -32,14 +32,14 @@ Expected units: glucose mmol/L; insulin pmol/L (internally /6 to µU/mL); TG mmo
 - `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names; defaults are broad and depend on mode.
 - `verbose = FALSE`: emit progress and completion diagnostics.
 
-## Output Description
+## Output
 
 - Adipose-only mode returns `LIRI_inv`, `Lipo_inv`, `ATIRI_inv`.
 - Full mode returns `I_AUC`, `FFA_AUC`, `tracer_palmitate_SI`, `tracer_glycerol_SI`, `LIRI_inv`, `Lipo_inv`, `ATIRI_inv`.
 
 Safe division sets zero/non-finite denominators to `NA` and tracks a consolidated warning. Logs are “safe”—non-positive inputs become `NA` before logging.
 
-## Minimal Reproducible Example
+## Examples
 
 Adipose-only mode (no OGTT series):
 
@@ -73,7 +73,7 @@ tracer_dxa_is(
 )
 ```
 
-## Extended Example
+## Examples
 
 Full mode with OGTT and lipid inputs; enable extreme capping and show diagnostics:
 
@@ -107,10 +107,11 @@ tracer_dxa_is(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Mode selection is automatic: if only adipose keys are mapped (and OGTT keys not fully present), adipose-only outputs are produced; otherwise full-mode outputs are computed.
 - Zero denominators in rate/fat-mass divisions trigger a consolidated warning and yield `NA`.
 - `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
 - Extreme scanning uses broad defaults (`.tx_default_extreme_rules`); override via `extreme_rules` or disable scanning.
 - Safe logs mean non-positive inputs for logged terms become `NA`; ensure inputs are in expected units to avoid unintended `NA`.
+

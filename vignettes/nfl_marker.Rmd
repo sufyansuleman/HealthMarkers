@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `nfl_marker()` is a placeholder wrapper for Neurofilament Light Chain (NfL). It validates inputs, offers NA and extreme-handling policies, and returns the provided NfL values (no scoring/classification). Units are assumed to match input (e.g., plasma pg/mL); no conversion is performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing an NfL column.
 - `col_map`: named list mapping `nfl` to the NfL column (default `NfL`). Column must exist; values must be numeric (coerced with warnings if not).
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
 - `check_extreme = FALSE`: optional range scan.
@@ -29,11 +29,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override default `list(nfl = c(0, 1e6))` in input units.
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with one column `nfl_value`, reflecting the input after optional NA/exreme handling. When `na_action = "omit"`, rows with missing NfL are removed; otherwise those rows yield `NA`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -50,7 +50,7 @@ nfl_marker(
 )
 ```
 
-## Extended Example
+## Examples
 
 Scan for extremes and cap while warning, keeping all rows:
 
@@ -65,7 +65,7 @@ nfl_marker(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Negative NfL values trigger a warning and propagate as-is (or NA if capped/blanked by policies).
 - This function does not apply age adjustment, centiles, or clinical thresholds; it is a pass-through with validation.

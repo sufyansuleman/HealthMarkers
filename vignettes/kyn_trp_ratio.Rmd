@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `kyn_trp_ratio()` computes the kynurenine/tryptophan ratio (KTR), a marker of IDO activity and immune activation. It supports NA policies, optional extreme screening with warn/cap/NA/error behaviors, and verbose progress messages. Inputs must already be in Kyn (nmol/L) and Trp (µmol/L); no unit conversion is performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with kynurenine and tryptophan concentrations.
 - `col_map`: named list mapping `kynurenine` and `tryptophan` (defaults: `Kyn_nM`, `Trp_uM`). Both mappings are required and the columns must exist.
 - Numeric columns are required; non-numeric inputs are coerced with warnings if NAs are introduced.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
 - `check_extreme = FALSE`: enable plausible-range scan.
@@ -30,11 +30,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override defaults `kynurenine_nmolL = c(100, 20000)`, `tryptophan_umolL = c(10, 150)`, `ratio = c(0, 200)`.
 - `verbose = FALSE`: emit progress/informational messages.
 
-## Output Description
+## Output
 
 Returns a tibble with `kyn_trp_ratio` (numeric). When `na_action = "omit"`, rows with missing inputs are removed; otherwise ratios for those rows are `NA`. Optional extreme handling can warn, cap, blank, or error on out-of-range inputs.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -54,7 +54,7 @@ kyn_trp_ratio(
 )
 ```
 
-## Extended Example
+## Examples
 
 Scan for extremes and cap into defaults while warning:
 
@@ -69,7 +69,7 @@ kyn_trp_ratio(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Trp must be positive; nonpositive values are set to `NA` with a warning.
 - Very high ratios (>100) trigger a warning to re-check units (expect Kyn nmol/L, Trp µmol/L).

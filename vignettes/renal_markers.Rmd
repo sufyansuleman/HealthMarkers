@@ -16,7 +16,7 @@ knitr::opts_knit$set(purl = FALSE)
 
 `renal_markers()` computes renal function, injury, and excretion metrics from routine labs. It includes CKD-EPI 2009 creatinine eGFR (race factor retained), optional cystatin C and combined equations, BUN/Cr ratio, fractional excretion of urea (FE_Urea), and pass-through urine injury markers (NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP). Inputs are validated, required fields can be coerced to numeric with warnings, missingness is handled per policy, zero denominators are detected and warned, and optional extreme-value scanning/capping is available. No unit conversion is performed; supply measurements in expected units.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing renal labs.
 - `col_map`: named list mapping required keys and any optional markers:
@@ -25,7 +25,7 @@ knitr::opts_knit$set(purl = FALSE)
   - Optional injury markers: `NGAL`, `KIM1`, `NAG`, `beta2_micro`, `IL18`, `L_FABP` (pass-through if mapped).
 Required mapped columns must exist in `data`; numeric-required columns are coerced when possible, introducing `NA` with warnings when coercion fails.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: policy for missing required inputs (propagate NA, drop rows, or abort).
 - `na_warn_prop = 0.2`: proportion threshold for high-missingness diagnostics on required inputs (debug level).
@@ -34,7 +34,7 @@ Required mapped columns must exist in `data`; numeric-required columns are coerc
 - `extreme_rules = NULL`: optional named list of c(min,max) overrides for extreme scanning; defaults include ranges for creatinine, BUN, cystatin_C, urea_serum, creatinine_urine, urea_urine.
 - `verbose = FALSE`: emit progress, omission counts, and completion diagnostics.
 
-## Output Description
+## Output
 
 Returns a tibble with columns:
 - `eGFR_cr`, `eGFR_cys`, `eGFR_combined`: CKD-EPI 2009 creatinine, cystatin C, and combined equations (cystatin-dependent outputs are `NA` when `cystatin_C` is absent).
@@ -42,7 +42,7 @@ Returns a tibble with columns:
 - `FE_Urea`: fractional excretion of urea (%) when `urea_serum`, `creatinine_urine`, and `urea_urine` are all mapped; otherwise `NA`.
 - `NGAL`, `KIM1`, `NAG`, `Beta2Micro`, `IL18`, `L_FABP`: pass-through injury markers when provided; otherwise `NA`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -72,7 +72,7 @@ renal_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Include cystatin C and urea inputs, enable extreme scanning with capping, and map one injury marker:
 
@@ -113,7 +113,7 @@ renal_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Units are assumed: serum creatinine and BUN in mg/dL; cystatin C in mg/L; serum/urine urea and urine creatinine in mg/dL. No automatic conversion is performed.
 - Race factor follows CKD-EPI 2009 (race-dependent) to preserve existing behavior; race-free variants are not applied here.
@@ -123,3 +123,4 @@ renal_markers(
 - Zero denominators in ratio calculations yield `NA` and trigger a consolidated warning naming affected metrics.
 - Extreme scanning uses built-in bounds unless `extreme_rules` is supplied; `extreme_action = "cap"` truncates values into those ranges and warns.
 - High missingness on required columns is reported at debug level; use `verbose = TRUE` to view diagnostics and completion summaries.
+

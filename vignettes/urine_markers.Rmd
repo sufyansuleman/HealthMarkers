@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `urine_markers()` computes urine-only renal/tubular metrics: UACR (mg/g), KDIGO albuminuria stage (A1/A2/A3), microalbuminuria flag, UPCR (if urine protein is supplied), urine Na/K ratio (if Na and K available), and creatinine-normalized tubular markers (NGAL, KIM1, NAG, Beta2Micro, A1Micro, IL18, L_FABP when present). Inputs are validated, required columns can be coerced to numeric with warnings, missingness is handled per policy, divisions use safe guards with consolidated zero-denominator warnings, and optional extreme-value scanning/capping is available. Units are assumed; no conversions beyond the coded ratios are performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with urine assays.
 - Required columns: `urine_albumin` (mg/L) and `urine_creatinine` (mg/dL). Optional: `urine_protein` (mg/L), `urine_Na`/`urine_K` (mmol/L), and tubular markers `NGAL`, `KIM1`, `NAG`, `beta2_micro`, `a1_micro`, `IL18`, `L_FABP` (assumed mg/L for normalization per g creatinine). Numeric-required columns are coerced when possible; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
 - `na_warn_prop = 0.2`: threshold for high-missingness diagnostics on required inputs (debug level).
@@ -30,7 +30,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: optional c(min,max) overrides keyed by input/column names.
 - `verbose = FALSE`: emit progress and completion diagnostics.
 
-## Output Description
+## Output
 
 Returns a tibble with:
 - `UACR`, `albuminuria_stage` (A1/A2/A3), `microalbuminuria` (normal/micro).
@@ -40,7 +40,7 @@ Returns a tibble with:
 
 Safe division sets zero/non-finite denominators to `NA` and tracks a consolidated warning. Albuminuria staging uses UACR cutoffs: A1 < 30 mg/g, A2 30–300, A3 > 300. Microalbuminuria flag is `micro` for 30–300 mg/g, otherwise `normal`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -62,7 +62,7 @@ urine_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Enable extreme scanning with capping, include tubular markers, and display diagnostics:
 
@@ -91,9 +91,10 @@ urine_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Units are assumed (albumin/protein mg/L; creatinine mg/dL; electrolytes mmol/L); no conversions beyond the ratios are performed.
 - Zero denominators (e.g., very low creatinine) yield `NA` and trigger a consolidated warning listing affected metrics.
 - High missingness on required columns is reported at debug level when exceeding `na_warn_prop`; use `verbose = TRUE` for progress and completion summaries.
 - When optional inputs are absent, corresponding outputs remain `NA`; tubular markers are normalized per g creatinine when available.
+

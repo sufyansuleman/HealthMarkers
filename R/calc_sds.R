@@ -26,6 +26,12 @@
 #'   - "warn": keep extreme SDS, but warn
 #'   - "error": stop if any |SDS| > `sds_cap`
 #'   - "NA": set extreme SDS to NA
+#' @param na_action Optional HM-CS alias for `na_strategy`
+#'   (accepted values: keep/omit/error; used if provided).
+#' @param check_extreme Logical; if TRUE, enables SDS extreme handling (alias for
+#'   legacy behavior; defaults to TRUE in this implementation).
+#' @param extreme_action Optional HM-CS alias for `extreme_strategy`
+#'   (accepted values: cap/NA/error; used if provided).
 #' @param warn_thresholds Named list controlling warnings (proportions in \eqn{[0,1]}):
 #'   - na_prop: warn if proportion of rows with NA among `vars` exceeds this (default 0.05)
 #'   - extreme_prop: warn if proportion of extreme SDS (cells) exceeds this (default 0.01)

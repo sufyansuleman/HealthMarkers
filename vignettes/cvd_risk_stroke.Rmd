@@ -16,23 +16,23 @@ knitr::opts_knit$set(purl = FALSE)
 
 `cvd_risk_stroke()` wraps `PooledCohort::predict_10yr_stroke_risk()` (PCE stroke component), adding input checks and quiet fallback to `NA` on backend errors. It computes 10-year stroke risk.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with columns `age`, `sex` (1 male, 0 female), `race`, `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
 - PooledCohort package must be installed; otherwise the function aborts.
 - Inputs are passed to the backend; non-finite values are treated as `NA` there. With `verbose = TRUE`, a quality scan reports non-finite/high-NA counts.
 
-## Key Arguments
+## Arguments
 
 - `na_warn_prop = 0.2`: threshold for high-missingness warnings when `verbose = TRUE`.
 - `verbose = FALSE`: emit progress and input-quality counts.
 - `...`: forwarded to `PooledCohort::predict_10yr_stroke_risk()` (uses equation_version = "Goff_2013" internally).
 
-## Output Description
+## Output
 
 Returns a tibble with columns `model = "Stroke"`, `year = 10`, and `risk` (percentage). Backend errors yield an `NA` row.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -53,7 +53,7 @@ if (requireNamespace("PooledCohort", quietly = TRUE)) {
 }
 ```
 
-## Extended Example
+## Examples
 
 Silence progress and pass through additional arguments if needed:
 
@@ -63,7 +63,7 @@ if (requireNamespace("PooledCohort", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Ensure `PooledCohort` is installed; otherwise the wrapper aborts. When called via `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
 - Inputs use PCE conventions (mg/dL lipids, mmHg SBP, sex 1/0). No unit conversion is applied.

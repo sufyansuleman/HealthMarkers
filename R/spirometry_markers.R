@@ -171,8 +171,9 @@ spirometry_markers <- function(
     computed <- FALSE
     # Try an rspiro API shape (adjust if package provides different objects)
     ref_ok <- try({
-      if (is.function(get0("spiro_predict", asNamespace("rspiro")))) {
-        pred <- rspiro::spiro_predict(
+      sp_fun <- get0("spiro_predict", asNamespace("rspiro"), ifnotfound = NULL)
+      if (is.function(sp_fun)) {
+        pred <- sp_fun(
           age = age, height = height, gender = sex_gli, ethnicity = eth_gli,
           parameters = c("FEV1","FVC","FEV1FVC")
         )

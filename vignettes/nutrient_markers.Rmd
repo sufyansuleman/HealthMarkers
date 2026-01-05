@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `nutrient_markers()` computes a panel of nutrient-related ratios/products: FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct, UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, and Tyr_Phe_Ratio. It supports NA policies, optional high-missingness diagnostics, optional extreme screening with warn/cap/NA/error behaviors, and verbose summaries. No unit conversion is performed; inputs must already be in expected units.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing any subset of the recognized inputs; markers with missing inputs return `NA`.
 - `col_map`: optional named list mapping keys (defaults to identity) among: `ferritin`, `transferrin_sat`, `albumin`, `total_protein`, `EPA`, `DHA`, `Mg`, `creatinine`, `glycated_albumin`, `uric_acid`, `BUN`, `phosphate`, `calcium`, `Na`, `K`, `Cl`, `HCO3`, `Tyr`, `Phe`. Unrecognized keys are ignored.
 - Numeric columns are required for mapped inputs; non-numeric are coerced with warnings if NAs are introduced; non-finite set to `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy on used inputs (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
 - `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug-level messaging).
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override broad defaults (e.g., ferritin 0–2000 ng/mL, transferrin_sat 0–100%, albumin 10–60 g/L, total_protein 40–100 g/L, EPA/DHA 0–20%, Mg 0.2–3 mmol/L, creatinine 20–2000 umol/L, glycated_albumin 0–60 g/L, uric_acid 50–1000 umol/L, BUN 1–150 mg/dL, phosphate 0.1–5 mmol/L, calcium 0.5–4 mmol/L, Na 100–200, K 2–8, Cl 70–130, HCO3 5–45 mmol/L, Tyr 10–300 umol/L, Phe 20–300 umol/L).
 - `verbose = FALSE`: emit progress and completion summaries.
 
-## Output Description
+## Output
 
 Returns a tibble with the marker columns listed above. Division operations warn on zero denominators. When `na_action = "omit"`, rows with missing used inputs are removed; otherwise those rows yield `NA` outputs. Extreme handling can cap or blank inputs before calculation.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -61,7 +61,7 @@ nutrient_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Scan for extremes and cap while warning; drop rows with missing inputs:
 
@@ -76,7 +76,7 @@ nutrient_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Markers compute only when their inputs are present; others return `NA` silently.
 - Omega3Index is EPA + DHA (%) and assumes red-cell fatty acid percentages.

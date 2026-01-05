@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `fasting_is()` computes 10 fasting insulin sensitivity/resistance indices from glucose (mmol/L) and insulin (pmol/L): `Fasting_inv`, `Raynaud`, `HOMA_IR_inv`, `FIRI`, `QUICKI`, `Belfiore_basal`, `Ig_ratio_basal`, `Isi_basal`, `Bennett`, `HOMA_IR_rev_inv`. Inputs are converted internally to mg/dL (glucose) and muU/mL (insulin). Optional normalization can be applied to all outputs, and extreme magnitudes can be screened/capped/NAed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with fasting glucose and insulin.
 - `col_map`: named list with `G0` (glucose, mmol/L) and `I0` (insulin, pmol/L).
 - Inputs are coerced to numeric; non-finite values become `NA` before calculation.
 
-## Key Arguments
+## Arguments
 
 - `normalize = c("none","z","inverse","range","robust")`: post-computation normalization applied columnwise.
 - `na_action = c("keep","omit","error")`: missing-data policy (`keep` retains NA outputs; `omit` drops rows with missing required inputs; `error` aborts).
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_action = c("cap","NA","error")`: response to extremes when scanning (`cap` trims to ±limit; `NA` blanks; `error` aborts).
 - `verbose = FALSE`: emit progress via `hm_inform()` and messages.
 
-## Output Description
+## Output
 
 Returns a tibble with 10 columns (indices listed above). Rows are dropped only when `na_action = "omit"`; otherwise rows with missing inputs yield `NA` values. Normalization, if requested, is applied to each column after optional extreme handling.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -53,7 +53,7 @@ fasting_is(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing inputs, cap large magnitudes, and return z-normalized indices:
 
@@ -72,7 +72,7 @@ fasting_is(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Units must be mmol/L (glucose) and pmol/L (insulin); the function converts internally to mg/dL and muU/mL.
 - Use `na_action = "error"` to enforce complete inputs; `omit` to filter; `keep` to retain rows with NA outputs.

@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `allostatic_load()` sums high-risk flags across biomarkers using user-specified thresholds. With multiple biomarkers, flags are `> threshold`; with a single biomarker, the rule is `>= threshold`. Optional SDS-like extreme screening applies to columns whose names contain "sds".
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with numeric biomarker columns.
 - `thresholds`: named list of scalar numeric cut-points; names must match columns (or mapped names).
 - `col_map` (optional): map threshold names to column names; defaults to identity.
 - Inputs are coerced to numeric; non-finite become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: row-wise policy for mapped inputs (`keep` treats NA as 0 contribution).
 - `check_extreme = FALSE`: scan columns whose names contain "sds" for |value| > `sds_limit`.
@@ -32,11 +32,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `return_summary = FALSE`: if TRUE, return list with data, summary, warnings.
 - `verbose`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with `AllostaticLoad` (integer sum of flags). With `return_summary = TRUE`, returns list with `data`, `summary` (rows, biomarkers, totals), and `warnings`. Rows drop only when `na_action = "omit"`; otherwise missing inputs propagate `NA` flags but still sum available indicators.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -60,7 +60,7 @@ allostatic_load(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop incomplete rows, scan SDS-like columns for extremes, and cap them:
 
@@ -77,9 +77,10 @@ allostatic_load(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Threshold list names must align with columns (or mapped via `col_map`); duplicates or empty names abort.
 - With one biomarker, the flag rule is `>= threshold`; otherwise `> threshold`.
 - SDS-like screening touches only columns whose names include "sds"; adjust `sds_limit` if your SDS scale differs.
 - `na_action = "error"` enforces completeness; `"omit"` drops incomplete rows; `"keep"` retains them with NA contributions.
+

@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `kidney_failure_risk()` implements the 4-variable Kidney Failure Risk Equation (KFRE) for 2- and 5-year ESKD risk. It includes NA policies, optional high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and verbose summaries. Inputs are assumed in KFRE units: age (years), sex coded 1=male/2=female, eGFR (mL/min/1.73 m^2), UACR (mg/g); no unit conversion is done.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with KFRE predictors.
 - `col_map`: named list mapping `age`, `sex`, `eGFR`, `UACR` (defaults: same names). All four mappings are required and columns must exist.
 - `sex` must be numeric/integer coded 1=male, 2=female.
 - Numeric columns must be numeric; non-finite values remain NA unless handled by policies.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","error","omit","warn")`: missing-data policy (`keep` propagates NA; `omit` drops rows; `error` aborts; `warn` retains rows with warnings).
 - `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"`.
@@ -32,11 +32,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override default bounds (age 18–120, eGFR 1–200, UACR 0.1–10000 mg/g).
 - `verbose = FALSE`: emit progress and completion stats.
 
-## Output Description
+## Output
 
 Returns a tibble with `KFRE_2yr` and `KFRE_5yr` risks (0–1). With `na_action = "omit"`, rows with missing required inputs are dropped; otherwise those rows produce `NA` risks. Extreme handling can cap or blank inputs before risk calculation.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -58,7 +58,7 @@ kidney_failure_risk(
 )
 ```
 
-## Extended Example
+## Examples
 
 Cap extremes and warn, keeping all rows:
 
@@ -73,7 +73,7 @@ kidney_failure_risk(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `sex` must be coded 1/2; invalid codes abort.
 - `na_action = "error"` enforces complete predictors; `omit` filters; `keep`/`warn` retain NA risks.

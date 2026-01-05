@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `atherogenic_indices()` computes three lipid ratios: AIP = log10(TG/HDL_c), Castelli Risk Index I (TC/HDL_c), and Castelli Risk Index II (LDL_c/HDL_c). It validates required lipids, optionally screens extremes, and handles zero denominators safely.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with lipid columns.
 - `col_map`: named list with required `TG`, `HDL_c`; optional `TC`, `LDL_c` enable Castelli indices.
 - Units: any consistent lipid units (mg/dL or mmol/L); ratios are unitless. Non-numeric are coerced with warning; non-finite become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: handling of missing required lipid inputs.
 - `check_extreme = FALSE`: enable raw-range screening.
@@ -30,7 +30,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: optional bounds (defaults mg/dL: TG 0–10000, HDL_c 0–1000, LDL_c 0–10000, TC 0–10000). Provide in your units.
 - `verbose`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with:
 - `AIP = log10(TG / HDL_c)`
@@ -39,7 +39,7 @@ Returns a tibble with:
 
 Rows drop only when `na_action = "omit"`; zero HDL denominators yield `NA` and are counted in a warning.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -64,7 +64,7 @@ atherogenic_indices(
 )
 ```
 
-## Extended Example
+## Examples
 
 Cap extreme inputs, drop incomplete rows, and compute all ratios:
 
@@ -79,8 +79,9 @@ atherogenic_indices(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Use `na_action = "error"` when lipid inputs must be complete; otherwise choose `"omit"` or `"keep"` based on tolerance for missing outputs.
 - Set `extreme_rules` in your lipid units; defaults assume mg/dL but ratios are unitless.
 - Zero HDL leads to NA ratios with a warning; consider pre-cleaning or capping very low HDL values if completeness is required.
+

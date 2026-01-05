@@ -3,7 +3,7 @@
 # List ALL optional (Suggests) namespaces in one place
 .optional_deps <- c(
   "CVrisk", "PooledCohort", "QRISK3", "RiskScorescvd",
-  "whoishRisk", "minfi", "methylclock", "di"
+  "whoishRisk", "di"
 )
 
 # Require exactly one package (runtime gate)

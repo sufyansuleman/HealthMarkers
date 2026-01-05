@@ -63,6 +63,15 @@ Must be positive. Default 6.}
 
 \item{verbose}{Logical; if TRUE, emit progress via hm_inform(). Also controlled by
 options(healthmarkers.verbose = "none"|"inform"|"debug").}
+
+\item{na_action}{Optional HM-CS alias for \code{na_strategy}
+(accepted values: keep/omit/error; used if provided).}
+
+\item{check_extreme}{Logical; if TRUE, enables SDS extreme handling (alias for
+legacy behavior; defaults to TRUE in this implementation).}
+
+\item{extreme_action}{Optional HM-CS alias for \code{extreme_strategy}
+(accepted values: cap/NA/error; used if provided).}
 }
 \value{
 \itemize{

@@ -60,7 +60,11 @@ Assumptions/units:
 }
 \examples{
 df <- data.frame(ALT=20, AST=25, BMI=27, sex="female", diabetes=FALSE, I0=60)
-liver_fat_markers(df, col_map = list(ALT="ALT", AST="AST", BMI="BMI", sex="sex", diabetes="diabetes", I0="I0"))
+liver_fat_markers(
+  df,
+  col_map = list(ALT="ALT", AST="AST", BMI="BMI",
+                 sex="sex", diabetes="diabetes", I0="I0")
+)
 }
 \references{
 \itemize{

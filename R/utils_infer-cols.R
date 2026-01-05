@@ -33,7 +33,7 @@
 #'   - "first": take the first match in data's column order.
 #'   - "stable": choose shortest name, then alphabetical.
 #' @param strict Logical; if TRUE (default), missing matches error. If FALSE, missing
-#'   matches leave map[[key]] as NULL and issue a warning.
+#'   matches leave \code{map[[key]]} as NULL and issue a warning.
 #' @param ignore_case Logical; pass to grep(ignore.case = ...). Default TRUE.
 #' @param fuzzy Logical; if TRUE and no regex matches are found, attempt a fuzzy match
 #'   with agrep using `max_distance`. Default FALSE.
@@ -295,8 +295,24 @@ infer_cols <- function(data,
   invisible(map)
 }
 
-# HM-VS v2: inference helper that reports via hm_inform and errors via rlang::abort
-# patterns: named list where each element is a character vector of candidate column names for that key
+#' Simplified column inference for HealthMarkers aggregators
+#'
+#' Exact-name matching helper used by `all_health_markers()` and related wrappers.
+#' It picks the first matching candidate for each key, logs decisions via
+#' `hm_inform()` when `verbose = TRUE`, and errors if required keys cannot be
+#' resolved.
+#'
+#' @param data Data frame whose column names are scanned.
+#' @param patterns Named list of character vectors, each giving candidate column
+#'   names for a key (first match wins).
+#' @param required_keys Character vector of keys that must resolve; otherwise an
+#'   error is raised.
+#' @param verbose Logical; if TRUE, emits hm_inform() messages for matches and
+#'   unresolved keys.
+#' @return Named list mapping keys to column names; unresolved non-required keys
+#'   become `NA_character_`.
+#' @rdname infer_cols
+#' @keywords internal
 hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbose = FALSE) {
   if (!is.data.frame(data)) {
     rlang::abort("hm_infer_cols(): `data` must be a data.frame or tibble.",
@@ -649,9 +665,8 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   allostatic_load = c("allostatic_load","AllostaticLoad"),
 
   ## =========================================================
-  ## iAge / methylation (if present)
+  ## iAge (if present)
   ## =========================================================
-  iAge = c("iAge"),
-  methylclock = c("methylclock")
+  iAge = c("iAge")
 )
 }

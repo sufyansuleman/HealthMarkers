@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `ogtt_is()` computes OGTT-based insulin sensitivity indices using glucose/insulin at 0, 30, and 120 minutes plus weight, BMI, age, and sex. Outputs include: Isi_120, Cederholm_index, Gutt_index, Avignon_Si0/Si120/Sim, Modified_stumvoll, Stumvoll_Demographics, Matsuda_AUC, Matsuda_ISI, BigttSi, Ifc_inv, HIRI_inv, and Belfiore_isi_gly. It supports NA policies, optional high-missingness diagnostics, optional extreme screening on outputs with warn/cap/NA/error behaviors, and optional normalization via `normalize_vec()`. Units assumed: glucose mmol/L, insulin pmol/L, weight kg, BMI kg/m^2, age years, sex 1=male/2=female; glucose/insulin are internally converted to mg/dL and muU/mL where formulas require.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with required columns.
 - `col_map`: named list mapping `G0`, `G30`, `G120` (glucose mmol/L), `I0`, `I30`, `I120` (insulin pmol/L), `weight` (kg), `bmi` (kg/m^2), `age` (years), `sex` (1=male/2=female). All mappings must exist and columns be numeric/coercible.
 
-## Key Arguments
+## Arguments
 
 - `normalize = c("none","z","inverse","range","robust")`: post-hoc normalization of outputs.
 - `na_action = c("keep","omit","error")`: missing-data policy for required inputs (`omit` drops rows; `error` aborts).
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_action = c("warn","cap","error","ignore","NA")`: handling for flagged extremes (`cap` truncates; `NA` blanks values).
 - `verbose = FALSE`: emit progress and completion messages.
 
-## Output Description
+## Output
 
 Returns a tibble with the indices listed above. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`. Extreme handling applies after computation to cap/warn/blank/error based on magnitude.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -64,7 +64,7 @@ ogtt_is(
 )
 ```
 
-## Extended Example
+## Examples
 
 Apply output capping for large magnitudes, with verbose diagnostics:
 
@@ -87,7 +87,7 @@ ogtt_is(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Glucose is multiplied by 18 (mg/dL) and insulin divided by 6 (muU/mL) where formulas require; original units must be mmol/L/pmol/L.
 - Logs are safe: nonpositive arguments yield `NA`.

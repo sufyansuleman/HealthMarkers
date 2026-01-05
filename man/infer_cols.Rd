@@ -2,6 +2,7 @@
 % Please edit documentation in R/utils_infer-cols.R
 \name{infer_cols}
 \alias{infer_cols}
+\alias{hm_infer_cols}
 \title{Infer column names from user data based on flexible patterns, with logging}
 \usage{
 infer_cols(
@@ -18,20 +19,22 @@ infer_cols(
   max_distance = 0.1,
   return = c("map", "list")
 )
+
+hm_infer_cols(data, patterns, required_keys = names(patterns), verbose = FALSE)
 }
 \arguments{
-\item{data}{A data.frame or tibble whose column names are scanned.}
+\item{data}{Data frame whose column names are scanned.}
 
 \item{map}{Named list where names are target keys (e.g., "G0","I0","TG") and
 values are NULL (to infer) or a user-supplied column name (to keep as-is).}
 
-\item{verbose}{Logical; if TRUE, messages are printed for each mapping decision.
-Default TRUE.}
+\item{verbose}{Logical; if TRUE, emits hm_inform() messages for matches and
+unresolved keys.}
 
 \item{log_file}{Optional file path; if supplied, a human-readable mapping log is written there.}
 
-\item{patterns}{Optional named character vector of regex patterns keyed by the
-same names as \code{map}. If NULL, a built-in dictionary is used.}
+\item{patterns}{Named list of character vectors, each giving candidate column
+names for a key (first match wins).}
 
 \item{prefer}{Optional named list of character vectors with preferred column
 names for each key, used to resolve multiple matches deterministically.
@@ -46,7 +49,7 @@ there are multiple candidates. Default "error" (backward compatible).
 }}
 
 \item{strict}{Logical; if TRUE (default), missing matches error. If FALSE, missing
-matches leave map[\link{key}] as NULL and issue a warning.}
+matches leave \code{map[[key]]} as NULL and issue a warning.}
 
 \item{ignore_case}{Logical; pass to grep(ignore.case = ...). Default TRUE.}
 
@@ -57,16 +60,27 @@ with agrep using \code{max_distance}. Default FALSE.}
 
 \item{return}{One of c("map","list"). "map" (default) invisibly returns the
 filled mapping list. "list" returns a list(map = ..., log = tibble) for auditing.}
+
+\item{required_keys}{Character vector of keys that must resolve; otherwise an
+error is raised.}
 }
 \value{
 By default, invisibly returns the filled \code{map}. If return = "list",
 returns a list(map = \if{html}{\out{<named list>}}, log = \if{html}{\out{<tibble>}}).
+
+Named list mapping keys to column names; unresolved non-required keys
+become \code{NA_character_}.
 }
 \description{
 Given a data.frame and a named mapping spec (e.g., list(G0 = NULL, I0 = NULL)),
 infer the source column names for each key using a set of regex patterns.
 You can supply your own patterns and "preferred" names to deterministically
 resolve ambiguous matches. A structured log is kept and can be written to disk.
+
+Exact-name matching helper used by \code{all_health_markers()} and related wrappers.
+It picks the first matching candidate for each key, logs decisions via
+\code{hm_inform()} when \code{verbose = TRUE}, and errors if required keys cannot be
+resolved.
 }
 \details{
 This helper produces a col_map you can pass to HealthMarkers functions
@@ -98,3 +112,4 @@ res2 <- infer_cols(df, spec, strategy = "prefer", verbose = TRUE)
 # Get structured log
 res3 <- infer_cols(df, spec, return = "list")
 }
+\keyword{internal}

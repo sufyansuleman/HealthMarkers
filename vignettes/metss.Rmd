@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `metss()` computes the Metabolic Syndrome Severity Score (MetSSS) using sex- and race-specific coefficients (factor-loading style). It validates required inputs, supports NA policies, optional high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and optional diagnostics for plausibility. Units are assumed: waist cm, blood pressure mmHg, TG/HDL_c/glucose mmol/L, sex coded 1=male/2=female, race in {NHW, NHB, HW, HA} or accepted synonyms; no unit conversion is performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with columns `waist`, `bp_sys`, `bp_dia`, `TG`, `HDL_c`, `glucose`, `sex`, `race`.
 - `params`: named list of parameter sets keyed by `RACE_SEX` (e.g., `NHW_M`). Each entry contains `intercept` and component vectors (`waist`, `TG`, `HDL`, `glucose`, `MAP`) with `mean`, `sd`, and `coef`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts). `na_warn_prop` sets high-missingness threshold when `na_action = "warn"` (default 0.2).
 - `check_extreme = FALSE`: enable plausible-range scan (waist 40–200 cm; bp_sys 60–300; bp_dia 30–200; TG 0–20; HDL_c 0–5; glucose 0–40 unless overridden).
@@ -30,11 +30,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `diagnostics = TRUE`: emit additional value/unit sanity warnings (nonnegative, ranges, sex/race validity).
 - `verbose = FALSE`: emit progress and completion summaries.
 
-## Output Description
+## Output
 
 Returns a tibble with `MetSSS` (numeric). Parameters are chosen using the first row's race/sex key; if multiple keys are present, a warning notes the first key is used for all rows. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise `NA` propagates. Extreme handling can cap or blank inputs before scoring.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -69,7 +69,7 @@ metss(
 )
 ```
 
-## Extended Example
+## Examples
 
 Enable extreme screening with capping, plus diagnostics and verbose output:
 
@@ -94,7 +94,7 @@ metss(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Sex coding must be 1/2; race keys map accepted synonyms (NHW/WHITE, NHB/BLACK, HW/HISPANIC/H/L, HA/ASIAN). First-row key is used for all rows.
 - Mean/sd/coef in `params` define standardization and loadings; verify they match your cohort/score version.

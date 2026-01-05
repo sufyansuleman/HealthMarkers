@@ -27,8 +27,10 @@
 #'   by di::di. Default TRUE.
 #' @param age Optional name of the column holding age (used by di for plotting and
 #'   optional age-binned outputs; excluded from auto-selected cols).
-#' @param rescale.custom, rescale.avoid Advanced arguments passed through to di::di.
+#' @param rescale.custom Advanced argument passed through to di::di.
 #'   See di::di documentation for syntax.
+#' @param rescale.avoid Advanced argument passed through to di::di;
+#'   see di::di documentation for syntax.
 #' @param bins Integer; number of age bins for FI-by-age plots. Default 7.
 #' @param visible Logical; if TRUE and age is provided, di will draw a plot (via
 #'   plot.di()). Default FALSE.

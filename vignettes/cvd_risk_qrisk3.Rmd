@@ -16,24 +16,24 @@ knitr::opts_knit$set(purl = FALSE)
 
 `cvd_risk_qrisk3()` wraps `QRISK3::QRISK3_2017()` with optional ID auto-generation, basic type checks, and quiet fallback to `NA` if the backend errors. It computes 10-year QRISK3 scores.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing all variables required by `QRISK3::QRISK3_2017()` (age, sex, smoking status, blood pressure, cholesterol ratios, comorbidities, etc.).
 - `patid` (optional): vector of patient IDs; defaults to `1:nrow(data)` if omitted.
 - QRISK3 package must be installed; otherwise the function aborts.
 
-## Key Arguments
+## Arguments
 
 - `...`: forwarded directly to `QRISK3::QRISK3_2017()`.
 - `patid = NULL`: supply or allow auto-generated IDs.
 - `na_warn_prop = 0.2`: reserved for potential warnings when verbose is enabled (inputs are otherwise passed through).
 - `verbose = FALSE`: emit minimal progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with columns `model = "QRISK3"`, `year = 10`, and `risk`. If the backend errors, an `NA` row is returned.
 
-## Minimal Reproducible Example
+## Examples
 
 QRISK3 requires many inputs; the example is guarded to run only when the package is available:
 
@@ -46,7 +46,7 @@ if (requireNamespace("QRISK3", quietly = TRUE)) {
 }
 ```
 
-## Extended Example
+## Examples
 
 Demonstrate ID auto-generation and error-safe behavior:
 
@@ -58,7 +58,7 @@ if (requireNamespace("QRISK3", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Ensure `QRISK3` is installed; otherwise this wrapper aborts. When invoked through `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
 - Inputs are passed through without full pre-validation to avoid duplicating QRISK3’s specification.

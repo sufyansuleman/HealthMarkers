@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `alm_bmi_index()` computes ALM/BMI and flags low muscle mass using FNIH cut-points (men < 0.789; women < 0.512). Inputs are validated, optional extreme screening is available, and missing-data handling mirrors other helpers.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with ALM (kg), BMI (kg/m^2), and sex.
 - `col_map`: named list for `alm`, `bmi`, `sex` (defaults: ALM_kg, BMI, Sex).
 - Inputs are coerced to numeric; sex normalized via first letter (m/f/1/0). Non-finite become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
 - `check_extreme = FALSE`: enable range screening (defaults: ALM 5–40 kg, BMI 10–60 kg/m^2).
@@ -30,14 +30,14 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules`: optional custom bounds.
 - `verbose`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with:
 - `alm_bmi_ratio`
 - `low_muscle_mass` (TRUE if ratio below sex-specific cut-point; NA if sex or ratio missing)
 Rows drop only when `na_action = "omit"`; otherwise missing inputs propagate `NA`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -59,7 +59,7 @@ alm_bmi_index(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop incomplete rows, screen for extremes, cap to defaults:
 
@@ -74,9 +74,10 @@ alm_bmi_index(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Sex values are normalized by first letter (m/f/1/0); other values warn and yield `NA` flags.
 - Domain warnings are issued for BMI outside 10–60 and ALM outside 5–40 when not using `check_extreme`.
 - Use `na_action = "error"` to enforce completeness; `"omit"` drops incomplete rows.
 - `extreme_rules` can tighten/loosen bounds for ALM and BMI if population differs.
+

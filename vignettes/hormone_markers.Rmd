@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `hormone_markers()` computes nine hormone ratios with QA options: FAI, LH_FSH, E2_P, T3_T4, ARR, Ins_Glu, GH_IGF1, PRL_T, and CAR_slope. Inputs are coerced to numeric, non-finite values become `NA`, and optional extreme screening can warn, cap, blank, or error on out-of-range labs.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with hormone labs.
 - `col_map`: named list mapping required keys to column names (all required): `total_testosterone`, `SHBG`, `LH`, `FSH`, `estradiol`, `progesterone`, `free_T3`, `free_T4`, `aldosterone`, `renin`, `insulin`, `glucagon`, `GH`, `IGF1`, `prolactin`, `cortisol_0`, `cortisol_30`.
 - Inputs are coerced to numeric; non-finite values are set to `NA` before calculation.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("ignore","warn","error","keep","omit")`: missing-data policy (`keep` == `ignore`; `omit` drops rows with any missing required inputs).
 - `na_warn_prop = 0.2`: high-missingness warning threshold when `na_action = "warn"`.
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override default broad bounds per hormone.
 - `verbose = FALSE`: emit progress and NA counts.
 
-## Output Description
+## Output
 
 Returns a tibble with columns `FAI`, `LH_FSH`, `E2_P`, `T3_T4`, `ARR`, `Ins_Glu`, `GH_IGF1`, `PRL_T`, `CAR_slope`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` outputs.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -62,7 +62,7 @@ hormone_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing inputs, scan for extremes, and cap into allowed ranges:
 
@@ -82,7 +82,7 @@ hormone_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Required keys must all be mapped; missing mappings or columns abort.
 - `na_action = "error"` enforces complete inputs; `"omit"` filters; `"ignore"`/`"keep"` retain rows with NA outputs.

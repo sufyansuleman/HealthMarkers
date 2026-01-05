@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `iAge()` computes a simplified inflammatory age proxy as a weighted sum of CRP, IL6, and TNFa. It supports NA policies, optional high-missingness warnings, and optional extreme-value scanning with warn/cap/NA/error behaviors. Inputs are assumed in mg/L (CRP) and pg/mL (IL6, TNFa); no unit conversion is performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with inflammatory markers.
 - `col_map`: named list mapping `CRP`, `IL6`, `TNFa` to column names.
 - Inputs are coerced to numeric; non-finite values become `NA` (or error on coercion).
 
-## Key Arguments
+## Arguments
 
 - `weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34)`: numeric weights summing to 1 (reordered by names if provided).
 - `na_action = c("omit","keep","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `omit`; `keep` returns NA when any required input is NA; `error` aborts).
@@ -32,11 +32,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override default bounds (CRP 0–300 mg/L; IL6 0–1000 pg/mL; TNFa 0–2000 pg/mL).
 - `verbose = FALSE`: emit progress and summary.
 
-## Output Description
+## Output
 
 Returns a tibble with one column, `iAge`. Rows are dropped only when `na_action = "omit"`? Actually, omit keeps rows but ignores NAs in sum: with `na_action = "keep"`, rows with missing inputs yield `NA`; default `omit`/`ignore`/`warn` perform weighted sum ignoring NAs (missing markers contribute 0 after NA-to-0 for the sum).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -57,7 +57,7 @@ iAge(
 )
 ```
 
-## Extended Example
+## Examples
 
 Keep NA when any marker is missing, scan for extremes, and cap into bounds:
 
@@ -73,7 +73,7 @@ iAge(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Weights must be numeric, length 3, and sum to 1; named weights are reordered to CRP/IL6/TNFa if named correctly.
 - `na_action = "keep"` preserves NA when any marker is missing; `omit`/`ignore`/`warn` treat missing markers as 0 in the weighted sum (original behavior); `error` enforces completeness.

@@ -20,13 +20,13 @@ knitr::opts_knit$set(purl = FALSE)
 - Both: union of classic and eos metrics.
 Inputs are coerced to numeric, non-finite become `NA`, zero denominators warn, and optional extreme handling can warn/cap/blank/error on implausible counts.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with blood counts and CRP/albumin (for eos panel).
 - `col_map`: named list mapping keys: `neutrophils`, `lymphocytes`, `monocytes`, `platelets`, `WBC`, `CRP`, `albumin`, `eosinophils`, `ESR`. Classic requires at least neutrophils + lymphocytes (monocytes/platelets recommended); eos requires eosinophils plus CRP and albumin.
 - Inputs are coerced to numeric; non-finite values set to `NA`.
 
-## Key Arguments
+## Arguments
 
 - `panel = c("auto","classic","eos","both")`: `auto` uses eos panel if `eosinophils` key present.
 - `na_action = c("error","omit","keep")`: missing-data policy over used inputs (`keep` retains NA outputs; `omit` drops rows; `error` aborts).
@@ -34,11 +34,11 @@ Inputs are coerced to numeric, non-finite become `NA`, zero denominators warn, a
 - `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates to ranges; `NA` blanks values).
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with the panel-specific indices. When `na_action = "omit"`, rows with missing required inputs are dropped; otherwise those rows yield `NA` results. Zero denominators emit a warning.
 
-## Minimal Reproducible Example (Classic Panel)
+## Examples (Classic Panel)
 
 ```{r}
 library(HealthMarkers)
@@ -64,7 +64,7 @@ inflammatory_markers(
 )
 ```
 
-## Extended Example (Eosinophil Panel with Extreme Capping)
+## Examples (Eosinophil Panel with Extreme Capping)
 
 ```{r}
 df_eos <- tibble(
@@ -90,7 +90,7 @@ inflammatory_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Classic panel requires at least neutrophils and lymphocytes; eos panel also needs eosinophils plus CRP and albumin (for CLR/CAR/mGPS).
 - `na_action = "error"` enforces complete inputs; `omit` drops incomplete rows; `keep` retains NA outputs.

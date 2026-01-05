@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_marker_function.R
 \name{make_marker_function}
 \alias{make_marker_function}
-\title{Generate a marker function skeleton}
+\title{Generate a marker function (HM-VS v2 template)}
 \usage{
 make_marker_function(
   name,
@@ -13,15 +13,26 @@ make_marker_function(
 )
 }
 \arguments{
-\item{name}{Function name (string)}
+\item{name}{Function name to create (string).}
 
-\item{required_keys}{Character vector of required col_map keys}
+\item{required_keys}{Character vector of required col_map keys.}
 
-\item{formula_text}{Character description of the calculation}
+\item{compute_body}{List containing \code{expr} (quoted expression computing \code{out}),
+\code{empty_out} (returned when zero rows), and \code{default_rules} (optional extreme
+rules list) used when \code{include_extremes = TRUE}.}
+
+\item{defaults}{Named list of default arguments to merge into the generated
+function formals (e.g., col_map, normalize).}
+
+\item{include_extremes}{Logical; if TRUE, the generated function wires in
+extreme-value scanning/capping using \code{compute_body$default_rules}.}
 }
 \value{
-Character vector with function code you can write into a file
+Invisibly returns the symbol name after assigning the function into
+the parent frame.
 }
 \description{
-Utility to scaffold a new marker function with validation and documentation (HM-CS v2).
+Creates and assigns a marker function with consistent validation, NA/extreme
+handling, and hm_inform logging. Intended for internal scaffolding of new
+HealthMarkers functions.
 }

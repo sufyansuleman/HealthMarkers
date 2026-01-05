@@ -44,7 +44,7 @@
 #' Formulas (unchanged from prior implementation):
 #' - FLI      = logistic(0.953*ln(TG) + 0.139*BMI + 0.718*ln(GGT) + 0.053*waist - 15.745) * 100
 #' - NFS      = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes + 0.99*(AST/ALT) - 0.013*platelets - 0.66*albumin
-#' - APRI     = (AST / 40) / platelets * 100   [ULN(AST)=40 U/L]
+#' - APRI     = (AST / 40) / platelets * 100; assumes AST upper limit of normal = 40 U/L
 #' - FIB-4    = (age * AST) / (platelets * sqrt(ALT))
 #' - BARD     = 1 if BMI>=28, +1 if AST/ALT>=0.8, +1 if diabetes present; sum in 0,1,2,3
 #' - ALBI     = 0.66*log10(bilirubin (mumol/L)) - 0.0852*albumin (g/L)

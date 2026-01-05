@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `saliva_markers()` computes saliva-based stress and glycemic markers: log-transformed waking cortisol, cortisol awakening response AUC (CAR_AUC), log-transformed salivary alpha-amylase, and salivary glucose. It validates inputs, coerces mapped columns to numeric with warnings when NAs are introduced, handles missingness per policy, safely logs non-positive values to `NA`, optionally scans/caps extreme inputs, and supports custom sampling times for the trapezoidal AUC.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with salivary measures.
 - `col_map`: named list mapping inputs (defaults assume identical names): `cort1`, `cort2`, `cort3` (cortisol at ~0/30/60 min, nmol/L), `amylase` (U/mL), `glucose` (mg/dL). Mapped columns must exist; non-numeric columns are coerced, with introduced NAs warned.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy for required inputs (propagate, drop rows, or abort).
 - `na_warn_prop = 0.2`: proportion threshold to emit high-missingness diagnostics (debug level).
@@ -31,7 +31,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `times = c(0, 30, 60)`: sampling times (minutes) used for CAR_AUC trapezoidal integration; must be numeric length 3 in non-decreasing order.
 - `verbose = FALSE`: emit progress and completion diagnostics.
 
-## Output Description
+## Output
 
 Returns a tibble with columns:
 - `log_cortisol_wake`: safe log of waking cortisol (`cort1`); non-positive values become `NA`.
@@ -39,7 +39,7 @@ Returns a tibble with columns:
 - `log_amylase`: safe log of `amylase`; non-positive become `NA`.
 - `saliva_glucose`: pass-through mapped glucose.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -67,7 +67,7 @@ saliva_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Use custom times, enable extreme capping, and show verbose diagnostics:
 
@@ -99,7 +99,7 @@ saliva_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Safe logs: non-positive cortisol/amylase values become `NA` before logging; resulting logs also coerce non-finite to `NA`.
 - CAR AUC uses trapezoidal integration over three timepoints; `times` must be non-decreasing length 3 or an error is thrown.
@@ -107,3 +107,4 @@ saliva_markers(
 - Extreme scanning uses broad defaults keyed to mapped columns; supply `extreme_rules` to tighten ranges or disable via `check_extreme = FALSE`.
 - No unit conversion is performed; provide inputs in consistent assay units.
 - When `na_action = "error"`, missing required inputs abort; `omit` drops those rows; `keep` propagates `NA` to outputs.
+

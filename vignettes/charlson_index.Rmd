@@ -22,13 +22,13 @@ Weights:
 - 3 points: moderate/severe liver disease
 - 6 points: metastatic solid tumor, HIV/AIDS
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with binary indicators (0/1) for all conditions.
 - `col_map`: named list mapping keys to columns: `mi`, `chf`, `pvd`, `stroke`, `dementia`, `copd`, `rheum`, `ulcer`, `mild_liver`, `diabetes`, `diab_comp`, `hemiplegia`, `renal`, `cancer`, `leukemia`, `lymphoma`, `sev_liver`, `metastatic_cancer`, `hiv`.
 - Inputs are coerced to numeric; non-finite values become NA. Non-binary values trigger a warning.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
 - `check_extreme = FALSE`: enable bounds screening (defaults 0–1 for all indicators).
@@ -36,11 +36,11 @@ Weights:
 - `extreme_rules = NULL`: optional custom bounds per key.
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with `charlson_index` (integer total). With `na_action = "omit"`, rows missing any required indicator are dropped; otherwise those rows yield `NA` scores.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -64,7 +64,7 @@ charlson_index(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing indicators, screen for non-binary values, and cap into 0/1 bounds:
 
@@ -79,9 +79,10 @@ charlson_index(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - All 19 condition mappings must be provided; missing any key aborts.
 - Non-binary inputs warn; set `check_extreme = TRUE` with `extreme_action` to cap/blank/error on out-of-bounds values (defaults assume 0–1).
 - `na_action = "error"` enforces complete indicators; `"omit"` drops incomplete rows; `"keep"`/`"warn"`/`"ignore"` retain rows with `NA` scores.
 - Age points are not included; add age separately if needed.
+

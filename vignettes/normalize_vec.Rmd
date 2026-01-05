@@ -16,11 +16,11 @@ knitr::opts_knit$set(purl = FALSE)
 
 `normalize_vec()` provides common normalization schemes for numeric vectors, handling constants, NAs, and non-finite values robustly. Supported methods: `none`, `z`, `range`, `robust`, and rank-based `inverse` normal scores. NA positions are preserved; optional warnings highlight coercion or constant inputs. Used throughout insulin/glycemic utilities.
 
-## Required Inputs
+## Inputs
 
 - `x`: numeric (or numeric-coercible) vector. Non-numeric inputs are coerced with warnings if NAs are introduced; non-finite values are set to `NA`.
 
-## Key Arguments
+## Arguments
 
 - `method = c("none","z","inverse","range","robust")`: normalization scheme.
 - `na_rm = TRUE`: remove NAs when estimating statistics (mean, sd, etc.).
@@ -29,11 +29,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `ties = c("average","first","last","random","max","min")`: ranking method for `inverse`.
 - `warn_constant = TRUE`: warn when input is constant and zeros/lower bound are returned.
 
-## Output Description
+## Output
 
 Returns a numeric vector of the same length as `x`, normalized per method. NAs remain at their original positions. Constant inputs yield zeros (or lower bound for `range`).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -47,7 +47,7 @@ normalize_vec(x, "robust")
 normalize_vec(x, "inverse")  # Rankit
 ```
 
-## Extended Example
+## Examples
 
 Change inverse-normal denominator and tie handling:
 
@@ -60,7 +60,7 @@ normalize_vec(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `method = "none"` returns input untouched (no coercion/cleanup).
 - Constant vectors trigger warnings (unless `warn_constant = FALSE`) and return zeros/lower bound.

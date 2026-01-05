@@ -13,10 +13,8 @@ Description: Provides functions to compute a broad suite of clinical and
     glucose tolerance test, adipose, tracer or DXA based), lipid markers,
     liver steatosis and fibrosis scores, anthropometric z-scores, obesity
     indices, cardiovascular risk scores and blood pressure indices,
-    pulmonary function measures (e.g., lung age and percent predicted FEV1),
-    biomarker panels from alternate biofluids (urine, saliva, sweat), and
-    bone markers derived from DXA scans. All calculations can be accessed
-    through a unified 'health_markers()' dispatcher function.
+    pulmonary function measures, biomarker panels from alternate biofluids (urine, saliva, sweat).
+    All calculations can be accessed through a unified 'health_markers()' dispatcher function.
 License: MIT + file LICENSE
 URL: https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues
@@ -29,7 +27,6 @@ Imports:
     missForest (>= 1.5.0),
     purrr (>= 0.3.0),
     rlang (>= 1.0.0),
-    rspiro (>= 0.3.0),
     stats,
     tibble (>= 3.0.0),
     utils,
@@ -40,8 +37,7 @@ Suggests:
     testthat (>= 3.0.0),
     CVrisk,
     di,
-    methylclock,
-    minfi,
+    rspiro,
     PooledCohort,
     QRISK3,
     RiskScorescvd,

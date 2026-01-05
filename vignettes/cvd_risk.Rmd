@@ -16,7 +16,7 @@ knitr::opts_knit$set(purl = FALSE)
 
 `cvd_risk()` dispatches to multiple cardiovascular risk calculators and lipid markers. Supported models: ASCVD (Pooled Cohort Equations), QRISK3, MESA CHD, Stroke (PCE stroke), RiskScorescvd, and lipid markers AIP and LDL particle number (ApoB proxy). Optional dependencies live in Suggests; when a required package is missing, that model returns an `NA` row instead of failing. Use `model = "ALL"` to run every model in one call.
 
-## Required Inputs
+## Inputs
 
 Inputs depend on the selected `model`:
 - `AIP`: numeric triglycerides `TG` and HDL cholesterol `HDL_c` (mg/dL).
@@ -29,18 +29,18 @@ Inputs depend on the selected `model`:
 
 All models require `data` as a data.frame/tibble. Numeric inputs are coerced; non-finite values become `NA`. Missing columns abort that specific model (or are caught and returned as `NA` rows when running `model = "ALL"`).
 
-## Key Arguments
+## Arguments
 
 - `model = c("ALL","ASCVD","QRISK3","MESA","Stroke","RiskScorescvd","AIP","LDL_PN")`: choose calculator/marker.
 - `year`: risk horizon for ASCVD and Stroke (10 or 30 for ASCVD; 10 for Stroke); ignored by lipid markers and QRISK3/MESA.
 - `...`: forwarded to the underlying model wrappers (e.g., `col_map`, `na_action` for markers, `patid` for QRISK3).
 - `verbose = FALSE`: emit progress via `hm_inform()`.
 
-## Output Description
+## Output
 
 Returns a tibble. For risk calculators, columns include `model`, `year`, and `risk` (percentage). For lipid markers, columns include `model` and `value`. When `model = "ALL"`, results are row-bound across models; any model that fails validation or lacks its optional package contributes an `NA` row placeholder.
 
-## Minimal Reproducible Example
+## Examples
 
 Compute AIP (no optional packages required):
 
@@ -59,7 +59,7 @@ cvd_risk(
 )
 ```
 
-## Extended Example
+## Examples
 
 Run multiple models when optional packages are available; otherwise they yield `NA` rows. Provide columns needed by ASCVD/Stroke/MESA and a placeholder for QRISK3 extras:
 
@@ -89,7 +89,7 @@ if (requireNamespace("QRISK3", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Optional dependencies: PooledCohort (ASCVD, Stroke), QRISK3, CVrisk (MESA), RiskScorescvd. Missing packages lead to model-specific `NA` rows when caught; install to compute risks.
 - Lipid markers support `na_action = "keep"|"omit"|"error"` via `...`; non-numeric inputs are coerced with warnings and non-finite values set to `NA`.

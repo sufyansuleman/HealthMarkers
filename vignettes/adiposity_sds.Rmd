@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `adiposity_sds()` computes SDS (z-scores) for anthropometric variables against a single reference (non-sex-stratified). It validates references, can screen raw values for extremes, handles missingness, and optionally caps extreme SDS.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with variables to standardize.
 - `ref`: named list of numeric `c(mean=, sd=)` for each variable, e.g. `list(BMI = c(mean=23, sd=4))`.
 - `col_map` (optional): list with `vars` to map reference variable names to data columns; defaults to identity mapping.
 - Inputs are coerced to numeric; non-finite become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: row-wise missing-data policy across mapped vars (aliases: `na_strategy`).
 - `check_extreme = FALSE`: optional raw-value screening using `extreme_rules` (defaults cover common anthropometrics such as BMI, waist, weight, height, hip, WC, HC).
@@ -33,11 +33,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `return_summary = FALSE`: if TRUE, return list with `data`, `summary`, `warnings`.
 - `verbose`: emit progress messages.
 
-## Output Description
+## Output
 
 Default returns a tibble with `<var>_SDS` columns (rows dropped only when `na_action = "omit"`). With `return_summary = TRUE`, returns list with the SDS tibble plus summary counts and warnings.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -56,7 +56,7 @@ adiposity_sds(
 )
 ```
 
-## Extended Example
+## Examples
 
 Screen raw extremes, cap SDS, and return summary diagnostics:
 
@@ -75,9 +75,10 @@ adiposity_sds(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `ref` must include every variable with finite mean and sd > 0; missing stats abort.
 - `na_action = "error"` enforces complete cases; `"omit"` drops incomplete rows; `"keep"` retains rows with `NA` SDS.
 - Raw screening happens before SDS; adjust `extreme_rules` if your data units differ.
 - `extreme_action` controls SDS handling; `warn`/`ignore` are kept for compatibility but deprecated.
+

@@ -25,6 +25,8 @@ cvd_marker_ldl_particle_number(
 \item "omit"  (drop rows with missing/non-finite input)
 \item "error" (abort if input missing/non-finite)
 }}
+
+\item{verbose}{Logical; if TRUE, emit hm_inform() progress messages.}
 }
 \value{
 A tibble with columns model = "LDL_PN" and value.

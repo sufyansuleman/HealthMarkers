@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `frailty_index()` wraps `di::di()` with input validation, optional QA scans, HM-CS NA/exreme handling, and an optional tidy tibble output. It auto-selects numeric deficits when `cols = NULL` (excluding `age` if provided) and can cap or blank out-of-range values before computing the deficit index (DI).
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble of deficits (ideally binary/logical or scaled to [0,1]); `age` optional.
 - `cols`: character vector of deficit columns. If `NULL`, all numeric columns are used (excluding `age` if supplied).
 - Package `di` must be installed; otherwise the wrapper aborts.
 
-## Key Arguments
+## Arguments
 
 - `invert`: deficits to invert (better health at higher values) before DI calculation.
 - `rescale = TRUE`: allow `di::di()` to rescale non-binary deficits to [0,1].
@@ -35,12 +35,12 @@ knitr::opts_knit$set(purl = FALSE)
 - `return = c("list","data")`: return the raw `di::di` result or a tibble with `di` plus selected deficits (and age if present).
 - `verbose = FALSE`: emit progress and QA summaries.
 
-## Output Description
+## Output
 
 - `return = "list"` (default): the object from `di::di()`.
 - `return = "data"`: tibble with `di` and the selected deficit columns (post capping/NA) and `age` if provided. Rows may be dropped if `na_action = "omit"`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -67,7 +67,7 @@ if (requireNamespace("di", quietly = TRUE)) {
 }
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing deficits, cap out-of-range values, and return a tibble:
 
@@ -93,7 +93,7 @@ if (requireNamespace("di", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `check_extreme = NULL` mimics legacy behavior: range scan only when `rescale = FALSE`; set `TRUE` to always scan or `FALSE` to skip.
 - `na_action = "keep"`/`"ignore"` retains rows with NA in selected deficits; `"omit"` drops them; `"error"` stops when any selected deficit is missing.

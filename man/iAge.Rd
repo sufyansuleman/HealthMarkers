@@ -40,6 +40,9 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 \item "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
 }}
 
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
+is emitted when \code{na_action = "warn"}. Default 0.2.}
+
 \item{check_extreme}{Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.}
 
 \item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.

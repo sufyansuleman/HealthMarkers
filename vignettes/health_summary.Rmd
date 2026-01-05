@@ -1,4 +1,4 @@
-﻿---
+---
 title: "health_summary"
 output: rmarkdown::html_vignette
 vignette: >
@@ -16,20 +16,20 @@ knitr::opts_knit$set(purl = FALSE)
 
 `health_summary()` provides a lightweight summary for numeric columns: n, n_na, mean, sd, median, p25, p75. If `cols` is NULL, it summarizes all numeric columns.
 
-## Required Inputs
+## Inputs
 
 - `x`: data.frame/tibble containing numeric variables to summarize.
 - `cols`: optional character vector of columns to include; non-numeric selections are ignored after intersection.
 
-## Key Arguments
+## Arguments
 
 - `cols = NULL`: select columns to summarize; defaults to all numeric columns.
 
-## Output Description
+## Output
 
 Returns a tibble with one row per summarized column and columns: `measure`, `n`, `n_na`, `mean`, `sd`, `median`, `p25`, `p75`. If no numeric columns are found, returns an empty tibble with these headers.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -40,7 +40,7 @@ df <- tibble(a = c(1, 2, NA), b = c(3, 4, 5), c = factor("x"))
 health_summary(df)
 ```
 
-## Extended Example
+## Examples
 
 Summarize a subset of columns:
 
@@ -48,7 +48,7 @@ Summarize a subset of columns:
 health_summary(df, cols = c("b"))
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Non-numeric columns are skipped when `cols` is NULL; explicitly supplied `cols` are intersected with existing names.
 - Useful as a quick check after deriving markers via `health_markers` aggregators.---
@@ -72,7 +72,7 @@ returns one row per column with `n`, `n_na`, mean, standard deviation, median,
 and the 25th/75th percentiles. Use it to spot missingness or outliers before
 running downstream marker calculators.
 
-## Required Inputs
+## Inputs
 
 - `x`: data.frame or tibble to summarize.
 - `cols` (optional): character vector of column names to include. If `NULL`, all
@@ -81,7 +81,7 @@ running downstream marker calculators.
   are ignored. There are no unit assumptions beyond numeric values.
 - Valid ranges: no built-in range screening; values are summarized as provided.
 
-## Key Arguments
+## Arguments
 
 - `x`: data.frame/tibble containing the measurements (required).
 - `cols = NULL`: if `NULL`, auto-detect numeric columns; otherwise summarize the
@@ -90,7 +90,7 @@ running downstream marker calculators.
 There are no additional tuning parameters; NA handling is intrinsic to the
 calculations (means/quantiles are computed with `na.rm = TRUE`).
 
-## Output Description
+## Output
 
 Returns a tibble with one row per summarized column and the columns:
 
@@ -104,7 +104,7 @@ If no numeric columns are found (or none of the requested `cols` exist), an
 empty tibble with these column names is returned. No rows are removed; missing
 values only affect the calculated statistics.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -123,7 +123,7 @@ health_summary(example_df)
 health_summary(example_df, cols = "bmi")
 ```
 
-## Extended Example
+## Examples
 
 Only non-numeric columns are ignored and yield an empty tibble:
 
@@ -132,10 +132,11 @@ non_numeric <- tibble(group = c("A", "B"), flag = c(TRUE, FALSE))
 health_summary(non_numeric)
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Use `health_summary()` as a pre-flight QA step before calling calculators like
   `lipid_markers()`, `liver_markers()`, or aggregated workflows such as
   `all_health_markers()`.
 - Because it leaves row counts unchanged and ignores non-numeric columns, it is
   safe to run repeatedly during data cleaning to monitor missingness.
+

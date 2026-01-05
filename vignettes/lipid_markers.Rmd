@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `lipid_markers()` computes common lipid panel ratios plus VAI, LAP, and TyG-BMI. Required inputs are total cholesterol (TC), HDL-C, and triglycerides (TG); optional inputs include measured LDL-C, ApoB/ApoA1, waist, BMI, and glucose. The function offers NA policies, optional extreme screening with warn/cap/NA/error behaviors, and verbose messaging. Units are assumed to match the inputs provided; no unit conversion is performed (except internal mg/dL conversion for TyG-BMI).
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing lipid (and optional anthropometry/glucose) columns.
 - `col_map`: named list mapping at least `TC`, `HDL_c`, `TG` (defaults: same names). Optional mappings: `LDL_c`, `ApoB`, `ApoA1`, `waist`, `BMI`. Columns must exist for any mapping supplied.
 - Required columns must be numeric; non-numeric are coerced with warnings if NAs are introduced.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
 - `check_extreme = FALSE`: enable plausible-range scan.
@@ -30,7 +30,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override defaults for scanned inputs (e.g., TC 0–50, HDL 0–10, TG 0–50, LDL 0–50, ApoB 0–10, ApoA1 0–10, waist 30–250 cm, BMI 10–80 kg/m^2, glucose 0–50 mmol/L).
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with:
 - Required outputs: `non_HDL_c`, `remnant_c`, `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`, `ApoB_ApoA1` (Apo ratio only if both ApoB/ApoA1 provided).
@@ -38,7 +38,7 @@ Returns a tibble with:
 - When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`.
 - If `LDL_c` is missing, LDL is estimated via Friedewald (TC - HDL - TG/5).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -68,7 +68,7 @@ lipid_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Scan for extremes and cap while warning; include TyG-BMI using glucose:
 
@@ -86,7 +86,7 @@ lipid_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - TG/HDL/LDL/TC inputs are assumed in mmol/L; LAP uses TG directly, and TyG-BMI converts TG/glucose to mg/dL internally.
 - Extreme screening ranges are broad; adjust `extreme_rules` for cohort-specific limits.

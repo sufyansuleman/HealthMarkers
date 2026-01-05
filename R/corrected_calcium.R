@@ -12,14 +12,11 @@
 #' @param col_map Named list with `calcium` and `albumin` indicating column names.
 #' @param verbose Logical; if TRUE, emits progress via hm_inform().
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param na_warn_prop Proportion of rows with missing inputs above which an additional warning may be raised.
-#'   (Reserved for future use; currently unused.)
 #' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (applied on working units).
 #' @param extreme_action One of c("warn","cap","error","ignore","NA").
 #' @param extreme_rules Optional overrides for defaults in working units:
 #'   list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5)).
 #' @param units One of c("auto","conventional","si"). "auto" attempts unit detection.
-#' @param ... Reserved for future extensions; currently ignored.
 #'
 #' @return A tibble with one column: corrected_calcium (numeric, in mg/dL for
 #'   conventional input or mmol/L for SI / auto-SI input).

@@ -314,6 +314,7 @@ cvd_risk_scorescvd <- function(data, ...) {
 #'   - "keep"  (retain rows; AIP is NA where inputs missing/non-finite)
 #'   - "omit"  (drop rows with any missing/non-finite inputs)
 #'   - "error" (abort if any required input missing/non-finite)
+#' @param verbose Logical; if TRUE, emit hm_inform() progress messages.
 #' @return A tibble with columns model = "AIP" and value.
 #' @export
 cvd_marker_aip <- function(data,
@@ -400,6 +401,7 @@ cvd_marker_aip <- function(data,
 #'   - "keep"  (retain rows; value is NA where input missing/non-finite)
 #'   - "omit"  (drop rows with missing/non-finite input)
 #'   - "error" (abort if input missing/non-finite)
+#' @param verbose Logical; if TRUE, emit hm_inform() progress messages.
 #' @return A tibble with columns model = "LDL_PN" and value.
 #' @export
 cvd_marker_ldl_particle_number <- function(data,

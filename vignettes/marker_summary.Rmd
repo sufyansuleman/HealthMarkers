@@ -16,19 +16,19 @@ knitr::opts_knit$set(purl = FALSE)
 
 `marker_summary()` provides quick descriptive statistics (mean, SD, IQR) for numeric columns returned by marker functions. It validates input type, optionally emits progress messages, and returns a tidy tibble.
 
-## Required Inputs
+## Inputs
 
 - `x`: data.frame/tibble, typically output from marker functions. Must contain at least one numeric column to produce summaries.
 
-## Key Arguments
+## Arguments
 
 - `verbose = FALSE`: when `TRUE`, prints start/completion messages and counts all-NA variables.
 
-## Output Description
+## Output
 
 Returns a tibble with columns `variable`, `mean`, `sd`, and `iqr` for each numeric column in `x`. If no numeric columns are present, returns an empty tibble (0 rows).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -43,7 +43,7 @@ df <- tibble(
 marker_summary(df)
 ```
 
-## Extended Example
+## Examples
 
 Enable verbose messages:
 
@@ -51,7 +51,7 @@ Enable verbose messages:
 marker_summary(df, verbose = TRUE)
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Only numeric columns are summarized; non-numeric columns are ignored.
 - Missing values are removed for each statistic via `na.rm = TRUE`.

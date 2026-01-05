@@ -32,11 +32,6 @@ corrected_calcium(
 list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5)).}
 
 \item{verbose}{Logical; if TRUE, emits progress via hm_inform().}
-
-\item{na_warn_prop}{Proportion of rows with missing inputs above which an additional warning may be raised.
-(Reserved for future use; currently unused.)}
-
-\item{...}{Reserved for future extensions; currently ignored.}
 }
 \value{
 A tibble with one column: corrected_calcium (numeric, in mg/dL for

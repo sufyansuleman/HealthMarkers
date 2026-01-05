@@ -16,20 +16,20 @@ knitr::opts_knit$set(purl = FALSE)
 
 `cvd_risk_scorescvd()` is a thin passthrough to `RiskScorescvd::calc_scores()`, returning whatever that backend produces. It aborts if the optional package is missing and falls back to an `NA` row on backend errors.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with the variables required by `RiskScorescvd::calc_scores()`.
 - RiskScorescvd package must be installed; otherwise the function aborts.
 
-## Key Arguments
+## Arguments
 
 - `...`: forwarded directly to `RiskScorescvd::calc_scores()`.
 
-## Output Description
+## Output
 
 Returns the object produced by `RiskScorescvd::calc_scores()`. If the backend errors, a tibble with `model = "RiskScorescvd"`, `year = NA`, and `risk/value = NA` is returned to keep downstream results rectangular (e.g., in `cvd_risk(model = "ALL")`).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -40,7 +40,7 @@ if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
 }
 ```
 
-## Extended Example
+## Examples
 
 Pass through additional arguments to the backend calculator:
 
@@ -50,7 +50,7 @@ if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Ensure `RiskScorescvd` is installed; otherwise this wrapper aborts. When called inside `cvd_risk(model = "ALL")`, errors are caught and replaced with an `NA` row placeholder.
 - No input coercion or validation is added beyond delegating to `RiskScorescvd::calc_scores()`.

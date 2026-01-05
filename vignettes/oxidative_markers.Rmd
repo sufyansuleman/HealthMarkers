@@ -16,21 +16,21 @@ knitr::opts_knit$set(purl = FALSE)
 
 `oxidative_markers()` computes the glutathione redox ratio `GSH_GSSG_Ratio` from reduced (GSH) and oxidized (GSSG) glutathione. It validates inputs, supports NA policies, offers high-missingness diagnostics, and can emit verbose progress messages. No unit conversion is performed; inputs should already be in consistent assay units.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing GSH and GSSG.
 - `col_map`: named list mapping `GSH` and `GSSG` (defaults to same names). Columns must exist and be numeric/coercible; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
 - `verbose = FALSE`: emit progress and completion messages.
 
-## Output Description
+## Output
 
 Returns a tibble with one column `GSH_GSSG_Ratio`. Division by zero/non-finite denominators yields `NA`. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise those rows produce `NA` ratios.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -46,7 +46,7 @@ oxidative_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Drop rows with missing inputs and show verbose summary:
 
@@ -59,7 +59,7 @@ oxidative_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - If GSSG is zero or non-finite, the ratio is set to `NA`.
 - High missingness in inputs is reported at debug level; enable `verbose = TRUE` for progress and completion summaries.

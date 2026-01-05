@@ -16,7 +16,7 @@ knitr::opts_knit$set(purl = FALSE)
 
 `hm_validate_inputs()` is the HealthMarkers v2 helper that standardizes basic input checks for marker functions. It verifies that `data` is a data.frame/tibble and that required keys are present in a named `col_map` with non-empty mappings. If no required keys are specified, `col_map` may be `NULL` or empty, and the helper returns silently. Errors are raised with function-specific classes for downstream handling.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble under validation.
 - `col_map`: named list mapping required keys to column names; may be `NULL` only when `required_keys` is empty.
@@ -30,11 +30,11 @@ knitr::opts_knit$set(purl = FALSE)
 - Confirms all `required_keys` exist in `col_map` and map to non-empty, non-`NA` names.
 - Returns `invisible(TRUE)` on success; otherwise aborts with classed errors like `healthmarkers_<fn>_error_*`.
 
-## Output Description
+## Output
 
 `hm_validate_inputs()` returns `NULL` (invisibly) on success and throws a classed error on failure. It does not mutate inputs.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -58,8 +58,9 @@ try(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Marker functions call `hm_validate_inputs()` early to give consistent, classed errors before deeper processing.
 - When `required_keys` is empty (e.g., summarizers), `col_map` can be omitted; the helper only enforces `data` type.
 - Use `fn` to scope error classes/messages for clearer debugging and downstream handling.
+

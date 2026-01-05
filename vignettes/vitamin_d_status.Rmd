@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `vitamin_d_status()` classifies serum 25(OH)D (ng/mL) into Deficient (<20), Insufficient (20–29), or Sufficient (≥30). It validates inputs, accepts either `vitd` or `vitamin_d` mapping keys, coerces to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extreme values, and provides unit-sanity warnings when values look implausibly high.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with a 25(OH)D column.
 - `col_map`: named list mapping `vitd` (or `vitamin_d`) to the column name in `data`. The mapped column must exist; non-numeric values are coerced to numeric with warnings on introduced NAs.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`warn`/`ignore` behave like `keep`; `omit` drops rows; `error` aborts on missing required input).
 - `check_extreme = FALSE`: enable extreme-value scanning using default bounds 0–250 ng/mL.
@@ -29,11 +29,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: optional c(min,max) override for vitamin D bounds.
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with ordered factor `vitamin_d_status` (levels: Deficient < Insufficient < Sufficient). Rows with missing or `NA`-actioned values become `NA`; capped values remain in-range when requested.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -49,7 +49,7 @@ vitamin_d_status(
 )
 ```
 
-## Extended Example
+## Examples
 
 Warn on missing values, cap extremes, and show verbose output:
 
@@ -68,9 +68,10 @@ vitamin_d_status(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Units are assumed ng/mL; if median values seem >150, consider that inputs might be nmol/L (divide by 2.5).
 - Negative values trigger a warning (when not scanning extremes) and yield `NA` in the status.
 - `na_action = "omit"` drops rows with missing 25(OH)D; `error` aborts; `keep`/`warn` retain rows with `NA` status.
 - Extreme scanning uses the default 0–250 ng/mL range; override via `extreme_rules` or disable via `check_extreme = FALSE`.
+

@@ -20,12 +20,12 @@ Aggregators for derived markers:
 - `all_health_markers()` is the comprehensive dispatcher across all registered marker groups, with optional auto `col_map` inference and insulin panel inclusion.
 All wrappers use `.hm_safe_call()` to avoid hard failures; missing/failed groups are skipped with optional verbose summaries.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble of raw labs/anthropometry; specific needs depend on chosen groups. Insulin panels require glucose/insulin mappings; lipid/liver/glycemic/MetS groups need their respective inputs (see underlying function vignettes).
 - `col_map`: named list mapping required keys; for `all_health_markers()` it can be omitted/NULL to auto-infer common columns (TG, HDL_c, LDL_c, TC, BMI, age, sex, etc.).
 
-## Key Arguments
+## Arguments
 
 - `normalize = c("none","z","inverse","range","robust")`: forwarded to insulin indices (and stored for some groups).
 - `mode = c("both","IS","IR")`: insulin panels return IS, IR, or both.
@@ -35,13 +35,13 @@ All wrappers use `.hm_safe_call()` to avoid hard failures; missing/failed groups
 - `include_insulin` (all_health_markers): prepend insulin panel unless FALSE.
 - `verbose`: emit mapping summaries, group status, and debug/info messages.
 
-## Output Description
+## Output
 
 - `all_insulin_indices()`: tibble of IS (and optional IR_) columns.
 - `metabolic_markers()`: original data with appended group columns.
 - `all_health_markers()`: original data plus all requested groups; skipped/failed groups leave data unchanged. Column binding skips duplicates.
 
-## Minimal Reproducible Example
+## Examples
 
 Bind lipid and liver panels without insulin (to avoid missing glucose/insulin inputs):
 
@@ -66,7 +66,7 @@ metabolic_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Run comprehensive aggregation with auto-inferred column map, include insulin panel, and request specific groups:
 
@@ -86,7 +86,7 @@ all_health_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Auto `col_map` inference (all_health_markers) uses `hm_infer_cols()` with default exact patterns; required keys (TG, HDL_c, LDL_c, TC, BMI, age, sex) must be inferable or supplied explicitly.
 - Groups relying on optional packages (e.g., `cvd_risk` for cardio) are skipped gracefully if backends are unavailable.

@@ -16,14 +16,14 @@ knitr::opts_knit$set(purl = FALSE)
 
 `bone_markers()` computes DXA-derived and osteoporosis screening metrics: OSTA, ALMI, FMI, and BMD_Tscore (using supplied reference means/SDs). It can also pass through optional turnover/structural markers (TBS, HSA, PINP, CTX, BSAP, Osteocalcin) when mapped. Inputs are coerced to numeric; non-finite become `NA`.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with DXA and anthropometry.
 - `col_map`: named list with required `age`, `weight`, `height`, `ALM`, `FM`, `BMD`, `BMD_ref_mean`, `BMD_ref_sd`.
 - Optional keys (passed through if present): `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`.
 - Units: height m; weight/ALM/FM kg; BMD g/cm^2; ALMI/FMI kg/m^2.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: handling when required inputs are missing/non-finite.
 - `check_extreme = FALSE`: enable SDS-like scan on mapped keys containing "sds" (case-insensitive).
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_action = c("cap","NA","error")`: response to SDS-like extremes (`cap` trims to +/- `sds_limit`; `NA` blanks values).
 - `verbose`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with `OSTA`, `ALMI`, `FMI`, `BMD_Tscore`, followed by any optional markers mapped and present (`TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`). Rows drop only when `na_action = "omit"`; otherwise missing required inputs propagate `NA`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -63,7 +63,7 @@ bone_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Include turnover markers, drop incomplete rows, and cap SDS-like extremes (only keys containing "sds" are scanned):
 
@@ -81,9 +81,10 @@ bone_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Height must be >0 and `BMD_ref_sd` >0; function aborts otherwise.
 - SDS-like screening only affects mapped keys whose names contain "sds"; typical inputs are unaffected unless such keys are present.
 - Use `na_action = "error"` to enforce complete required inputs; `"omit"` drops incomplete rows; `"keep"` retains rows with `NA` outputs.
 - Optional markers are passed through without transformation when mapped and present in `data`.
+

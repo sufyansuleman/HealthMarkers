@@ -38,8 +38,11 @@ by di::di. Default TRUE.}
 \item{age}{Optional name of the column holding age (used by di for plotting and
 optional age-binned outputs; excluded from auto-selected cols).}
 
-\item{rescale.custom}{rescale.avoid Advanced arguments passed through to di::di.
+\item{rescale.custom}{Advanced argument passed through to di::di.
 See di::di documentation for syntax.}
+
+\item{rescale.avoid}{Advanced argument passed through to di::di;
+see di::di documentation for syntax.}
 
 \item{bins}{Integer; number of age bins for FI-by-age plots. Default 7.}
 

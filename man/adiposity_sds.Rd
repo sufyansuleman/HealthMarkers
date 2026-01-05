@@ -27,42 +27,48 @@ adiposity_sds(
 \arguments{
 \item{data}{data.frame or tibble containing the measurement columns.}
 
+\item{col_map}{Optional named list mapping reference variable names to column names
+in \code{data}. If NULL, identity mapping is assumed (names(ref) must be in data).}
+
 \item{ref}{Named list where each element is a numeric vector with names
 \code{mean} and \code{sd}, e.g. \code{list(BMI = c(mean = 23, sd = 4))}.}
 
-\item{na_action}{One of \code{c("omit","error","keep")} determining how rows with
-any missing required values are handled.}
+\item{na_action}{One of \code{c("keep","omit","error")} for row handling when any
+mapped variable is missing.}
 
-\item{extreme_action}{One of \code{c("cap","warn","error","ignore")} controlling
-how SDS values exceeding \code{sds_cap} in absolute value are treated.}
+\item{extreme_action}{One of \code{c("cap","NA","error","warn","ignore")} for
+SDS values exceeding \code{sds_cap}.}
 
-\item{sds_cap}{Positive numeric; absolute cap used when
-\code{extreme_action = "cap"}. Default 6.}
+\item{sds_cap}{Positive numeric; absolute cap used when \code{extreme_action = "cap"}.}
+
+\item{check_extreme}{Logical; if TRUE run raw-value extreme screening using
+\code{extreme_rules} before SDS computation.}
+
+\item{extreme_rules}{Optional named list of c(min, max) ranges for raw variables;
+if NULL, broad defaults are used for common anthropometric measures.}
 
 \item{diagnostics}{Logical; if TRUE emit informational/warning messages
 (coercions, missingness, extremes). FALSE suppresses non-critical warnings.}
 
-\item{warn_thresholds}{Named list with optional elements:
-\code{na_prop} (default 0.05) and \code{extreme_prop} (default 0.01) used for
-proportion-based diagnostic warnings.}
+\item{warn_thresholds}{Named list with optional elements \code{na_prop} (default 0.05)
+and \code{extreme_prop} (default 0.01) used for proportion-based diagnostic warnings.}
 
 \item{id_col}{Optional column name used only in verbose summaries.}
 
-\item{return_summary}{Logical; if TRUE return a list with elements
-\code{data}, \code{summary}, and \code{warnings} instead of just the SDS tibble.}
+\item{return_summary}{Logical; if TRUE return a list with elements \code{data},
+\code{summary}, and \code{warnings} instead of just the SDS tibble.}
 
 \item{verbose}{Logical; if TRUE print progress and completion summaries.}
 
-\item{na_strategy}{Soft-deprecated alias for \code{na_action}.}
+\item{na_strategy}{Soft-deprecated alias for \code{na_action} (if provided and
+\code{na_action} missing, it is used).}
 
-\item{extreme_strategy}{Soft-deprecated alias for \code{extreme_action}.}
+\item{extreme_strategy}{Soft-deprecated alias for \code{extreme_action} (if provided
+and \code{extreme_action} missing, it is used).}
 
-\item{check_raw_extreme}{Logical; if TRUE apply raw-value extreme screening
-using \code{raw_extreme_rules} (before SDS computation).}
+\item{check_raw_extreme}{Soft-deprecated alias for \code{check_extreme}.}
 
-\item{raw_extreme_rules}{Optional named list of length-2 numeric vectors
-giving c(min, max) for raw variables; if NULL, broad defaults are used
-for common anthropometric measures (BMI, waist, weight, height, hip, WC, HC).}
+\item{raw_extreme_rules}{Soft-deprecated alias for \code{extreme_rules}.}
 }
 \value{
 A tibble with one \verb{<var>_SDS} column per reference variable, or a

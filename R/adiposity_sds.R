@@ -14,30 +14,33 @@
 #' `extreme_strategy`) are soft-deprecated but still accepted.
 #'
 #' @param data data.frame or tibble containing the measurement columns.
+#' @param col_map Optional named list mapping reference variable names to column names
+#'   in `data`. If NULL, identity mapping is assumed (names(ref) must be in data).
 #' @param ref Named list where each element is a numeric vector with names
 #'   `mean` and `sd`, e.g. `list(BMI = c(mean = 23, sd = 4))`.
-#' @param na_action One of `c("omit","error","keep")` determining how rows with
-#'   any missing required values are handled.
-#' @param extreme_action One of `c("cap","warn","error","ignore")` controlling
-#'   how SDS values exceeding `sds_cap` in absolute value are treated.
-#' @param sds_cap Positive numeric; absolute cap used when
-#'   `extreme_action = "cap"`. Default 6.
-#' @param check_raw_extreme Logical; if TRUE apply raw-value extreme screening
-#'   using `raw_extreme_rules` (before SDS computation).
-#' @param raw_extreme_rules Optional named list of length-2 numeric vectors
-#'   giving c(min, max) for raw variables; if NULL, broad defaults are used
-#'   for common anthropometric measures (BMI, waist, weight, height, hip, WC, HC).
+#' @param na_action One of `c("keep","omit","error")` for row handling when any
+#'   mapped variable is missing.
+#' @param extreme_action One of `c("cap","NA","error","warn","ignore")` for
+#'   SDS values exceeding `sds_cap`.
+#' @param sds_cap Positive numeric; absolute cap used when `extreme_action = "cap"`.
+#' @param check_extreme Logical; if TRUE run raw-value extreme screening using
+#'   `extreme_rules` before SDS computation.
+#' @param extreme_rules Optional named list of c(min, max) ranges for raw variables;
+#'   if NULL, broad defaults are used for common anthropometric measures.
 #' @param diagnostics Logical; if TRUE emit informational/warning messages
 #'   (coercions, missingness, extremes). FALSE suppresses non-critical warnings.
-#' @param warn_thresholds Named list with optional elements:
-#'   `na_prop` (default 0.05) and `extreme_prop` (default 0.01) used for
-#'   proportion-based diagnostic warnings.
+#' @param warn_thresholds Named list with optional elements `na_prop` (default 0.05)
+#'   and `extreme_prop` (default 0.01) used for proportion-based diagnostic warnings.
 #' @param id_col Optional column name used only in verbose summaries.
 #' @param verbose Logical; if TRUE print progress and completion summaries.
-#' @param return_summary Logical; if TRUE return a list with elements
-#'   `data`, `summary`, and `warnings` instead of just the SDS tibble.
-#' @param na_strategy Soft-deprecated alias for `na_action`.
-#' @param extreme_strategy Soft-deprecated alias for `extreme_action`.
+#' @param return_summary Logical; if TRUE return a list with elements `data`,
+#'   `summary`, and `warnings` instead of just the SDS tibble.
+#' @param na_strategy Soft-deprecated alias for `na_action` (if provided and
+#'   `na_action` missing, it is used).
+#' @param extreme_strategy Soft-deprecated alias for `extreme_action` (if provided
+#'   and `extreme_action` missing, it is used).
+#' @param check_raw_extreme Soft-deprecated alias for `check_extreme`.
+#' @param raw_extreme_rules Soft-deprecated alias for `extreme_rules`.
 #'
 #' @return A tibble with one `<var>_SDS` column per reference variable, or a
 #'   list when `return_summary = TRUE`.

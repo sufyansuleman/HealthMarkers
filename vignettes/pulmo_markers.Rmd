@@ -16,18 +16,18 @@ knitr::opts_knit$set(purl = FALSE)
 
 `pulmo_markers()` wraps `rspiro` reference equations (GLI, GLI-Global, NHANES3) to compute predicted normals, z-scores, percent predicted, and lower limits of normal (LLN) for FEV1, FVC, and the FEV1/FVC ratio. Inputs are validated, numeric columns are coerced as needed, missingness is handled per policy, and heights are auto-interpreted as cm when any value exceeds 3 (otherwise treated as metres).
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with columns `age` (years), `sex` ("male"/"female" or 1/2 or 0/1), `height` (cm or m), `ethnicity` (text labels such as "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"), `fev1` (L), and `fvc` (L). Required columns must exist; numeric-required columns are coerced with warnings when NAs are introduced.
 
-## Key Arguments
+## Arguments
 
 - `equation = c("GLI", "GLIgl", "NHANES3")`: reference set; `GLIgl` ignores ethnicity.
 - `na_action = c("keep","omit","error")`: missing-data policy for required inputs (propagate, drop rows, or abort).
 - `na_warn_prop = 0.2`: proportion threshold to emit high-missingness diagnostics (debug level).
 - `verbose = FALSE`: print progress, omission counts, and completion diagnostics.
 
-## Output Description
+## Output
 
 Returns a tibble with predicted values, z-scores, percent-predicted, and LLN for FEV1 and FVC, plus observed/predicted ratios:
 - `fev1_pred`, `fev1_z`, `fev1_pctpred`, `fev1_LLN`
@@ -36,7 +36,7 @@ Returns a tibble with predicted values, z-scores, percent-predicted, and LLN for
 
 `fev1_fvc_LLN` is currently `NA` (not returned by `rspiro`). Ratio z-scores use the sample mean/SD of predicted ratios; if SD is zero or non-finite, z-scores become `NA`. Percent-predicted fields use safe division; zero/non-finite denominators yield `NA`.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -63,7 +63,7 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 }
 ```
 
-## Extended Example
+## Examples
 
 Omit rows with missing required inputs, use GLI-Global (ethnicity-agnostic), and display progress:
 
@@ -87,7 +87,7 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 }
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Requires the `rspiro` package; an explicit error is thrown if it is absent or the chosen equation is unsupported in the installed version.
 - Height heuristic: any height > 3 is assumed cm and converted to metres; non-positive heights trigger a warning and yield `NA` outputs.
@@ -95,3 +95,4 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 - Ethnicity mapping defaults unknown values to code 5 ("Other/Mixed") with a warning; `GLIgl` ignores ethnicity.
 - When `na_action = "error"`, any missing required input aborts; `omit` drops those rows; `keep` propagates `NA` into outputs.
 - High missingness on required columns is reported at debug level when it exceeds `na_warn_prop`; set `verbose = TRUE` to see progress and completion summaries.
+

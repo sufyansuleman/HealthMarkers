@@ -16,7 +16,7 @@ knitr::opts_knit$set(purl = FALSE)
 
 `calc_sds()` computes standard deviation scores (z-scores, SDS) for selected variables using supplied reference means and SDs. It validates inputs, handles missingness, optionally screens extremes, and can return either a tibble or a summary list.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing variables to standardize.
 - `vars`: character vector of column names to score (non-empty, unique).
@@ -24,7 +24,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `id_col` (optional): identifier used only in diagnostics/messages.
 - Inputs are coerced to numeric; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_strategy = c("omit","error","keep")`: missing-data policy (aliases: `na_action`).
 - `check_extreme = TRUE`: toggle extreme SDS detection; if FALSE, extremes are neither scanned nor acted on.
@@ -34,12 +34,12 @@ knitr::opts_knit$set(purl = FALSE)
 - `return = c("data","list")`: tibble with `<var>_sds` columns or a list (`data`, `summary`, `warnings`).
 - `verbose = FALSE`: emit progress via `hm_inform()` and messages.
 
-## Output Description
+## Output
 
 - Default (`return = "data"`): tibble with appended `<var>_sds` columns; rows dropped only when `na_strategy = "omit"`.
 - `return = "list"`: list with `data` (tibble), `summary` (row counts, extremes, per-variable missing/extreme counts), and `warnings` (unique warning messages).
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -69,7 +69,7 @@ calc_sds(
 )
 ```
 
-## Extended Example
+## Examples
 
 Keep rows with missing inputs, warn (do not cap) on extremes, request summary list, and relax warning thresholds:
 
@@ -88,10 +88,11 @@ calc_sds(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `ref` must cover every variable in `vars` with finite means and sd > 0; duplicates or missing stats abort.
 - Set `check_extreme = FALSE` to skip extreme detection; otherwise |SDS| > `sds_cap` follow `extreme_strategy`.
 - Non-numeric inputs are coerced to numeric with a warning; non-finite values become NA before scoring.
 - Proportion warnings trigger when missingness (`na_prop`) or extremes (`extreme_prop`) exceed thresholds.
 - Use `na_strategy = "error"` to enforce completeness; `"omit"` drops incomplete rows; `"keep"` retains them with NA SDS.
+

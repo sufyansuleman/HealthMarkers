@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `infer_cols()` scans a data frame and fills a mapping list (keys -> column names) using flexible regex patterns, optional preferred names, and multiple resolution strategies. It can log decisions, handle fuzzy matching, and return either the filled map or a map+log list. Defaults are strict and error on missing or ambiguous matches to preserve backward compatibility. The internal `hm_infer_cols()` provides a simpler exact-name inference with classed errors for package functions when no map is supplied.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble whose column names will be matched.
 - `map`: named list where names are target keys (e.g., `G0`, `I0`, `TG`) and values are either `NULL` (to infer) or a user-supplied column name to keep.
 
-## Key Arguments
+## Arguments
 
 - `patterns = NULL`: optional named character vector of regex patterns per key; if `NULL`, a built-in separator-tolerant dictionary is used.
 - `prefer = NULL`: optional named list of preferred exact names per key to resolve ties when `strategy = "prefer"`.
@@ -34,13 +34,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `hm_infer_cols(data, patterns, required_keys, verbose)` is a lighter exact-name helper used internally; it aborts if required keys remain unresolved.
 
-## Output Description
+## Output
 
 - Default: invisibly returns the filled `map` list.
 - With `return = "list"`: returns `list(map = <named list>, log = <tibble>)` where `log` records key, selected column, candidates, and reason.
 - When `strict = TRUE` and no/ambiguous match is found under `strategy = "error"`, an error is thrown; under other strategies, behavior follows the chosen resolution.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -60,7 +60,7 @@ spec <- list(G0 = NULL, I0 = NULL, TG = NULL, HDL_c = NULL)
 infer_cols(df, spec, verbose = FALSE)
 ```
 
-## Extended Example
+## Examples
 
 Resolve ambiguities with preferences, enable fuzzy matching, and capture the log:
 
@@ -83,9 +83,10 @@ res$log      # tibble of decisions
 log_path     # log file written
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Keep `strict = TRUE` when you want early errors for missing or ambiguous columns; switch to `strict = FALSE` to allow partial maps with warnings.
 - `strategy` controls tie-breaking; `prefer` plus `prefer` list yields deterministic resolution, while `stable` chooses shortest then alphabetical.
 - Fuzzy matching is off by default to avoid surprises; enable only when column names are noisy.
 - `hm_infer_cols()` is used by package functions when a col_map is missing; it requires explicit candidate name lists and aborts if required keys remain unresolved.
+

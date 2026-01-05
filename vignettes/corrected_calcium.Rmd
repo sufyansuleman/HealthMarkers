@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `corrected_calcium()` applies the Payne formula to compute albumin-adjusted serum calcium. Inputs can be supplied in conventional units (mg/dL calcium, g/dL albumin) or SI (mmol/L calcium, g/L albumin); unit detection is automatic by default. Optional extreme screening flags, caps, or blanks implausible inputs before correction.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with serum calcium and albumin.
 - `col_map`: named list mapping `calcium`/`ca` and `albumin`/`alb` to column names (defaults: `Ca`, `Alb`).
 - Inputs are coerced to numeric; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `units = c("auto","conventional","si")`: `auto` infers SI if calcium <= 4 or albumin > 20.
 - `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `keep`).
@@ -31,11 +31,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: optional list overriding default bounds list(ca_mgdl = c(4,15), alb_gdl = c(2,5)).
 - `verbose = FALSE`: emit progress messages.
 
-## Output Description
+## Output
 
 Returns a tibble with one column, `corrected_calcium`. With conventional inputs (or `units = "conventional"`), values are in mg/dL; with SI inputs (or SI inferred), values are in mmol/L. When `na_action = "omit"`, rows with missing inputs are dropped; otherwise those rows yield `NA` results.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -53,7 +53,7 @@ corrected_calcium(
 )
 ```
 
-## Extended Example
+## Examples
 
 Use SI inputs, request mmol/L output, and screen for implausible values:
 
@@ -72,7 +72,7 @@ corrected_calcium(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - `na_action = "error"` enforces complete inputs; `"omit"` drops incomplete rows; `"keep"`/`"warn"`/`"ignore"` retain rows with `NA` outputs.
 - Auto unit detection issues a warning when SI is inferred; set `units` explicitly to suppress it.

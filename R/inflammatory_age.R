@@ -37,6 +37,8 @@
 #'   - "error": abort if any required marker contains NA.
 #'   - "ignore": alias of "omit".
 #'   - "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
+#' @param na_warn_prop Proportion in \eqn{[0,1]} above which a high-missingness warning
+#'   is emitted when `na_action = "warn"`. Default 0.2.
 #' @param check_extreme Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.
 #' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.
 #'   - "warn": issue a warning, do not modify values (default if check_extreme = TRUE).

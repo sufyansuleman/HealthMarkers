@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `vitamin_markers()` computes composite vitamin/endocrine ratios and z-scores from serum/plasma analytes: `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`, plus pass-through `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`. It validates mappings, coerces required columns to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extremes, and uses safe division with consolidated zero-denominator warnings. No unit conversion beyond the provided ratios/z-scores is applied; supply inputs in consistent assay units.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with vitamin/analyte columns.
 - `col_map`: named list mapping required keys (all must be provided): `VitD`, `VitD_ref_mean`, `VitD_ref_sd`, `B12`, `Folate`, `Ferritin`, `TSat`, `Cortisol`, `DHEAS`, `Testosterone`, `Estradiol`, `TSH`, `free_T4`, `Retinol`, `Retinol_ref_mean`, `Retinol_ref_sd`, `Tocopherol`, `Total_lipids`, `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`, `Magnesium`, `Zinc`, `Copper`. Mapped columns must exist; non-numeric columns are coerced to numeric with warnings when NAs are introduced; non-finite values become `NA`.
 
-## Key Arguments
+## Arguments
 
 - `na_action = c("keep","omit","error")`: missing-data policy for required inputs.
 - `na_warn_prop = 0.2`: proportion threshold for high-missingness diagnostics (debug level).
@@ -30,7 +30,7 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names or column names.
 - `verbose = FALSE`: emit progress and completion diagnostics.
 
-## Output Description
+## Output
 
 Returns a tibble with:
 - `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`.
@@ -38,7 +38,7 @@ Returns a tibble with:
 
 Safe division sets zero/non-finite denominators to `NA` and records a consolidated warning. Z-scores use supplied reference means/SDs; ensure SDs are positive/non-zero.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -67,7 +67,7 @@ vitamin_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Enable extreme scanning with capping and show verbose diagnostics:
 
@@ -87,10 +87,11 @@ vitamin_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - All required keys must be mapped; the function does not provide defaults.
 - Units should be consistent with your study; no automatic conversion is performed beyond the ratios/z-scores. Ensure reference SDs are > 0 to avoid `NA` in z-scores.
 - Zero denominators in ratios (e.g., TSat, free_T4, Zinc) yield `NA` and trigger a consolidated warning.
 - `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
 - Extreme scanning uses broad default bounds; customize via `extreme_rules` or disable via `check_extreme = FALSE`.
+

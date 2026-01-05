@@ -16,13 +16,13 @@ knitr::opts_knit$set(purl = FALSE)
 
 `obesity_indices()` computes anthropometric adiposity/shape indices: BMI (with WHO category), WHR (and optional WHRadjBMI), WHtR, AVI, BAI, ABSI, BRI, Conicity Index, waist/BMI and weight/height ratios, and optionally Relative Fat Mass (RFM). It handles unit conversion for weight (kg/lb) and height (m/cm), supports NA policies, optional extreme scanning with warn/cap/error behaviors, and verbose summaries. Inputs must already be in the specified units; no other conversions are performed.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble with columns for weight, height, waist, hip (numeric). Sex column is required only if `include_RFM = TRUE` (coded 0=male, 1=female).
 - Column arguments are unquoted column names: `weight`, `height`, `waist`, `hip`, and optional `sex`.
 - Units: weight kg (or lb if `weight_unit = "lb"`), height m (or cm if `height_unit = "cm"`), waist/hip cm.
 
-## Key Arguments
+## Arguments
 
 - `weight_unit = c("kg","lb")`, `height_unit = c("cm","m")`: controls unit conversion to kg/m.
 - `adjust_WHR = FALSE`: add BMI-adjusted WHR residuals.
@@ -34,11 +34,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `extreme_rules = NULL`: override defaults (weight_kg 20–400; height_m 1.2–2.5; waist 30–200 cm; hip 30–200 cm).
 - `verbose = FALSE`: emit progress and completion summaries.
 
-## Output Description
+## Output
 
 Returns the input data with added columns: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`, `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`, `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`, and optional `RFM`. Zero denominators are warned and yield `NA`; WHRadjBMI requires finite WHR/BMI variance; RFM requires sex coded 0/1.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -69,7 +69,7 @@ obesity_indices(
 )
 ```
 
-## Extended Example
+## Examples
 
 Scan for extremes with capping and verbose summary, omitting rows with missing inputs:
 
@@ -92,7 +92,7 @@ obesity_indices(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Required columns must be numeric; sex must be numeric 0/1 when `include_RFM = TRUE`.
 - WHRadjBMI is computed only when WHR and BMI have finite variance; otherwise it is set to `NA` with a warning.

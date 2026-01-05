@@ -16,12 +16,12 @@ knitr::opts_knit$set(purl = FALSE)
 
 `metabolic_markers()` aggregates several marker groups by calling the underlying calculators and binding their outputs to your data. Supported groups include insulin indices, adiposity SDS, cardiometabolic risk (cvd_risk), lipid panel markers, liver indices, glycemic markers, and metabolic syndrome (`metss`). It forwards NA policy and normalization options to the underlying functions, optionally computes insulin sensitivity/resistance modes, and logs progress when `verbose = TRUE`. No unit conversion is performed in this wrapper; see each underlying function for expected units.
 
-## Required Inputs
+## Inputs
 
 - `data`: data.frame/tibble containing the variables needed by the selected groups.
 - `col_map`: named list of column mappings forwarded to the underlying functions (e.g., TC/HDL/TG for lipids, BMI/waist for liver, glucose/insulin for glycemic/insulin). Keys depend on the selected groups; missing required columns in a group cause that group to be skipped or error per underlying function.
 
-## Key Arguments
+## Arguments
 
 - `which = c("insulin","adiposity_sds","cardio","lipid","liver","glycemic","mets")`: groups to compute; multiple allowed.
 - `normalize = c("none","z","inverse","range","robust")`: normalization forwarded to insulin indices when `mode` includes IS/IR.
@@ -29,11 +29,11 @@ knitr::opts_knit$set(purl = FALSE)
 - `na_action = c("keep","omit","error")`: missing-data policy forwarded to underlying calculators (HM-CS v2 style).
 - `verbose = TRUE`: emit progress/debug messages; failures are silenced unless verbose.
 
-## Output Description
+## Output
 
 Returns the original `data` with additional columns for each requested group that completes successfully. Insulin outputs are added first (if selected), followed by each group in `which`. Groups that fail validation or are unavailable are skipped silently (or noted when verbose). `mode = "IR"` returns inverted insulin indices; `mode = "IS"` returns sensitivity; `both` binds both.
 
-## Minimal Reproducible Example
+## Examples
 
 ```{r}
 library(HealthMarkers)
@@ -56,7 +56,7 @@ metabolic_markers(
 )
 ```
 
-## Extended Example
+## Examples
 
 Include metabolic syndrome flags and insulin indices, omitting rows with missing required inputs:
 
@@ -72,7 +72,7 @@ metabolic_markers(
 )
 ```
 
-## Notes / Workflow Integration
+## Notes
 
 - Each group enforces its own required columns and NA/extreme handling; this wrapper does not override those rules.
 - `cvd_risk` (cardio group) is called in a try-catch; failures are skipped with a debug message when `verbose = TRUE`.

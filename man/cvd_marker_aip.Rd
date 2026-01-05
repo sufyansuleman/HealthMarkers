@@ -26,6 +26,8 @@ cvd_marker_aip(
 \item "omit"  (drop rows with any missing/non-finite inputs)
 \item "error" (abort if any required input missing/non-finite)
 }}
+
+\item{verbose}{Logical; if TRUE, emit hm_inform() progress messages.}
 }
 \value{
 A tibble with columns model = "AIP" and value.
