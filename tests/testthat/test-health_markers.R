@@ -70,8 +70,8 @@ test_that("metabolic_markers liver + mets produce key outputs", {
 })
 
 test_that("all_health_markers('all') returns many derived columns", {
-  out <- all_health_markers(df_ins, col_map, which="all",
-                            normalize="none", mode="both", verbose=FALSE, na_action = "keep")
+  out <- suppressWarnings(all_health_markers(df_ins, col_map, which="all",
+                            normalize="none", mode="both", verbose=FALSE, na_action = "keep"))
   expect_gt(ncol(out), ncol(df_ins) + 25)
   expect_true(any(grepl("^IR_", names(out))))
 })

@@ -1,53 +1,66 @@
 ---
-title: "validate_inputs"
+title: "Validate Inputs Helpers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{validate_inputs}
+  %\VignetteIndexEntry{Validate Inputs Helpers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Explain the input validation helpers used across HealthMarkers. Modern code calls `hm_validate_inputs()` (and wrappers) to assert data type and required mappings; a small legacy `validate_inputs()` persists for the original `lipid_markers()` path.
 
-`hm_validate_inputs()` is the HealthMarkers v2 helper that standardizes basic input checks for marker functions. It verifies that `data` is a data.frame/tibble and that required keys are present in a named `col_map` with non-empty mappings. If no required keys are specified, `col_map` may be `NULL` or empty, and the helper returns silently. Errors are raised with function-specific classes for downstream handling.
+## When to use this
+- At the start of marker functions to fail fast on bad `data`/`col_map` before computation.
+- In tests to confirm classed errors for missing mappings or wrong types.
+- When maintaining legacy lipid code that still uses the old `validate_inputs()` signature.
 
-## Inputs
+## Helpers
+- `hm_validate_inputs(data, col_map, required_keys, fn)`: Asserts `data` is a data.frame/tibble and required `col_map` entries exist; aborts with classed errors (`healthmarkers_<fn>_error_*`).
+- `validate_inputs(data, col_map, fun_name)`: Legacy helper for `lipid_markers` that enforces mappings for TG, HDL_c, LDL_c, TC; aborts on missing mappings.
 
-- `data`: data.frame/tibble under validation.
-- `col_map`: named list mapping required keys to column names; may be `NULL` only when `required_keys` is empty.
-- `required_keys`: character vector of keys that must appear in `col_map` with non-empty mappings.
-- `fn`: character scalar identifying the calling function; used to namespace error classes and messages.
+## Inputs & options (hm_validate_inputs)
 
-## Key Behaviors
+| Argument       | Purpose / Options                                        | Notes                                   |
+|----------------|----------------------------------------------------------|-----------------------------------------|
+| data           | Data frame/tibble                                        | Required                                 |
+| col_map        | Named list mapping required keys to column names         | May be NULL only when `required_keys` is empty |
+| required_keys  | Character vector of keys that must be present in col_map | Empty vector allows col_map = NULL       |
+| fn             | Calling function name (used in error classes/messages)   | e.g., "fasting_is", "renal_markers"       |
 
-- Validates `data` type, aborting if not a data.frame/tibble.
-- Ensures `col_map` is a named list when `required_keys` is non-empty; otherwise allows `NULL`.
-- Confirms all `required_keys` exist in `col_map` and map to non-empty, non-`NA` names.
-- Returns `invisible(TRUE)` on success; otherwise aborts with classed errors like `healthmarkers_<fn>_error_*`.
+## Behavior and expectations
+- Returns `invisible(TRUE)` on success; aborts on type/mapping errors.
+- Does not mutate inputs; intended as the first guard in marker functions.
+- Error classes are scoped by `fn` so downstream handlers/tests can match them.
 
-## Output
+## Outputs
+- Success: invisible TRUE.
+- Failure: rlang abort with classed error (e.g., `healthmarkers_<fn>_error_missing_map`, `..._error_data_type`).
 
-`hm_validate_inputs()` returns `NULL` (invisibly) on success and throws a classed error on failure. It does not mutate inputs.
-
-## Examples
-
+## Worked example: success
 ```{r}
 library(HealthMarkers)
 
-# Valid mapping
 HealthMarkers:::hm_validate_inputs(
   data = data.frame(x = 1),
   col_map = list(test = "x"),
   required_keys = "test",
   fn = "example_fn"
 )
+```
 
-# Missing map triggers an error
+## Worked example: missing mapping
+```{r}
 try(
   HealthMarkers:::hm_validate_inputs(
     data = data.frame(x = 1),
@@ -58,9 +71,11 @@ try(
 )
 ```
 
-## Notes
+## Troubleshooting & tips
+- Ensure `col_map` is named; unnamed lists/character vectors will abort.
+- When `required_keys` is empty, you can pass `col_map = NULL` to only check the data type.
+- Keep `fn` specific to get readable, scoped error classes in tests/logs.
 
-- Marker functions call `hm_validate_inputs()` early to give consistent, classed errors before deeper processing.
-- When `required_keys` is empty (e.g., summarizers), `col_map` can be omitted; the helper only enforces `data` type.
-- Use `fn` to scope error classes/messages for clearer debugging and downstream handling.
-
+## See also
+- Modern helpers: `hm_validate_inputs`, `hm_require_columns`, `hm_warn_high_missing`
+- Legacy: `validate_inputs` (lipid_markers), detailed overview in utils_validate vignette

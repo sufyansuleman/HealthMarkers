@@ -153,3 +153,6 @@ normalize_vec <- function(
   # Fallback (should not reach)
   return(x)
 }
+
+# Silence R CMD check for tidy-eval placeholder
+utils::globalVariables(":=")

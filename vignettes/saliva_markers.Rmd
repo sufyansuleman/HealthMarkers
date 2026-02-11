@@ -1,56 +1,79 @@
 ---
-title: "saliva_markers"
+title: "Saliva Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{saliva_markers}
+  %\VignetteIndexEntry{Saliva Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute saliva-based stress and glycemic markers: safe-log waking cortisol, cortisol awakening response AUC (trapezoidal over 3 samples), safe-log salivary alpha-amylase, and pass-through salivary glucose. Includes mapping validation, missingness policies, optional extreme screening/capping on inputs, and safe handling of non-positive values before logs.
 
-`saliva_markers()` computes saliva-based stress and glycemic markers: log-transformed waking cortisol, cortisol awakening response AUC (CAR_AUC), log-transformed salivary alpha-amylase, and salivary glucose. It validates inputs, coerces mapped columns to numeric with warnings when NAs are introduced, handles missingness per policy, safely logs non-positive values to `NA`, optionally scans/caps extreme inputs, and supports custom sampling times for the trapezoidal AUC.
+## When to use this
+- You have three salivary cortisol measures around wake (e.g., 0/30/60 minutes) and want CAR AUC and log cortisol.
+- You also collect salivary alpha-amylase (stress marker) and/or salivary glucose and need cleaned, log-safe outputs.
+- You want explicit NA policies, optional extreme truncation, and flexible sampling times for AUC.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble with salivary measures.
-- `col_map`: named list mapping inputs (defaults assume identical names): `cort1`, `cort2`, `cort3` (cortisol at ~0/30/60 min, nmol/L), `amylase` (U/mL), `glucose` (mg/dL). Mapped columns must exist; non-numeric columns are coerced, with introduced NAs warned.
+| Argument       | Purpose / Options                                                     | Notes                                                                 |
+|----------------|-----------------------------------------------------------------------|-----------------------------------------------------------------------|
+| data           | Data frame/tibble with salivary measures                              | Columns mapped via `col_map`                                          |
+| col_map        | Named list mapping required inputs                                    | cort1, cort2, cort3 (cortisol); amylase; glucose                      |
+| na_action      | Missing-data policy for required inputs                               | "keep" (default), "omit", "error"                                    |
+| na_warn_prop   | Proportion threshold for high-missingness diagnostics                  | Default 0.2 (shown in debug/verbose)                                  |
+| check_extreme  | Scan inputs against bounds                                            | Default FALSE                                                         |
+| extreme_action | Handling if extremes detected                                         | "warn" (default), "cap", "error", "ignore"                          |
+| extreme_rules  | Optional bounds list c(min, max)                                      | Keys may be mapped column names or cort1/cort2/cort3/amylase/glucose  |
+| times          | Sampling times (minutes) for CAR AUC                                  | Numeric length 3, non-decreasing; default c(0, 30, 60)                |
+| verbose        | Emit progress and completion summaries                                | Default FALSE                                                         |
 
-## Arguments
+**Required columns (col_map):** cort1, cort2, cort3 (cortisol nmol/L), amylase (U/mL), glucose (mg/dL). Mapped columns must exist.
 
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (propagate, drop rows, or abort).
-- `na_warn_prop = 0.2`: proportion threshold to emit high-missingness diagnostics (debug level).
-- `check_extreme = FALSE`: enable extreme-value scanning using broad default bounds.
-- `extreme_action = c("warn","cap","error","ignore")`: response when extremes detected; `cap` truncates into bounds and warns.
-- `extreme_rules = NULL`: optional named list of c(min,max) overrides; names may be input keys or actual column names.
-- `times = c(0, 30, 60)`: sampling times (minutes) used for CAR_AUC trapezoidal integration; must be numeric length 3 in non-decreasing order.
-- `verbose = FALSE`: emit progress and completion diagnostics.
+**Units:** No conversion is performed. Supply cortisol in nmol/L, alpha-amylase in U/mL, salivary glucose in mg/dL.
 
-## Output
+## Handling and expectations
+- Validation & coercion: required columns must exist; non-numeric are coerced with warnings when NAs are introduced; non-finite become NA.
+- Missingness: `keep` propagates NA; `omit` drops rows with any required NA; `error` aborts if required inputs contain NA.
+- High-missing diagnostics: controlled by `na_warn_prop`; shown when `verbose` (or debug) is enabled.
+- Extreme screening (optional): checks inputs, not outputs. Uses defaults unless `extreme_rules` provided; `extreme_action` controls warn/cap/error/ignore.
+- Safe logs: cortisol and amylase are log-transformed after setting non-positive to NA.
+- CAR AUC: trapezoidal over the three cortisol values using `times`; any non-finite cortisol in the triplet yields NA for that row.
+- Times: must be numeric length 3, non-decreasing; customize for your protocol.
+- No unit conversion: ensure assays are in consistent units before calling.
 
-Returns a tibble with columns:
-- `log_cortisol_wake`: safe log of waking cortisol (`cort1`); non-positive values become `NA`.
-- `CAR_AUC`: trapezoidal area over times (`cort1`,`cort2`,`cort3`) using `times` spacing; rows with any non-finite cortisol are `NA`.
-- `log_amylase`: safe log of `amylase`; non-positive become `NA`.
-- `saliva_glucose`: pass-through mapped glucose.
+## Defaults and validation details
+- Default extreme bounds (when `check_extreme = TRUE` and no overrides): cortisol (each) 0–2000, amylase 0–50000, glucose 0–1000 (keyed by mapped column names).
+- Extreme rules can be keyed by input names (cort1/2/3/amylase/glucose) or actual column names; they are remapped internally.
+- NA diagnostics appear only with verbose/debug logging; set `verbose = TRUE` during QC.
+- Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
-## Examples
+## Outputs
+- Returns a tibble (rows follow `na_action`) with: log_cortisol_wake, CAR_AUC, log_amylase, saliva_glucose.
+- NA indicates missing/invalid inputs, non-positive values before log, NA in any cortisol for CAR_AUC, or values dropped via `na_action`.
 
+## Worked example 1: Standard times, keep NAs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  saliva_cort1 = c(12.5, 9.0),
-  saliva_cort2 = c(18.0, 11.0),
-  saliva_cort3 = c(16.2, 10.5),
-  saliva_amylase = c(85, 120),
-  saliva_glucose = c(4.2, 5.0)
+  saliva_cort1 = c(12.5, 9.0, NA),
+  saliva_cort2 = c(18.0, 11.0, 7.5),
+  saliva_cort3 = c(16.2, 10.5, 6.8),
+  saliva_amylase = c(85, 120, 95),
+  saliva_glucose = c(4.2, 5.0, 4.8)
 )
 
 saliva_markers(
@@ -63,48 +86,52 @@ saliva_markers(
     glucose = "saliva_glucose"
   ),
   na_action = "keep",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
+*Interpretation:* CAR_AUC and log cortisol/amylase compute where inputs are present and positive; the third row yields NA for log_cortisol_wake and CAR_AUC due to missing cort1.
 
-## Examples
-
-Use custom times, enable extreme capping, and show verbose diagnostics:
-
+## Worked example 2: Custom times, cap extremes, drop incomplete
 ```{r}
 df2 <- tibble(
-  c1 = c(14, 0, 2200),   # extreme cortisol will be capped when requested
+  c1 = c(14, 0, 2200),    # zero and extreme cortisol
   c2 = c(19, 12, 2100),
   c3 = c(17, 11, 2050),
-  amy = c(90, 70, 60000), # extreme amylase for demo
+  amy = c(90, 70, 60000),  # extreme amylase
   glu = c(4.5, 5.1, 7.0)
-)
-
-cm2 <- list(
-  cort1 = "c1",
-  cort2 = "c2",
-  cort3 = "c3",
-  amylase = "amy",
-  glucose = "glu"
 )
 
 saliva_markers(
   data = df2,
-  col_map = cm2,
+  col_map = list(cort1 = "c1", cort2 = "c2", cort3 = "c3", amylase = "amy", glucose = "glu"),
   times = c(0, 20, 50),
   check_extreme = TRUE,
   extreme_action = "cap",
-  na_action = "keep",
+  na_action = "omit",
   verbose = TRUE
 )
 ```
+*Interpretation:* Rows with required NAs are dropped; extremes are capped before logs/AUC; CAR_AUC uses the custom times (0,20,50).
 
-## Notes
+## Troubleshooting & common pitfalls
+- YAML/header placement: keep this YAML at the top; stray text before it breaks knitting.
+- Missing columns: ensure every required `col_map` key is mapped to an existing column.
+- Non-positive cortisol/amylase: become NA before logging; expect NA outputs if values are 0 or negative.
+- Extreme handling: only runs when `check_extreme = TRUE`; defaults are broad—override with `extreme_rules` if needed.
+- Times validation: must be numeric length 3 and non-decreasing; otherwise the function aborts.
+- All NA outputs: typically due to missing cortisol triplets, non-positive cortisol/amylase, or aggressive `na_action = "omit"`.
 
-- Safe logs: non-positive cortisol/amylase values become `NA` before logging; resulting logs also coerce non-finite to `NA`.
-- CAR AUC uses trapezoidal integration over three timepoints; `times` must be non-decreasing length 3 or an error is thrown.
-- High missingness diagnostics are emitted at debug level when proportions exceed `na_warn_prop`; enable `verbose = TRUE` for progress and completion messages.
-- Extreme scanning uses broad defaults keyed to mapped columns; supply `extreme_rules` to tighten ranges or disable via `check_extreme = FALSE`.
-- No unit conversion is performed; provide inputs in consistent assay units.
-- When `na_action = "error"`, missing required inputs abort; `omit` drops those rows; `keep` propagates `NA` to outputs.
+## Tips for best results
+- Confirm assay units upfront; no conversions are applied.
+- Use `check_extreme = TRUE` with `extreme_action = "warn"` first to see how many inputs are implausible; switch to `cap` to truncate.
+- Set `na_action = "omit"` for modeling datasets; `keep` is better for exploratory review.
+- Provide accurate sampling times in minutes for CAR AUC if your protocol differs from 0/30/60.
 
+## Validation notes
+- CAR_AUC is trapezoidal: $\sum_{i=1}^{2} \frac{c_i + c_{i+1}}{2} \times (t_{i+1} - t_i)$ using the three cortisol values and the `times` gaps.
+- Safe logs: $\log(x)$ is only taken when $x > 0$ and finite; otherwise NA.
+- Extreme capping (when enabled) happens on inputs before log/AUC computation.
+
+## See also
+- Function docs: `?saliva_markers`
+- Related vignettes: health_markers, health_summary, stress-related markers (e.g., inflammatory_markers)

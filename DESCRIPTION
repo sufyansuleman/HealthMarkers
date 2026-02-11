@@ -1,7 +1,7 @@
 Package: HealthMarkers
 Type: Package
 Title: HealthMarkers: A Toolkit for Clinical, Metabolic, Cardiovascular & Pulmonary Biomarker Calculation
-Version: 0.1.0
+Version: 1.0
 Authors@R:
     person(given = "Sufyan", family = "Suleman",
            email = "sufyansuleman@hotmail.com",
@@ -35,6 +35,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
+    pkgload,
     CVrisk,
     di,
     rspiro,

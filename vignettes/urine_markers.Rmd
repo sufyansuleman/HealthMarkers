@@ -1,100 +1,124 @@
 ---
-title: "urine_markers"
+title: "Urine Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{urine_markers}
+  %\VignetteIndexEntry{Urine Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute urine-only renal and tubular markers: UACR, KDIGO albuminuria stage (A1–A3), microalbuminuria flag, UPCR (if protein provided), urine Na/K ratio (if electrolytes provided), and creatinine-normalized tubular markers (NGAL, KIM1, NAG, Beta2Micro, A1Micro, IL18, L_FABP). Includes mapping validation, NA policies, optional extreme screening/capping, and safe division with consolidated zero-denominator warnings. No unit conversion is applied.
 
-`urine_markers()` computes urine-only renal/tubular metrics: UACR (mg/g), KDIGO albuminuria stage (A1/A2/A3), microalbuminuria flag, UPCR (if urine protein is supplied), urine Na/K ratio (if Na and K available), and creatinine-normalized tubular markers (NGAL, KIM1, NAG, Beta2Micro, A1Micro, IL18, L_FABP when present). Inputs are validated, required columns can be coerced to numeric with warnings, missingness is handled per policy, divisions use safe guards with consolidated zero-denominator warnings, and optional extreme-value scanning/capping is available. Units are assumed; no conversions beyond the coded ratios are performed.
+## When to use this
+- You have urine albumin and creatinine (mg/L, mg/dL) and want UACR and albuminuria staging.
+- You also have urine protein, Na/K, or tubular markers and need creatinine-normalized ratios.
+- You want robust NA/extreme handling with safe divisions to avoid Inf/NaN.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble with urine assays.
-- Required columns: `urine_albumin` (mg/L) and `urine_creatinine` (mg/dL). Optional: `urine_protein` (mg/L), `urine_Na`/`urine_K` (mmol/L), and tubular markers `NGAL`, `KIM1`, `NAG`, `beta2_micro`, `a1_micro`, `IL18`, `L_FABP` (assumed mg/L for normalization per g creatinine). Numeric-required columns are coerced when possible; non-finite values become `NA`.
+| Argument       | Purpose / Options                                               | Notes                                               |
+|----------------|-----------------------------------------------------------------|-----------------------------------------------------|
+| data           | Data frame/tibble with urine assays                             | Columns mapped by name (defaults assume same names) |
+| na_action      | Missing-data policy for required inputs                         | "keep" (default), "omit", "error"                  |
+| na_warn_prop   | Proportion threshold for high-missingness diagnostics           | Default 0.2 (shown in debug/verbose)                |
+| check_extreme  | Scan inputs against bounds                                      | Default FALSE                                       |
+| extreme_action | Handling for extremes                                           | "warn" (default), "cap", "error", "ignore"         |
+| extreme_rules  | Optional bounds list c(min, max) per input                      | Defaults are broad, see below                       |
+| verbose        | Emit progress and completion summaries                          | Default FALSE                                       |
 
-## Arguments
+**Required columns:** urine_albumin (mg/L), urine_creatinine (mg/dL).
 
-- `na_action = c("keep","omit","error")`: missing-data policy (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
-- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics on required inputs (debug level).
-- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
-- `extreme_action = c("warn","cap","error","ignore")`: response to detected extremes; `cap` truncates values and warns.
-- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input/column names.
-- `verbose = FALSE`: emit progress and completion diagnostics.
+**Optional columns:** urine_protein (mg/L), urine_Na (mmol/L), urine_K (mmol/L), NGAL, KIM1, NAG, beta2_micro (Beta2Micro output), a1_micro (A1Micro output), IL18, L_FABP.
 
-## Output
+**Units:** No conversion. Ensure albumin/protein mg/L, creatinine mg/dL, Na/K mmol/L; tubular marker units consistent across markers.
 
-Returns a tibble with:
-- `UACR`, `albuminuria_stage` (A1/A2/A3), `microalbuminuria` (normal/micro).
-- `UPCR` (mg/g) when `urine_protein` present; otherwise `NA`.
-- `U_Na_K_ratio` when both `urine_Na` and `urine_K` present; otherwise `NA`.
-- Tubular markers per g creatinine: `NGAL_per_gCr`, `KIM1_per_gCr`, `NAG_per_gCr`, `Beta2Micro_per_gCr`, `A1Micro_per_gCr`, `IL18_per_gCr`, `L_FABP_per_gCr` (each `NA` if source column absent).
+## Handling and expectations
+- Validation & coercion: required columns must exist; numeric coercion with warnings if NAs introduced; non-finite set to NA.
+- Missingness: `keep` propagates NA; `omit` drops rows with required NA; `error` aborts if required inputs contain NA.
+- High-missing diagnostics: controlled by `na_warn_prop`; shown when `verbose` (or debug) is enabled.
+- Extreme screening (optional): defaults are broad (albumin/protein/markers 0–100000 mg/L; creatinine 0.01–500 mg/dL; Na 0–400; K 0–200); `extreme_action` controls warn/cap/error/ignore.
+- Safe division: zero/invalid denominators set outputs to NA with a consolidated warning.
+- Albuminuria staging: A1 < 30 mg/g, A2 30–300 mg/g, A3 > 300 mg/g; microalbuminuria flag is `micro` for 30–300 mg/g, else `normal`.
+- Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
-Safe division sets zero/non-finite denominators to `NA` and tracks a consolidated warning. Albuminuria staging uses UACR cutoffs: A1 < 30 mg/g, A2 30–300, A3 > 300. Microalbuminuria flag is `micro` for 30–300 mg/g, otherwise `normal`.
+## Outputs
+- UACR, albuminuria_stage (A1/A2/A3), microalbuminuria (normal/micro), UPCR (if urine_protein present), U_Na_K_ratio (if Na & K present), NGAL_per_gCr, KIM1_per_gCr, NAG_per_gCr, Beta2Micro_per_gCr, A1Micro_per_gCr, IL18_per_gCr, L_FABP_per_gCr.
+- NA arises from missing/invalid inputs, zero denominators, or dropped rows under `omit`.
 
-## Examples
-
+## Worked example 1: Standard inputs, keep NAs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  urine_albumin = c(25, 450),      # mg/L
-  urine_creatinine = c(1.0, 0.8),  # mg/dL
-  urine_protein = c(120, NA),      # mg/L
-  urine_Na = c(100, 80),
-  urine_K = c(40, 30),
-  NGAL = c(15, 40)
+  urine_albumin = c(25, 450, NA),      # mg/L
+  urine_creatinine = c(1.0, 0.8, 0.5), # mg/dL
+  urine_protein = c(120, NA, 90),      # mg/L
+  urine_Na = c(100, 80, 90),
+  urine_K = c(40, 30, 0),
+  NGAL = c(15, 40, 20)
 )
 
 urine_markers(
   data = df,
   na_action = "keep",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
+*Interpretation:* Computes UACR, staging, micro flag, UPCR, U_Na_K_ratio, and NGAL_per_gCr where inputs exist; NA propagates for missing or zero denominators (e.g., urine_K = 0).
 
-## Examples
-
-Enable extreme scanning with capping, include tubular markers, and display diagnostics:
-
+## Worked example 2: Cap extremes, drop incomplete
 ```{r}
 df2 <- tibble(
-  urine_albumin = c(20, 120000),   # extreme will be capped
-  urine_creatinine = c(1.2, 0.005),# very low will be capped
+  urine_albumin = c(20, 120000),    # extreme albumin
+  urine_creatinine = c(1.2, 0.005), # very low creatinine
   urine_protein = c(80, 90000),
-  urine_Na = c(90, 500),           # Na extreme for capping demo
-  urine_K = c(35, 210),            # K extreme
-  NGAL = c(10, 200000),
-  KIM1 = c(5, 150000),
-  NAG = c(8, 110000),
-  beta2_micro = c(2, 90000),
-  a1_micro = c(1, 80000),
-  IL18 = c(3, 120000),
-  L_FABP = c(4, 130000)
+  urine_Na = c(90, 500),            # extreme Na
+  urine_K = c(35, 210),             # extreme K
+  NGAL = c(10, 200000)
 )
 
 urine_markers(
   data = df2,
   check_extreme = TRUE,
   extreme_action = "cap",
-  na_action = "keep",
+  na_action = "omit",
   verbose = TRUE
 )
 ```
+*Interpretation:* Extremes are capped before ratios; incomplete rows are dropped; zero-denominator warnings list counts.
 
-## Notes
+## Troubleshooting & common pitfalls
+- YAML/header: keep YAML at the top; stray text before it breaks knitting.
+- Units: ensure albumin/protein mg/L, creatinine mg/dL; Na/K mmol/L; tubular marker units consistent across markers.
+- Missing columns: required columns must be present; optional markers only emit outputs when supplied.
+- Zero denominators: check urine_creatinine, urine_K; warnings list how many cases; outputs set to NA.
+- Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
+- All NA outputs: often due to missing required inputs, zero denominators, or aggressive `na_action = "omit"`.
 
-- Units are assumed (albumin/protein mg/L; creatinine mg/dL; electrolytes mmol/L); no conversions beyond the ratios are performed.
-- Zero denominators (e.g., very low creatinine) yield `NA` and trigger a consolidated warning listing affected metrics.
-- High missingness on required columns is reported at debug level when exceeding `na_warn_prop`; use `verbose = TRUE` for progress and completion summaries.
-- When optional inputs are absent, corresponding outputs remain `NA`; tubular markers are normalized per g creatinine when available.
+## Tips for best results
+- Start with `check_extreme = TRUE`, `extreme_action = "warn"` to gauge outliers; switch to `cap` to truncate.
+- Use `na_action = "omit"` when downstream analyses need complete cases; `keep` for exploratory review.
+- Monitor zero-denominator warnings—extremely low creatinine or K values will blank ratios and per-gCr markers.
 
+## Validation notes
+- UACR = (urine_albumin / urine_creatinine) * 1000 (mg/g); UPCR analogous when protein present.
+- U_Na_K_ratio = urine_Na / urine_K.
+- Tubular markers per g creatinine: marker / (urine_creatinine * 0.01) where denominator is g/L.
+- Divisions are safe: non-finite/zero denominators yield NA with a consolidated warning.
+- Default bounds (applied only if `check_extreme = TRUE`): albumin/protein/markers 0–100000 mg/L; creatinine 0.01–500 mg/dL; Na 0–400; K 0–200.
+
+## See also
+- Function docs: `?urine_markers`
+- Related vignettes: renal_markers, health_markers, corrected_calcium

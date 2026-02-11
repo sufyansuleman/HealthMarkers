@@ -61,21 +61,6 @@ test_that("cvd_risk Stroke returns tibble with numeric risk when PooledCohort pr
   expect_equal(length(out$risk), nrow(dummy_df))
 })
 
-# ---- MESA (CVrisk) ----
-test_that("cvd_risk MESA returns tibble; numeric when available, NA-row otherwise", {
-  skip_if_not_installed("CVrisk")
-  out <- cvd_risk(dummy_df, model = "MESA")
-  expect_s3_class(out, "tbl_df")
-  expect_identical(out$model, "MESA")
-  expect_identical(out$year, 10L)
-  if (all(is.na(out$risk))) {
-    expect_equal(nrow(out), 1L)  # fallback placeholder
-  } else {
-    expect_type(out$risk, "double")
-    expect_equal(length(out$risk), nrow(dummy_df))
-  }
-})
-
 # ---- QRISK3 (many inputs; handle both NA fallback and real result) ----
 test_that("cvd_risk QRISK3 returns tibble when QRISK3 present (NA fallback or numeric)", {
   skip_if_not_installed("QRISK3")
@@ -112,7 +97,7 @@ test_that("cvd_risk ALL returns one row per model with expected columns", {
   expect_true(all(c("model", "year", "risk", "value") %in% names(out_all)))
   expect_setequal(
     out_all$model,
-    c("ASCVD", "QRISK3", "MESA", "Stroke", "RiskScorescvd", "AIP", "LDL_PN")
+    c("ASCVD", "QRISK3", "Stroke", "RiskScorescvd", "AIP", "LDL_PN")
   )
-  expect_equal(nrow(out_all), 7L)
+  expect_equal(nrow(out_all), 6L)
 })

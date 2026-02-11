@@ -6,7 +6,7 @@
 \usage{
 cvd_risk(
   data,
-  model = c("ALL", "ASCVD", "QRISK3", "MESA", "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
+  model = c("ALL", "ASCVD", "QRISK3", "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
   year = 10,
   ...,
   verbose = FALSE
@@ -18,7 +18,7 @@ cvd_risk(
 \item{model}{One of:
 \itemize{
 \item "ALL"
-\item Risk calculators: "ASCVD","QRISK3","MESA","Stroke","RiskScorescvd"
+\item Risk calculators: "ASCVD","QRISK3","Stroke","RiskScorescvd"
 \item Lipid markers: "AIP","LDL_PN"
 }}
 

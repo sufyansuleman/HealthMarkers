@@ -1,5 +1,5 @@
 ---
-title: "cvd_marker_aip"
+title: "CVD Marker AIP"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cvd_marker_aip}
@@ -8,63 +8,96 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute the Atherogenic Index of Plasma (AIP) as $\log_{10}(\mathrm{TG} / \mathrm{HDL}_c)$ with explicit column mapping, numeric coercion, and NA policies.
 
-`cvd_marker_aip()` computes the Atherogenic Index of Plasma (AIP) as `log10(TG / HDL_c)`. It validates required lipid inputs, coerces non-numeric columns, and handles missing/non-finite values per `na_action`.
+## When to use
+- You have triglycerides and HDL-c in mg/dL and need a fast atherogenicity marker.
+- You want consistent NA handling (keep/omit/error) across analytic pipelines.
+- Your source column names differ from the defaults `TG` and `HDL_c`.
 
-## Inputs
+## Inputs and requirements
+- `data`: data.frame/tibble containing TG and HDL-c.
+- `col_map`: named list mapping `TG` and `HDL_c` to column names in `data`.
+- Units: mg/dL (no unit conversion performed).
+- Non-finite values are treated as missing before NA handling.
 
-- `data`: data.frame/tibble with triglycerides and HDL cholesterol.
-- `col_map`: named list mapping `TG` and `HDL_c` column names (defaults: `TG`, `HDL_c`).
-- Inputs are coerced to numeric; non-finite values become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: missing-data policy for TG/HDL (`keep` retains NA results; `omit` drops rows; `error` aborts).
-- `col_map`: rename required columns if needed.
-- `verbose = FALSE`: emit progress via `hm_inform()`.
-
-## Output
-
-Returns a tibble with columns `model = "AIP"` and `value` (numeric). Rows are dropped only when `na_action = "omit"`; otherwise rows with missing inputs yield `NA` values.
-
-## Examples
+## Load packages and data
+Use a 30-row slice of the simulated data with native `TG` and `HDL_c` columns.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-lipids <- tibble(TG = c(150, 90), HDL_c = c(40, 60))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, c("TG", "HDL_c")]
 
-cvd_marker_aip(
-  data = lipids,
-  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+col_map <- list(TG = "TG", HDL_c = "HDL_c")
+```
+
+## Quick start
+Compute AIP with defaults and preview the first rows.
+
+```{r}
+aip_out <- cvd_marker_aip(
+  data = sim_small,
+  col_map = col_map,
   na_action = "keep",
   verbose = FALSE
 )
+
+head(aip_out)
 ```
 
-## Examples
-
-Drop rows with missing inputs and compute AIP on a renamed HDL column:
+## Column mapping
+Map alternate column names. Here we rename to show `col_map` flexibility.
 
 ```{r}
-lipids2 <- tibble(TG = c(150, 90, NA), HDL = c(40, 60, 55))
+sim_renamed <- sim_small |> rename(tg_lab = TG, hdl_lab = HDL_c)
 
-cvd_marker_aip(
-  data = lipids2,
-  col_map = list(TG = "TG", HDL_c = "HDL"),
-  na_action = "omit",
-  verbose = FALSE
+aip_mapped <- cvd_marker_aip(
+  data = sim_renamed,
+  col_map = list(TG = "tg_lab", HDL_c = "hdl_lab")
 )
+
+head(aip_mapped)
 ```
 
-## Notes
+## Missing data handling
+Compare retaining vs omitting rows with missing inputs. Insert an `NA` so `na_action = "omit"` drops the affected row.
 
-- Non-numeric lipid columns are coerced with warnings; non-finite values are set to `NA` before calculation.
-- When `na_action = "error"`, any missing/non-finite TG or HDL aborts; use `omit` to filter or `keep` to retain NA outputs.
-- Output uses the provided units (assumed mg/dL) without unit conversion.
+```{r}
+demo <- as.data.frame(sim_small[1:8, ])
+demo[["TG"]][3] <- NA
+
+aip_keep <- cvd_marker_aip(demo, col_map, na_action = "keep")
+aip_omit <- cvd_marker_aip(demo, col_map, na_action = "omit")
+
+list(keep_rows = nrow(aip_keep), omit_rows = nrow(aip_omit))
+```
+
+Use `na_action = "error"` to abort when any required input is missing or non-finite.
+
+## Numeric coercion
+Non-numeric inputs are coerced to numeric with a warning; any non-finite results become `NA` before NA handling.
+
+```{r}
+ch <- sim_small |> mutate(TG = as.character(TG), HDL_c = as.character(HDL_c))
+
+aip_coerced <- cvd_marker_aip(ch, col_map)
+head(aip_coerced)
+```
+
+## Outputs
+- Tibble with columns `model = "AIP"` and `value` (the log10 ratio).
+- Rows are dropped only when `na_action = "omit"`; otherwise `value` is `NA` where inputs are missing or non-finite.
+
+## Tips
+- For clean slices of data, set `na_action = "keep"`; for modeling pipelines, prefer `"omit"` or `"error"` to avoid silent gaps.
+- Pre-check units if your source is in mmol/L to avoid scale errors (no conversion performed).
+- Because computation is per-row, you can safely bind `cvd_marker_aip()` output back to your data via `bind_cols()`.

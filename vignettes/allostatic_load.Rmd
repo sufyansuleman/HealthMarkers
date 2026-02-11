@@ -1,5 +1,5 @@
 ---
-title: "allostatic_load"
+title: "Allostatic Load"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{allostatic_load}
@@ -8,79 +8,116 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Composite Allostatic Load score that flags biomarkers above high-risk thresholds and sums the flags. With multiple biomarkers the rule is `>`; with a single biomarker it is `>=`. Optional extreme screening applies only to columns whose names contain "sds".
 
-`allostatic_load()` sums high-risk flags across biomarkers using user-specified thresholds. With multiple biomarkers, flags are `> threshold`; with a single biomarker, the rule is `>= threshold`. Optional SDS-like extreme screening applies to columns whose names contain "sds".
+## When to use this
+- You want a simple count of biomarkers exceeding risk cut-points.
+- You have a small set of biomarkers with clear thresholds you control.
+- You may include pre-computed SDS columns and optionally cap implausible SDS values.
 
-## Inputs
+## What you need
+- Thresholds: named list of scalar numeric cutoffs; names must match columns (or be mapped via `col_map`).
+- Data: matching biomarker columns; units should align with the thresholds you supply.
+- Policies: `na_action` (`keep` treats missing as unflagged; `omit` drops rows; `error` aborts). `check_extreme`/`sds_limit`/`extreme_action` only affect columns whose names contain "sds".
+- Optional: `return_summary = TRUE` for counts of flags/omissions; `verbose` for progress.
 
-- `data`: data.frame/tibble with numeric biomarker columns.
-- `thresholds`: named list of scalar numeric cut-points; names must match columns (or mapped names).
-- `col_map` (optional): map threshold names to column names; defaults to identity.
-- Inputs are coerced to numeric; non-finite become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: row-wise policy for mapped inputs (`keep` treats NA as 0 contribution).
-- `check_extreme = FALSE`: scan columns whose names contain "sds" for |value| > `sds_limit`.
-- `extreme_action = c("cap","NA","error")`: handling of SDS-like extremes when screening is enabled.
-- `sds_limit = 6`: absolute SDS limit for screening.
-- `return_summary = FALSE`: if TRUE, return list with data, summary, warnings.
-- `verbose`: emit progress messages.
-
-## Output
-
-Returns a tibble with `AllostaticLoad` (integer sum of flags). With `return_summary = TRUE`, returns list with `data`, `summary` (rows, biomarkers, totals), and `warnings`. Rows drop only when `na_action = "omit"`; otherwise missing inputs propagate `NA` flags but still sum available indicators.
-
-## Examples
+## Load packages and data
+Use a small subset of the simulated data. Replace `sim_small` with your data.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-df <- tibble(
-  SBP = c(118, 142, 130),
-  DBP = c(76, 92, 85),
-  CRP = c(1.2, 4.8, 2.1)
-)
-
-thr <- list(SBP = 130, DBP = 85, CRP = 3)
-
-allostatic_load(
-  data = df,
-  thresholds = thr,
-  na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "cap",
-  verbose = FALSE
-)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
 ```
 
-## Examples
-
-Drop incomplete rows, scan SDS-like columns for extremes, and cap them:
+## Column map and thresholds
+Provide thresholds and, if needed, map them to your column names.
 
 ```{r}
-allostatic_load(
-  data = df,
-  thresholds = thr,
+thresholds <- list(sbp = 130, dbp = 85, CRP = 3)
+col_map <- list(sbp = "sbp", dbp = "dbp", CRP = "CRP")
+```
+
+## Walkthrough (compute Allostatic Load)
+
+```{r}
+al <- allostatic_load(
+  data = sim_small,
+  thresholds = thresholds,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+
+al |> slice_head(n = 5)
+```
+
+Interpretation: `AllostaticLoad` is the count of biomarkers above thresholds. With >1 biomarker the rule is `>`; with a single biomarker it is `>=`.
+
+## Missing data and screening
+Demonstrate row handling and SDS screening (only affects columns containing "sds").
+
+```{r}
+demo <- sim_small[1:8, c("sbp", "dbp", "CRP")]
+demo$sbp[3] <- NA
+
+demo$CRP_sds <- c(0, 7, -8, 1, NA, 0, 0, 0)  # example SDS column to show screening
+
+al_keep <- allostatic_load(
+  data = demo,
+  thresholds = thresholds,
+  col_map = c(col_map, CRP_sds = "CRP_sds"),
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  sds_limit = 6,
+  verbose = FALSE
+)
+
+al_omit <- allostatic_load(
+  data = demo,
+  thresholds = thresholds,
+  col_map = c(col_map, CRP_sds = "CRP_sds"),
   na_action = "omit",
   check_extreme = TRUE,
   extreme_action = "cap",
   sds_limit = 6,
-  return_summary = TRUE,
-  verbose = TRUE
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(al_keep),
+  omit_rows = nrow(al_omit),
+  head_keep = al_keep |> slice_head(n = 3)
 )
 ```
 
-## Notes
+## Expectations
+- Threshold names must match columns (or be mapped); missing columns abort.
+- `na_action`: `keep` treats missing as unflagged (flag = 0), `omit` drops rows, `error` aborts on missing.
+- `check_extreme`/`sds_limit`/`extreme_action` affect only columns whose names contain "sds" (case-insensitive).
+- Multi-biomarker rule is `>`; single-biomarker rule is `>=`.
 
-- Threshold list names must align with columns (or mapped via `col_map`); duplicates or empty names abort.
-- With one biomarker, the flag rule is `>= threshold`; otherwise `> threshold`.
-- SDS-like screening touches only columns whose names include "sds"; adjust `sds_limit` if your SDS scale differs.
-- `na_action = "error"` enforces completeness; `"omit"` drops incomplete rows; `"keep"` retains them with NA contributions.
+## Common pitfalls
+- Threshold units mismatched to data units will misflag results; align units first.
+- Passing only one biomarker changes the rule to `>=`; set thresholds accordingly.
+- SDS screening does nothing unless column names contain "sds"; rename if you expect screening.
+- `na_action = keep` leaves missing inputs unflagged (zero); use `omit` for stricter handling.
 
+## Validation notes
+- Spot-check one biomarker: flag = 1 if value exceeds the threshold (or equals when only one biomarker), else 0.
+- Sum of per-biomarker flags should equal `AllostaticLoad` for each row.
+- If using `check_extreme`, verify capped SDS values are truncated to +/- `sds_limit` when `extreme_action = "cap"`.
+
+## See also
+- `adiposity_sds()` and `adiposity_sds_strat()` for SDS creation.
+- `health_markers()` and `health_summary()` for broader panels.

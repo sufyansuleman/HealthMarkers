@@ -1,0 +1,211 @@
+---
+title: "Getting Started with HealthMarkers"
+author: "HealthMarkers Team"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with HealthMarkers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
+```
+
+## Overview
+Load the bundled simulated dataset, pick which markers to compute, and view only the outputs you care about. All examples use shipped data; swap in your data when ready.
+
+## When to use
+- You want a quick tour of core helpers and the `all_health_markers()` orchestrator.
+- You need to see column inference vs explicit mapping for your data.
+- You prefer ready-to-run code snippets (no optional dependencies required for these examples).
+
+## What the package offers
+- Many clinical/metabolic markers: glycemic, lipid, renal, inflammatory, liver, anthropometric/obesity, atherogenic indices, frailty/Charlson, sweat/urine panels, micronutrients, pulmonary indices, and more.
+- Single-purpose helpers (e.g., `cvd_marker_aip()`, `sweat_markers()`, `fasting_is()`) plus `all_health_markers()` to run multiple groups at once.
+- Column inference with `infer_cols()` and override via `col_map` when your labels differ.
+- Light missing-data utilities (`impute_missing()`) to prep data before computing markers.
+
+## Quick starts
+- Targeted helper: `cvd_marker_aip(sim_small)` or `renal_markers(sim_small)`.
+- Multiple groups: `all_health_markers(sim_small, which = c("glycemic", "lipid"))`.
+- Everything: `all_health_markers(sim_small, which = "all")` (wide output; filter afterward).
+- Insulin sensitivity/resistance: `fasting_is()`, `ogtt_is()`, `adipo_is()`, or include insulin groups in `all_health_markers()` with a `col_map` for glucose/insulin.
+
+## Common helpers (at a glance)
+- `all_health_markers(data, which = ...)` — run multiple groups or all markers at once.
+- `cvd_marker_aip(data, col_map = list(TG = "TG", HDL_c = "HDL_c"))` — atherogenic index of plasma.
+- `renal_markers(data)` — renal and eGFR-related outputs.
+- `glycemic_markers(data)` — glycemic metrics; pair with `fasting_is()` / `ogtt_is()` / `adipo_is()` for insulin indices.
+- `sweat_markers(data, check_extreme = TRUE)` and `urine_markers(data)` — alternate biofluid panels.
+
+## Load the package and simulated data
+Inputs: the package plus the bundled RDS file at `inst/extdata/simulated_hm_data.rds`.
+
+Outputs: two data frames—`sim` (full) and `sim_small` (first 30 rows for fast examples).
+
+```{r}
+if (!requireNamespace("HealthMarkers", quietly = TRUE)) {
+  if (requireNamespace("pkgload", quietly = TRUE)) {
+    pkgload::load_all("..")
+  } else {
+    stop("Install HealthMarkers (or pkgload for development) before knitting.", call. = FALSE)
+  }
+}
+library(HealthMarkers)
+
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+
+# Work with a small subset
+sim_small <- sim[1:30, ]
+
+dim(sim_small)
+```
+
+## Minimal example: broad panels
+Input: `sim_small` with inferred columns.
+
+What it does: `all_health_markers()` auto-detects columns and computes the requested groups.
+
+Output: a tibble of computed markers. Below we print only the new columns.
+
+```{r}
+hm_out <- all_health_markers(
+  data = sim_small,
+  which = c("glycemic", "lipid", "renal", "inflammatory"),
+  verbose = FALSE
+)
+
+hm_new_cols <- setdiff(names(hm_out), names(sim_small))
+head(dplyr::select(hm_out, dplyr::all_of(hm_new_cols)))
+
+# New columns added (names only):
+head(hm_new_cols)
+```
+
+## Data readiness: columns at a glance
+Most functions infer columns automatically. If your names differ, provide a `col_map`. Typical defaults:
+
+| Panel | Typical columns | Notes |
+| --- | --- | --- |
+| Glycemic | `FPG`, `insulin_fasting`, `HbA1c` | Uses fasting and HbA1c where available |
+| Lipid | `TG`, `HDL_c`, `LDL_c`, `TC` | Supports TG/HDL aliasing for AIP |
+| Renal | `creatinine`, `uacr`, `age`, `sex` | Infers eGFR and kidney markers |
+| Blood pressure (used by CVD risk helpers) | `SBP`, `DBP` | Inputs to CVD risk functions; not a standalone `all_health_markers()` group |
+| Anthropometrics | `height`, `weight`, `BMI`, `waist_circumference` | Supports z-score and obesity indices |
+
+Column inference is usually enough; if your data use different labels, provide a `col_map` override.
+
+Tip: To inspect what the package would infer on your data without running calculations, use:
+
+```{r, eval = FALSE}
+infer_cols(sim_small)
+```
+
+## Prepare your data (optional but recommended)
+- **Check columns**: `infer_cols(your_data)` to see what will be picked up.
+- **Handle missing values**: `impute_missing(your_data, method = "mice" | "missForest" | "mean" | "median" | "constant")` and use the completed data in calculators.
+- **Normalize (insulin helpers)**: insulin-related functions accept normalization choices (e.g., `normalize = "z"`, `normalize = "range"`); leave defaults unless you need scaled outputs.
+
+## Column inference vs explicit mapping
+Input: the same data but with explicit column aliases.
+
+What it does: provides TG/HDL names to compute AIP when your columns differ.
+
+Output: a tibble with the AIP result.
+
+```{r}
+lipid_cols <- list(TG = "TG", HDL_c = "HDL_c")
+
+aip <- cvd_marker_aip(sim_small, col_map = lipid_cols, na_action = "keep")
+aip_new <- setdiff(names(aip), names(sim_small))
+head(dplyr::select(aip, dplyr::all_of(aip_new)))
+```
+
+## Handling missingness
+Most functions accept `na_action`. This shows how outputs differ when required inputs are missing.
+
+```{r}
+missing_demo <- sim_small[1:5, c("TG", "HDL_c")]
+missing_demo$TG[2] <- NA
+
+# Keep rows (produces NA where inputs are missing)
+cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "keep")
+
+# Drop rows with required NA
+cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "omit")
+```
+
+If you want to impute before computing markers:
+
+```{r, eval = FALSE}
+imputed <- impute_missing(sim_small, method = "mice", m = 1, maxit = 3)
+head(imputed)
+```
+
+### Imputation options (what happens under the hood)
+- `impute_missing()` is a preprocessing helper; marker functions do not impute internally. Run it first, then call calculators.
+- Methods:
+  - `method = "mice"`: multiple imputation by chained equations via **mice**; control `m` (imputations) and `maxit` (iterations).
+  - `method = "missForest"`: nonparametric random-forest imputation via **missForest**; good for mixed data types.
+  - `method = "mean" | "median" | "constant"`: simple deterministic fills for numeric columns.
+- Output: a data frame with imputed values replacing missing entries; then pass it to `all_health_markers()` or any helper (e.g., `cvd_marker_aip()`, `renal_markers()`).
+
+## Extreme value checks
+Scan for extreme sweat values and warn without stopping. Output: sweat markers with any warnings emitted.
+
+```{r}
+sweat <- sweat_markers(sim_small, check_extreme = TRUE, extreme_action = "warn")
+sweat_new <- setdiff(names(sweat), names(sim_small))
+head(dplyr::select(sweat, dplyr::all_of(sweat_new)))
+```
+
+## Common functions
+### Cardio-metabolic 
+Input: `sim_small`; groups: glycemic, lipid, renal, inflammatory.
+
+Output: a tibble with those markers (first rows shown).
+
+```{r}
+cardio_panel <- all_health_markers(
+  data = sim_small,
+  which = c("glycemic", "lipid", "renal", "inflammatory"),
+  verbose = FALSE
+)
+
+cardio_new <- setdiff(names(cardio_panel), names(sim_small))
+head(dplyr::select(cardio_panel, dplyr::all_of(cardio_new)))
+```
+
+### Urine markers 
+Input: `sim_small`; output: urine markers with rows containing required inputs.
+```{r}
+urine <- urine_markers(sim_small, na_action = "omit")
+urine_new <- setdiff(names(urine), names(sim_small))
+head(dplyr::select(urine, dplyr::all_of(urine_new)))
+```
+
+### All markers (wide; optional)
+To compute every available group on your data (can produce many columns), set `which = "all"`. Here we keep it example-only to avoid long output:
+
+```{r, eval = FALSE}
+all_out <- all_health_markers(data = sim_small, which = "all", verbose = FALSE)
+head(setdiff(names(all_out), names(sim_small)))
+```
+
+## Export-ready output
+Select columns and write to a CSV (disabled during vignette build):
+
+```{r, eval = FALSE}
+export_cols <- c("aip", "egfr_ckd_epi", "homa_ir")
+out_path <- tempfile("healthmarkers_export_", fileext = ".csv")
+hm_out_subset <- dplyr::select(cardio_panel, dplyr::any_of(export_cols))
+utils::write.csv(hm_out_subset, out_path, row.names = FALSE)
+out_path
+```
+
+## Next steps
+- Explore focused vignettes for insulin sensitivity, cardio-renal panels, and frailty.
+- See individual help pages (e.g., `?fasting_is`, `?cvd_risk`, `?frailty_index`) for detailed arguments and references.
+

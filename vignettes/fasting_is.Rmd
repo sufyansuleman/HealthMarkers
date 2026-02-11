@@ -1,5 +1,5 @@
 ---
-title: "fasting_is"
+title: "Fasting insulin sensitivity indices"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fasting_is}
@@ -8,73 +8,131 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute 10 fasting insulin sensitivity/resistance indices from fasting glucose (mmol/L) and insulin (pmol/L). Internally converts glucose to mg/dL (x18) and insulin to muU/mL (/6). Handles column mapping, numeric coercion, NA policy, optional extreme screening, and optional normalization.
 
-`fasting_is()` computes 10 fasting insulin sensitivity/resistance indices from glucose (mmol/L) and insulin (pmol/L): `Fasting_inv`, `Raynaud`, `HOMA_IR_inv`, `FIRI`, `QUICKI`, `Belfiore_basal`, `Ig_ratio_basal`, `Isi_basal`, `Bennett`, `HOMA_IR_rev_inv`. Inputs are converted internally to mg/dL (glucose) and muU/mL (insulin). Optional normalization can be applied to all outputs, and extreme magnitudes can be screened/capped/NAed.
+## When to use
+- You have fasting glucose (mmol/L) and insulin (pmol/L) and need multiple sensitivity/resistance indices at once.
+- You want explicit NA handling (keep/omit/error) plus optional extreme-value screening and normalization.
+- Your column names differ from the defaults and need mapping.
 
-## Inputs
+## Inputs and requirements
+- Required columns (mapped via `col_map`): `G0` (fasting glucose, mmol/L), `I0` (fasting insulin, pmol/L).
+- Units are converted internally (mmol/L -> mg/dL; pmol/L -> muU/mL). Convert beforehand if your inputs are already in those units to avoid double-scaling.
+- `na_action`: `keep` (default), `omit`, or `error` governs required-input missingness.
+- `check_extreme`: optional screening of computed indices against `extreme_limit`; actions: `cap`, `NA`, or `error`.
+- `normalize`: `none` (default) or `z`, `range`, `inverse`, `robust` applied after extreme handling.
 
-- `data`: data.frame/tibble with fasting glucose and insulin.
-- `col_map`: named list with `G0` (glucose, mmol/L) and `I0` (insulin, pmol/L).
-- Inputs are coerced to numeric; non-finite values become `NA` before calculation.
-
-## Arguments
-
-- `normalize = c("none","z","inverse","range","robust")`: post-computation normalization applied columnwise.
-- `na_action = c("keep","omit","error")`: missing-data policy (`keep` retains NA outputs; `omit` drops rows with missing required inputs; `error` aborts).
-- `check_extreme = FALSE`: scan outputs for `abs(value) > extreme_limit`.
-- `extreme_limit = 1e3`: positive threshold for extreme detection.
-- `extreme_action = c("cap","NA","error")`: response to extremes when scanning (`cap` trims to ±limit; `NA` blanks; `error` aborts).
-- `verbose = FALSE`: emit progress via `hm_inform()` and messages.
-
-## Output
-
-Returns a tibble with 10 columns (indices listed above). Rows are dropped only when `na_action = "omit"`; otherwise rows with missing inputs yield `NA` values. Normalization, if requested, is applied to each column after optional extreme handling.
-
-## Examples
+## Load packages and data
+Use a small subset of the simulated data (30-50 rows). Swap `sim_small` with your data frame in practice.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-labs <- tibble(G0 = c(5.2, 6.1, 4.8), I0 = c(60, 120, 80))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
 
-fasting_is(
-  data = labs,
-  col_map = list(G0 = "G0", I0 = "I0"),
+Expected units before internal conversion: glucose mmol/L, insulin pmol/L. If your units differ, convert first or adjust screening parameters.
+
+## Column map (required)
+Map the required inputs to your column names; you provide the right-hand-side strings (your column names). The left-hand keys (`G0`, `I0`) are fixed.
+
+### What each input represents
+- `G0`: fasting plasma glucose (mmol/L).
+- `I0`: fasting insulin (pmol/L).
+
+```{r}
+col_map <- list(
+  G0 = "G0",
+  I0 = "I0"
+)
+```
+
+If you use different labels (e.g., `glucose_mmol`, `insulin_pmol`), remap accordingly; any column names are fine as long as they hold the right values.
+
+## Core calculation
+Compute all indices and display only the newly calculated columns (not the full input data).
+
+```{r}
+fis <- fasting_is(
+  data = sim_small,
+  col_map = col_map,
   na_action = "keep",
   normalize = "none",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+fis_new <- setdiff(names(fis), names(sim_small))
+head(select(fis, all_of(fis_new)))
 ```
 
-## Examples
+The preview shows only the newly computed indices. `_inv` columns are inverted so larger negatives indicate greater insulin resistance; `QUICKI`, `Raynaud`, and `Isi_basal` decrease as resistance worsens. All rows are retained here because `na_action = "keep"`.
 
-Drop rows with missing inputs, cap large magnitudes, and return z-normalized indices:
+### Outputs at a glance
+- `Fasting_inv`: inverted fasting insulin (higher negative = higher insulin)
+- `Raynaud`: 40 / insulin
+- `HOMA_IR_inv`, `HOMA_IR_rev_inv`: inverted HOMA formulations
+- `FIRI`: fasting insulin resistance index
+- `QUICKI`: insulin sensitivity index (higher = more sensitive)
+- `Belfiore_basal`: 2 / (insulin x glucose + 1)
+- `Ig_ratio_basal`: -insulin/glucose (inverted)
+- `Isi_basal`: 10000 / (glucose x insulin)
+- `Bennett`: 1 / (log insulin x log glucose)
+
+## Inputs and units (quick reminder)
+- Required columns (map via `col_map`): `G0` glucose (mmol/L), `I0` insulin (pmol/L).
+- Internal conversions: glucose x18 -> mg/dL; insulin /6 -> muU/mL.
+- Extremes: default `check_extreme = FALSE`; when TRUE, outputs are screened against `extreme_limit`. `extreme_action = "cap"` trims to +/-limit.
+- Missingness: `na_action` controls row handling (`keep`/`omit`/`error`).
+- Normalization: `normalize = "none"` by default; other options apply columnwise scaling after any extreme handling.
+
+## Missing data and extremes
+Show how row handling and extreme scanning behave on a tiny slice.
 
 ```{r}
-labs2 <- tibble(G0 = c(5.0, NA, 7.5), I0 = c(90, 150, 30))
+demo <- sim_small[1:6, c("G0", "I0")]
+demo$G0[2] <- NA
 
-fasting_is(
-  data = labs2,
-  col_map = list(G0 = "G0", I0 = "I0"),
-  na_action = "omit",
+fis_keep <- fasting_is(demo, col_map, na_action = "keep", check_extreme = FALSE)
+fis_omit <- fasting_is(demo, col_map, na_action = "omit", check_extreme = FALSE)
+
+fis_extreme <- fasting_is(
+  data = demo,
+  col_map = col_map,
+  na_action = "keep",
   check_extreme = TRUE,
   extreme_limit = 1e3,
   extreme_action = "cap",
-  normalize = "z",
+  normalize = "none",
   verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(fis_keep),
+  omit_rows = nrow(fis_omit),
+  extreme_head = head(select(fis_extreme, all_of(fis_new)))
 )
 ```
 
-## Notes
+Here `na_action = "keep"` preserves all six rows (with NA-derived outputs), while `na_action = "omit"` drops the row with missing `G0`. Extreme scanning with `extreme_action = "cap"` would trim outputs exceeding `extreme_limit`; none were capped in this slice.
 
-- Units must be mmol/L (glucose) and pmol/L (insulin); the function converts internally to mg/dL and muU/mL.
-- Use `na_action = "error"` to enforce complete inputs; `omit` to filter; `keep` to retain rows with NA outputs.
-- Extreme screening occurs before normalization; choose `extreme_action` to cap, blank, or fail on large magnitudes.
-- Normalization per column: `z` (mean/SD), `range` (0–1), `inverse` (1/x), `robust` ((x-median)/MAD), or `none`.
+## Expectations
+- Both required inputs must be mapped and present; missing mappings or columns abort.
+- `na_action`: `keep` leaves NA-derived outputs; `omit` drops rows; `error` stops on any missing input.
+- `check_extreme` screens outputs for magnitudes beyond `extreme_limit`; adjust `extreme_limit` and choose `extreme_action` (`cap`/`NA`/`error`).
+- `normalize` is optional post-hoc scaling; set to `"none"` to preserve native scales.
+
+## Tips
+- Non-numeric inputs are coerced to numeric; coercion that introduces NAs triggers a warning.
+- For pipelines, prefer `na_action = "omit"` or `"error"` to avoid silent gaps; use `"keep"` for exploratory summaries.
+- Enable `check_extreme = TRUE` when working with noisy or simulated data; use `extreme_action = "error"` for strict QA.
+- Set `normalize` to align scales across indices if feeding into distance-based models; leave as `"none"` for interpretability.
+- See `?fasting_is` for full argument reference and diagnostics.

@@ -1,5 +1,5 @@
 ---
-title: "cvd_risk_qrisk3"
+title: "CVD Risk QRISK3"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cvd_risk_qrisk3}
@@ -8,58 +8,51 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Run the UK QRISK3 10-year calculator with guarded optional dependency loading. Returns `risk = NA` if the backend errors or inputs are incomplete.
 
-`cvd_risk_qrisk3()` wraps `QRISK3::QRISK3_2017()` with optional ID auto-generation, basic type checks, and quiet fallback to `NA` if the backend errors. It computes 10-year QRISK3 scores.
+## When to use
+- You need QRISK3-2017 10-year CVD risk for UK populations.
+- You have the required clinical/demographic fields expected by `QRISK3::QRISK3_2017()`.
+- You can install the suggested package `QRISK3` (execution is skipped otherwise).
 
-## Inputs
+## Inputs and requirements
+- `data`: data.frame/tibble with QRISK3-required columns (age, sex/gender, smoking status, comorbidities, BP, lipids, etc.).
+- `patid`: optional patient ID vector; if absent, wrapper uses `patid` column when present, otherwise `1:nrow(data)`.
+- Units: follow `QRISK3::QRISK3_2017()` conventions (e.g., mmHg for BP, kg/m^2 BMI inputs if used via weight/height).
+- NA handling: backend determines validity; wrapper returns `risk = NA` on backend error.
 
-- `data`: data.frame/tibble containing all variables required by `QRISK3::QRISK3_2017()` (age, sex, smoking status, blood pressure, cholesterol ratios, comorbidities, etc.).
-- `patid` (optional): vector of patient IDs; defaults to `1:nrow(data)` if omitted.
-- QRISK3 package must be installed; otherwise the function aborts.
-
-## Arguments
-
-- `...`: forwarded directly to `QRISK3::QRISK3_2017()`.
-- `patid = NULL`: supply or allow auto-generated IDs.
-- `na_warn_prop = 0.2`: reserved for potential warnings when verbose is enabled (inputs are otherwise passed through).
-- `verbose = FALSE`: emit minimal progress messages.
-
-## Output
-
-Returns a tibble with columns `model = "QRISK3"`, `year = 10`, and `risk`. If the backend errors, an `NA` row is returned.
-
-## Examples
-
-QRISK3 requires many inputs; the example is guarded to run only when the package is available:
+## Load packages and data
+Use 30 simulated rows and let the wrapper auto-assign `patid`.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
 
-if (requireNamespace("QRISK3", quietly = TRUE)) {
-  # Replace `your_qrisk3_data` with a data.frame containing the required variables
-  # qr <- cvd_risk_qrisk3(your_qrisk3_data, verbose = TRUE)
-}
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, ]
 ```
 
-## Examples
+## QRISK3 risk
+Execute only when `QRISK3` is available.
 
-Demonstrate ID auto-generation and error-safe behavior:
+```{r eval = requireNamespace("QRISK3", quietly = TRUE)}
+qrisk_out <- cvd_risk_qrisk3(
+  data = sim_small,
+  verbose = FALSE
+)
 
-```{r}
-if (requireNamespace("QRISK3", quietly = TRUE)) {
-  # Suppose df has the needed QRISK3 columns but no ID column
-  # qr1 <- cvd_risk_qrisk3(df)
-  # qr2 <- cvd_risk_qrisk3(df, patid = df$patient_id)
-}
+head(qrisk_out)
 ```
 
-## Notes
-
-- Ensure `QRISK3` is installed; otherwise this wrapper aborts. When invoked through `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
-- Inputs are passed through without full pre-validation to avoid duplicating QRISK3’s specification.
-- If the backend raises an error, the wrapper returns an `NA` row to maintain rectangular outputs.
+## Tips
+- Requires the suggested package `QRISK3`; when absent, chunks are skipped and the function aborts with an informative error.
+- The wrapper auto-adds `patid` when missing and returns `risk = NA` if the backend errors.
+- Provide UK-specific variables per `QRISK3::QRISK3_2017()` (e.g., Townsend score, comorbidity flags, BP, cholesterol/HDL ratio).
+- Use `verbose = TRUE` for a brief input receipt message; deeper validation is deferred to the backend to avoid duplicating its spec.
+- You can also call via `cvd_risk(model = "QRISK3")`.

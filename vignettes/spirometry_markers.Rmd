@@ -1,70 +1,90 @@
 ---
-title: "spirometry_markers"
+title: "Spirometry Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{spirometry_markers}
+  %\VignetteIndexEntry{Spirometry Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute spirometry interpretive markers: pre/post FEV1/FVC ratios, fixed-ratio obstruction flag (0.70), optional GLI percent-predicted/z/LLN/GOLD when demographics and `rspiro` are available (falls back to simple refs if not), and bronchodilator response deltas (%). Includes mapping validation, NA policies, optional extreme screening/capping on volumes, and safe handling of zero/negative values and ratios > 1 warnings.
 
-`spirometry_markers()` computes pre/post FEV1/FVC ratios, fixed-ratio obstruction flag, LLN-based obstruction and GOLD grade (when references available), percent-predicted and z-scores for FEV1/FVC, and bronchodilator response deltas. It validates inputs, coerces volumes to numeric with warnings, handles missingness per policy, supports optional extreme-value checks, and can leverage `rspiro` GLI references when age/height/sex/ethnicity and the package are available; otherwise a fallback approximation is used.
+## When to use this
+- You have spirometry volumes (FEV1, FVC) in liters and optionally post-bronchodilator values.
+- You want obstruction flags by fixed ratio and, when possible, LLN/GOLD using GLI references.
+- You need controlled NA handling, optional outlier checks/capping, and post-bronchodilator response calculations.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble containing spirometry.
-- `col_map`: named list mapping required `fev1` and `fvc`; optional `fev1_post`, `fvc_post` (post-bronchodilator), and demographic fields `age`, `height`, `sex`, `ethnicity` for GLI reference calculations. Mapped columns must exist for required keys; non-numeric volumes are coerced with warnings when NAs are introduced.
+| Argument       | Purpose / Options                                                       | Notes                                                      |
+|----------------|-------------------------------------------------------------------------|------------------------------------------------------------|
+| data           | Data frame/tibble with spirometry                                       | Volumes must be in liters                                  |
+| col_map        | Named list mapping columns                                              | Required: fev1, fvc; Optional: fev1_post, fvc_post, age, height, sex, ethnicity |
+| na_action      | Missing-data policy for required fev1/fvc                               | "keep" (default), "omit", "error", "ignore", "warn"      |
+| check_extreme  | Scan inputs against bounds                                              | Default FALSE                                              |
+| extreme_action | Handling for extremes                                                   | "warn" (default), "cap", "error", "ignore", "NA"        |
+| extreme_rules  | Bounds list `c(min, max)` per input                                     | Default fev1 0–8 L, fvc 0–10 L                             |
+| verbose        | Emit progress messages                                                  | Default FALSE                                              |
 
-## Arguments
+**Units:** Inputs must be liters. No unit conversion is performed.
 
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy for required `fev1`/`fvc` (`warn`/`ignore` behave like `keep`).
-- `check_extreme = FALSE`: enable volume range checks using `extreme_rules` (default FEV1 0–8 L, FVC 0–10 L).
-- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for detected extremes; `cap` truncates; `NA` sets out-of-range to `NA`.
-- `extreme_rules`: optional bounds list per `fev1`/`fvc`.
-- `verbose = FALSE`: emit progress messages.
+**GLI inputs (optional):** age (years), height (cm), sex (male/female or 1/0/2), ethnicity (GLI-compatible strings). Requires `rspiro`; otherwise a debug fallback reference is used or GLI fields stay NA.
 
-## Output
+## Handling and expectations
+- Validation & coercion: required columns must exist; non-numeric volumes are coerced with warnings; non-finite become NA.
+- Missingness: `keep`/`ignore`/`warn` propagate NA; `omit` drops rows with required NA; `error` aborts if required NA.
+- Extreme screening (optional): bounds on fev1/fvc; `extreme_action` controls warn/cap/error/ignore/NA. Defaults cap to 0–8/0–10 only if enabled.
+- Domain warnings: zero FVC -> ratio NA with warning; negative volumes warn; ratios > 1 warn to check units.
+- GLI references: used only when age/height/sex/ethnicity provided and `rspiro` available; else a simple fallback is used (debug) or GLI outputs remain NA. Ethnicity mapped to GLI categories; sex mapped from first letter/1/0/2.
+- GOLD grade: computed only when obstruction_lln is TRUE; uses fev1 percent-predicted thresholds.
+- Bronchodilator response: percent change `(post - pre) / pre * 100`; requires both pre and post columns.
+- Padding: if rows are omitted under `na_action = "omit"`, outputs are padded back to input row count when NA policy keeps rows.
 
-Returns a tibble with columns:
-- `ratio_pre`, `ratio_post`: FEV1/FVC before/after bronchodilator (post `NA` if unmapped).
-- `copd_flag_fixed`: fixed-ratio obstruction flag using ratio < 0.70 (prefers post if available).
-- `obstruction_lln`, `gold_grade`: LLN-based obstruction flag and GOLD grade when GLI references computed; otherwise `NA`.
-- `fev1_pp`, `fvc_pp`, `fev1_z`, `fvc_z`, `ratio_z`: percent-predicted and z-scores from GLI (or fallback) when demographics provided and `rspiro` available; otherwise `NA`.
-- `bdr_fev1`, `bdr_fvc`: bronchodilator response (% change) when post values provided; otherwise `NA`.
+## Defaults and validation details
+- Default extreme bounds: fev1 0–8 L, fvc 0–10 L (applied only when `check_extreme = TRUE`).
+- GLI mapping: sex strings starting with m/1 -> Male; f/0/2 -> Female; ethnicity regex maps to GLI categories (Caucasian, African American, North East Asian, South East Asian, Other).
+- Fallback reference (if `rspiro` unavailable): rough height/age equations for testability; not clinical—aimed to avoid all-NA outputs in tests.
+- High-missing diagnostics are not emitted unless `verbose`/debug logging is enabled via `hm_inform`.
+- Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
-## Examples
+## Outputs
+- Columns: ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
+- NA arises when required inputs are missing, ratios are undefined (e.g., zero FVC), GLI inputs are absent/invalid, or post values are missing for deltas.
 
+## Worked example 1: Basic fixed-ratio outputs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  FEV1 = c(2.8, 1.6),
-  FVC  = c(3.6, 2.1)
+  FEV1 = c(2.8, 1.6, NA),
+  FVC  = c(3.6, 2.1, 3.0)
 )
 
 spirometry_markers(
   data = df,
   col_map = list(fev1 = "FEV1", fvc = "FVC"),
-  na_action = "keep",
-  verbose = FALSE
+  na_action = "keep"
 )
 ```
+*Interpretation:* Returns pre FEV1/FVC ratios and fixed-ratio flags; NA propagates where inputs are missing.
 
-## Examples
-
-Include post-bronchodilator values and demographics; use GLI references when `rspiro` is available, and cap extremes:
-
+## Worked example 2: With post-BD, GLI inputs, cap extremes
 ```{r}
 df2 <- tibble(
-  fev1_pre = c(2.1, 0.9, 7.5),  # third row extreme
-  fvc_pre  = c(3.0, 1.8, 11.0), # will be capped when requested
+  fev1_pre = c(2.1, 0.9, 7.5),
+  fvc_pre  = c(3.0, 1.8, 11.0),
   fev1_post = c(2.4, 1.1, 7.2),
   fvc_post  = c(3.2, 1.9, 10.5),
   age = c(55, 72, 45),
@@ -84,33 +104,49 @@ cm2 <- list(
   ethnicity = "ethnicity"
 )
 
-if (requireNamespace("rspiro", quietly = TRUE)) {
-  spirometry_markers(
-    data = df2,
-    col_map = cm2,
-    check_extreme = TRUE,
-    extreme_action = "cap",
-    na_action = "keep",
-    verbose = TRUE
-  )
-} else {
-  message("Install 'rspiro' to enable GLI-based outputs; fallback references will be used otherwise.")
-  spirometry_markers(
-    data = df2,
-    col_map = cm2,
-    check_extreme = TRUE,
-    extreme_action = "cap",
-    na_action = "keep",
-    verbose = TRUE
-  )
-}
+spirometry_markers(
+  data = df2,
+  col_map = cm2,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "keep",
+  verbose = TRUE
+)
 ```
+*Interpretation:* Extremes are capped before ratios; GLI fields are computed when `rspiro` is available, otherwise fall back or remain NA. Bronchodilator deltas are percent changes pre→post.
 
-## Notes
+## Worked example 3: Strict missing policy
+```{r}
+try(
+  spirometry_markers(
+    data = df,
+    col_map = list(fev1 = "FEV1", fvc = "FVC"),
+    na_action = "error"
+  )
+)
+```
+*Interpretation:* Aborts when required inputs contain NA.
 
-- Volumes must be in liters; no unit conversion is performed. Ratios use safe division; zero FVC yields `NA` with a warning.
-- GLI-based percent-predicted/z/LLN/GOLD require `age`, `height`, `sex`, and `ethnicity` plus the `rspiro` package; otherwise `NA` or fallback approximations are used (debug-noted).
-- `na_action = "warn"` emits a warning but keeps rows; `omit` drops rows with missing FEV1/FVC; `error` aborts on missing required inputs.
-- Extreme checks apply only to `fev1`/`fvc`; choose `cap` or `NA` if you want to constrain implausible values.
-- Bronchodilator response outputs are available only when both pre and post values are mapped.
+## Troubleshooting & common pitfalls
+- YAML/header: keep YAML at the top; stray text before it breaks knitting.
+- Units: volumes must be liters; convert upstream. Ratios > 1 often indicate unit issues.
+- Missing columns: ensure `fev1` and `fvc` are mapped; post and GLI inputs are optional.
+- GLI availability: requires `rspiro` plus age/height/sex/ethnicity; otherwise GLI outputs may be NA or use fallback approximations.
+- Zero/negative volumes: produce warnings; zero FVC yields NA ratios.
+- Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible volumes.
 
+## Tips for best results
+- Provide demographics and install `rspiro` when GLI-based percent-predicted and GOLD grades are needed; otherwise rely on fixed 0.70 flag.
+- Use `na_action = "omit"` for modeling datasets that require complete spirometry; `keep`/`warn` for exploratory review.
+- Review ratios > 1 or negative volumes—these usually indicate unit or entry errors.
+- For bronchodilator response, supply both pre and post volumes; otherwise response outputs are NA.
+
+## Validation notes
+- Ratio: `FEV1 / FVC`; fixed obstruction flag uses 0.70 (prefers post values when present).
+- Bronchodilator response: `100 * (post - pre) / pre` for FEV1 and FVC.
+- GOLD stage uses fev1 percent-predicted when obstruction_lln is TRUE; relies on GLI or fallback references.
+- Fallback references are non-clinical and intended only to avoid all-NA outputs when `rspiro` is absent.
+
+## See also
+- Function docs: `?spirometry_markers`
+- Related vignettes: pulmo_markers, health_markers, health_summary

@@ -1,41 +1,42 @@
 ---
-title: "nutrient_markers"
+title: "Nutrient Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{nutrient_markers}
+  %\VignetteIndexEntry{Nutrient Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
 
-`nutrient_markers()` computes a panel of nutrient-related ratios/products: FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct, UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, and Tyr_Phe_Ratio. It supports NA policies, optional high-missingness diagnostics, optional extreme screening with warn/cap/NA/error behaviors, and verbose summaries. No unit conversion is performed; inputs must already be in expected units.
+Compute nutrient-related ratios/products (FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct, UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, Tyr_Phe_Ratio) with NA/extreme handling and safe divisions; no unit conversion.
+
+## When to use
+
+- You have routine nutrient labs (iron, protein, omega-3, renal, electrolytes, amino acids) and want quick derived ratios.
+- You need built-in NA policies, high-missingness diagnostics, and optional extreme-value scanning/capping.
+- You can supply inputs in expected units and accept that missing inputs return NA for dependent markers.
 
 ## Inputs
 
-- `data`: data.frame/tibble containing any subset of the recognized inputs; markers with missing inputs return `NA`.
-- `col_map`: optional named list mapping keys (defaults to identity) among: `ferritin`, `transferrin_sat`, `albumin`, `total_protein`, `EPA`, `DHA`, `Mg`, `creatinine`, `glycated_albumin`, `uric_acid`, `BUN`, `phosphate`, `calcium`, `Na`, `K`, `Cl`, `HCO3`, `Tyr`, `Phe`. Unrecognized keys are ignored.
-- Numeric columns are required for mapped inputs; non-numeric are coerced with warnings if NAs are introduced; non-finite set to `NA`.
+- `data`: data frame/tibble containing any subset of recognized inputs.
+- `col_map`: optional named list mapping keys (defaults to identity): `ferritin`, `transferrin_sat`, `albumin`, `total_protein`, `EPA`, `DHA`, `Mg`, `creatinine`, `glycated_albumin`, `uric_acid`, `BUN`, `phosphate`, `calcium`, `Na`, `K`, `Cl`, `HCO3`, `Tyr`, `Phe`. Unrecognized keys are ignored. Non-numeric values are coerced with warnings; non-finite set to `NA`.
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows with NA in used inputs; `error` aborts when used inputs contain NA.
+- `na_warn_prop`: threshold for high-missingness diagnostics (default 0.2; shown in verbose/debug).
+- `check_extreme`: set TRUE to scan inputs; `extreme_action` (`warn`/`cap`/`error`/`ignore`/`NA`) controls handling. Defaults are broad (e.g., ferritin 0–2000 ng/mL; transferrin_sat 0–100%; albumin 10–60 g/L; total_protein 40–100 g/L; EPA/DHA 0–20%; Mg 0.2–3 mmol/L; creatinine 20–2000 umol/L; glycated_albumin 0–60 g/L; uric_acid 50–1000 umol/L; BUN 1–150 mg/dL; phosphate 0.1–5 mmol/L; calcium 0.5–4 mmol/L; Na 100–200 mmol/L; K 2–8 mmol/L; Cl 70–130 mmol/L; HCO3 5–45 mmol/L; Tyr 10–300 umol/L; Phe 20–300 umol/L).
+- `verbose`: optional progress and summary logging.
 
-## Arguments
-
-- `na_action = c("keep","omit","error")`: missing-data policy on used inputs (`omit` drops rows; `error` aborts; `keep` propagates `NA`).
-- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug-level messaging).
-- `check_extreme = FALSE`: enable plausible-range scan.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when scanning (`cap` truncates; `NA` blanks values).
-- `extreme_rules = NULL`: override broad defaults (e.g., ferritin 0–2000 ng/mL, transferrin_sat 0–100%, albumin 10–60 g/L, total_protein 40–100 g/L, EPA/DHA 0–20%, Mg 0.2–3 mmol/L, creatinine 20–2000 umol/L, glycated_albumin 0–60 g/L, uric_acid 50–1000 umol/L, BUN 1–150 mg/dL, phosphate 0.1–5 mmol/L, calcium 0.5–4 mmol/L, Na 100–200, K 2–8, Cl 70–130, HCO3 5–45 mmol/L, Tyr 10–300 umol/L, Phe 20–300 umol/L).
-- `verbose = FALSE`: emit progress and completion summaries.
-
-## Output
-
-Returns a tibble with the marker columns listed above. Division operations warn on zero denominators. When `na_action = "omit"`, rows with missing used inputs are removed; otherwise those rows yield `NA` outputs. Extreme handling can cap or blank inputs before calculation.
-
-## Examples
+## Quick start
 
 ```{r}
 library(HealthMarkers)
@@ -61,9 +62,7 @@ nutrient_markers(
 )
 ```
 
-## Examples
-
-Scan for extremes and cap while warning; drop rows with missing inputs:
+## Extreme scan and cap
 
 ```{r}
 nutrient_markers(
@@ -76,9 +75,27 @@ nutrient_markers(
 )
 ```
 
-## Notes
+## Missing-data policy
 
-- Markers compute only when their inputs are present; others return `NA` silently.
-- Omega3Index is EPA + DHA (%) and assumes red-cell fatty acid percentages.
-- AGR uses globulin = total_protein - albumin; zero denominators are warned and yield `NA`.
-- Adjust `extreme_rules` to match your lab reference ranges; defaults are broad sanity checks.
+```{r}
+try(
+  nutrient_markers(
+    data = df,
+    col_map = NULL,
+    na_action = "error"
+  )
+)
+```
+
+## Outputs and expectations
+
+- Returns a tibble with: FerritinTS, AGR, Omega3Index, Mg_Cr_Ratio, GlycatedAlbuminPct, UA_Cr_Ratio, BUN_Cr_Ratio, Ca_x_Phosphate, AnionGap, Tyr_Phe_Ratio.
+- Each marker is computed only when its inputs are present; otherwise `NA` is returned for that marker.
+- Zero/non-finite denominators are set to NA with consolidated warnings; no unit harmonization is applied.
+
+## Tips
+
+- Provide only the inputs you have; missing inputs yield NA for dependent markers.
+- Omega3Index expects EPA/DHA as percentages; AGR uses globulin = total_protein - albumin.
+- Tighten `extreme_rules` to your lab ranges before using `extreme_action = "cap"` or `"error"`.
+- Use `na_action = "omit"` when you prefer row-complete outputs; use `keep` during QA to inspect missingness.

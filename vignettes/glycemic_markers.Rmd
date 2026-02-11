@@ -1,5 +1,5 @@
 ---
-title: "glycemic_markers"
+title: "Glycemic and metabolic markers"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{glycemic_markers}
@@ -8,80 +8,144 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute SPISE, METS_IR, prediabetes/diabetes flags (HbA1c), HOMA_CP, LAR, ASI, and TyG_index from fasting labs and anthropometry. Required inputs: HDL_c (mmol/L), TG (mmol/L), BMI (kg/m^2); optional glucose/HbA1c/C-peptide/insulin/leptin/adiponectin if present. Uses the packaged simulated data for runnable examples.
 
-`glycemic_markers()` computes SPISE, METS_IR, prediabetes/diabetes flags (HbA1c), HOMA_CP, LAR, ASI, and TyG_index from fasting labs and anthropometry. It validates required lipids/BMI, coerces numeric inputs, applies HM-CS NA/extreme policies, and uses safe log/division helpers.
+## When to use
+- You have fasting lipids and BMI and want quick insulin resistance/sensitivity proxies.
+- You can supply glucose/HbA1c/C-peptide/insulin/adipokines when available to enrich outputs.
+- You need explicit NA handling and optional extreme-value screening.
 
-## Inputs
+## Inputs and requirements
+- Required (mapped via `col_map`): `HDL_c` (mmol/L), `TG` (mmol/L), `BMI` (kg/m^2).
+- Optional: `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
+- Unit notes: TyG converts TG to mg/dL (x88.57) and glucose to mg/dL (x18); HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`.
+- `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows with missing used inputs; `error` aborts.
+- `check_extreme`: when TRUE, scans inputs with default broad ranges; `extreme_action` = `warn`/`cap`/`NA`/`error`/`ignore`.
 
-- `data`: data.frame/tibble with required columns HDL cholesterol (`HDL_c`, mmol/L), triglycerides (`TG`, mmol/L), and body mass index (`BMI`, kg/m^2).
-- Optional columns (used if present/mapped): `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
-- `col_map`: optional named list remapping keys above; defaults assume matching names.
-- Inputs are coerced to numeric; non-finite values become `NA`.
-
-## Arguments
-
-- `na_action = c("ignore","warn","error","keep","omit")`: missing-data policy (`keep` == `ignore`; `omit` drops rows with any missing/non-finite used inputs before computation).
-- `na_warn_prop = 0.2`: high-missingness warning threshold when `na_action = "warn"`.
-- `check_extreme = FALSE`: scan used inputs for plausibility ranges.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates to bounds; `NA` blanks values).
-- `extreme_rules = NULL`: override default broad ranges (HDL_c 0.1–5, TG 0.1–20, BMI 10–80, glucose/G0 2–30, HbA1c 20–200, C_peptide 0–5000, I0 0–3000, leptin 0–200, adiponectin 0–300).
-- `verbose = FALSE`: emit progress and completion summaries.
-
-## Output
-
-Returns a tibble with columns: `SPISE`, `METS_IR`, `prediabetes`, `diabetes`, `HOMA_CP`, `LAR`, `ASI`, `TyG_index`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` outputs.
-
-## Examples
+## Load packages and data
+Use a small subset of the simulated data (30-50 rows). Swap `sim_small` with your data frame in practice.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-labs <- tibble(
-  HDL_c = c(1.0, 1.3),
-  TG = c(1.3, 2.0),
-  BMI = c(24, 30),
-  glucose = c(5.6, 7.1),
-  HbA1c = c(44, 38),
-  C_peptide = c(300, 500),
-  G0 = c(5.5, 6.2),
-  I0 = c(60, 120),
-  leptin = c(10, 20),
-  adiponectin = c(8, 5)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
+
+## Column map (required)
+Map required and optional inputs to your column names; left-hand keys are fixed.
+
+### What each input represents
+- `HDL_c`: HDL cholesterol (mmol/L)  required
+- `TG`: triglycerides (mmol/L)  required
+- `BMI`: body mass index (kg/m^2)  required
+- `glucose`: fasting glucose (mmol/L)
+- `HbA1c`: hemoglobin A1c (mmol/mol)
+- `C_peptide`: C-peptide (pmol/L)
+- `G0`: fasting glucose (mmol/L) for HOMA_CP
+- `I0`: fasting insulin (pmol/L) for ASI
+- `leptin`: leptin (ng/mL)
+- `adiponectin`: adiponectin (ng/mL)
+
+```{r}
+col_map <- list(
+  HDL_c = "HDL_c",
+  TG = "TG",
+  BMI = "BMI",
+  glucose = "glucose",
+  HbA1c = "HbA1c",
+  C_peptide = "C_peptide",
+  G0 = "G0",
+  I0 = "I0",
+  leptin = "leptin",
+  adiponectin = "adiponectin"
 )
+```
 
-glycemic_markers(
-  data = labs,
-  col_map = NULL,
-  na_action = "ignore",
+## Core calculation
+Compute all markers and show only newly created columns.
+
+```{r}
+gm <- glycemic_markers(
+  data = sim_small,
+  col_map = col_map,
+  na_action = "keep",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+gm_new <- setdiff(names(gm), names(sim_small))
+head(select(gm, all_of(gm_new)))
 ```
 
-## Examples
+Interpretation: SPISE and METS_IR summarize insulin sensitivity/resistance; TyG_index rises with higher TG/glucose; HOMA_CP approximates insulin resistance via C-peptide and glucose; LAR and ASI relate adipokines to insulin; HbA1c flags populate `prediabetes`/`diabetes` when available. Rows are retained here because `na_action = "keep"`.
 
-Warn on missingness, scan for extremes with capping, and keep rows intact:
+## Inputs and units (quick reminder)
+- Required: `HDL_c` (mmol/L), `TG` (mmol/L), `BMI` (kg/m^2).
+- Optional if present/mapped: `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
+- TyG converts TG to mg/dL (88.57) and glucose to mg/dL (18) internally.
+- HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`; verify your units for C-peptide.
+- Missingness: `na_action` controls row handling (`keep`/`omit`/`error`/`warn`/`ignore`).
+- Extreme screening: `check_extreme = TRUE` can warn/cap/NA/error using default broad ranges; override via `extreme_rules`.
+
+## Missing data and extremes
+Show row handling and extreme screening on a tiny slice.
 
 ```{r}
-glycemic_markers(
-  data = labs,
-  na_action = "warn",
-  na_warn_prop = 0.1,
+demo <- sim_small[1:6, c("HDL_c", "TG", "BMI")]
+demo$glucose <- c(5.5, 6.2, 7.0, 5.8, 6.0, 5.4)
+demo$HbA1c <- c(42, 39, 41, 45, 44, 40)
+demo$C_peptide <- c(300, 450, 500, 400, 380, 360)
+demo$G0 <- demo$glucose
+demo$I0 <- c(60, 90, 120, 80, 75, 70)
+demo$leptin <- c(10, 12, 15, 11, 9, 13)
+demo$adiponectin <- c(8, 7, 6, 9, 10, 7)
+demo$TG[3] <- 30       # extreme TG
+demo$HbA1c[2] <- NA    # missing HbA1c
+
+gm_keep <- glycemic_markers(
+  data = demo,
+  col_map = col_map,
+  na_action = "keep",
   check_extreme = TRUE,
   extreme_action = "cap",
-  verbose = TRUE
+  verbose = FALSE
+)
+
+gm_omit <- glycemic_markers(
+  data = demo,
+  col_map = col_map,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(gm_keep),
+  omit_rows = nrow(gm_omit),
+  capped_preview = head(select(gm_keep, all_of(gm_new)))
 )
 ```
 
-## Notes
+`na_action = "keep"` preserves all rows (missing inputs flow to `NA` outputs); `na_action = "omit"` drops rows with missing/invalid used inputs. `extreme_action = "cap"` trims out-of-range values (e.g., TG = 30) before computation.
 
-- Units: HDL_c/TG in mmol/L; BMI kg/m^2; glucose/G0 mmol/L (TyG converts to mg/dL internally); HbA1c mmol/mol; C_peptide/I0 pmol/L; leptin/adiponectin ng/mL.
-- HOMA_CP uses the package’s operational formula: `(G0 * (C_peptide/6)) / 22.5`.
-- `na_action = "error"` enforces complete inputs; `omit` drops incomplete rows; `ignore`/`keep` retain rows with NA outputs.
-- Extreme screening supports warn/cap/NA/error behaviors; rules can be overridden per variable.
+## Expectations
+- Required inputs must be present/mapped; missing required columns abort.
+- `na_action` governs whether missing/invalid inputs drop rows, warn, or error.
+- `check_extreme`/`extreme_action` can cap, blank, warn, or abort on out-of-range inputs.
+- Optional columns drive optional markers; absent inputs yield `NA` in their markers.
+
+## Tips
+- Start with fasting lipids and BMI; add glucose/HbA1c/C-peptide/insulin/adipokines when available for richer markers.
+- Convert units beforehand if your data are not in the expected mmol/L/pmol/L/ng/mL units.
+- For stricter pipelines, use `na_action = "omit"` or `"error"`; keep/warn for exploratory work.
+- Turn on `check_extreme = TRUE` with `extreme_action = "cap"` when working with noisy or simulated inputs.
+- See `?glycemic_markers` for full argument details and marker definitions.

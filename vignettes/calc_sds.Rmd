@@ -1,98 +1,154 @@
 ---
-title: "calc_sds"
+title: "Calculate SDS"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{calc_sds}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Standardize selected variables as SDS (z-scores) using supplied reference means and SDs. Supports row-retention policies, extreme SDS handling, and an optional diagnostic list output.
 
-`calc_sds()` computes standard deviation scores (z-scores, SDS) for selected variables using supplied reference means and SDs. It validates inputs, handles missingness, optionally screens extremes, and can return either a tibble or a summary list.
+## When to use
+- You need z-scores for one or more variables using a chosen reference.
+- You want explicit control over missing-row handling and extreme SDS treatment.
+- You may need a diagnostic list summarizing missing and extreme counts.
 
-## Inputs
+## Requirements checklist
+- Packages: HealthMarkers, dplyr (for display).
+- Data columns: variables listed in vars must exist and be numeric/coercible; id_col optional.
+- Reference table ref: columns variable, mean, sd; one finite mean and positive sd per var.
+- Row policy: na_strategy = keep (default), omit, or error.
+- Extreme policy: check_extreme + extreme_strategy (cap/warn/error/NA) with sds_cap threshold.
 
-- `data`: data.frame/tibble containing variables to standardize.
-- `vars`: character vector of column names to score (non-empty, unique).
-- `ref`: data.frame with columns `variable`, `mean`, `sd`; exactly one row per `vars` entry with finite mean and sd > 0.
-- `id_col` (optional): identifier used only in diagnostics/messages.
-- Inputs are coerced to numeric; non-finite values become `NA`.
-
-## Arguments
-
-- `na_strategy = c("omit","error","keep")`: missing-data policy (aliases: `na_action`).
-- `check_extreme = TRUE`: toggle extreme SDS detection; if FALSE, extremes are neither scanned nor acted on.
-- `extreme_strategy = c("cap","warn","error","NA")`: response to |SDS| > `sds_cap` when extreme checking is on (alias `extreme_action`).
-- `sds_cap = 6`: absolute cap used when `extreme_strategy = "cap"`.
-- `warn_thresholds`: list with `na_prop` and `extreme_prop` (proportions in [0,1]) to trigger warnings for missingness/extremes.
-- `return = c("data","list")`: tibble with `<var>_sds` columns or a list (`data`, `summary`, `warnings`).
-- `verbose = FALSE`: emit progress via `hm_inform()` and messages.
-
-## Output
-
-- Default (`return = "data"`): tibble with appended `<var>_sds` columns; rows dropped only when `na_strategy = "omit"`.
-- `return = "list"`: list with `data` (tibble), `summary` (row counts, extremes, per-variable missing/extreme counts), and `warnings` (unique warning messages).
-
-## Examples
+## Load packages and example data
+Build a small example reference for BMI and systolic BP; replace with your variables and reference stats.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
 
-ref <- data.frame(
-  variable = c("bmi", "sbp"),
-  mean     = c(25, 120),
-  sd       = c(4, 15)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:40, c("id", "BMI", "sbp")]
+
+vars <- c("BMI", "sbp")
+ref <- tibble::tibble(
+  variable = vars,
+  mean = c(mean(sim_small$BMI, na.rm = TRUE), mean(sim_small$sbp, na.rm = TRUE)),
+  sd   = c(sd(sim_small$BMI, na.rm = TRUE),   sd(sim_small$sbp, na.rm = TRUE))
 )
+```
 
-df <- data.frame(
-  id  = 1:6,
-  bmi = c(24, 30, NA, 29, 10, 26),
-  sbp = c(118, 200, 119, 121, 500, 120)
-)
+## Quick start: compute SDS
+Defaults keep rows with missing inputs and return NA SDS for those cells.
 
-calc_sds(
-  data = df,
-  vars = c("bmi", "sbp"),
+```{r}
+sds_tbl <- calc_sds(
+  data = sim_small,
+  vars = vars,
   ref = ref,
   id_col = "id",
-  na_strategy = "omit",
+  na_strategy = "keep",
   check_extreme = TRUE,
   extreme_strategy = "cap",
   sds_cap = 6,
   verbose = FALSE
 )
+
+new_cols <- setdiff(names(sds_tbl), names(sim_small))
+head(select(sds_tbl, id, all_of(new_cols)))
 ```
 
-## Examples
+## Arguments that matter
+- vars: character vector of columns to standardize; must be present and unique.
+- ref: table with variable/mean/sd; one row per var; sd must be positive.
+- na_strategy: keep (retain rows, NA SDS), omit (drop rows with any missing vars), error (abort if missing vars).
+- check_extreme + extreme_strategy: cap/warn/error/NA for |SDS| > sds_cap; cap is applied symmetrically.
+- return: data (default tibble) or list (adds summary and warning strings).
+- id_col: optional ID for diagnostics only.
 
-Keep rows with missing inputs, warn (do not cap) on extremes, request summary list, and relax warning thresholds:
+## Handling missing inputs
+- Non-numeric vars are coerced to numeric with warnings; non-finite become NA.
+- Bypass vs drop vs fail is controlled by na_strategy.
+
+### Compare row policies
+```{r}
+demo <- sim_small[1:8, ]
+demo$BMI[3] <- NA
+
+a_keep <- calc_sds(demo, vars, ref, na_strategy = "keep")
+a_omit <- calc_sds(demo, vars, ref, na_strategy = "omit")
+
+list(
+  keep_rows = nrow(a_keep),
+  omit_rows = nrow(a_omit),
+  preview = head(select(a_keep, BMI_sds, sbp_sds))
+)
+```
+
+## Extreme-value handling
+Cap, warn, error, or set NA for SDS beyond the chosen limit.
 
 ```{r}
-calc_sds(
-  data = df,
-  vars = c("bmi", "sbp"),
+demo2 <- demo
+demo2$sbp[5] <- 500  # extreme SBP
+
+a_cap <- calc_sds(
+  data = demo2,
+  vars = vars,
+  ref = ref,
+  na_strategy = "keep",
+  check_extreme = TRUE,
+  extreme_strategy = "cap",
+  sds_cap = 4
+)
+
+head(select(a_cap, BMI_sds, sbp_sds))
+```
+
+## List output for diagnostics
+Request per-variable missing/extreme counts and any warnings.
+
+```{r}
+sds_list <- calc_sds(
+  data = sim_small,
+  vars = vars,
   ref = ref,
   na_strategy = "keep",
   check_extreme = TRUE,
   extreme_strategy = "warn",
   sds_cap = 5,
-  warn_thresholds = list(na_prop = 0.10, extreme_prop = 0.02),
   return = "list",
-  verbose = TRUE
+  verbose = FALSE
 )
+
+str(sds_list$summary)
+unique(sds_list$warnings)
 ```
 
-## Notes
+## Outputs
+- Added <var>_sds columns (tibble by default)
+- Optional list: data, summary (row counts, omitted rows, extremes, per-variable missing/extreme), warnings
+Rows drop only when na_strategy = "omit" or when na_strategy = "error" aborts.
 
-- `ref` must cover every variable in `vars` with finite means and sd > 0; duplicates or missing stats abort.
-- Set `check_extreme = FALSE` to skip extreme detection; otherwise |SDS| > `sds_cap` follow `extreme_strategy`.
-- Non-numeric inputs are coerced to numeric with a warning; non-finite values become NA before scoring.
-- Proportion warnings trigger when missingness (`na_prop`) or extremes (`extreme_prop`) exceed thresholds.
-- Use `na_strategy = "error"` to enforce completeness; `"omit"` drops incomplete rows; `"keep"` retains them with NA SDS.
+## Pitfalls and tips
+- ref must align with vars and use the same units; sd must be positive and finite.
+- Lower sds_cap to limit leverage of outliers in plots; use extreme_strategy = "error" for strict QC.
+- Provide id_col to make troubleshooting easier when reviewing diagnostics.
 
+## Validation ideas
+- Manual check: if mean BMI is 25 and sd is 4, BMI 29 should yield (29-25)/4 = 1.0.
+- Confirm that rows with missing BMI are retained vs dropped according to na_strategy.
+- Verify that capping clamps |SDS| at sds_cap symmetrically.
+
+## See also
+- infer_cols() to infer data types prior to scoring.
+- calc_sds() is used by other helpers; pair with health_summary() for broader panels.

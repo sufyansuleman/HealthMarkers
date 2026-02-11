@@ -5,6 +5,8 @@
 ^HealthMarkers\.Rproj$
 ^README\.Rmd$
 ^\.Rproj\.user($|/)
+^check\.log$
+^\.DS_Store$
 ^tools($|/)
 ^docs$
 ^doc$
@@ -13,3 +15,5 @@
 ^\.Rprofile$
 \.linter
 ^\.Rproj\.user$
+^_pkgdown\.yml$
+^docs$

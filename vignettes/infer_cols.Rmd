@@ -1,5 +1,5 @@
 ---
-title: "infer_cols"
+title: "Infer Column Names"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{infer_cols}
@@ -8,39 +8,30 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Map your data’s column names to the keys expected by HealthMarkers functions. `infer_cols()` uses regex (and optional fuzzy) matching with tie-break strategies, preferences, and logging; defaults are strict and error on missing/ambiguous matches. `hm_infer_cols()` is the internal exact-name helper used when package functions infer columns automatically.
 
-`infer_cols()` scans a data frame and fills a mapping list (keys -> column names) using flexible regex patterns, optional preferred names, and multiple resolution strategies. It can log decisions, handle fuzzy matching, and return either the filled map or a map+log list. Defaults are strict and error on missing or ambiguous matches to preserve backward compatibility. The internal `hm_infer_cols()` provides a simpler exact-name inference with classed errors for package functions when no map is supplied.
+## When to use
+- You want deterministic column matching (with clear logs) before running calculators.
+- You need graceful handling of messy schemas: prefer/tie-break/fuzzy options to resolve synonyms or typos.
+- You plan to pass a resolved `col_map` into aggregators (e.g., `all_health_markers()`) to avoid re-inference surprises.
 
-## Inputs
+## Inputs and options (quick reference)
+- `data`: data.frame/tibble whose column names you want to map.
+- `map`: named list of keys -> column names; set values to `NULL` to infer.
+- `strategy`: `error` (abort on ambiguity/missing), `prefer` (honor `prefer`, then stable), `first` (data order), `stable` (shortest then alphabetical).
+- `strict`: if `TRUE`, error on unresolved keys; if `FALSE`, leave them `NULL` with warnings.
+- `fuzzy`/`max_distance`: enable fuzzy fallback when regex finds nothing; off by default.
+- `prefer`: optional exact-name hints to break ties deterministically.
+- `return`: `map` or `list` (map + log); `log_file` writes a human-readable log.
+- `hm_infer_cols()`: internal exact-name helper used by aggregators when `col_map` is missing.
 
-- `data`: data.frame/tibble whose column names will be matched.
-- `map`: named list where names are target keys (e.g., `G0`, `I0`, `TG`) and values are either `NULL` (to infer) or a user-supplied column name to keep.
-
-## Arguments
-
-- `patterns = NULL`: optional named character vector of regex patterns per key; if `NULL`, a built-in separator-tolerant dictionary is used.
-- `prefer = NULL`: optional named list of preferred exact names per key to resolve ties when `strategy = "prefer"`.
-- `strategy = c("error","prefer","first","stable")`: how to resolve multiple matches (`error` aborts; `prefer` uses `prefer` then stable tie-break; `first` takes first in data order; `stable` chooses shortest then alphabetical).
-- `strict = TRUE`: if `TRUE`, missing matches error; if `FALSE`, leaves keys `NULL` and warns.
-- `fuzzy = FALSE`, `max_distance = 0.1`: enable fuzzy matching via `agrep` when regex finds nothing.
-- `ignore_case = TRUE`: case-insensitive matching.
-- `verbose = TRUE`: print mapping decisions; `log_file = NULL` optionally writes a human-readable log.
-- `return = c("map","list")`: return the filled map (default) or a list with `map` and tibble `log`.
-
-`hm_infer_cols(data, patterns, required_keys, verbose)` is a lighter exact-name helper used internally; it aborts if required keys remain unresolved.
-
-## Output
-
-- Default: invisibly returns the filled `map` list.
-- With `return = "list"`: returns `list(map = <named list>, log = <tibble>)` where `log` records key, selected column, candidates, and reason.
-- When `strict = TRUE` and no/ambiguous match is found under `strategy = "error"`, an error is thrown; under other strategies, behavior follows the chosen resolution.
-
-## Examples
+## Demo Data
+Small tibble with column names that need mapping to fasting glucose/insulin and lipids.
 
 ```{r}
 library(HealthMarkers)
@@ -54,39 +45,74 @@ df <- tibble(
   age = c(55, 60)
 )
 
-spec <- list(G0 = NULL, I0 = NULL, TG = NULL, HDL_c = NULL)
-
-# Backward-compatible strict inference
-infer_cols(df, spec, verbose = FALSE)
+map_spec <- list(G0 = NULL, I0 = NULL, TG = NULL, HDL_c = NULL)
 ```
 
-## Examples
+## Core Inference (Strict)
+Backward-compatible behavior: strict + error strategy aborts on missing/ambiguous matches.
 
-Resolve ambiguities with preferences, enable fuzzy matching, and capture the log:
+```{r}
+infer_cols(df, map_spec, verbose = FALSE)
+```
+
+## Resolve Ties with Preferences
+Use preferred names and a stable tie-break to choose deterministically when multiple candidates match.
+
+```{r}
+infer_cols(
+  data = df,
+  map = map_spec,
+  strategy = "prefer",
+  prefer = list(HDL_c = c("HDL-c", "HDL")),
+  verbose = TRUE
+)
+```
+
+## Allow Fuzzy Fallback
+Enable fuzzy matching when names are noisy; cap distance with `max_distance`.
+
+```{r}
+infer_cols(
+  data = df,
+  map = map_spec,
+  fuzzy = TRUE,
+  max_distance = 0.15,
+  strict = FALSE,    # leave unresolved keys as NULL instead of error
+  strategy = "stable",
+  verbose = TRUE
+)
+```
+
+## Capture Log for Auditing
+Return the map plus a decision log and optionally write it to disk.
 
 ```{r}
 log_path <- tempfile(fileext = ".log")
 
 res <- infer_cols(
   data = df,
-  map = spec,
-  strategy = "prefer",      # use preferred names when multiple hits
+  map = map_spec,
+  strategy = "prefer",
   prefer = list(HDL_c = c("HDL-c", "HDL")),
-  fuzzy = TRUE,               # allow fuzzy fallback if regex misses
-  log_file = log_path,
   return = "list",
+  log_file = log_path,
   verbose = TRUE
 )
 
-res$map      # inferred mapping
-res$log      # tibble of decisions
-log_path     # log file written
+res$map
+head(res$log)
+#log_path
 ```
 
-## Notes
+## Expectations and When to Use/Avoid
+- Use strict + `error` when you want early failures for required inputs (e.g., before running marker calculators).
+- Use `prefer` or `stable` when you expect multiple synonyms and want deterministic choices without errors.
+- Enable `fuzzy` only when column names are noisy/typo-prone; keep `max_distance` small to avoid bad matches.
+- Set `strict = FALSE` if partial mappings are acceptable; unresolved keys remain `NULL` and must be handled before computation.
+- Avoid fuzzy matching on very small or already clean schemas; prefer explicit `col_map` in production pipelines.
 
-- Keep `strict = TRUE` when you want early errors for missing or ambiguous columns; switch to `strict = FALSE` to allow partial maps with warnings.
-- `strategy` controls tie-breaking; `prefer` plus `prefer` list yields deterministic resolution, while `stable` chooses shortest then alphabetical.
-- Fuzzy matching is off by default to avoid surprises; enable only when column names are noisy.
-- `hm_infer_cols()` is used by package functions when a col_map is missing; it requires explicit candidate name lists and aborts if required keys remain unresolved.
+## Tips
+- Start with `verbose = TRUE` while iterating on mappings, then turn it off in production.
+- Save the inferred `col_map` in your scripts once settled to avoid surprises when column names change.
+- Feed the resolved map into `all_health_markers()` or other helpers to bypass re-inference.
 

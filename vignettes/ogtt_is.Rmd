@@ -1,42 +1,65 @@
 ---
-title: "ogtt_is"
+title: "OGTT Insulin Sensitivity"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ogtt_is}
+  %\VignetteIndexEntry{OGTT Insulin Sensitivity}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute OGTT-based insulin sensitivity indices (Matsuda, Cederholm, Gutt, Stumvoll variants, BIGTT, HIRI_inv, Belfiore, etc.) from glucose/insulin at 0/30/120 minutes plus weight, BMI, age, and sex. Includes validation, missingness policies, optional extreme-value screening on outputs, and optional normalization of the returned indices.
 
-`ogtt_is()` computes OGTT-based insulin sensitivity indices using glucose/insulin at 0, 30, and 120 minutes plus weight, BMI, age, and sex. Outputs include: Isi_120, Cederholm_index, Gutt_index, Avignon_Si0/Si120/Sim, Modified_stumvoll, Stumvoll_Demographics, Matsuda_AUC, Matsuda_ISI, BigttSi, Ifc_inv, HIRI_inv, and Belfiore_isi_gly. It supports NA policies, optional high-missingness diagnostics, optional extreme screening on outputs with warn/cap/NA/error behaviors, and optional normalization via `normalize_vec()`. Units assumed: glucose mmol/L, insulin pmol/L, weight kg, BMI kg/m^2, age years, sex 1=male/2=female; glucose/insulin are internally converted to mg/dL and muU/mL where formulas require.
+## When to use this
+- You have OGTT glucose (mmol/L) and insulin (pmol/L) at 0, 30, 120 minutes, plus weight, BMI, age, and sex, and need multiple published insulin sensitivity indices.
+- You want consistent NA handling, optional extreme screening on outputs, and optional normalization for modeling pipelines.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble with required columns.
-- `col_map`: named list mapping `G0`, `G30`, `G120` (glucose mmol/L), `I0`, `I30`, `I120` (insulin pmol/L), `weight` (kg), `bmi` (kg/m^2), `age` (years), `sex` (1=male/2=female). All mappings must exist and columns be numeric/coercible.
+| Argument       | Purpose / Options                                                        | Notes                                                     |
+|----------------|--------------------------------------------------------------------------|-----------------------------------------------------------|
+| data           | Data frame/tibble with OGTT labs and demographics                        | Columns mapped via `col_map`                              |
+| col_map        | Named list mapping required keys                                         | G0/G30/G120 (glucose mmol/L); I0/I30/I120 (insulin pmol/L); weight (kg); bmi (kg/m^2); age (years); sex (1=male, 2=female; 0/1 coerced) |
+| normalize      | Output normalization method                                              | "none", "z", "inverse", "range", "robust" (default "none") |
+| na_action      | Missing-data policy for required inputs                                  | "keep" (default), "omit", "error"                      |
+| na_warn_prop   | Proportion to trigger high-missingness diagnostics                       | Default 0.2 (emitted in debug/verbose)                    |
+| check_extreme  | Scan outputs for magnitude > `extreme_limit`                             | Default FALSE                                             |
+| extreme_limit  | Absolute threshold for output extremes                                   | Default 1e3                                               |
+| extreme_action | Handling for flagged outputs                                             | "warn" (default), "cap", "error", "ignore", "NA"      |
+| verbose        | Emit progress and completion summaries                                   | Default FALSE                                             |
 
-## Arguments
+**Units:** Inputs must already be in mmol/L (glucose) and pmol/L (insulin); weight kg; BMI kg/m^2; age years; sex coded 1/2 (0/1 coerced). The function internally converts glucose to mg/dL (x18) and insulin to muU/mL (/6) where specific formulas require it.
 
-- `normalize = c("none","z","inverse","range","robust")`: post-hoc normalization of outputs.
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (`omit` drops rows; `error` aborts).
-- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug level).
-- `check_extreme = FALSE`: enable output magnitude scan (|value| > `extreme_limit`).
-- `extreme_limit = 1e3`: magnitude threshold for extremes.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for flagged extremes (`cap` truncates; `NA` blanks values).
-- `verbose = FALSE`: emit progress and completion messages.
+## Handling and expectations
+- Validation: required columns must exist; non-numeric inputs are coerced with warnings; non-finite values become NA.
+- Missingness: `keep` propagates NA; `omit` drops rows with any required NA; `error` aborts if required inputs contain NA (before computation).
+- High-missing diagnostics: `na_warn_prop` controls debug/verbose messages on missingness; enable `verbose = TRUE` to see them.
+- Unit handling: inputs are expected in mmol/L (glucose) and pmol/L (insulin); internally converted to mg/dL (*18) and muU/mL (/6) where formulas need them.
+- Extreme screening (optional): applied **after** computing indices; flags |value| > `extreme_limit`; handling via `extreme_action` (warn/cap/error/ignore/NA).
+- Normalization (optional): applied after extreme handling via `normalize_vec()`; use "none" for raw interpretable values.
+- Sex coding: expects 1 = male, 2 = female; 0 is treated as female after coercion; other strings become NA.
 
-## Output
+## Outputs
+- Returns a tibble with: Isi_120, Cederholm_index, Gutt_index, Avignon_Si0, Avignon_Si120, Avignon_Sim, Modified_stumvoll, Stumvoll_Demographics, Matsuda_AUC, Matsuda_ISI, BigttSi, Ifc_inv, HIRI_inv, Belfiore_isi_gly.
+- NA indicates missing/invalid inputs, zero/negative arguments to logs, or values blanked by extreme handling.
 
-Returns a tibble with the indices listed above. When `na_action = "omit"`, rows with missing required inputs are removed; otherwise outputs for those rows are `NA`. Extreme handling applies after computation to cap/warn/blank/error based on magnitude.
+## Defaults and validation details
+- Default `extreme_limit`: 1e3; used only when `check_extreme = TRUE`.
+- Output screening happens before normalization; capped/NA outputs are then normalized if `normalize != "none"`.
+- High-missingness diagnostics are only printed when verbose/debug logging is on.
+- Zero/negative inputs to log-based terms become NA by design (safe log guard).
 
-## Examples
-
+## Worked example 1: Basic usage (raw outputs)
 ```{r}
 library(HealthMarkers)
 library(tibble)
@@ -59,15 +82,12 @@ ogtt_is(
   ),
   normalize = "none",
   na_action = "keep",
-  check_extreme = FALSE,
-  verbose = FALSE
+  check_extreme = FALSE
 )
 ```
+*Interpretation:* Returns all indices with NA only where inputs are missing or non-finite.
 
-## Examples
-
-Apply output capping for large magnitudes, with verbose diagnostics:
-
+## Worked example 2: Extreme scan, capping, and z-normalization
 ```{r}
 ogtt_is(
   data = df,
@@ -86,10 +106,27 @@ ogtt_is(
   verbose = TRUE
 )
 ```
+*Interpretation:* Outputs are capped at +/- 1000 before z-scaling; verbose logs summarize extreme counts.
 
-## Notes
+## Troubleshooting & common pitfalls
+- Missing YAML: ensure this header stays at the top; Markdown before it will break knitting.
+- Missing columns: every required `col_map` key must exist in `data` and be mapped.
+- Units: inputs must be mmol/L (glucose) and pmol/L (insulin); only internal conversions are applied for formulas.
+- Sex coding: expects 1/2; 0/1 are coerced; other strings become NA and propagate.
+- Extreme handling: only applied when `check_extreme = TRUE`, and only after computing indices.
+- All NA outputs: usually missing required inputs, zero/negative values passed to logs, or NA produced by normalization after NA inputs.
 
-- Glucose is multiplied by 18 (mg/dL) and insulin divided by 6 (muU/mL) where formulas require; original units must be mmol/L/pmol/L.
-- Logs are safe: nonpositive arguments yield `NA`.
-- Extreme screening is on outputs (not inputs); adjust `extreme_limit` for your cohort.
-- `normalize` is optional and uses `normalize_vec()` with your chosen method.
+## Tips for best results
+- Keep `normalize = "none"` for clinical interpretation; use "z" or "robust" only when scaling is needed for modeling.
+- Use `na_action = "omit"` for modeling-ready datasets; `keep` for exploratory review.
+- Start with `check_extreme = TRUE`, `extreme_action = "warn"` to gauge outliers; tighten to `cap` or `error` if needed.
+- Inspect distributions of glucose and insulin values to catch unit errors before running.
+
+## Validation notes
+- Glucose values are multiplied by 18 and insulin divided by 6 inside formulas that require mg/dL or muU/mL.
+- Logs are safe: nonpositive arguments become NA.
+- Extreme handling and normalization occur after computing raw indices; disable both to mirror published formulas.
+
+## See also
+- Function documentation: `?ogtt_is`, `?normalize_vec`
+- Related vignettes: fasting_is, health_markers, glycemic_markers

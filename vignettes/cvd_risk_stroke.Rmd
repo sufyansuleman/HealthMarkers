@@ -1,5 +1,5 @@
 ---
-title: "cvd_risk_stroke"
+title: "CVD Risk Stroke"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cvd_risk_stroke}
@@ -8,63 +8,58 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Run the Pooled Cohort 10-year stroke risk calculator with guarded optional dependency loading and clear input expectations.
 
-`cvd_risk_stroke()` wraps `PooledCohort::predict_10yr_stroke_risk()` (PCE stroke component), adding input checks and quiet fallback to `NA` on backend errors. It computes 10-year stroke risk.
+## When to use
+- You need ACC/AHA Pooled Cohort 10-year stroke risk on U.S. adults with standard clinical inputs.
+- You want NA-tolerant behavior: backend returns `risk = NA` on invalid rows rather than aborting.
+- You can install the suggested package `PooledCohort` (required for execution).
 
-## Inputs
+## Inputs and requirements
+- Required columns: `age`, `sex` (1 = male, 0 = female), `race` ("white","black","other"), `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
+- Units: cholesterol mg/dL, blood pressure mmHg, BMI kg/m^2.
+- Verbose mode runs a lightweight quality scan (non-finite, high/all NA counts).
 
-- `data`: data.frame/tibble with columns `age`, `sex` (1 male, 0 female), `race`, `smoker` (logical), `total_chol`, `HDL_c`, `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
-- PooledCohort package must be installed; otherwise the function aborts.
-- Inputs are passed to the backend; non-finite values are treated as `NA` there. With `verbose = TRUE`, a quality scan reports non-finite/high-NA counts.
-
-## Arguments
-
-- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `verbose = TRUE`.
-- `verbose = FALSE`: emit progress and input-quality counts.
-- `...`: forwarded to `PooledCohort::predict_10yr_stroke_risk()` (uses equation_version = "Goff_2013" internally).
-
-## Output
-
-Returns a tibble with columns `model = "Stroke"`, `year = 10`, and `risk` (percentage). Backend errors yield an `NA` row.
-
-## Examples
+## Load packages and data
+Create a small synthetic data frame with correctly encoded inputs (sex = 1/0, race = white/black/other) to ensure non-NA output.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-patient <- tibble(
-  age = 55, sex = 1, race = "white", smoker = FALSE,
-  total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
-  diabetes = FALSE, bmi = 27
+stroke_data <- tibble::tibble(
+  age         = c(55, 60),
+  sex         = c(1, 0),                 # 1 = male, 0 = female
+  race        = c("white", "black"),   # PooledCohort only accepts black/white
+  smoker      = c(FALSE, TRUE),
+  total_chol  = c(200, 180),             # mg/dL
+  HDL_c       = c(50, 55),               # mg/dL
+  sbp         = c(140, 130),             # mmHg
+  bp_treated  = c(FALSE, TRUE),
+  diabetes    = c(FALSE, FALSE),
+  bmi         = c(27, 30)
 )
-
-if (requireNamespace("PooledCohort", quietly = TRUE)) {
-  cvd_risk_stroke(
-    data = patient,
-    na_warn_prop = 0.2,
-    verbose = TRUE
-  )
-}
 ```
 
-## Examples
+## Stroke risk
+Execute only when `PooledCohort` is available.
 
-Silence progress and pass through additional arguments if needed:
+```{r eval = requireNamespace("PooledCohort", quietly = TRUE)}
+stroke_out <- cvd_risk_stroke(data = stroke_data, verbose = FALSE)
 
-```{r}
-if (requireNamespace("PooledCohort", quietly = TRUE)) {
-  cvd_risk_stroke(patient, verbose = FALSE)
-}
+head(stroke_out)
 ```
 
-## Notes
+## Notes on equation version
+This wrapper uses `equation_version = "Goff_2013"` (PCE stroke component), avoiding PREVENT CKD inputs.
 
-- Ensure `PooledCohort` is installed; otherwise the wrapper aborts. When called via `cvd_risk(model = "ALL")`, missing packages are caught and replaced with `NA` rows.
-- Inputs use PCE conventions (mg/dL lipids, mmHg SBP, sex 1/0). No unit conversion is applied.
-- Uses `equation_version = "Goff_2013"` to align with PCE stroke equations and avoid PREVENT CKD inputs.
+## Tips
+- Requires the suggested package `PooledCohort`; when absent, chunks are skipped and the function aborts with an informative error.
+- Backend handles its own NA policy; invalid inputs return `risk = NA` rather than stopping the pipeline.
+- Set `verbose = TRUE` to see a quick input quality summary before calling the calculator.
+- Also available via `cvd_risk(model = "Stroke")`.

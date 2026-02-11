@@ -1,39 +1,42 @@
 ---
-title: "nfl_marker"
+title: "NfL Marker"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{nfl_marker}
+  %\VignetteIndexEntry{NfL Marker}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
 
-`nfl_marker()` is a placeholder wrapper for Neurofilament Light Chain (NfL). It validates inputs, offers NA and extreme-handling policies, and returns the provided NfL values (no scoring/classification). Units are assumed to match input (e.g., plasma pg/mL); no conversion is performed.
+Validate and return Neurofilament Light Chain (NfL) values with optional missing/extreme handling; no scoring, centiles, or unit conversion.
+
+## When to use
+
+- You have NfL measurements and need lightweight validation plus NA/extreme policies before modeling or export.
+- You do not need reference ranges or age-adjusted centiles—just cleaned values.
+- You want broad defaults but the ability to tighten extreme bounds to your assay range.
 
 ## Inputs
 
 - `data`: data.frame/tibble containing an NfL column.
-- `col_map`: named list mapping `nfl` to the NfL column (default `NfL`). Column must exist; values must be numeric (coerced with warnings if not).
+- `col_map`: named list mapping `nfl` to the NfL column (default `NfL`); numeric is expected, coercion warns on NA introduction.
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows with missing NfL; `error` aborts; `ignore`/`warn` act like keep (`warn` also messages on missing).
+- `check_extreme`: set TRUE to scan using `extreme_action` (`warn`/`cap`/`error`/`ignore`/`NA`).
+- `extreme_rules`: override the broad default `nfl` range (0, 1e6) in your input units.
+- `verbose`: optional progress messages.
 
-## Arguments
-
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`; `omit` drops rows; `error` aborts).
-- `check_extreme = FALSE`: optional range scan.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when scanning (`cap` truncates; `NA` blanks values).
-- `extreme_rules = NULL`: override default `list(nfl = c(0, 1e6))` in input units.
-- `verbose = FALSE`: emit progress messages.
-
-## Output
-
-Returns a tibble with one column `nfl_value`, reflecting the input after optional NA/exreme handling. When `na_action = "omit"`, rows with missing NfL are removed; otherwise those rows yield `NA`.
-
-## Examples
+## Quick start
 
 ```{r}
 library(HealthMarkers)
@@ -50,9 +53,7 @@ nfl_marker(
 )
 ```
 
-## Examples
-
-Scan for extremes and cap while warning, keeping all rows:
+## Extreme scan and cap
 
 ```{r}
 nfl_marker(
@@ -65,8 +66,26 @@ nfl_marker(
 )
 ```
 
-## Notes
+## Missing-data policy
 
-- Negative NfL values trigger a warning and propagate as-is (or NA if capped/blanked by policies).
-- This function does not apply age adjustment, centiles, or clinical thresholds; it is a pass-through with validation.
-- Adjust `extreme_rules` to align with your assay range if different from the broad default.
+```{r}
+try(
+  nfl_marker(
+    data = df,
+    col_map = list(nfl = "NfL"),
+    na_action = "error"
+  )
+)
+```
+
+## Outputs and expectations
+
+- Returns a tibble with `nfl_value` after applying NA/extreme policies.
+- `na_action = "omit"` drops rows with missing NfL; otherwise missing values yield `NA`.
+- Extreme handling can warn, cap, NA, ignore, or error; defaults are intentionally broad.
+
+## Tips
+
+- Align units with your assay (e.g., plasma pg/mL); no conversion is performed.
+- Tighten `extreme_rules` to the assay’s reportable range to avoid over-broad caps.
+- Use `na_action = "omit"` if downstream steps cannot handle missing values; keep/warn during QA to inspect gaps.

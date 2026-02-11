@@ -1,5 +1,4 @@
----
-title: "hormone_markers"
+title: "Hormone marker ratios"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{hormone_markers}
@@ -8,83 +7,156 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute nine hormone ratios with built-in QA: `FAI`, `LH_FSH`, `E2_P`, `T3_T4`, `ARR`, `Ins_Glu`, `GH_IGF1`, `PRL_T`, and `CAR_slope`. Inputs are coerced to numeric, non-finite become `NA`, and optional extreme screening can warn, cap, blank, or error on out-of-range labs.
 
-`hormone_markers()` computes nine hormone ratios with QA options: FAI, LH_FSH, E2_P, T3_T4, ARR, Ins_Glu, GH_IGF1, PRL_T, and CAR_slope. Inputs are coerced to numeric, non-finite values become `NA`, and optional extreme screening can warn, cap, blank, or error on out-of-range labs.
+## When to use
+- You have a complete hormone panel (mapped via `col_map`) and need quick ratio features.
+- You want explicit NA handling and optional extreme-value screening to avoid crashes on bad labs.
+- You need outputs that preserve row counts unless you explicitly `omit` missing rows.
 
-## Inputs
+## Inputs and requirements
+- All keys are required: total testosterone, SHBG, LH, FSH, estradiol, progesterone, free T3, free T4, aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.
+- `col_map`: map each required key to your column names; missing mappings or columns abort.
+- Units: keep units consistent within each ratio (e.g., cortisol nmol/L; aldosterone/renin in matching units).
+- `na_action`: `keep`/`ignore` retain rows with NA outputs; `omit` drops rows with missing required inputs; `error` aborts.
+- `check_extreme`: optional; `extreme_action` = `warn`/`cap`/`NA`/`error`/`ignore`.
 
-- `data`: data.frame/tibble with hormone labs.
-- `col_map`: named list mapping required keys to column names (all required): `total_testosterone`, `SHBG`, `LH`, `FSH`, `estradiol`, `progesterone`, `free_T3`, `free_T4`, `aldosterone`, `renin`, `insulin`, `glucagon`, `GH`, `IGF1`, `prolactin`, `cortisol_0`, `cortisol_30`.
-- Inputs are coerced to numeric; non-finite values are set to `NA` before calculation.
-
-## Arguments
-
-- `na_action = c("ignore","warn","error","keep","omit")`: missing-data policy (`keep` == `ignore`; `omit` drops rows with any missing required inputs).
-- `na_warn_prop = 0.2`: high-missingness warning threshold when `na_action = "warn"`.
-- `check_extreme = FALSE`: enable plausible-range scan.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates to bounds; `NA` blanks values).
-- `extreme_rules = NULL`: override default broad bounds per hormone.
-- `verbose = FALSE`: emit progress and NA counts.
-
-## Output
-
-Returns a tibble with columns `FAI`, `LH_FSH`, `E2_P`, `T3_T4`, `ARR`, `Ins_Glu`, `GH_IGF1`, `PRL_T`, `CAR_slope`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` outputs.
-
-## Examples
+## Load packages and demo data
+Use a small synthetic tibble (covers all required inputs) so the chunk runs anywhere. Replace `horm_demo` with your lab data.
 
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
-labs <- tibble(
-  tt = c(5, 7), shbg = c(30, 40), lh = c(6, 7), fsh = c(8, 9),
-  e2 = c(120, 140), p4 = c(2, 3), ft3 = c(4.5, 4.8), ft4 = c(16, 15),
-  aldo = c(150, 120), renin = c(12, 10), ins = c(15, 20), gluc = c(80, 70),
-  gh = c(1.2, 0.9), igf1 = c(180, 160), prl = c(10, 12), cort0 = c(300, 280), cort30 = c(480, 450)
+horm_demo <- tibble(
+  tt = c(5.0, 7.0, 4.5, 6.2),
+  shbg = c(30, 40, 28, 35),
+  lh = c(6, 7, 5, 6),
+  fsh = c(8, 9, 7, 8),
+  e2 = c(120, 140, 110, 135),
+  p4 = c(2, 3, 1.8, 2.5),
+  ft3 = c(4.5, 4.8, 4.3, 4.6),
+  ft4 = c(16, 15, 17, 16),
+  aldo = c(150, 120, 140, 130),
+  renin = c(12, 10, 11, 9),
+  ins = c(15, 20, 18, 17),
+  gluc = c(80, 70, 75, 78),
+  gh = c(1.2, 0.9, 1.0, 1.1),
+  igf1 = c(180, 160, 170, 165),
+  prl = c(10, 12, 11, 9),
+  cort0 = c(300, 280, 290, 310),
+  cort30 = c(480, 450, 470, 500)
 )
+```
 
-hormone_markers(
-  data = labs,
-  col_map = list(
-    total_testosterone = "tt", SHBG = "shbg", LH = "lh", FSH = "fsh",
-    estradiol = "e2", progesterone = "p4", free_T3 = "ft3", free_T4 = "ft4",
-    aldosterone = "aldo", renin = "renin", insulin = "ins", glucagon = "gluc",
-    GH = "gh", IGF1 = "igf1", prolactin = "prl", cortisol_0 = "cort0", cortisol_30 = "cort30"
-  ),
+## Column map (required)
+Map every required key to your column names; all are mandatory for computation.
+
+- `total_testosterone`, `SHBG`
+- `LH`, `FSH`
+- `estradiol`, `progesterone`
+- `free_T3`, `free_T4`
+- `aldosterone`, `renin`
+- `insulin`, `glucagon`
+- `GH`, `IGF1`
+- `prolactin`
+- `cortisol_0`, `cortisol_30` (nmol/L; slope uses the 30-minute delta / 30)
+
+```{r}
+col_map <- list(
+  total_testosterone = "tt",
+  SHBG = "shbg",
+  LH = "lh",
+  FSH = "fsh",
+  estradiol = "e2",
+  progesterone = "p4",
+  free_T3 = "ft3",
+  free_T4 = "ft4",
+  aldosterone = "aldo",
+  renin = "renin",
+  insulin = "ins",
+  glucagon = "gluc",
+  GH = "gh",
+  IGF1 = "igf1",
+  prolactin = "prl",
+  cortisol_0 = "cort0",
+  cortisol_30 = "cort30"
+)
+```
+
+## Core calculation
+Compute all ratios and preview the outputs. Non-finite values are set to `NA`; rows are retained when `na_action = "keep"`/`"ignore"`.
+
+```{r}
+hm_out <- hormone_markers(
+  data = horm_demo,
+  col_map = col_map,
   na_action = "keep",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+hm_out
 ```
 
-## Examples
-
-Drop rows with missing inputs, scan for extremes, and cap into allowed ranges:
+## Missing data and row handling
+Show the difference between keeping rows (propagating `NA`) and omitting rows when required inputs are missing.
 
 ```{r}
-hormone_markers(
-  data = labs,
-  col_map = list(
-    total_testosterone = "tt", SHBG = "shbg", LH = "lh", FSH = "fsh",
-    estradiol = "e2", progesterone = "p4", free_T3 = "ft3", free_T4 = "ft4",
-    aldosterone = "aldo", renin = "renin", insulin = "ins", glucagon = "gluc",
-    GH = "gh", IGF1 = "igf1", prolactin = "prl", cortisol_0 = "cort0", cortisol_30 = "cort30"
-  ),
+horm_demo_na <- horm_demo
+horm_demo_na$ft3[2] <- NA
+
+keep_res <- hormone_markers(
+  data = horm_demo_na,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = FALSE
+)
+
+omit_res <- hormone_markers(
+  data = horm_demo_na,
+  col_map = col_map,
   na_action = "omit",
+  check_extreme = FALSE
+)
+
+list(keep_rows = nrow(keep_res), omit_rows = nrow(omit_res))
+```
+
+## Extreme screening
+Enable range scanning and cap out-of-range inputs into allowed bounds.
+
+```{r}
+horm_demo_ext <- horm_demo
+horm_demo_ext$aldo[1] <- 2000  # intentionally extreme
+
+cap_res <- hormone_markers(
+  data = horm_demo_ext,
+  col_map = col_map,
+  na_action = "keep",
   check_extreme = TRUE,
   extreme_action = "cap",
   verbose = TRUE
 )
+
+cap_res[1, c("ARR", "FAI")]
 ```
 
-## Notes
+`extreme_action = "cap"` trims inputs into the allowed ranges; `warn` or `error` emit warnings or abort instead.
 
-- Required keys must all be mapped; missing mappings or columns abort.
-- `na_action = "error"` enforces complete inputs; `"omit"` filters; `"ignore"`/`"keep"` retain rows with NA outputs.
-- Extreme screening uses broad defaults; customize `extreme_rules` for tighter lab ranges or choose `extreme_action` behavior.
-- CAR_slope uses a 30-minute delta `(cortisol_30 - cortisol_0) / 30`.
+## Expectations
+- All required inputs must be mapped and present; missing mappings/columns abort.
+- `na_action`: `keep`/`ignore` retains rows with `NA` outputs; `omit` drops rows with missing required inputs; `error` stops on missingness.
+- Extreme screening is optional; when enabled, choose how to handle flagged values with `extreme_action`.
+- Outputs are numeric ratios; divisions by zero/non-finite are converted to `NA`.
+
+## Tips
+- Keep units consistent across rows (e.g., cortisol nmol/L, aldosterone/renin in matching units) to make ratios meaningful.
+- Use `na_action = "omit"` when you prefer complete-case ratios; keep/ignore if you want row counts preserved.
+- Tighten `extreme_rules` if your lab reference ranges are narrower than the broad defaults.
+- Turn on `verbose = TRUE` to see coercion, missingness scan, and extreme handling summaries.

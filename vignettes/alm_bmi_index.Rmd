@@ -1,5 +1,5 @@
 ---
-title: "alm_bmi_index"
+title: "ALM/BMI Index"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{alm_bmi_index}
@@ -8,76 +8,121 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute ALM/BMI and flag low muscle mass using FNIH cut-points (men < 0.789; women < 0.512) with optional NA and extreme handling.
 
-`alm_bmi_index()` computes ALM/BMI and flags low muscle mass using FNIH cut-points (men < 0.789; women < 0.512). Inputs are validated, optional extreme screening is available, and missing-data handling mirrors other helpers.
+## When to use this
+- You need a quick sarcopenia risk flag based on ALM relative to body size.
+- You have ALM (kg), BMI (kg/m^2), and sex, and want FNIH cut-points applied automatically.
+- You want the option to cap implausible ALM/BMI values and control missing-data policy.
 
-## Inputs
+## What you need (rich guide)
+- Required columns: `alm` (kg), `bmi` (kg/m^2), `sex` (m/f/1/0; other values yield `NA` for the flag).
+- Defaults: ALM in kg, BMI in kg/m^2. No unit conversion is performed.
+- Policies: `na_action` (`keep`/`warn`/`ignore` behave like keep; `omit` drops; `error` aborts). `check_extreme` + `extreme_action` can cap/NA/error on implausible ALM/BMI.
+- FNIH cut-points are built in; nothing to configure beyond column mapping.
 
-- `data`: data.frame/tibble with ALM (kg), BMI (kg/m^2), and sex.
-- `col_map`: named list for `alm`, `bmi`, `sex` (defaults: ALM_kg, BMI, Sex).
-- Inputs are coerced to numeric; sex normalized via first letter (m/f/1/0). Non-finite become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
-- `check_extreme = FALSE`: enable range screening (defaults: ALM 5–40 kg, BMI 10–60 kg/m^2).
-- `extreme_action = c("warn","cap","error","ignore","NA")`: handling for extremes when screening is on (`cap` trims to bounds; `NA` blanks values).
-- `extreme_rules`: optional custom bounds.
-- `verbose`: emit progress messages.
-
-## Output
-
-Returns a tibble with:
-- `alm_bmi_ratio`
-- `low_muscle_mass` (TRUE if ratio below sex-specific cut-point; NA if sex or ratio missing)
-Rows drop only when `na_action = "omit"`; otherwise missing inputs propagate `NA`.
-
-## Examples
+## Load packages and data
+Use a small subset of the simulated data. Here we derive a simple ALM proxy for illustration.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-df <- tibble(
-  ALM_kg = c(22, 14),
-  BMI    = c(27, 24),
-  Sex    = c("Male", "Female")
-)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
 
-alm_bmi_index(
-  data = df,
-  col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
-  na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn",
-  verbose = FALSE
+# Example proxy for ALM (replace with measured ALM when available)
+sim_small <- sim_small |>
+  mutate(ALM_kg = pmax(10, pmin(35, weight * 0.35)))
+```
+
+## Column map
+Map your columns; sex is normalized by first letter (m/f/1/0).
+
+```{r}
+col_map <- list(
+  alm = "ALM_kg",
+  bmi = "BMI",
+  sex = "sex"
 )
 ```
 
-## Examples
-
-Drop incomplete rows, screen for extremes, cap to defaults:
+## Walkthrough (compute ALM/BMI and flag)
 
 ```{r}
-alm_bmi_index(
-  data = df,
-  col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
+alm_out <- alm_bmi_index(
+  data = sim_small,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+
+alm_out |>
+  slice_head(n = 5) |>
+  select(alm_bmi_ratio, low_muscle_mass)
+```
+
+Interpretation: `alm_bmi_ratio` is ALM/BMI. `low_muscle_mass` is `TRUE` if below the sex-specific FNIH cut-point; `NA` if sex or ratio is `NA`.
+
+## Missing data and extremes
+Compare NA handling and optional capping.
+
+```{r}
+demo <- sim_small[1:8, c("ALM_kg", "BMI", "sex")]
+demo$ALM_kg[3] <- NA
+demo$BMI[4] <- 2    # implausible, will be capped
+
+alm_keep <- alm_bmi_index(
+  data = demo,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  extreme_rules = list(alm = c(5, 40), bmi = c(10, 60)),
+  verbose = FALSE
+)
+
+alm_omit <- alm_bmi_index(
+  data = demo,
+  col_map = col_map,
   na_action = "omit",
   check_extreme = TRUE,
   extreme_action = "cap",
-  verbose = TRUE
+  extreme_rules = list(alm = c(5, 40), bmi = c(10, 60)),
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(alm_keep),
+  omit_rows = nrow(alm_omit),
+  preview = alm_keep |> select(alm_bmi_ratio, low_muscle_mass) |> slice_head(n = 3)
 )
 ```
 
-## Notes
+## Expectations
+- Required columns must be mapped; missing columns abort.
+- `na_action` controls row handling (`keep`/`warn`/`ignore` behave like keep; `omit` drops; `error` aborts).
+- `check_extreme` screens raw ALM/BMI; `extreme_action` can warn/cap/NA/error; tune `extreme_rules` to your lab limits.
+- Sex must normalize to m/f/1/0 for the flag to evaluate; otherwise the flag is `NA`.
 
-- Sex values are normalized by first letter (m/f/1/0); other values warn and yield `NA` flags.
-- Domain warnings are issued for BMI outside 10–60 and ALM outside 5–40 when not using `check_extreme`.
-- Use `na_action = "error"` to enforce completeness; `"omit"` drops incomplete rows.
-- `extreme_rules` can tighten/loosen bounds for ALM and BMI if population differs.
+## Common pitfalls
+- Feeding ALM in pounds or BMI in non-metric units will misclassify; keep ALM in kg and BMI in kg/m^2.
+- A single implausible BMI (e.g., <=0) zeroes the ratio; enable `check_extreme` to cap or NA such inputs.
+- Using an ALM proxy (like weight * 0.35) is illustrative only; use measured ALM when possible.
+- `na_action = keep` leaves missing inputs as `NA`; choose `omit` for stricter pipelines.
 
+## Validation notes
+- Spot-check one row: ratio = ALM/BMI; compare to FNIH thresholds (0.789 men, 0.512 women) to verify `low_muscle_mass`.
+- With `check_extreme = TRUE` and `extreme_action = cap`, ALM/BMI will be truncated into your specified ranges before the ratio.
+- Expect `low_muscle_mass` to be `NA` when sex cannot be normalized.
+
+## See also
+- `adiposity_sds()` / `adiposity_sds_strat()` for standardizing BMI or related measures.
+- `frailty_index()` for a broader frailty construct.

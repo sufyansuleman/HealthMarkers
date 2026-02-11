@@ -1,5 +1,4 @@
----
-title: "health_summary"
+title: "Health summary"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{health_summary}
@@ -8,135 +7,99 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Quick QA helper that summarizes numeric columns: counts, missingness, mean, sd, median, and 25th/75th percentiles. If `cols` is `NULL`, it auto-detects numeric columns; otherwise it summarizes the intersection of `cols` and existing names.
 
-`health_summary()` provides a lightweight summary for numeric columns: n, n_na, mean, sd, median, p25, p75. If `cols` is NULL, it summarizes all numeric columns.
+## When to use
+- You want a fast completeness/central tendency check on numeric outputs (original or derived markers).
+- You need to confirm which columns are numeric and how many NAs they carry before export or modeling.
+- You prefer a silent, non-destructive helper that ignores non-numeric columns automatically.
 
-## Inputs
+## Inputs and requirements
+- `x`: data.frame/tibble.
+- `cols` (optional): character vector; if `NULL`, all numeric columns are summarized. Nonexistent names are ignored.
+- Only numeric columns are summarized; non-numeric are skipped.
 
-- `x`: data.frame/tibble containing numeric variables to summarize.
-- `cols`: optional character vector of columns to include; non-numeric selections are ignored after intersection.
-
-## Arguments
-
-- `cols = NULL`: select columns to summarize; defaults to all numeric columns.
-
-## Output
-
-Returns a tibble with one row per summarized column and columns: `measure`, `n`, `n_na`, `mean`, `sd`, `median`, `p25`, `p75`. If no numeric columns are found, returns an empty tibble with these headers.
-
-## Examples
+## Load packages and data
+Use the bundled simulated data for runnable examples and add a grouping factor to show that non-numeric columns are ignored.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
 library(tibble)
 
-df <- tibble(a = c(1, 2, NA), b = c(3, 4, 5), c = factor("x"))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, ]
 
-health_summary(df)
+set.seed(123)
+demo <- sim_small %>%
+  transmute(
+    BMI,
+    TG,
+    HDL_c,
+    group = factor(sample(c("A", "B"), n(), replace = TRUE))
+  )
 ```
 
-## Examples
+## Column selection
+- Default: all numeric columns are summarized; non-numeric (e.g., `group`) are skipped.
+- Optional: supply `cols` to restrict to specific numeric columns; names not present are ignored.
 
-Summarize a subset of columns:
+## Core calculation
+Summarize all numeric columns detected in `demo`.
 
 ```{r}
-health_summary(df, cols = c("b"))
+health_summary(demo)
 ```
 
-## Notes
-
-- Non-numeric columns are skipped when `cols` is NULL; explicitly supplied `cols` are intersected with existing names.
-- Useful as a quick check after deriving markers via `health_markers` aggregators.---
-title: "health_summary"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{health_summary}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
-```
-
-## Overview
-
-`health_summary()` is a lightweight quality-check helper that scans numeric
-columns and reports counts, missingness, and basic distribution summaries. It
-returns one row per column with `n`, `n_na`, mean, standard deviation, median,
-and the 25th/75th percentiles. Use it to spot missingness or outliers before
-running downstream marker calculators.
-
-## Inputs
-
-- `x`: data.frame or tibble to summarize.
-- `cols` (optional): character vector of column names to include. If `NULL`, all
-  numeric columns in `x` are summarized.
-- Expected data types: only numeric columns are summarized; non-numeric columns
-  are ignored. There are no unit assumptions beyond numeric values.
-- Valid ranges: no built-in range screening; values are summarized as provided.
-
-## Arguments
-
-- `x`: data.frame/tibble containing the measurements (required).
-- `cols = NULL`: if `NULL`, auto-detect numeric columns; otherwise summarize the
-  specified columns that exist in `x`.
-
-There are no additional tuning parameters; NA handling is intrinsic to the
-calculations (means/quantiles are computed with `na.rm = TRUE`).
-
-## Output
-
-Returns a tibble with one row per summarized column and the columns:
-
-- `measure`: column name summarized.
-- `n`: total row count in `x`.
-- `n_na`: number of missing values in that column.
-- `mean`, `sd`: mean and standard deviation (NA-aware).
-- `median`, `p25`, `p75`: median and 25th/75th percentiles (NA-aware).
-
-If no numeric columns are found (or none of the requested `cols` exist), an
-empty tibble with these column names is returned. No rows are removed; missing
-values only affect the calculated statistics.
-
-## Examples
+Restrict to a subset of columns.
 
 ```{r}
-library(HealthMarkers)
-library(tibble)
+health_summary(demo, cols = c("BMI", "TG"))
+```
 
-example_df <- tibble(
-  bmi = c(22, 25, NA, 27),
-  tg = c(1.4, 1.6, 1.2, NA),
-  group = factor(c("A", "A", "B", "B"))
+## Inputs and behavior
+- Input: any data.frame/tibble; only numeric columns are summarized.
+- Missingness: stats are NA-aware (`na.rm = TRUE`); rows are never dropped.
+- Units: no assumptions beyond numeric values; you interpret the units.
+- Empty case: if no numeric columns are found, returns an empty tibble with the expected column names.
+
+## Tips
+- Run after computing markers to spot missingness or odd distributions before exporting.
+- Reuse during data cleaning—non-numeric columns are ignored, so it is safe to call repeatedly.
+- Pair with aggregators: summarize derived markers right after calling `all_health_markers()` or `metabolic_markers()`.
+- Use `cols` to focus on newly derived marker columns without summarizing the full dataset.
+
+## After computing markers
+Summarize a few derived columns from `all_health_markers()` (glycemic + lipid) to check completeness.
+
+```{r}
+hm_input <- sim_small
+if (!"glucose" %in% names(hm_input) && "G0" %in% names(hm_input)) {
+  hm_input$glucose <- hm_input$G0  # reuse fasting glucose for TyG and METS_IR
+}
+
+hm <- all_health_markers(
+  data = hm_input,
+  col_map = list(
+    glucose = "glucose",
+    TG = "TG",
+    HDL_c = "HDL_c",
+    BMI = "BMI"
+  ),
+  which = c("glycemic", "lipid"),
+  include_insulin = FALSE,
+  verbose = FALSE
 )
 
-# Auto-detect numeric columns
-health_summary(example_df)
-
-# Restrict to a single column
-health_summary(example_df, cols = "bmi")
+derived_cols <- c("TyG_index", "AIP", "SPISE", "METS_IR")
+health_summary(hm, cols = derived_cols)
 ```
 
-## Examples
-
-Only non-numeric columns are ignored and yield an empty tibble:
-
-```{r}
-non_numeric <- tibble(group = c("A", "B"), flag = c(TRUE, FALSE))
-health_summary(non_numeric)
-```
-
-## Notes
-
-- Use `health_summary()` as a pre-flight QA step before calling calculators like
-  `lipid_markers()`, `liver_markers()`, or aggregated workflows such as
-  `all_health_markers()`.
-- Because it leaves row counts unchanged and ignores non-numeric columns, it is
-  safe to run repeatedly during data cleaning to monitor missingness.
+Here `health_summary()` reports row counts and missingness for the derived markers so you can decide whether to impute, drop rows, or adjust inputs before export.
 

@@ -1,0 +1,47 @@
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left: [reference, articles]
+    right: [github]
+  components:
+    github:
+      icon: fa-github
+      href: https://github.com/sufyansuleman/HealthMarkers
+
+reference:
+  - title: Dispatchers
+    contents:
+      - health_markers
+      - psych_markers
+  - title: Metabolic and clinical
+    contents:
+      - starts_with("adipo")
+      - ends_with("_markers")
+      - ends_with("_risk")
+      - ends_with("_index")
+  - title: Psych scales
+    contents:
+      - phq9_score
+      - gad7_score
+      - k6_score
+      - k10_score
+      - ghq12_score
+      - who5_score
+      - isi_score
+      - mdq_score
+      - asrs_score
+      - bis_score
+      - spq_score
+      - cognitive_score
+      - psych_dx_flags
+      - psych_med_flags
+
+articles:
+  - title: Getting started
+    contents:
+      - getting-started
+  - title: Psychometrics
+    contents:
+      - psych_markers

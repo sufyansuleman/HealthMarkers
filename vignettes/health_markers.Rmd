@@ -1,5 +1,5 @@
 ---
-title: "health_markers"
+title: "Health marker aggregators"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{health_markers}
@@ -8,87 +8,181 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Guide to the three aggregators:
+- `all_insulin_indices()`: fasting/OGTT/adipose/tracer insulin sensitivity/resistance panels.
+- `metabolic_markers()`: selectable bundle (insulin, adiposity_sds, cardio, lipid, liver, glycemic, MetS) appended to your data.
+- `all_health_markers()`: registry-driven dispatcher across most marker groups with optional column inference and insulin inclusion.
+All wrappers use guards to skip missing inputs/optional deps instead of crashing when `verbose = FALSE`.
 
-Aggregators for derived markers:
-- `all_insulin_indices()` collects fasting/OGTT/adipose/tracer insulin sensitivity/resistance panels.
-- `metabolic_markers()` binds selected groups (insulin, adiposity_sds, cardio, lipid, liver, glycemic, MetS).
-- `all_health_markers()` is the comprehensive dispatcher across all registered marker groups, with optional auto `col_map` inference and insulin panel inclusion.
-All wrappers use `.hm_safe_call()` to avoid hard failures; missing/failed groups are skipped with optional verbose summaries.
+## When to use
+- You want one call to run multiple marker groups, with optional insulin panels.
+- You need column inference by default but can supply a `col_map` for nonstandard names.
+- You prefer graceful skipping (no hard errors) when inputs or optional packages are absent.
 
-## Inputs
+## Inputs and requirements
+- `data`: data.frame/tibble with columns required by the groups you select.
+- `col_map`: optional mapping; recommended for insulin/lipid groups or nonstandard names.
+- `which`: groups to compute. `metabolic_markers()` supports `insulin`, `adiposity_sds`, `cardio`, `lipid`, `liver`, `glycemic`, `mets`. `all_health_markers()` covers a larger registry (lipid, renal, inflammatory, liver, obesity, insulin panels, etc.).
+- `include_insulin`: whether to add insulin panels in `all_health_markers()`; requires glucose/insulin columns.
+- `na_action`: `keep`/`omit`/`error` (plus `ignore`/`warn` where supported) forwarded to underlying helpers.
+- Optional dependencies: some groups rely on suggested packages (e.g., CVD risk backends). Missing deps are skipped with NA outputs.
 
-- `data`: data.frame/tibble of raw labs/anthropometry; specific needs depend on chosen groups. Insulin panels require glucose/insulin mappings; lipid/liver/glycemic/MetS groups need their respective inputs (see underlying function vignettes).
-- `col_map`: named list mapping required keys; for `all_health_markers()` it can be omitted/NULL to auto-infer common columns (TG, HDL_c, LDL_c, TC, BMI, age, sex, etc.).
-
-## Arguments
-
-- `normalize = c("none","z","inverse","range","robust")`: forwarded to insulin indices (and stored for some groups).
-- `mode = c("both","IS","IR")`: insulin panels return IS, IR, or both.
-- `na_action = c("keep","omit","error")`: forwarded to underlying calculators (HM-CS v2 semantics).
-- `metabolic_markers(which)`: choose subset of groups; defaults include insulin, adiposity_sds, cardio, lipid, liver, glycemic, mets.
-- `all_health_markers(which)`: "all" (default) or a vector of registry keys (lipid, liver, glycemic, mets, oxidative, bone, allostatic_load, nutrient, vitamin, vitamin_d_status, renal, ckd_stage, kidney_kfre, frailty_index, charlson, sarc_f, nfl, iAge, calcium_corrected, kyn_trp, etc.).
-- `include_insulin` (all_health_markers): prepend insulin panel unless FALSE.
-- `verbose`: emit mapping summaries, group status, and debug/info messages.
-
-## Output
-
-- `all_insulin_indices()`: tibble of IS (and optional IR_) columns.
-- `metabolic_markers()`: original data with appended group columns.
-- `all_health_markers()`: original data plus all requested groups; skipped/failed groups leave data unchanged. Column binding skips duplicates.
-
-## Examples
-
-Bind lipid and liver panels without insulin (to avoid missing glucose/insulin inputs):
+## Load packages and data
+Use the packaged simulated dataset for runnable examples. Swap `sim_small` with your data frame.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-labs <- tibble(
-  TC = c(200, 180), LDL_c = c(120, 100), HDL_c = c(50, 60), TG = c(150, 110),
-  ALT = c(30, 25), AST = c(20, 18), BMI = c(25, 27),
-  age = c(45, 52), sex = c("F", "M")
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
+
+## Column map (when you need it)
+Most groups infer columns automatically. Provide a `col_map` when your names differ or when using insulin panels.
+
+### Typical keys for these examples
+- `TG`, `HDL_c`, `LDL_c`, `TC`: lipid inputs (mmol/L)
+- `BMI`: body mass index (kg/m^2)
+- `G0`, `I0`: fasting glucose (mmol/L) and insulin (pmol/L) for insulin panels
+- `ALT`, `AST`: liver enzymes (U/L)
+- `age`, `sex`: demographics used by several groups
+
+```{r}
+col_map <- list(
+  TG = "TG",
+  HDL_c = "HDL_c",
+  LDL_c = "LDL_c",
+  TC = "TC",
+  BMI = "BMI",
+  G0 = "G0",
+  I0 = "I0",
+  ALT = "ALT",
+  AST = "AST",
+  age = "age",
+  sex = "sex"
 )
+```
 
-metabolic_markers(
-  data = labs,
-  col_map = list(),
-  which = c("lipid", "liver"),
+## Core calculation (targeted metabolic bundle)
+Run `metabolic_markers()` on a small subset, focusing on glycemic, lipid, and liver groups (insulin panel excluded to keep inputs minimal). Show only new columns.
+
+```{r}
+mm <- metabolic_markers(
+  data = sim_small,
+  col_map = col_map,
+  which = c("glycemic", "lipid", "liver"),
   normalize = "none",
   mode = "both",
   verbose = FALSE,
   na_action = "keep"
 )
+
+mm_new <- setdiff(names(mm), names(sim_small))
+head(select(mm, all_of(mm_new)))
 ```
 
-## Examples
+Interpretation: outputs include lipid ratios, TyG-based metrics, and liver-derived markers. Rows are retained because `na_action = "keep"` propagates missing inputs to `NA` outputs.
 
-Run comprehensive aggregation with auto-inferred column map, include insulin panel, and request specific groups:
+## Comprehensive run (registry dispatcher)
+`all_health_markers()` can auto-infer columns or use your `col_map`. Here we request a multi-panel set and skip insulin for minimal inputs.
 
 ```{r}
-all_health_markers(
-  data = labs,
-  col_map = list(
-    TC = "TC", LDL_c = "LDL_c", HDL_c = "HDL_c", TG = "TG",
-    ALT = "ALT", AST = "AST", BMI = "BMI", age = "age", sex = "sex"
-  ),
-  which = c("lipid", "liver"),
-  include_insulin = FALSE,     # set TRUE if insulin inputs available and mapped
+hm <- all_health_markers(
+  data = sim_small,
+  col_map = col_map,
+  which = c("glycemic", "lipid", "renal", "inflammatory"),
+  include_insulin = FALSE,
   normalize = "none",
   mode = "both",
   verbose = TRUE,
   na_action = "keep"
 )
+
+hm_new <- setdiff(names(hm), names(sim_small))
+head(select(hm, all_of(hm_new)))
 ```
 
-## Notes
+Verbose mode reports inferred/user mappings and which groups were computed or skipped. Skipped groups leave the input untouched.
 
-- Auto `col_map` inference (all_health_markers) uses `hm_infer_cols()` with default exact patterns; required keys (TG, HDL_c, LDL_c, TC, BMI, age, sex) must be inferable or supplied explicitly.
-- Groups relying on optional packages (e.g., `cvd_risk` for cardio) are skipped gracefully if backends are unavailable.
-- `.hm_bind_new_cols` avoids overwriting existing columns; only new marker columns are appended.
-- Insulin group aliases in the registry are consolidated via `include_insulin`; setting it TRUE runs `all_insulin_indices()` once and skips other insulin_* entries.
+## Insulin panel example (with graceful skips)
+Include insulin indices alongside a small panel. Missing OGTT/adipose/tracer inputs are skipped safely; fasting indices compute if `G0`/`I0` are present.
+
+```{r}
+col_map_insulin <- list(
+  G0   = "G0",
+  I0   = "I0",
+  TG   = "TG",
+  HDL_c = "HDL_c",
+  BMI  = "BMI",
+  age  = "age",
+  sex  = "sex"
+)
+
+ins <- all_health_markers(
+  data = sim_small,
+  col_map = col_map_insulin,
+  which = c("glycemic", "lipid"),
+  include_insulin = TRUE,
+  normalize = "none",
+  mode = "both",
+  verbose = TRUE,
+  na_action = "keep"
+)
+
+ins_new <- setdiff(names(ins), names(sim_small))
+head(select(ins, all_of(ins_new)))
+```
+
+The verbose summary will note which insulin sub-panels ran (fasting) and which were skipped due to missing OGTT/adipose/tracer inputs.
+
+## Missing data and row handling
+`na_action` controls row retention. Demonstrate with a tiny slice containing a missing lipid value.
+
+```{r}
+demo <- sim_small[1:6, c("TG", "HDL_c", "BMI", "ALT", "AST")]
+demo$TG[2] <- NA
+
+mm_keep <- metabolic_markers(
+  data = demo,
+  col_map = col_map,
+  which = c("glycemic", "lipid", "liver"),
+  na_action = "keep",
+  verbose = FALSE
+)
+
+mm_omit <- metabolic_markers(
+  data = demo,
+  col_map = col_map,
+  which = c("glycemic", "lipid", "liver"),
+  na_action = "omit",
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(mm_keep),
+  omit_rows = nrow(mm_omit)
+)
+```
+
+`keep` propagates missing inputs to `NA` markers; `omit` drops rows with required-field NAs for the selected groups.
+
+## Expectations
+- Required inputs for chosen groups must be present/mapped; missing required columns abort or skip depending on the underlying helper.
+- `na_action` chooses whether missing inputs lead to retained rows (`keep`), dropped rows (`omit`), or immediate errors (`error`).
+- `normalize` and `mode` affect insulin outputs; they are ignored by groups that do not use them.
+- `all_health_markers()` infers columns when `col_map` is missing/NULL; inference fails if required keys cannot be found.
+- Verbose mode summarizes mappings plus computed/skipped groups so you can audit the run.
+
+## Tips
+- Start narrow: pick a few groups with `metabolic_markers(which = ...)` before running the full registry.
+- Supply an explicit `col_map` when your column names differ, especially for insulin and lipid inputs.
+- Set `include_insulin = TRUE` in `all_health_markers()` only when glucose/insulin columns are available (G0/I0 or OGTT inputs mapped).
+- Use `na_action = "error"` for strict pipelines; `omit` for dropping incomplete rows; `keep` for exploratory runs.
+- After computing, use `dplyr::select()` to keep only the markers you care about; outputs can be wide.

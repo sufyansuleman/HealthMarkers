@@ -1,5 +1,5 @@
 ---
-title: "frax_score"
+title: "FRAX fracture risk"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{frax_score}
@@ -8,81 +8,143 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute a simplified, non-validated approximation of FRAX 10-year fracture risk (major osteoporotic and hip). Normalizes sex labels, applies HM-CS missing/extreme policies, and returns placeholder risks; it is **not** the proprietary FRAX algorithm.
 
-`frax_score()` provides a simplified, non-validated approximation of FRAX 10-year fracture risk (major osteoporotic and hip) from FRAX-like risk factors. It normalizes sex labels, handles optional BMD T-scores, applies HM-CS NA/extreme policies, and returns NA rows when inputs are incomplete (unless omitted). Optional extreme screening can warn, cap, blank, or error on age/BMD outside plausible ranges.
+## When to use
+- You need a placeholder fracture-risk proxy for demos or pipelines while acknowledging it is not clinical FRAX.
+- You want explicit NA and extreme-value handling (age/BMD bounds) with column mapping flexibility.
+- You plan to swap in real FRAX later; this keeps interfaces stable in the meantime.
 
-## Inputs
+## Inputs and requirements
+- Required columns (map via `col_map`): `age` (years), `sex` (codes starting with m/f or 1/0).
+- Optional binary risk factors: prior fracture, parent fracture, glucocorticoids, rheumatoid, secondary osteoporosis, current smoker, high alcohol.
+- Optional: femoral neck BMD T-score (`bmd`).
+- `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows missing required inputs; `error` aborts.
+- `check_extreme`: when TRUE, scan age and BMD; default bounds age 40–90, BMD T -6 to 2 (override with `extreme_rules`).
+- `extreme_action`: `warn` (default) leaves values; `cap` trims into bounds; `NA` blanks; `error` aborts; `ignore` skips messages.
 
-- `data`: data.frame/tibble with at least age and sex.
-- `col_map`: named list with `age` and `sex` (defaults: `Age`, `Sex`). Optional keys: `prior_fracture`, `parent_fracture`, `steroids`, `rheumatoid`, `secondary_op`, `smoker`, `alcohol`, `bmd` (T-score).
-- Sex codes are normalized from first letter (`m`/`f`) or `1`/`0`; unknown codes yield NA and warn.
-- Numeric-like columns are coerced; non-finite values become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
-- `check_extreme = FALSE`: enable range scan (age, BMD).
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes (`cap` trims to bounds; `NA` blanks values).
-- `extreme_rules = NULL`: override default bounds (age 40–90, BMD T -6 to 2).
-- `country = NULL`: accepted but unused placeholder.
-- `verbose = FALSE`: emit progress via `inform`/`hm_inform`.
-
-## Output
-
-Returns a tibble with `frax_major_percent`, `frax_hip_percent`, plus `frax_sex_norm`, `frax_age_used`, `frax_bmd_tscore`. With `na_action = "omit"`, rows missing required inputs are dropped; otherwise they produce `NA` outputs. This is a placeholder estimator, not the proprietary FRAX algorithm.
-
-## Examples
+## Load packages and data
+Illustrative demo data only; replace with your cohort.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
 demo <- tibble(
-  Age = c(65, 72), Sex = c("F", "M"),
-  prior_fx = c(1, 0), parent_fx = c(0, 1), steroids = c(0, 1),
-  rheumatoid = c(0, 0), secondary = c(0, 0), smoker = c(0, 1), alcohol = c(1, 0),
-  bmd = c(-2.0, -1.0)
+  Age = c(65, 72, 80, 68, 74, 60),
+  Sex = c("F", "M", "F", "F", "M", "F"),
+  prior_fx   = c(1, 0, 1, 0, 0, 0),
+  parent_fx  = c(0, 1, 0, 0, 0, 0),
+  steroids   = c(0, 1, 0, 0, 1, 0),
+  rheumatoid = c(0, 0, 0, 1, 0, 0),
+  secondary  = c(0, 0, 0, 0, 0, 0),
+  smoker     = c(0, 1, 0, 0, 1, 0),
+  alcohol    = c(1, 0, 0, 0, 0, 1),
+  bmd        = c(-2.0, -1.0, -2.5, -1.5, -0.8, NA)
 )
+```
 
-frax_score(
+## Column map (required)
+Provide your column names; left-hand keys are fixed.
+
+```{r}
+col_map <- list(
+  age = "Age",
+  sex = "Sex",
+  prior_fracture  = "prior_fx",
+  parent_fracture = "parent_fx",
+  steroids        = "steroids",
+  rheumatoid      = "rheumatoid",
+  secondary_op    = "secondary",
+  smoker          = "smoker",
+  alcohol         = "alcohol",
+  bmd             = "bmd"
+)
+```
+
+### What each input represents
+- `age`: age in years (required).
+- `sex`: sex code; first letter `m`/`f` or `1`/`0` (required; normalized to male/female).
+- Optional binary risk factors: prior fracture, parent fracture, glucocorticoids, rheumatoid, secondary osteoporosis, current smoker, high alcohol.
+- `bmd`: femoral neck T-score (optional); placeholder adjustment when present.
+
+## Core calculation
+Return the placeholder risks and the normalized age/sex/BMD used.
+
+```{r}
+frax_out <- frax_score(
   data = demo,
-  col_map = list(
-    age = "Age", sex = "Sex",
-    prior_fracture = "prior_fx", parent_fracture = "parent_fx",
-    steroids = "steroids", rheumatoid = "rheumatoid", secondary_op = "secondary",
-    smoker = "smoker", alcohol = "alcohol", bmd = "bmd"
-  ),
+  col_map = col_map,
   na_action = "keep",
   check_extreme = TRUE,
   extreme_action = "warn",
   verbose = FALSE
 )
+
+select(frax_out, frax_major_percent, frax_hip_percent, frax_sex_norm, frax_age_used, frax_bmd_tscore) %>%
+  head()
 ```
 
-## Examples
+Interpretation: `frax_major_percent` and `frax_hip_percent` are placeholder probabilities (not clinical). `frax_sex_norm` shows normalized sex; `frax_age_used` and `frax_bmd_tscore` reflect any capping/blanking applied by extreme checks.
 
-Drop rows with missing required inputs and cap age/BMD into bounds:
+## Inputs and reminders
+- Required: `age` (years) and `sex` codes mapped in `col_map`.
+- Optional: binary risk factors and BMD T-score. Non-numeric inputs are coerced; non-finite values become NA.
+- `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows missing required inputs; `error` aborts.
+- `check_extreme`: when TRUE, scan age and BMD; defaults bounds age 40–90, BMD T -6 to 2 (override with `extreme_rules`).
+- `extreme_action`: `warn` (default) leaves values; `cap` trims into bounds; `NA` blanks; `error` aborts; `ignore` skips messages.
+
+## Missing data and extremes
+Show row handling, capping, and dropping on a small slice.
 
 ```{r}
-frax_score(
-  data = demo,
-  col_map = list(age = "Age", sex = "Sex", bmd = "bmd"),
+demo_miss <- demo
+demo_miss$Age[3] <- NA      # missing age
+demo_miss$Sex[4] <- "X"    # unknown sex -> NA
+demo_miss$Age[5] <- 105     # extreme age
+demo_miss$bmd[2] <- -7      # extreme BMD
+
+keep_cap <- frax_score(
+  data = demo_miss,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = FALSE
+)
+
+omit_cap <- frax_score(
+  data = demo_miss,
+  col_map = col_map,
   na_action = "omit",
   check_extreme = TRUE,
   extreme_action = "cap",
-  extreme_rules = list(age = c(45, 90), bmd_t = c(-5, 1)),
-  verbose = TRUE
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(keep_cap),
+  omit_rows = nrow(omit_cap),
+  capped_preview = head(select(keep_cap, frax_age_used, frax_bmd_tscore, frax_major_percent, frax_hip_percent))
 )
 ```
 
-## Notes
+Here `na_action = "keep"` retains rows even with missing/unknown sex or age (outputs become NA). `na_action = "omit"` drops rows missing required inputs. `extreme_action = "cap"` trims age/BMD into allowed ranges before risk calculation.
 
-- This is a simplified placeholder and not a substitute for official FRAX calculators.
-- `na_action = "error"` enforces complete age/sex; `"omit"` drops incomplete rows; `"keep"`/`"warn"` retain rows with NA outputs.
-- Extreme screening supports warn/cap/NA/error behaviors; defaults: age 40–90, BMD T -6 to 2.
-- Sex normalization accepts leading `m`/`f` or `1`/`0`; unknown codes are set to NA with a warning.
+## Expectations
+- Placeholder approximation only; not a validated FRAX calculator and not for clinical use.
+- You must map `age` and `sex`; missing mappings or columns abort.
+- Choose `na_action` to enforce or relax completeness; `error` is strict, `omit` drops, `keep` retains.
+- Use `check_extreme`/`extreme_action` to cap, blank, or reject out-of-range age/BMD (defaults age 40–90, BMD T -6 to 2).
+- `verbose = TRUE` surfaces progress and QA messages.
+
+## Tips
+- Normalize sex coding to `M`/`F` or 1/0 before calling to avoid NA normalization.
+- Adjust `extreme_rules` if your bounds differ; set `check_extreme = FALSE` to skip scanning.
+- Use `na_action = "error"` for strict pipelines; `omit` to filter incomplete rows; `keep`/`warn` for exploratory use.
+- Outputs are illustrative only; replace with a validated FRAX implementation for clinical workflows.

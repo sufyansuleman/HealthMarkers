@@ -1,90 +1,144 @@
 ---
-title: "bone_markers"
+title: "Bone Turnover Markers"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{bone_markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
----
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
-knitr::opts_knit$set(purl = FALSE)
-```
+## Scope
+Compute OSTA, ALMI, FMI, and BMD_Tscore from DXA and anthropometry, and optionally pass through bone-turnover markers (TBS, HSA, PINP, CTX, BSAP, Osteocalcin). Inputs are coerced to numeric; non-finite become NA. BMD_Tscore uses supplied reference mean and SD; SD must be positive.
 
-## Overview
+## When to use
+- You have DXA outputs (ALM, FM, BMD) plus age, weight, height, and reference BMD stats.
+- You want OSTA and mass indexes (ALMI/FMI) alongside BMD T-scores.
+- You may have additional bone markers to pass through unchanged.
 
-`bone_markers()` computes DXA-derived and osteoporosis screening metrics: OSTA, ALMI, FMI, and BMD_Tscore (using supplied reference means/SDs). It can also pass through optional turnover/structural markers (TBS, HSA, PINP, CTX, BSAP, Osteocalcin) when mapped. Inputs are coerced to numeric; non-finite become `NA`.
+## Requirements checklist
+- Packages: HealthMarkers, dplyr (for display).
+- Required columns: age, weight, height (meters), ALM, FM (kg), BMD (g/cm^2), BMD_ref_mean, BMD_ref_sd (positive).
+- Optional pass-through: TBS, HSA, PINP, CTX, BSAP, Osteocalcin (coerced to numeric if mapped and present).
+- Row policy via na_action: keep (default), omit, or error on missing/non-finite required inputs.
+- Optional SDS screening: check_extreme on any mapped key containing "sds"; control with sds_limit and extreme_action.
 
-## Inputs
-
-- `data`: data.frame/tibble with DXA and anthropometry.
-- `col_map`: named list with required `age`, `weight`, `height`, `ALM`, `FM`, `BMD`, `BMD_ref_mean`, `BMD_ref_sd`.
-- Optional keys (passed through if present): `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`.
-- Units: height m; weight/ALM/FM kg; BMD g/cm^2; ALMI/FMI kg/m^2.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: handling when required inputs are missing/non-finite.
-- `check_extreme = FALSE`: enable SDS-like scan on mapped keys containing "sds" (case-insensitive).
-- `sds_limit = 6`: absolute-value limit for SDS-like scan.
-- `extreme_action = c("cap","NA","error")`: response to SDS-like extremes (`cap` trims to +/- `sds_limit`; `NA` blanks values).
-- `verbose`: emit progress messages.
-
-## Output
-
-Returns a tibble with `OSTA`, `ALMI`, `FMI`, `BMD_Tscore`, followed by any optional markers mapped and present (`TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`). Rows drop only when `na_action = "omit"`; otherwise missing required inputs propagate `NA`.
-
-## Examples
+## Load packages and example data
+The simulated data lack DXA values; we create simple placeholders for illustration only; replace with your measurements.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-bone_df <- tibble(
-  age = c(60, 72), weight = c(65, 50), height = c(1.65, 1.58),
-  ALM = c(18.2, 14.7), FM = c(22.0, 20.5),
-  BMD = c(0.95, 0.80), BMD_ref_mean = c(1.00, 1.00), BMD_ref_sd = c(0.12, 0.12)
-)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
 
+# Illustrative stand-ins; replace with real DXA outputs
+sim_small$ALM <- pmax(12, pmin(30, sim_small$weight * 0.32))
+sim_small$FM  <- pmax(8,  pmin(40, sim_small$weight * 0.28))
+sim_small$BMD <- 0.9 + (sim_small$age - mean(sim_small$age, na.rm = TRUE)) * 0.001
+sim_small$BMD_ref_mean <- 1.0
+sim_small$BMD_ref_sd   <- 0.12
+```
+
+## Map columns
+Required keys plus optional markers (commented out below).
+
+```{r}
 col_map <- list(
-  age = "age", weight = "weight", height = "height",
-  ALM = "ALM", FM = "FM", BMD = "BMD",
-  BMD_ref_mean = "BMD_ref_mean", BMD_ref_sd = "BMD_ref_sd"
+  age = "age",
+  weight = "weight",
+  height = "height",
+  ALM = "ALM",
+  FM = "FM",
+  BMD = "BMD",
+  BMD_ref_mean = "BMD_ref_mean",
+  BMD_ref_sd   = "BMD_ref_sd"
+  # Optional: TBS = "TBS", HSA = "HSA", PINP = "PINP", CTX = "CTX", BSAP = "BSAP", Osteocalcin = "Osteocalcin"
 )
+```
 
-bone_markers(
-  data = bone_df,
+## Quick start: compute markers
+Defaults keep rows with missing inputs and return NA for their derived scores.
+
+```{r}
+bm_out <- bone_markers(
+  data = sim_small,
   col_map = col_map,
   na_action = "keep",
   check_extreme = FALSE,
   sds_limit = 6,
   extreme_action = "cap"
 )
+
+new_cols <- setdiff(names(bm_out), names(sim_small))
+head(select(bm_out, all_of(new_cols)))
 ```
 
-## Examples
+## Arguments that matter
+- col_map: required mappings for age, weight, height, ALM, FM, BMD, BMD_ref_mean, BMD_ref_sd; optional TBS/HSA/PINP/CTX/BSAP/Osteocalcin pass through when mapped.
+- na_action: keep (default, retain rows; derived scores become NA when inputs missing), omit (drop rows with missing/non-finite required inputs), error (abort if any missing/non-finite required inputs).
+- check_extreme: FALSE by default; TRUE scans mapped keys containing "sds" (case-insensitive) for |value| > sds_limit.
+- extreme_action (when check_extreme = TRUE): cap, NA, or error.
+- sds_limit: threshold for SDS-like screening (default 6).
 
-Include turnover markers, drop incomplete rows, and cap SDS-like extremes (only keys containing "sds" are scanned):
+## Handling missing inputs
+- Non-numeric inputs are coerced; NA introduced are warned. Non-finite become NA.
+- BMD_ref_sd and height must be positive or the function aborts.
+- Row policy: keep vs omit vs error is governed by na_action.
 
+### Compare row policies
 ```{r}
-col_map$PINP <- "PINP"
-col_map$CTX  <- "CTX"
+demo <- sim_small[1:8, c("age","weight","height","ALM","FM","BMD","BMD_ref_mean","BMD_ref_sd")]
+demo$ALM[c(2, 5)] <- NA
 
-bone_markers(
-  data = bone_df,
-  col_map = col_map,
-  na_action = "omit",
-  check_extreme = TRUE,
-  sds_limit = 5,
-  extreme_action = "cap"
+a_keep <- bone_markers(demo, col_map, na_action = "keep")
+a_omit <- bone_markers(demo, col_map, na_action = "omit")
+
+list(
+  keep_rows = nrow(a_keep),
+  omit_rows = nrow(a_omit),
+  preview = head(select(a_keep, OSTA, ALMI, FMI, BMD_Tscore))
 )
 ```
 
-## Notes
+## Optional SDS screening
+If you supply any mapped key containing "sds", you can cap/NA/error on extremes.
 
-- Height must be >0 and `BMD_ref_sd` >0; function aborts otherwise.
-- SDS-like screening only affects mapped keys whose names contain "sds"; typical inputs are unaffected unless such keys are present.
-- Use `na_action = "error"` to enforce complete required inputs; `"omit"` drops incomplete rows; `"keep"` retains rows with `NA` outputs.
-- Optional markers are passed through without transformation when mapped and present in `data`.
+```{r}
+demo2 <- demo
+# Example SDS-like column for illustration
+set.seed(1)
+demo2$BMD_z_sds <- rnorm(nrow(demo2), mean = 0, sd = 7)
+col_map_sds <- c(col_map, list(BMD_z_sds = "BMD_z_sds"))
 
+bm_screen <- bone_markers(
+  data = demo2,
+  col_map = col_map_sds,
+  na_action = "keep",
+  check_extreme = TRUE,
+  sds_limit = 6,
+  extreme_action = "cap"
+)
+
+summary(abs(demo2$BMD_z_sds) > 6)
+```
+
+## Outputs
+- OSTA, ALMI, FMI, BMD_Tscore
+- Optional passthrough (if mapped and present): TBS, HSA, PINP, CTX, BSAP, Osteocalcin
+Rows drop only with na_action = "omit" or when na_action = "error" aborts.
+
+## Pitfalls and tips
+- Ensure BMD_ref_sd > 0 and height > 0; otherwise the function aborts before row filtering.
+- Replace placeholder ALM/FM/BMD values with actual DXA measurements; keep units consistent (height meters; masses kg; BMD g/cm^2).
+- Optional markers are numeric-coerced; if missing or not mapped, they return NA columns.
+- SDS screening applies only to mapped keys containing "sds"; defaults do nothing unless you provide such keys.
+
+## Validation ideas
+- Manual check: OSTA for age 70 and weight 60 is (60 - 70) * 0.2 = -2.
+- ALMI should equal ALM / height^2; FMI equals FM / height^2.
+- BMD_Tscore should drop by ~1 when BMD is one SD below reference.
+
+## See also
+- sarc_f_score() and alm_bmi_index() for sarcopenia-related assessments.
+- frax_score() for fracture risk estimation.

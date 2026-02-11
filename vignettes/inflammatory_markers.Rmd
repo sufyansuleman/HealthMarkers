@@ -1,5 +1,5 @@
 ---
-title: "inflammatory_markers"
+title: "Inflammatory markers"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{inflammatory_markers}
@@ -8,91 +8,111 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
-
-`inflammatory_markers()` computes inflammatory ratios/panels. Panels:
+## Scope
+Compute inflammatory ratios/panels. Panels:
 - Classic: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category.
 - Eosinophil: NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR passthrough.
-- Both: union of classic and eos metrics.
-Inputs are coerced to numeric, non-finite become `NA`, zero denominators warn, and optional extreme handling can warn/cap/blank/error on implausible counts.
+- Both: union of classic + eos metrics.
+Inputs are coerced to numeric; non-finite become `NA`. Zero denominators warn. Optional extreme handling can warn/cap/blank/error.
 
-## Inputs
-
-- `data`: data.frame/tibble with blood counts and CRP/albumin (for eos panel).
-- `col_map`: named list mapping keys: `neutrophils`, `lymphocytes`, `monocytes`, `platelets`, `WBC`, `CRP`, `albumin`, `eosinophils`, `ESR`. Classic requires at least neutrophils + lymphocytes (monocytes/platelets recommended); eos requires eosinophils plus CRP and albumin.
-- Inputs are coerced to numeric; non-finite values set to `NA`.
-
-## Arguments
-
-- `panel = c("auto","classic","eos","both")`: `auto` uses eos panel if `eosinophils` key present.
-- `na_action = c("error","omit","keep")`: missing-data policy over used inputs (`keep` retains NA outputs; `omit` drops rows; `error` aborts).
-- `check_extreme = FALSE`: enable basic plausibility capping/NA/error.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates to ranges; `NA` blanks values).
-- `verbose = FALSE`: emit progress messages.
-
-## Output
-
-Returns a tibble with the panel-specific indices. When `na_action = "omit"`, rows with missing required inputs are dropped; otherwise those rows yield `NA` results. Zero denominators emit a warning.
-
-## Examples (Classic Panel)
+## Load packages and demo data
+Synthetic counts to run both panels.
 
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  neutrophils = c(4, 2), lymphocytes = c(2, 1.5), monocytes = c(0.5, 0.3),
-  platelets = c(200, 150), WBC = c(7, 4.5), CRP = c(2.5, 0.8)
+  neutrophils = c(4, 2, 3.5),
+  lymphocytes = c(2, 1.0, 1.5),
+  monocytes = c(0.5, 0.3, 0.4),
+  platelets = c(200, 150, 180),
+  WBC = c(7, 4.5, 6),
+  CRP = c(2.5, 0.8, 12),
+  albumin = c(40, 42, 33),
+  eosinophils = c(0.2, 0.1, 0.15),
+  ESR = c(12, 15, 18)
 )
+```
 
-cm_classic <- list(
-  neutrophils = "neutrophils", lymphocytes = "lymphocytes",
-  monocytes = "monocytes", platelets = "platelets", WBC = "WBC", CRP = "CRP"
+## Column map (required keys per panel)
+- Classic: `neutrophils`, `lymphocytes` (monocytes/platelets/WBC/CRP improve coverage).
+- Eos: classic keys plus `eosinophils`, `CRP`, `albumin` (for CLR/CAR/mGPS); `ESR` optional passthrough.
+
+```{r}
+cm <- list(
+  neutrophils = "neutrophils",
+  lymphocytes = "lymphocytes",
+  monocytes = "monocytes",
+  platelets = "platelets",
+  WBC = "WBC",
+  CRP = "CRP",
+  albumin = "albumin",
+  eosinophils = "eosinophils",
+  ESR = "ESR"
 )
+```
 
-inflammatory_markers(
+## Core calculation (classic panel)
+
+```{r}
+classic_out <- inflammatory_markers(
   data = df,
-  col_map = cm_classic,
+  col_map = cm,
   panel = "classic",
   na_action = "keep",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+classic_out
 ```
 
-## Examples (Eosinophil Panel with Extreme Capping)
+## Eosinophil panel with extreme capping
 
 ```{r}
-df_eos <- tibble(
-  neutrophils = c(4, 2), lymphocytes = c(2, 0.8), monocytes = c(0.5, 0.3),
-  platelets = c(200, 150), WBC = c(7, 4.5), CRP = c(2.5, 0.8), albumin = c(40, 42),
-  eosinophils = c(0.2, 0.1), ESR = c(12, 15)
-)
+df_ext <- df
+df_ext$CRP[3] <- 400  # intentional extreme
 
-cm_eos <- list(
-  neutrophils = "neutrophils", lymphocytes = "lymphocytes", monocytes = "monocytes",
-  platelets = "platelets", WBC = "WBC", CRP = "CRP", albumin = "albumin",
-  eosinophils = "eosinophils", ESR = "ESR"
-)
-
-inflammatory_markers(
-  data = df_eos,
-  col_map = cm_eos,
+eos_out <- inflammatory_markers(
+  data = df_ext,
+  col_map = cm,
   panel = "eos",
   na_action = "keep",
   check_extreme = TRUE,
   extreme_action = "cap",
   verbose = TRUE
 )
+
+eos_out
 ```
 
-## Notes
+`extreme_action = "cap"` trims out-of-range inputs; `warn` only warns; `error` aborts; `NA` blanks flagged values.
 
-- Classic panel requires at least neutrophils and lymphocytes; eos panel also needs eosinophils plus CRP and albumin (for CLR/CAR/mGPS).
-- `na_action = "error"` enforces complete inputs; `omit` drops incomplete rows; `keep` retains NA outputs.
-- Extreme screening uses built-in broad ranges; `extreme_action` controls warn/cap/NA/error behavior.
-- mGPS uses CRP (<=10 vs >10 mg/L) and albumin (>=35 vs <35 g/L); ESR is passed through when mapped.
+## Missing data handling
+`na_action = "keep"` preserves rows with `NA` outputs; `omit` drops rows with missing required inputs; `error` aborts if any required input is missing/non-finite.
+
+```{r}
+df_na <- df
+df_na$lymphocytes[2] <- NA
+
+keep_out <- inflammatory_markers(df_na, cm, panel = "classic", na_action = "keep")
+omit_out <- inflammatory_markers(df_na, cm, panel = "classic", na_action = "omit")
+
+list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
+```
+
+## Expectations
+- Provide required keys per panel; missing mappings abort.
+- Inputs are coerced to numeric; non-finite become `NA`; zero denominators warn.
+- Extreme scan uses broad defaults for blood counts/CRP/albumin; adjust via `extreme_action` and built-in ranges.
+- Panel selection: `auto` uses eos if `eosinophils` mapping is present; `both` returns the union.
+
+## Tips
+- If your lymphocyte/eosinophil counts can be zero, consider `na_action = "keep"` to avoid dropping rows; zeros still trigger divide-by-zero warnings.
+- Tighten ranges when using capping to match lab references.
+- If your data use different units (e.g., CRP mg/dL), convert before calling to keep ratios interpretable.

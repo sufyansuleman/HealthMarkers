@@ -1,0 +1,109 @@
+---
+title: "Psychometric markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{psych_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+Compute common self-report mental health scales (PHQ-9/8, GAD-7, K6/K10, GHQ-12, WHO-5, ISI, MDQ, ASRS), key-driven scales (BIS, SPQ), cognitive composites, and diagnosis/medication flags in one call via `psych_markers()`. NA handling (`keep`/`omit`/`error`) and rowwise mean-imputation are built in, with per-scale missingness thresholds.
+
+## Minimal example data
+Here we build a tiny synthetic row with required item columns. Replace with your cohort data and adjust `col_map` to your column names.
+
+```{r}
+library(HealthMarkers)
+library(dplyr)
+
+psych_df <- tibble::tibble(
+  phq9_01 = 1, phq9_02 = 2, phq9_03 = 1, phq9_04 = 0, phq9_05 = 1, phq9_06 = 2, phq9_07 = 1, phq9_08 = 2, phq9_09 = 1,
+  gad7_01 = 0, gad7_02 = 1, gad7_03 = 1, gad7_04 = 1, gad7_05 = 0, gad7_06 = 1, gad7_07 = 0,
+  k6_01 = 2, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 2, k6_06 = 1,
+  k10_01 = 1, k10_02 = 1, k10_03 = 1, k10_04 = 1, k10_05 = 1, k10_06 = 1, k10_07 = 1, k10_08 = 1, k10_09 = 1, k10_10 = 1,
+  ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1, ghq12_05 = 0, ghq12_06 = 2,
+  ghq12_07 = 1, ghq12_08 = 0, ghq12_09 = 1, ghq12_10 = 0, ghq12_11 = 1, ghq12_12 = 0,
+  who5_01 = 3, who5_02 = 3, who5_03 = 4, who5_04 = 3, who5_05 = 4,
+  isi_01 = 2, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 0,
+  mdq_01 = 1, mdq_02 = 1, mdq_03 = 1, mdq_04 = 0, mdq_05 = 1, mdq_06 = 1, mdq_07 = 1, mdq_08 = 0, mdq_09 = 1, mdq_10 = 1, mdq_11 = 0, mdq_12 = 1, mdq_13 = 1,
+  mdq_cluster = 1, mdq_impair = 1,
+  asrs_01 = 4, asrs_02 = 3, asrs_03 = 3, asrs_04 = 2, asrs_05 = 2, asrs_06 = 3,
+  asrs_07 = 1, asrs_08 = 1, asrs_09 = 1, asrs_10 = 1, asrs_11 = 1, asrs_12 = 1,
+  asrs_13 = 1, asrs_14 = 1, asrs_15 = 1, asrs_16 = 1, asrs_17 = 1, asrs_18 = 1,
+  bis_01 = 2, bis_02 = 3, bis_03 = 2, bis_04 = 3, bis_05 = 1, bis_06 = 2,
+  bis_07 = 2, bis_08 = 2, bis_09 = 2, bis_10 = 2, bis_11 = 2, bis_12 = 2,
+  spq_01 = 1, spq_02 = 0, spq_03 = 1, spq_04 = 0,
+  task_rt = 320, task_mem = 0.8, task_att = 0.4,
+  dx_mdd = 1, dx_anxiety = 0, dx_adhd = 1, dx_bipolar = 0, dx_scz = 0, dx_sud = 0,
+  med_ssri = 1, med_snri = 0, med_antipsychotic = 0, med_mood_stabilizer = 0, med_anxiolytic = 0
+)
+```
+
+## Column maps and keys
+Map canonical item IDs to your dataset columns. Keys for BIS/SPQ stay user-supplied (no item text in package).
+
+```{r}
+col_map <- list(
+  phq9 = list(items = setNames(sprintf("phq9_%02d", 1:9), sprintf("phq9_%02d", 1:9))),
+  gad7 = list(items = setNames(sprintf("gad7_%02d", 1:7), sprintf("gad7_%02d", 1:7))),
+  k6   = list(items = setNames(sprintf("k6_%02d", 1:6), sprintf("k6_%02d", 1:6))),
+  k10  = list(items = setNames(sprintf("k10_%02d", 1:10), sprintf("k10_%02d", 1:10))),
+  ghq12 = list(items = setNames(sprintf("ghq12_%02d", 1:12), sprintf("ghq12_%02d", 1:12))),
+  who5 = list(items = setNames(sprintf("who5_%02d", 1:5), sprintf("who5_%02d", 1:5))),
+  isi  = list(items = setNames(sprintf("isi_%02d", 1:7), sprintf("isi_%02d", 1:7))),
+  mdq  = list(items = setNames(sprintf("mdq_%02d", 1:13), sprintf("mdq_%02d", 1:13)), cluster = "mdq_cluster", impairment = "mdq_impair"),
+  asrs = list(items = setNames(sprintf("asrs_%02d", 1:18), sprintf("asrs_%02d", 1:18))),
+  bis  = list(items = setNames(sprintf("bis_%02d", 1:12), sprintf("bis_%02d", 1:12))),
+  spq  = list(items = setNames(sprintf("spq_%02d", 1:4), sprintf("spq_%02d", 1:4))),
+  cognitive = list(tasks = list(rt = "task_rt", memory = "task_mem", attention = "task_att")),
+  dx_flags = list(dx = list(mdd = "dx_mdd", anxiety = "dx_anxiety", adhd = "dx_adhd", bipolar = "dx_bipolar", scz = "dx_scz", sud = "dx_sud")),
+  med_flags = list(med = list(ssri = "med_ssri", snri = "med_snri", antipsychotic = "med_antipsychotic", mood_stabilizer = "med_mood_stabilizer", anxiolytic = "med_anxiolytic"))
+)
+
+bis_key <- list(
+  name = "BIS_demo",
+  items = sprintf("bis_%02d", 1:12),
+  min_val = 1, max_val = 4,
+  reverse = c("bis_02","bis_03"),
+  subscales = list(attention = c("bis_01","bis_05"), motor = c("bis_02","bis_06"))
+)
+
+spq_key <- list(
+  name = "SPQ_demo",
+  items = sprintf("spq_%02d", 1:4),
+  min_val = 0, max_val = 1
+)
+```
+
+## Run the dispatcher
+Select the scales you want via `which`. Rowwise mean imputation is optional; here we keep defaults and missingness tolerance of 20% per scale.
+
+```{r}
+out <- psych_markers(
+  data = psych_df,
+  col_map = col_map,
+  which = c("phq9","gad7","k6","k10","ghq12_binary","who5","isi","mdq","asrs","bis","spq","cognitive","dx_flags","med_flags"),
+  na_action = "keep",
+  missing_prop_max = 0.2,
+  impute = "mean",
+  bis_key = bis_key,
+  spq_key = spq_key,
+  cognitive_method = "z_mean"
+)
+
+new_cols <- setdiff(names(out), names(psych_df))
+select(out, all_of(new_cols))
+```
+
+## Notes
+- `na_action`: `keep` (default), `omit` (drops rows with NA in new outputs), `error`.
+- `missing_prop_max`: rows with higher missing proportion per scale are set to `NA` for that scale.
+- `impute = "mean"` applies rowwise mean-imputation before scoring; use `"none"` to skip.
+- BIS/SPQ require user-supplied keys; no item text ships in the package.
+- Cognitive composite supports `method = "z_mean"` or `"pca1"` (complete cases only for PCA loadings).

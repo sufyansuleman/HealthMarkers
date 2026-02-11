@@ -1,5 +1,5 @@
 ---
-title: "impute_missing"
+title: "Impute missing data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{impute_missing}
@@ -8,76 +8,112 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Deterministic numeric imputation (`impute_missing()`) plus optional advanced methods (`impute_mice()`, `impute_missforest()`). All helpers restrict to numeric columns, preserve non-NA values, and keep data dimensions unchanged. Use this as a pre-flight step before computing markers.
 
-`impute_missing()` provides simple, deterministic, per-column imputation for numeric variables (mean, median, zero, or a constant). Companion helpers `impute_mice()` (multiple imputation via `mice`) and `impute_missforest()` (random-forest imputation via `missForest`) offer more advanced options. All functions validate inputs, restrict to numeric columns, warn on high missingness, and leave non-numeric columns untouched. Optional verbosity reports progress and counts of imputed values. `mice` and `missForest` are optional dependencies; explicit errors are thrown if they are unavailable when requested.
-
-## Inputs
-
-- `data`: data.frame/tibble with potential missing values.
-
-Function-specific:
-- `impute_missing()`: no additional required args; operates on numeric columns with NAs or user-specified `cols`.
-- `impute_mice()`: requires `mice` package installed; needs at least two numeric columns with NAs.
-- `impute_missforest()`: requires `missForest` package installed; needs at least two numeric columns with NAs.
-
-## Arguments
-
-- `method` (impute_missing): one of `"mean"`, `"median"`, `"zero"`, `"constant"`; when `constant`, supply `constant` scalar.
-- `cols`: optional character vector of columns to impute; defaults to all numeric columns containing any `NA`.
-- `na_warn_prop = 0.2`: threshold to emit high-missingness warnings per column (impute_missing only).
-- `m` (impute_mice): number of multiple imputations (default 5).
-- `ntree` (impute_missforest): number of trees per forest (default 100).
-- `verbose = FALSE`: emit progress and completion summaries.
-- `...`: passed to `mice::mice()` or `missForest::missForest()` for advanced control.
-
-## Output
-
-All helpers return a data.frame/tibble of the same dimensions as input, with only selected numeric columns modified at `NA` positions. Non-selected or non-numeric columns are unchanged. If no eligible columns or NAs are found, the original data is returned.
-
-- `impute_missing()`: deterministic fill per column; warns and skips when a column has no non-NA values (mean/median undefined) or is non-numeric.
-- `impute_mice()`: runs chained equations; returns the first completed dataset; errors if fewer than two numeric columns with NAs.
-- `impute_missforest()`: RF-based imputation; on error falls back to `impute_missing(method = "mean")` for targeted columns with a warning.
-
-## Examples
+## Load packages and demo data
+Create a small tibble with missing values in numeric columns; keep a non-numeric column to show it is untouched.
 
 ```{r}
 library(HealthMarkers)
 library(tibble)
+library(dplyr)
 
-df <- tibble(a = c(1, NA, 3), b = c(NA, 5, 2), c = letters[1:3])
+demo <- tibble(
+  BMI = c(22, NA, 27, 25),
+  TG = c(1.4, 1.6, NA, 1.3),
+  HDL_c = c(1.1, NA, 1.3, 1.0),
+  group = factor(c("A", "A", "B", "B"))
+)
 
-# Deterministic mean imputation on numeric columns with NAs
-impute_missing(df, method = "mean", verbose = FALSE)
+demo
 ```
 
-## Examples
+## Core imputation
+Impute numeric columns with the mean. Non-numeric columns remain unchanged.
 
-Use multiple imputation (`mice`) and random forest (`missForest`) when available, restricting to selected columns:
+```{r}
+imp_mean <- impute_missing(demo, method = "mean", verbose = FALSE)
+imp_mean
+```
+
+Use a different strategy and restrict to selected columns.
+
+```{r}
+imp_const <- impute_missing(demo, method = "constant", constant = -1, cols = c("TG", "HDL_c"))
+imp_const
+```
+
+## Missingness warnings
+Columns with high missingness (>= `na_warn_prop`, default 20%) emit warnings when verbose/diagnostic modes are used.
+
+```{r}
+imp_warn <- impute_missing(demo, method = "median", na_warn_prop = 0.2, verbose = TRUE)
+imp_warn
+```
+
+## Advanced options (conditional)
+Multiple imputation and random-forest imputation run only if the packages are installed. Each requires at least two numeric columns with NAs.
 
 ```{r}
 if (requireNamespace("mice", quietly = TRUE)) {
-  impute_mice(df, m = 2, cols = c("a", "b"), verbose = TRUE)
+  mice_out <- tryCatch(
+    impute_mice(demo, m = 2, verbose = TRUE),
+    error = function(e) {
+      message("mice skipped on tiny demo: ", e$message)
+      NULL
+    }
+  )
+  mice_out
 } else {
   message("Install 'mice' to run impute_mice().")
 }
 
 if (requireNamespace("missForest", quietly = TRUE)) {
-  impute_missforest(df, ntree = 50, cols = c("a", "b"), verbose = TRUE)
+  mf_out <- tryCatch(
+    impute_missforest(demo, ntree = 50, verbose = TRUE),
+    error = function(e) {
+      message("missForest skipped on tiny demo: ", e$message)
+      NULL
+    }
+  )
+  mf_out
 } else {
   message("Install 'missForest' to run impute_missforest().")
 }
 ```
 
-## Notes
+## Inputs and options
+- `data`: data.frame/tibble; only numeric columns are imputed.
+- `method` (impute_missing): `mean`, `median`, `zero`, or `constant` (requires `constant`).
+- `cols`: optional subset to impute; defaults to all numeric columns with NAs.
+- `na_warn_prop`: per-column high-missingness threshold for warnings (impute_missing).
+- `m` (mice), `ntree` (missForest): control complexity for advanced methods; both require their respective packages and >= 2 numeric columns with NAs.
+- `verbose`: emit progress and counts.
 
-- Only numeric columns are imputed; non-numeric columns in `cols` are skipped with a warning.
-- High-missingness per column is reported at debug/ warning level (`impute_missing`) when proportion exceeds `na_warn_prop`.
-- `impute_mice()` and `impute_missforest()` require at least two numeric columns with NAs; otherwise they abort to avoid poorly posed models.
-- Random-forest imputation can be slow on wide or high-NA data; consider starting with `impute_missing()` for quick checks.
-- All helpers leave non-NA values unchanged and preserve input dimensions.
+## Behavior and expectations
+- Non-numeric columns are ignored; input dimensions are preserved.
+- NA positions only are filled; non-NA values stay unchanged.
+- If no eligible numeric columns with NAs are found, the input is returned.
+- `impute_mice()`/`impute_missforest()` abort when prerequisites (packages, columns with NAs) are not met; missForest falls back to mean imputation if its model fails.
+
+## Choosing a method (use vs avoid)
+- `impute_missing()` (mean/median/zero/constant): best for fast, transparent fills or when you need deterministic behavior for testing. Avoid for highly skewed variables if mean/zero would bias results; use `median` or a domain-appropriate `constant` instead.
+- `impute_mice()`: use when you have several numeric predictors and want uncertainty-aware, model-based fills. Avoid on tiny datasets or when columns are collinear/constant—mice will skip or fail; keep at least 2-3 informative numeric columns with NAs.
+- `impute_missforest()`: use for non-linear relationships and mixed patterns of missingness. Avoid on very small or extremely wide datasets if runtime is a concern; it needs >=2 numeric columns with NAs and may fall back to mean if the RF model cannot fit.
+- Do not impute derived markers you plan to drop; impute raw inputs first, then recompute markers.
+
+## When not to impute
+- Do not impute identifiers, categorical codes, or outcomes you will model—restrict imputation to predictors and numeric labs.
+- If missingness is structural (e.g., test not ordered), prefer leaving `NA` or removing rows rather than filling synthetic values.
+- For extreme missingness in a column (>80-90%), consider dropping the column instead of imputing; the fill will be guesswork.
+
+## Tips
+- Start with `impute_missing()` for quick, transparent fills; move to `mice`/`missForest` when you need model-based imputations.
+- Check outputs with `health_summary()` to confirm row counts and missingness after imputation.
+- Keep units consistent before imputing and before downstream marker calculations.
 

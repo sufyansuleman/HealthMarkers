@@ -1,5 +1,5 @@
 ---
-title: "corrected_calcium"
+title: "Corrected Calcium"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{corrected_calcium}
@@ -8,73 +8,124 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Apply the Payne formula to albumin-adjust serum calcium. Works with conventional (mg/dL Ca, g/dL Alb) or SI (mmol/L Ca, g/L Alb); can auto-detect units; supports optional extreme screening.
 
-`corrected_calcium()` applies the Payne formula to compute albumin-adjusted serum calcium. Inputs can be supplied in conventional units (mg/dL calcium, g/dL albumin) or SI (mmol/L calcium, g/L albumin); unit detection is automatic by default. Optional extreme screening flags, caps, or blanks implausible inputs before correction.
+## When to use
+- You have total serum calcium and albumin and need albumin-corrected calcium.
+- Your labs may be in mg/dL+g/dL or mmol/L+g/L, and you want unit-aware handling.
+- You need row-retention rules for missing inputs and optional bounds checks.
 
-## Inputs
+## Requirements checklist
+- Packages: HealthMarkers, dplyr (for display).
+- Columns: calcium and albumin; units must be consistent with the chosen `units` argument.
+- Column map: list(calcium = ..., albumin = ...). Defaults assume Ca/Alb.
+- Units: conventional (mg/dL, g/dL), si (mmol/L, g/L), or auto (infers; warns when assuming SI).
+- Row policy: na_action = keep (default), omit, error; warn/ignore behave like keep but warn.
+- Optional screening: check_extreme + extreme_action (warn/cap/error/ignore/NA); defaults use Ca 4-15 mg/dL and Alb 2-5 g/dL in working units when enabled.
 
-- `data`: data.frame/tibble with serum calcium and albumin.
-- `col_map`: named list mapping `calcium`/`ca` and `albumin`/`alb` to column names (defaults: `Ca`, `Alb`).
-- Inputs are coerced to numeric; non-finite values become `NA`.
-
-## Arguments
-
-- `units = c("auto","conventional","si")`: `auto` infers SI if calcium <= 4 or albumin > 20.
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `keep`).
-- `check_extreme = FALSE`: enable plausible-range checks in working conventional units.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` trims into bounds; `NA` blanks values).
-- `extreme_rules = NULL`: optional list overriding default bounds list(ca_mgdl = c(4,15), alb_gdl = c(2,5)).
-- `verbose = FALSE`: emit progress messages.
-
-## Output
-
-Returns a tibble with one column, `corrected_calcium`. With conventional inputs (or `units = "conventional"`), values are in mg/dL; with SI inputs (or SI inferred), values are in mmol/L. When `na_action = "omit"`, rows with missing inputs are dropped; otherwise those rows yield `NA` results.
-
-## Examples
+## Load packages and example data
+Simulated data lack Ca/Alb; we generate illustrative valuesreplace with real labs.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-labs <- tibble(Ca = c(8.4, 9.6), Alb = c(3.0, 4.2))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, ]
 
-corrected_calcium(
-  data = labs,
-  col_map = list(calcium = "Ca", albumin = "Alb"),
-  units = "conventional",
-  na_action = "keep",
-  check_extreme = FALSE,
-  verbose = FALSE
-)
+set.seed(123)
+# Illustrative labs (mg/dL Ca, g/dL Alb)
+sim_small$Ca <- pmax(7.5, pmin(11.5, rnorm(nrow(sim_small), 9.2, 0.6)))
+sim_small$Alb <- pmax(2.5, pmin(5.0, rnorm(nrow(sim_small), 4.0, 0.4)))
 ```
 
-## Examples
+## Map columns
+```{r}
+col_map <- list(calcium = "Ca", albumin = "Alb")
+```
 
-Use SI inputs, request mmol/L output, and screen for implausible values:
+## Quick start: compute corrected calcium
+Defaults keep rows with missing inputs and do not screen extremes.
 
 ```{r}
-si_labs <- tibble(Ca = c(2.25, 2.55), Alb = c(37, 41))
-
-corrected_calcium(
-  data = si_labs,
-  col_map = list(calcium = "Ca", albumin = "Alb"),
-  units = "si",
+cc_out <- corrected_calcium(
+  data = sim_small,
+  col_map = col_map,
+  units = "conventional",  # use "si" for mmol/L; "auto" to infer
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "warn",
-  extreme_rules = NULL,
-  verbose = FALSE
+  check_extreme = FALSE,
+  extreme_action = "warn"
+)
+
+head(cc_out)
+```
+
+## Arguments that matter
+- col_map: calcium and albumin mappings are required; empty or missing mappings abort.
+- units: conventional | si | auto. Auto infers based on medians and warns if assuming SI.
+- na_action: keep (rows retained, NA outputs for missing), omit (drop rows with missing inputs), error (abort on missing).
+- check_extreme: FALSE by default; TRUE applies bounds in working units (mg/dL, g/dL) before correction.
+- extreme_action: warn (default, no change), cap, error, ignore, or NA; override bounds via extreme_rules.
+
+## Handling missing and non-numeric inputs
+- Non-numeric Ca/Alb are coerced; NA introduced are warned. Non-finite become NA.
+- Missing inputs yield NA outputs unless na_action = omit/error.
+
+### Compare row policies
+```{r}
+demo <- sim_small[1:8, c("Ca", "Alb")]
+demo$Ca[3] <- NA
+
+a_keep <- corrected_calcium(demo, col_map, units = "conventional", na_action = "keep")
+a_omit <- corrected_calcium(demo, col_map, units = "conventional", na_action = "omit")
+
+list(
+  keep_rows = nrow(a_keep),
+  omit_rows = nrow(a_omit),
+  preview = head(a_keep)
 )
 ```
 
-## Notes
+## Extreme-value screening (optional)
+Cap or error on implausible inputs before correction.
 
-- `na_action = "error"` enforces complete inputs; `"omit"` drops incomplete rows; `"keep"`/`"warn"`/`"ignore"` retain rows with `NA` outputs.
-- Auto unit detection issues a warning when SI is inferred; set `units` explicitly to suppress it.
-- Extreme screening uses conventional-unit bounds; `extreme_action` governs whether values are warned, capped, blanked, or error-stopped.
-- Domain warnings fire (without scanning) when conventional albumin is outside 2–5 g/dL or corrected calcium outside ~5–15 mg/dL.
+```{r}
+demo2 <- demo
+demo2$Ca[5] <- 2.0  # implausibly low if treated as mg/dL
+
+a_cap <- corrected_calcium(
+  data = demo2,
+  col_map = col_map,
+  units = "conventional",
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  extreme_rules = list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5))
+)
+
+head(a_cap)
+```
+
+## Outputs
+- corrected_calcium (mg/dL when units = conventional; mmol/L when units = si or auto-inferred SI)
+- Rows drop only with na_action = "omit"; na_action = "error" aborts on missing.
+
+## Pitfalls and tips
+- Prefer explicit units; auto mode may warn and convert if SI is inferred.
+- Ensure Ca and Alb units match the chosen mode; mismatched units will mis-scale results.
+- Tighten extreme_rules to your lab ranges; use extreme_action = "error" for strict QC.
+- Downstream consumers expecting mg/dL should keep units = "conventional" or convert explicitly.
+
+## Validation ideas
+- If Ca = 9.0 mg/dL and Alb = 3.0 g/dL, corrected Ca should be 9.0 + 0.8*(4 - 3) = 9.8 mg/dL.
+- If Ca = 2.25 mmol/L and Alb = 35 g/L, expect ~2.45 mmol/L after correction (via conversion).
+
+## See also
+- renal_markers() for broader kidney panels.
+- health_summary() to combine lab markers.

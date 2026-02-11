@@ -1,58 +1,73 @@
 ---
-title: "sweat_markers"
+title: "Sweat Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{sweat_markers}
+  %\VignetteIndexEntry{Sweat Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute sweat chloride, sodium/potassium ratio, sweat lactate, and sweat rate (L/m²/h) from sweat assays and anthropometrics. Includes mapping validation, NA policies, optional extreme screening/capping on inputs, and safe handling of zero/invalid denominators.
 
-`sweat_markers()` computes sweat chloride, sodium/potassium ratio, sweat lactate, and sweat rate (L/m^2/h) from sweat assays and simple anthropometrics. Inputs are validated, required columns are coerced to numeric with warnings when NAs are introduced, missingness is handled per policy, safe divisions avoid Inf/NaN with consolidated zero-denominator warnings, and optional extreme-value scanning/capping is available. No unit conversion is performed; provide inputs in expected units.
+## When to use this
+- You have sweat chloride, sodium, potassium, lactate, and anthropometrics (weight before/after, duration, body surface area) and want to derive sweat rate and ratios.
+- You want explicit NA handling, optional extreme-value capping, and consolidated zero-denominator warnings.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble containing sweat measurements and body metrics.
-- `col_map`: named list mapping required keys (defaults assume identical names): `sweat_chloride`, `sweat_Na`, `sweat_K`, `sweat_lactate`, `weight_before`, `weight_after`, `duration` (hours), `body_surface_area` (m^2). Mapped columns must exist; non-numeric columns are coerced with warnings on introduced NAs.
+| Argument       | Purpose / Options                                               | Notes                                               |
+|----------------|-----------------------------------------------------------------|-----------------------------------------------------|
+| data           | Data frame/tibble with sweat and anthropometric measures        | Columns mapped via `col_map`                        |
+| col_map        | Named list mapping required inputs                              | sweat_chloride, sweat_Na, sweat_K, sweat_lactate, weight_before, weight_after, duration, body_surface_area |
+| na_action      | Missing-data policy for required inputs                         | "keep" (default), "omit", "error"                  |
+| na_warn_prop   | Proportion threshold for high-missingness diagnostics           | Default 0.2 (shown in debug/verbose)                |
+| check_extreme  | Scan inputs against bounds                                      | Default FALSE                                       |
+| extreme_action | Handling for extremes                                           | "warn" (default), "cap", "error", "ignore"         |
+| extreme_rules  | Optional bounds list c(min, max) per input                      | Defaults are broad, see below                       |
+| verbose        | Emit progress and completion summaries                          | Default FALSE                                       |
 
-## Arguments
+**Required columns (col_map):** sweat_chloride, sweat_Na, sweat_K, sweat_lactate (mmol/L), weight_before, weight_after (kg), duration (h), body_surface_area (m²).
 
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs.
-- `na_warn_prop = 0.2`: threshold for high-missingness diagnostics (debug level).
-- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
-- `extreme_action = c("warn","cap","error","ignore")`: handling when extremes are detected; `cap` truncates values and warns.
-- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names or actual column names.
-- `verbose = FALSE`: emit progress and completion diagnostics.
+**Units:** No conversion is performed. Supply all values in the expected units above.
 
-## Output
+## Handling and expectations
+- Validation & coercion: mapped columns must exist; non-numeric inputs are coerced with warnings if NAs are introduced; non-finite become NA.
+- Missingness: `keep` propagates NA; `omit` drops rows with any required NA; `error` aborts if required inputs contain NA.
+- High-missing diagnostics: controlled by `na_warn_prop`; shown when `verbose` (or debug) is enabled.
+- Extreme screening (optional): checks all inputs; defaults are broad (chloride/Na 0–200, K 0–40, lactate 0–50, weights 10–400, duration 0.05–48, BSA 0.3–3.0); `extreme_action` controls warn/cap/error/ignore.
+- Safe division: all ratios use a helper that sets NA for zero/invalid denominators and emits a consolidated warning.
+- Sweat rate: $(\text{weight_before} - \text{weight_after}) / \text{duration} / \text{body_surface_area}$ (1 kg ≈ 1 L water).
+- Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
-Returns a tibble with:
-- `sweat_chloride`: mapped chloride (mmol/L).
-- `Na_K_ratio`: sodium/potassium ratio using safe division; zero/non-finite denominators yield `NA`.
-- `sweat_lactate`: mapped lactate (mmol/L).
-- `sweat_rate`: estimated sweat rate as (weight_before - weight_after) / duration / body_surface_area; uses safe division, assumes 1 kg  1 L.
+## Outputs
+- Returns a tibble (rows follow `na_action`) with: sweat_chloride, Na_K_ratio, sweat_lactate, sweat_rate.
+- NA arises from missing/invalid inputs, zero/invalid denominators, or dropped rows under `omit`.
 
-## Examples
-
+## Worked example 1: Standard usage, keep NAs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  sweat_chloride = c(45, 60),
-  sweat_Na = c(55, 70),
-  sweat_K = c(5, 4),
-  sweat_lactate = c(4.8, 5.2),
-  weight_before = c(70.0, 80.0),
-  weight_after = c(69.5, 79.2),
-  duration = c(1.0, 1.5),
-  body_surface_area = c(1.9, 2.1)
+  sweat_chloride = c(45, 60, NA),
+  sweat_Na = c(55, 70, 60),
+  sweat_K = c(5, 4, 0),
+  sweat_lactate = c(4.8, 5.2, 6.0),
+  weight_before = c(70.0, 80.0, 75.0),
+  weight_after = c(69.5, 79.2, 74.8),
+  duration = c(1.0, 1.5, 0.5),
+  body_surface_area = c(1.9, 2.1, 2.0)
 )
 
 sweat_markers(
@@ -68,52 +83,62 @@ sweat_markers(
     body_surface_area = "body_surface_area"
   ),
   na_action = "keep",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
+*Interpretation:* Returns all outputs; NA propagates where inputs are missing or denominators are zero (e.g., sweat_K = 0).
 
-## Examples
-
-Enable extreme scanning with capping and show verbose diagnostics:
-
+## Worked example 2: Cap extremes, drop incomplete
 ```{r}
 df2 <- tibble(
-  cl = c(180, 250),     # second value will be capped
+  cl = c(180, 250),       # extreme chloride
   na = c(60, 10),
   k = c(4, 0.5),
-  lac = c(6, 60),       # extreme lactate will be capped
+  lac = c(6, 60),         # extreme lactate
   w_before = c(75, 90),
   w_after = c(74.2, 89.0),
   dur = c(1, 0.2),
   bsa = c(2.0, 1.8)
 )
 
-cm2 <- list(
-  sweat_chloride = "cl",
-  sweat_Na = "na",
-  sweat_K = "k",
-  sweat_lactate = "lac",
-  weight_before = "w_before",
-  weight_after = "w_after",
-  duration = "dur",
-  body_surface_area = "bsa"
-)
-
 sweat_markers(
   data = df2,
-  col_map = cm2,
+  col_map = list(
+    sweat_chloride = "cl",
+    sweat_Na = "na",
+    sweat_K = "k",
+    sweat_lactate = "lac",
+    weight_before = "w_before",
+    weight_after = "w_after",
+    duration = "dur",
+    body_surface_area = "bsa"
+  ),
   check_extreme = TRUE,
   extreme_action = "cap",
-  na_action = "keep",
+  na_action = "omit",
   verbose = TRUE
 )
 ```
+*Interpretation:* Extremes are capped before computing ratios/rates; incomplete rows are dropped.
 
-## Notes
+## Troubleshooting & common pitfalls
+- YAML/header: keep YAML at the top; stray text before it breaks knitting.
+- Units: all values must be in the expected units; convert upstream if needed.
+- Missing columns: ensure every required `col_map` key is mapped to an existing column.
+- Zero/invalid denominators: produce NA outputs and a warning; check for sweat_K = 0, duration = 0, or BSA = 0.
+- Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
+- All NA outputs: usually due to missing/invalid inputs, zero denominators, or aggressive `na_action = "omit"`.
 
-- Units assumed: electrolytes/lactate in mmol/L; weight in kg; duration in hours; body surface area in m^2. No conversions performed.
-- Safe divisions set zero/non-finite denominators to `NA` and issue a consolidated warning listing affected metrics.
-- `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
-- Extreme scanning uses broad defaults; supply `extreme_rules` to tailor bounds or disable via `check_extreme = FALSE`.
-- High missingness warnings are emitted at debug level when proportions exceed `na_warn_prop`; set `verbose = TRUE` for progress and completion summaries.
+## Tips for best results
+- Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to plausible ranges.
+- Choose `na_action = "omit"` for modeling datasets that require complete cases; use `keep` for exploratory review.
+- Review warnings for zero denominators or capped values; these often indicate data entry or assay issues.
 
+## Validation notes
+- Na_K_ratio = sweat_Na / sweat_K; sweat_rate = (weight_before - weight_after) / duration / body_surface_area (1 kg ≈ 1 L).
+- All divisions are safe: zero/invalid denominators yield NA and a warning.
+- Default bounds: chloride/Na 0–200, K 0–40, lactate 0–50, weights 10–400, duration 0.05–48, BSA 0.3–3.0 (applied only if `check_extreme = TRUE`).
+
+## See also
+- Function docs: `?sweat_markers`
+- Related vignettes: health_markers, metabolic_markers, urine_markers

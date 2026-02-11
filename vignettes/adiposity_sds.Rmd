@@ -1,52 +1,68 @@
 ---
-title: "adiposity_sds"
+title: "Adiposity SDS"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{adiposity_sds}
+  %\VignetteIndexEntry{Adiposity SDS}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Non-stratified SDS (z-scores) for anthropometric measures using a single reference (mean/sd), with NA policies, optional raw extreme screening, and SDS capping.
 
-`adiposity_sds()` computes SDS (z-scores) for anthropometric variables against a single reference (non-sex-stratified). It validates references, can screen raw values for extremes, handles missingness, and optionally caps extreme SDS.
+## When to use this
+- You want simple z-scores against one reference (no sex stratification).
+- You need NA handling and optional capping of implausible raw values or extreme SDS magnitudes.
+- You plan to standardize BMI/waist/height (or similar) before modeling or QC.
 
-## Inputs
+## What you need (rich guide)
+- Required: a reference list (`ref`) with `mean` and `sd > 0` per variable, and matching columns in your data (via `col_map$vars` or identity names).
+- Units: data units must match the reference (e.g., BMI kg/m^2, waist cm, height cm).
+- Policies: choose `na_action` (keep/omit/error), `check_extreme` + `extreme_action` for raw screening, and `sds_cap` + `extreme_action` for large SDS values.
+- Optional: `return_summary = TRUE` to get diagnostics, `diagnostics = TRUE` for warnings, `verbose = TRUE` for progress.
 
-- `data`: data.frame/tibble with variables to standardize.
-- `ref`: named list of numeric `c(mean=, sd=)` for each variable, e.g. `list(BMI = c(mean=23, sd=4))`.
-- `col_map` (optional): list with `vars` to map reference variable names to data columns; defaults to identity mapping.
-- Inputs are coerced to numeric; non-finite become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: row-wise missing-data policy across mapped vars (aliases: `na_strategy`).
-- `check_extreme = FALSE`: optional raw-value screening using `extreme_rules` (defaults cover common anthropometrics such as BMI, waist, weight, height, hip, WC, HC).
-- `extreme_action = c("cap","NA","error","warn","ignore")`: handling for |SDS| > `sds_cap` (aliases: `extreme_strategy`).
-- `sds_cap = 6`: cap magnitude when `extreme_action = "cap"`.
-- `diagnostics`, `warn_thresholds`: control diagnostic warnings for missingness/extremes proportions.
-- `return_summary = FALSE`: if TRUE, return list with `data`, `summary`, `warnings`.
-- `verbose`: emit progress messages.
-
-## Output
-
-Default returns a tibble with `<var>_SDS` columns (rows dropped only when `na_action = "omit"`). With `return_summary = TRUE`, returns list with the SDS tibble plus summary counts and warnings.
-
-## Examples
+## Load packages and data
+Use a small slice of the packaged simulated data. Replace `sim_small` with your data.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
 
-ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
-df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
 
-adiposity_sds(
-  data = df,
+## Column map
+Map each variable to your column names.
+
+```{r}
+col_map <- list(
+  vars = list(
+    BMI = "BMI",
+    waist = "waist",
+    height = "height"
+  )
+)
+```
+
+## Walkthrough (build ref, compute SDS)
+
+```{r}
+ref <- list(
+  BMI = c(mean = mean(sim_small$BMI, na.rm = TRUE), sd = sd(sim_small$BMI, na.rm = TRUE)),
+  waist = c(mean = mean(sim_small$waist, na.rm = TRUE), sd = sd(sim_small$waist, na.rm = TRUE)),
+  height = c(mean = mean(sim_small$height, na.rm = TRUE), sd = sd(sim_small$height, na.rm = TRUE))
+)
+
+asds <- adiposity_sds(
+  data = sim_small,
+  col_map = col_map,
   ref = ref,
   na_action = "keep",
   check_extreme = FALSE,
@@ -54,31 +70,69 @@ adiposity_sds(
   sds_cap = 6,
   verbose = FALSE
 )
+
+new_cols <- setdiff(names(asds), names(sim_small))
+asds |> slice_head(n = 5) |> select(all_of(new_cols))
 ```
 
-## Examples
+Interpretation: each `<var>_SDS` is `(x - mean)/sd`; values near 0 are average, positive above, negative below the reference. `extreme_action = "cap"` would cap SDS beyond `sds_cap` if present.
 
-Screen raw extremes, cap SDS, and return summary diagnostics:
+## Missing data and extremes
+Compare NA policies and raw screening.
 
 ```{r}
-adiposity_sds(
-  data = df,
+demo <- sim_small[1:8, c("BMI", "waist", "height")]
+demo$BMI[3] <- NA        # missing
+demo$waist[5] <- 300     # extreme high waist
+demo$height[2] <- 20     # extreme low height
+
+demo_keep <- adiposity_sds(
+  data = demo,
+  col_map = col_map,
+  ref = ref,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  sds_cap = 5,
+  verbose = FALSE
+)
+
+demo_omit <- adiposity_sds(
+  data = demo,
+  col_map = col_map,
   ref = ref,
   na_action = "omit",
   check_extreme = TRUE,
   extreme_action = "cap",
   sds_cap = 5,
-  diagnostics = TRUE,
-  warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
-  return_summary = TRUE,
-  verbose = TRUE
+  verbose = FALSE
+)
+
+list(
+  keep_rows = nrow(demo_keep),
+  omit_rows = nrow(demo_omit),
+  capped_preview = demo_keep |> select(ends_with("_SDS")) |> slice_head(n = 3)
 )
 ```
 
-## Notes
+## Expectations
+- Each mapped variable must exist; `ref` must provide finite `mean` and `sd > 0` for it.
+- `na_action` controls row handling: `keep` propagates NA, `omit` drops, `error` aborts.
+- `check_extreme` + `extreme_action` operate on raw values before SDS; `sds_cap` + `extreme_action` govern large SDS magnitudes.
+- Numeric coercion warns if NAs are introduced; align data units with reference units.
+- `return_summary = TRUE` returns data plus summaries of omissions and extremes.
 
-- `ref` must include every variable with finite mean and sd > 0; missing stats abort.
-- `na_action = "error"` enforces complete cases; `"omit"` drops incomplete rows; `"keep"` retains rows with `NA` SDS.
-- Raw screening happens before SDS; adjust `extreme_rules` if your data units differ.
-- `extreme_action` controls SDS handling; `warn`/`ignore` are kept for compatibility but deprecated.
+## Common pitfalls
+- Unit mismatches (e.g., inches vs cm) distort SDS; ensure units match the reference.
+- Using a biased or tiny sample to build `ref` yields unstable SDS; use an appropriate reference population.
+- Forgetting to map all variables in `col_map$vars` causes missing-column errors.
+- Leaving `extreme_action = "ignore"` or very high `sds_cap` can hide implausible values; review extremes when QC matters.
 
+## Validation notes
+- SDS should roughly center at 0 with SD near 1 if your sample matches the reference.
+- Spot-check: `(value - ref_mean)/ref_sd` for one row should equal `<var>_SDS`.
+- Enable `check_extreme = TRUE` with tailored `extreme_rules` to flag implausible anthropometrics prior to standardizing.
+
+## See also
+- `adiposity_sds_strat()` for sex-stratified SDS.
+- `obesity_indices()` and `obesity_metrics()` for related adiposity measures.

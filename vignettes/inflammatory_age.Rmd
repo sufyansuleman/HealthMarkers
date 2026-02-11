@@ -1,5 +1,4 @@
----
-title: "inflammatory_age"
+title: "Inflammatory age (iAge proxy)"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{inflammatory_age}
@@ -8,74 +7,102 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute a simplified inflammatory age proxy (`iAge`) as a weighted sum of CRP, IL6, and TNFa. Supports NA policies, high-missingness warnings, and optional extreme scanning (warn/cap/NA/error). Units assumed: CRP mg/L; IL6, TNFa pg/mL (no internal conversions).
 
-`iAge()` computes a simplified inflammatory age proxy as a weighted sum of CRP, IL6, and TNFa. It supports NA policies, optional high-missingness warnings, and optional extreme-value scanning with warn/cap/NA/error behaviors. Inputs are assumed in mg/L (CRP) and pg/mL (IL6, TNFa); no unit conversion is performed.
-
-## Inputs
-
-- `data`: data.frame/tibble with inflammatory markers.
-- `col_map`: named list mapping `CRP`, `IL6`, `TNFa` to column names.
-- Inputs are coerced to numeric; non-finite values become `NA` (or error on coercion).
-
-## Arguments
-
-- `weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34)`: numeric weights summing to 1 (reordered by names if provided).
-- `na_action = c("omit","keep","error","ignore","warn")`: missing-data policy (`ignore`/`warn` act like `omit`; `keep` returns NA when any required input is NA; `error` aborts).
-- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"`.
-- `check_extreme = FALSE`: enable range scan.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes (`cap` truncates; `NA` blanks values).
-- `extreme_rules = NULL`: override default bounds (CRP 0–300 mg/L; IL6 0–1000 pg/mL; TNFa 0–2000 pg/mL).
-- `verbose = FALSE`: emit progress and summary.
-
-## Output
-
-Returns a tibble with one column, `iAge`. Rows are dropped only when `na_action = "omit"`? Actually, omit keeps rows but ignores NAs in sum: with `na_action = "keep"`, rows with missing inputs yield `NA`; default `omit`/`ignore`/`warn` perform weighted sum ignoring NAs (missing markers contribute 0 after NA-to-0 for the sum).
-
-## Examples
+## Load packages and demo data
+Synthetic data with one missing value to show NA handling.
 
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  CRP  = c(1.2, 3.5, NA),
-  IL6  = c(2.0, 4.1, 1.5),
-  TNFa = c(1.0, 1.8, 0.9)
+  CRP  = c(1.2, 3.5, NA),  # mg/L
+  IL6  = c(2.0, 4.1, 1.5), # pg/mL
+  TNFa = c(1.0, 1.8, 0.9)  # pg/mL
 )
+```
 
-iAge(
+## Column map (required)
+Map each marker to your column names; all three are mandatory.
+
+```{r}
+col_map <- list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
+```
+
+## Core calculation
+Default behavior (`na_action = "omit"`/`ignore`/`warn`): NAs are ignored in the weighted sum (treated as 0 contribution), preserving row count.
+
+```{r}
+ia_default <- iAge(
   data = df,
-  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
+  col_map = col_map,
   na_action = "omit",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+ia_default
 ```
 
-## Examples
-
-Keep NA when any marker is missing, scan for extremes, and cap into bounds:
+## Keep NA vs drop
+`na_action = "keep"` returns NA if any required marker is missing in a row. `na_action = "error"` stops on missing required inputs.
 
 ```{r}
-iAge(
+ia_keep <- iAge(
   data = df,
-  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
-  weights = c(CRP = 0.4, IL6 = 0.3, TNFa = 0.3),
+  col_map = col_map,
   na_action = "keep",
+  check_extreme = FALSE
+)
+
+ia_keep
+```
+
+## Extreme screening
+Scan for out-of-range inputs and cap into allowed bounds.
+
+```{r}
+df_ext <- df
+df_ext$CRP[2] <- 500  # extreme on purpose
+
+ia_cap <- iAge(
+  data = df_ext,
+  col_map = col_map,
   check_extreme = TRUE,
   extreme_action = "cap",
   verbose = TRUE
 )
+
+ia_cap
 ```
 
-## Notes
+`extreme_action = "warn"` would only warn; `error` aborts; `NA` blanks flagged values before computing.
 
-- Weights must be numeric, length 3, and sum to 1; named weights are reordered to CRP/IL6/TNFa if named correctly.
-- `na_action = "keep"` preserves NA when any marker is missing; `omit`/`ignore`/`warn` treat missing markers as 0 in the weighted sum (original behavior); `error` enforces completeness.
-- Extreme screening uses broad defaults; customize `extreme_rules` for cohort-specific bounds.
-- This is a linear proxy inspired by the iAge concept; not equivalent to the original machine-learning iAge model.
+## Weights
+- Default weights: CRP 0.33, IL6 0.33, TNFa 0.34 (sum to 1). Named weights are reordered to CRP/IL6/TNFa.
+- For cohorts where one marker is more informative, adjust weights (ensure they sum to 1):
+
+```{r}
+iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
+```
+
+## Expectations
+- All three markers must be present and numeric; coercion to numeric will error if NAs are introduced.
+- `na_action` behaviors:
+  - `omit`/`ignore`/`warn`: missing markers contribute 0 to the sum; rows preserved.
+  - `keep`: any missing required marker yields `NA` for that row.
+  - `error`: abort if any required marker is missing/NA.
+- Extreme scan uses broad defaults (CRP 0–300, IL6 0–1000, TNFa 0–2000); adjust via `extreme_rules` for your lab ranges.
+- Output: one-column tibble `iAge`; rows match input unless you subset beforehand.
+
+## Tips
+- Keep units consistent (CRP mg/L; IL6/TNFa pg/mL). Convert before calling if needed.
+- Prefer `na_action = "keep"` when you want to see which rows are incomplete; use `omit` when you want continuity of the score despite single missing markers.
+- Tighten `extreme_rules` for cleaner QA; use `verbose = TRUE` during setup to see mapping and warnings.
+- Impute upstream (e.g., `impute_missing()`) if you prefer not to down-weight missing markers to zero.

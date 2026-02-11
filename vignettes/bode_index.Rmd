@@ -1,5 +1,5 @@
 ---
-title: "bode_index"
+title: "BODE Index"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{bode_index}
@@ -7,91 +7,129 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
-knitr::opts_knit$set(purl = FALSE)
-```
+## Scope
+Compute the 0-10 BODE score (BMI, Obstruction, Dyspnea, Exercise capacity) from FEV1 % predicted, 6-minute walk distance, mMRC dyspnea, and BMI. Accepts a percent-predicted column or derives it from raw/predicted FEV1. Higher scores indicate worse prognosis.
 
-## Overview
+Component scoring: FEV1% (>=65 -> 0, 50-64 -> 1, 36-49 -> 2, <=35 -> 3); 6MWD meters (>=350 -> 0, 250-349 -> 1, 150-249 -> 2, <=149 -> 3); mMRC (0-1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3); BMI (>21 -> 0, <=21 -> 1).
 
-`bode_index()` computes the 0–10 BODE score from FEV1 percent predicted, 6-minute walk distance (6MWD), mMRC dyspnea, and BMI. You may supply FEV1% directly, derive it from raw and predicted FEV1, or pass a precomputed percent-predicted column. Optional NA and extreme handling mirrors other helpers.
+## When to use
+- You have spirometry plus 6MWD, mMRC, and BMI for COPD risk stratification.
+- You need optional extreme-value screening and explicit row-retention rules.
+- You want to derive FEV1% from raw/predicted FEV1 or use an existing percent-predicted column.
 
-Component scoring:
-- FEV1 % predicted: >=65 -> 0; 50–64 -> 1; 36–49 -> 2; <=35 -> 3
-- 6MWD (m): >=350 -> 0; 250–349 -> 1; 150–249 -> 2; <=149 -> 3
-- mMRC: 0–1 -> 0; 2 -> 1; 3 -> 2; 4 -> 3
-- BMI: >21 -> 0; <=21 -> 1
+## Requirements checklist
+- Packages: HealthMarkers, dplyr (for display).
+- Data columns: choose exactly one FEV1 source: fev1_pct OR (fev1 + fev1_pred) OR fev1_pp; plus sixmwd, mmrc, bmi.
+- Numeric inputs; non-numeric are coerced with warnings; non-finite become NA.
+- Row policy via na_action: keep (default), omit, error; warn/ignore behave like keep but emit messages.
+- Optional extreme screening: check_extreme + extreme_action (warn/cap/error/ignore/NA).
 
-## Inputs
-
-- `data`: data.frame/tibble with spirometry, 6MWD, mMRC, and BMI.
-- `col_map`: named list with `sixmwd`, `mmrc`, `bmi`, and exactly one FEV1 source:
-  - `fev1_pct` (percent predicted provided), or
-  - both `fev1` and `fev1_pred` (derive percent predicted), or
-  - `fev1_pp` (already percent predicted from another helper).
-- Inputs must be numeric; non-numeric are coerced with a warning, non-finite become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error","ignore","warn")`: missing-data policy (`ignore`/`warn` behave like `keep`).
-- `check_extreme = FALSE`: enable range screening (defaults: FEV1% 10–140, 6MWD 50–800 m, mMRC 0–4, BMI 10–60).
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response if extremes detected (`cap` trims to bounds; `NA` blanks values).
-- `extreme_rules = NULL`: optional custom bounds list matching the keys above.
-- `verbose = FALSE`: emit progress messages.
-
-## Output
-
-Returns a tibble with `bode_index` plus component columns: `fev1_pct`, `fev1_score`, `walk_score`, `mmrc_score`, `bmi_score`. With `na_action = "omit"`, rows with incomplete required inputs are dropped; otherwise scores for those rows are `NA`.
-
-## Examples
+## Load packages and example data
+Replace the example slice with your data frame.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-bode_df <- tibble(
-  FEV1pct = c(70, 55, 40, 30),
-  Walk_m  = c(380, 320, 200, 120),
-  mMRC    = c(1, 2, 3, 4),
-  BMI     = c(23, 20, 19, 28),
-  FEV1    = c(2.0, 1.6, 1.2, 0.9),
-  FEV1_pred = c(2.5, 2.2, 2.0, 1.8)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
+
+## Map columns
+Here we use FEV1 percent-predicted from the example data.
+
+```{r}
+col_map <- list(
+  fev1_pct = "FEV1pct",
+  sixmwd = "sixmwd",
+  mmrc = "mmrc",
+  bmi = "BMI"
 )
+```
 
-col_map <- list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI")
+## Quick start: compute BODE
+Defaults keep rows with missing inputs and return NA for their scores.
 
-bode_index(
-  data = bode_df,
+```{r}
+bode_out <- bode_index(
+  data = sim_small,
   col_map = col_map,
   na_action = "keep",
   check_extreme = FALSE,
   extreme_action = "warn",
   verbose = FALSE
 )
+
+new_cols <- setdiff(names(bode_out), names(sim_small))
+head(select(bode_out, all_of(new_cols)))
 ```
 
-## Examples
+## Arguments that matter
+- col_map: pick one FEV1 source (fev1_pct OR fev1 + fev1_pred OR fev1_pp) plus sixmwd, mmrc, bmi; missing required keys error.
+- na_action: keep (default), omit (drop rows with any missing required inputs), error (abort on missing); warn/ignore act like keep but warn.
+- check_extreme: FALSE by default; TRUE enables bounds-based screening.
+- extreme_action: warn (default, no change), cap, error, ignore, or NA. Defaults (units as stored): fev1_pct 10-140, sixmwd 50-800, mmrc 0-4, bmi 10-60.
+- verbose: emit step messages.
 
-Derive FEV1% from raw and predicted values, screen for extremes, cap outliers, and drop incomplete rows:
+## Handling missing inputs
+- Non-numeric inputs are coerced; NA introduced are warned. Non-finite become NA.
+- Missing required inputs yield NA scores when na_action is keep/warn/ignore; rows drop with omit; error aborts.
 
+### Compare row policies
 ```{r}
-bode_index(
-  data = bode_df,
-  col_map = list(
-    fev1 = "FEV1", fev1_pred = "FEV1_pred",
-    sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI"
-  ),
-  na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = FALSE
+demo <- sim_small
+demo$mmrc[c(2, 6)] <- NA
+
+a_keep <- bode_index(demo, col_map, na_action = "keep")
+a_omit <- bode_index(demo, col_map, na_action = "omit")
+
+list(
+  keep_rows = nrow(a_keep),
+  omit_rows = nrow(a_omit),
+  sample_scores = head(select(a_keep, bode_index, fev1_score, walk_score, mmrc_score, bmi_score))
 )
 ```
 
-## Notes
+## Extreme-value screening (optional)
+Screen inputs before scoring; cap, warn, error, ignore, or set NA for extremes.
 
-- Supply exactly one FEV1 source; missing all three options raises an error.
-- Domain warnings for implausible ranges are issued when `check_extreme = FALSE`; enable screening to cap, blank, or error on extreme values.
-- `na_action = "error"` stops if any required inputs are missing; use `"omit"` to drop such rows or `"keep"`/`"warn"`/`"ignore"` to retain them with `NA` scores.
-- Extreme screening occurs before scoring and uses `extreme_rules` bounds when provided.
+```{r}
+demo2 <- sim_small
+demo2$sixmwd[5] <- 20   # extreme low walk
+demo2$BMI[6] <- 80      # extreme high BMI
 
+a_screen <- bode_index(
+  data = demo2,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  extreme_rules = list(fev1_pct = c(10, 140), sixmwd = c(50, 800), mmrc = c(0, 4), bmi = c(10, 60)),
+  verbose = FALSE
+)
+
+head(select(a_screen, bode_index, fev1_score, walk_score, mmrc_score, bmi_score))
+```
+
+## Outputs
+- bode_index (0-10)
+- Component scores: fev1_score, walk_score, mmrc_score, bmi_score
+- fev1_pct (derived or mapped)
+Rows only drop with na_action = "omit" or when na_action = "error" aborts.
+
+## Pitfalls and tips
+- Map exactly one FEV1 source; providing multiple percent-predicted sources is not allowed.
+- Keep units consistent: FEV1 in liters when deriving percent, 6MWD in meters, BMI in kg/m^2.
+- Use extreme_action = "error" for strict QA; cap for winsorization.
+- mMRC must be 0-4; true zeros are valid.
+- warn/ignore behave like keep; choose omit or error for strict pipelines.
+
+## Validation ideas
+- Spot-check: FEV1% = 40, 6MWD = 200, mMRC = 3, BMI = 20 yields scores 2 + 2 + 2 + 1 = bode_index 7.
+- Verify that rows with NA mmrc are retained vs dropped according to na_action.
+- Confirm percent-predicted derivation: fev1_pp should match 100 * fev1 / fev1_pred for a test row.
+
+## See also
+- spirometry_markers() for broader spirometry-derived metrics.
+- pulmo_markers() for additional pulmonary markers.

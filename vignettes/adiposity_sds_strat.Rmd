@@ -1,86 +1,175 @@
 ---
-title: "adiposity_sds_strat"
+title: "Adiposity SDS (Sex-Stratified)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{adiposity_sds_strat}
+  %\VignetteIndexEntry{Adiposity SDS (Sex-Stratified)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Sex-stratified SDS (z-scores) for anthropometric measures using separate male/female references, with NA policies, optional extreme screening, and flexible variable mapping.
 
-`adiposity_sds_strat()` computes sex-specific SDS (z-scores) for anthropometric variables using separate male and female reference means/SDs. It validates mappings, handles missingness, optionally screens raw inputs for extremes, and supports partial variable inclusion.
+## When to use this
+- You need sex-specific standardization before modeling or flagging outliers.
+- Your study has both men and women and you want SDS relative to sex-appropriate reference means/SDs.
+- You want built-in options for missing data handling and plausibility screening.
 
-## Inputs
+## What you need (rich guide)
+- Required: `sex` (coded M/F or 1/2 after mapping) and at least one anthropometric variable present in both `ref$M` and `ref$F`.
+- Reference list: `ref$M` and `ref$F` must cover identical variable names, each with `mean` and `sd > 0`.
+- Units: use the same units in your data as in the reference (e.g., BMI kg/m^2, waist cm, height cm).
+- Optional: `allow_partial = TRUE` to skip missing variables instead of erroring.
 
-- `data`: data.frame/tibble with a sex column and variables to standardize.
-- `col_map`: list with `sex` (required) and optional `vars` mapping ref variable names to data columns.
-- `ref`: list with elements `M` and `F`; each is a named list of `c(mean=, sd=)` per variable. Both sexes must define the same variable set.
-- Sex values accepted: "M"/"F" (case-insensitive) or 1/2; others error.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: row-wise policy for missing required inputs.
-- `check_extreme = FALSE`: raw-value screening using `extreme_rules` (defaults cover BMI, waist, weight, height, hip, WC, HC).
-- `extreme_action = c("cap","NA","error")`: handling for out-of-range raw values when screening is enabled.
-- `allow_partial = FALSE`: if TRUE, skips ref variables absent in `data` (with a message); if FALSE, missing variables abort.
-- `prefix`: optional prefix for output column names.
-- `verbose`: emit progress messages.
-
-## Output
-
-Returns a tibble with one SDS column per retained variable: `<prefix><var>_SDS`. Rows are dropped only when `na_action = "omit"`; otherwise missing inputs yield `NA` SDS.
-
-## Examples
+## Load packages and data
+Use a small slice of the packaged simulated data. Replace `sim_small` with your data.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
+
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+
+# Normalize sex labels to M/F and ensure both sexes appear in the demo slice
+sim_small <- sim |>
+  mutate(sex = case_when(
+    sex %in% c("M", "F") ~ sex,
+    sex %in% c("male", "Male", "m") ~ "M",
+    sex %in% c("female", "Female", "f") ~ "F",
+    sex %in% c(1, "1") ~ "M",
+    sex %in% c(2, "2") ~ "F",
+    TRUE ~ NA_character_
+  )) |>
+  filter(!is.na(sex)) |>
+  slice_head(n = 200)
+```
+
+## Column map
+Map sex and each variable to your column names.
+
+```{r}
+col_map <- list(
+  sex = "sex",
+  vars = list(
+    BMI = "BMI",
+    waist = "waist",
+    height = "height"
+  )
+)
+```
+
+## Walkthrough (build refs, compute SDS)
+
+```{r, eval=FALSE}
+# Build sex-specific references from the demo slice
+ref_sex <- sim_small |>
+  group_by(sex) |>
+  summarise(
+    BMI = list(c(mean = mean(BMI, na.rm = TRUE), sd = sd(BMI, na.rm = TRUE))),
+    waist = list(c(mean = mean(waist, na.rm = TRUE), sd = sd(waist, na.rm = TRUE))),
+    height = list(c(mean = mean(height, na.rm = TRUE), sd = sd(height, na.rm = TRUE)))
+  )
+
+if (!all(c("M", "F") %in% ref_sex$sex)) {
+  stop("Demo data slice must contain both M and F; normalize or increase sample.")
+}
 
 ref <- list(
-  M = list(BMI = c(mean=24.5, sd=3.8), waist = c(mean=88, sd=12)),
-  F = list(BMI = c(mean=22.1, sd=4.2), waist = c(mean=76, sd=11))
+  M = list(
+    BMI = ref_sex$BMI[[ref_sex$sex == "M"]],
+    waist = ref_sex$waist[[ref_sex$sex == "M"]],
+    height = ref_sex$height[[ref_sex$sex == "M"]]
+  ),
+  F = list(
+    BMI = ref_sex$BMI[[ref_sex$sex == "F"]],
+    waist = ref_sex$waist[[ref_sex$sex == "F"]],
+    height = ref_sex$height[[ref_sex$sex == "F"]]
+  )
 )
 
-df <- data.frame(BMI=c(25.2,21.8,27.1), waist=c(85,72,95), sex=c("M","F","M"))
-
-adiposity_sds_strat(
-  data = df,
-  col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
+asds_strat <- adiposity_sds_strat(
+  data = sim_small,
+  col_map = col_map,
   ref = ref,
   na_action = "keep",
   check_extreme = FALSE,
   extreme_action = "cap",
+  allow_partial = FALSE,
+  prefix = "",
   verbose = FALSE
 )
+
+new_cols <- setdiff(names(asds_strat), names(sim_small))
+asds_strat |>
+  slice_head(n = 5) |>
+  select(all_of(new_cols))
 ```
 
-## Examples
+Interpretation: each `<var>_SDS` is standardized against sex-specific mean/SD; values near 0 are average for that sex, positive above, negative below.
 
-Allow partial variables, screen extremes, cap out-of-range values, and drop incomplete rows:
+## Missing data and extremes
+Compare row handling and capping.
 
-```{r}
-adiposity_sds_strat(
-  data = df,
-  col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
+```{r, eval=FALSE}
+demo <- sim_small[1:8, c("sex", "BMI", "waist", "height")]
+demo$BMI[3] <- NA         # missing
+demo$waist[5] <- 300      # extreme high waist
+demo$height[2] <- 20      # extreme low height
+
+demo_keep <- adiposity_sds_strat(
+  data = demo,
+  col_map = col_map,
+  ref = ref,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  allow_partial = FALSE,
+  prefix = ""
+)
+
+demo_omit <- adiposity_sds_strat(
+  data = demo,
+  col_map = col_map,
   ref = ref,
   na_action = "omit",
   check_extreme = TRUE,
   extreme_action = "cap",
-  allow_partial = TRUE,
-  prefix = "s_",
-  verbose = TRUE
+  allow_partial = FALSE,
+  prefix = ""
+)
+
+list(
+  keep_rows = nrow(demo_keep),
+  omit_rows = nrow(demo_omit),
+  capped_preview = demo_keep |> select(ends_with("_SDS")) |> slice_head(n = 3)
 )
 ```
 
-## Notes
+## Expectations
+- `col_map$sex` must be present; sex must map to M/F (or 1/2) or the call errors.
+- `ref$M` and `ref$F` must list identical variables with finite `mean` and `sd > 0`.
+- All mapped columns must exist unless `allow_partial = TRUE`, in which case missing variables are skipped with an info message.
+- `na_action` controls whether rows with missing inputs are kept, dropped, or error; missing values propagate to SDS when kept.
+- `check_extreme` + `extreme_action` screen raw inputs before standardizing; SDS outputs themselves are not capped.
+- Numeric coercion happens with warnings if NAs are introduced; align your data units with the reference units.
 
-- `col_map$sex` is required; missing or unmapped sex values abort.
-- `allow_partial = TRUE` skips ref variables missing in `data`; otherwise all mapped variables must exist.
-- Extreme screening occurs on raw values before SDS; adjust `extreme_rules` if your units differ.
-- Use `na_action = "error"` to enforce completeness; `"omit"` drops incomplete rows; `"keep"` retains them with `NA` outputs.
+## Common pitfalls
+- Sex not normalized to M/F (or 1/2) leads to an error; recode before calling.
+- References built from a small or biased subset will give unstable SDS; use appropriate population means/SDs.
+- Unit mismatches (e.g., inches vs cm, lb vs kg) will distort SDS; keep units consistent with the reference.
+- Forgetting `allow_partial = TRUE` when some variables are absent will error; enable it to compute what’s available.
 
+## Validation notes
+- Within each sex, SDS should center near 0 with SD near 1 if references match the data population.
+- Spot-check a variable: `(value - sex_mean)/sex_sd` should match the corresponding `<var>_SDS`.
+- Use `check_extreme = TRUE` with tailored `extreme_rules` to catch implausible anthropometrics before standardizing.
+
+## See also
+- `adiposity_sds()` for pooled-sex SDS.
+- `obesity_indices()` and `obesity_metrics()` for related adiposity markers.

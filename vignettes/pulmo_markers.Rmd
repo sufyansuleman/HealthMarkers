@@ -1,98 +1,122 @@
 ---
-title: "pulmo_markers"
+title: "Pulmonary Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{pulmo_markers}
+  %\VignetteIndexEntry{Pulmonary Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute spirometry-based pulmonary markers using GLI/GLIgl/NHANES3 reference equations from `rspiro`: predicted normals, z-scores, percent-predicted, LLN for FEV1, FVC, and the FEV1/FVC ratio. Handles missing-data policies, basic height unit detection, and verbose diagnostics.
 
-`pulmo_markers()` wraps `rspiro` reference equations (GLI, GLI-Global, NHANES3) to compute predicted normals, z-scores, percent predicted, and lower limits of normal (LLN) for FEV1, FVC, and the FEV1/FVC ratio. Inputs are validated, numeric columns are coerced as needed, missingness is handled per policy, and heights are auto-interpreted as cm when any value exceeds 3 (otherwise treated as metres).
+## When to use this
+- You need standardized pulmonary markers (predicted, z, percent-predicted, LLN) for FEV1, FVC, and FEV1/FVC using established reference equations.
+- Your dataset has age/sex/height/ethnicity plus measured FEV1 and FVC (liters).
+- You want controlled handling of missingness and clear warnings on implausible inputs (e.g., unmapped sex/ethnicity, zero/negative heights).
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble with columns `age` (years), `sex` ("male"/"female" or 1/2 or 0/1), `height` (cm or m), `ethnicity` (text labels such as "Caucasian", "African-American", "NE Asian", "SE Asian", "Other/Mixed"), `fev1` (L), and `fvc` (L). Required columns must exist; numeric-required columns are coerced with warnings when NAs are introduced.
+| Argument      | Purpose / Options                                                                    | Notes                                                  |
+|---------------|--------------------------------------------------------------------------------------|--------------------------------------------------------|
+| data          | Data frame/tibble with spirometry fields                                             | Required columns listed below                          |
+| equation      | "GLI", "GLIgl" (ignores ethnicity), or "NHANES3"                                   | Default GLI                                            |
+| na_action     | keep (propagate NA), omit (drop rows), error (abort if required missing)             | Default keep                                           |
+| na_warn_prop  | Proportion to trigger high-missingness warnings (default 0.2)                        | Applies to required inputs                             |
+| verbose       | TRUE/FALSE for progress and completion summaries                                     | Default FALSE                                          |
 
-## Arguments
+**Required columns** (names must match exactly): age (years), sex ("male"/"female" or 1/2 or 0/1), height (cm or m; auto-detected), ethnicity (text), fev1 (L), fvc (L). No col_map is needed; use these names.
 
-- `equation = c("GLI", "GLIgl", "NHANES3")`: reference set; `GLIgl` ignores ethnicity.
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (propagate, drop rows, or abort).
-- `na_warn_prop = 0.2`: proportion threshold to emit high-missingness diagnostics (debug level).
-- `verbose = FALSE`: print progress, omission counts, and completion diagnostics.
+**Units:** FEV1/FVC in liters. Height auto-detected as cm if any value > 3; otherwise treated as meters. No other unit conversions are performed.
 
-## Output
+## Handling and expectations
+- Validation & coercion: required columns are checked; age/height/fev1/fvc coerced to numeric with warnings if NAs are introduced.
+- Missingness: keep = propagate NA; omit = drop rows with any required NA; error = abort if any required NA.
+- Height handling: any height > 3 is treated as cm and divided by 100; non-positive heights warn and yield NA outputs.
+- Sex/Ethnicity mapping: case-insensitive mapping; unmapped values warn and become NA (sex) or Other/Mixed (ethnicity code 5).
+- Division by zero/non-finite: ratios set to NA when the denominator is zero or non-finite.
+- Dependency: requires `rspiro`; aborts if missing or if the chosen equation is unsupported.
 
-Returns a tibble with predicted values, z-scores, percent-predicted, and LLN for FEV1 and FVC, plus observed/predicted ratios:
-- `fev1_pred`, `fev1_z`, `fev1_pctpred`, `fev1_LLN`
-- `fvc_pred`, `fvc_z`, `fvc_pctpred`, `fvc_LLN`
-- `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`, `fev1_fvc_LLN`
+## Outputs
+Tibble (rows follow na_action) with:
+- fev1_pred, fev1_z, fev1_pctpred, fev1_LLN
+- fvc_pred, fvc_z, fvc_pctpred, fvc_LLN
+- fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN (LLN currently NA placeholder)
+Values are numeric; NA where inputs are missing/invalid or division-by-zero occurred.
 
-`fev1_fvc_LLN` is currently `NA` (not returned by `rspiro`). Ratio z-scores use the sample mean/SD of predicted ratios; if SD is zero or non-finite, z-scores become `NA`. Percent-predicted fields use safe division; zero/non-finite denominators yield `NA`.
-
-## Examples
-
+## Worked example 1: GLI (default), keep NAs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
-if (requireNamespace("rspiro", quietly = TRUE)) {
-  df <- tibble(
-    age = c(45, 60),
-    sex = c("male", "female"),
-    height = c(175, 160),  # cm; auto-converted because values > 3
-    ethnicity = c("Caucasian", "African-American"),
-    fev1 = c(3.1, 2.4),
-    fvc = c(4.0, 3.0)
-  )
+df <- tibble(
+  age = c(45, 62, 30),
+  sex = c("male", "female", "female"),
+  height = c(178, 162, 1.70),  # mixed cm/m accepted (auto-detect)
+  ethnicity = c("Caucasian", "African-American", "Other"),
+  fev1 = c(2.8, 1.4, 3.0),
+  fvc  = c(3.5, 2.1, 3.8)
+)
 
-  pulmo_markers(
-    data = df,
-    equation = "GLI",
-    na_action = "keep",
-    verbose = FALSE
-  )
-} else {
-  message("Install 'rspiro' to run pulmo_markers().")
-}
+pulmo_markers(
+  data = df,
+  equation = "GLI",
+  na_action = "keep",
+  verbose = TRUE
+)
 ```
+*Interpretation:* Mixed height units are handled; missingness (none here) would propagate. Outputs include predicted, z, percent-predicted, and ratios.
 
-## Examples
-
-Omit rows with missing required inputs, use GLI-Global (ethnicity-agnostic), and display progress:
-
+## Worked example 2: GLIgl, drop incomplete rows
 ```{r}
-if (requireNamespace("rspiro", quietly = TRUE)) {
-  df2 <- tibble(
-    age = c(50, 70, NA),
-    sex = c(1, 2, 1),
-    height = c(1.70, 1.62, 1.68),  # m; no conversion because all <= 3
-    ethnicity = c("Other/Mixed", "Caucasian", "Caucasian"),
-    fev1 = c(2.8, 2.1, 2.5),
-    fvc = c(3.5, 2.8, NA)
-  )
+df2 <- tibble(
+  age = c(45, 62, 30),
+  sex = c(1, 2, 2),
+  height = c(178, NA, 170),
+  ethnicity = c("Caucasian", "African-American", "Other"),
+  fev1 = c(2.8, 1.4, 3.0),
+  fvc  = c(3.5, 2.1, 3.8)
+)
 
-  pulmo_markers(
-    data = df2,
-    equation = "GLIgl",
-    na_action = "omit",
-    verbose = TRUE
-  )
-}
+pulmo_markers(
+  data = df2,
+  equation = "GLIgl",
+  na_action = "omit",
+  verbose = TRUE
+)
 ```
+*Interpretation:* Row 2 is dropped due to missing height. Ethnicity is ignored for GLIgl. Outputs are returned only for complete cases.
 
-## Notes
+## Troubleshooting & common pitfalls
+- Missing package: install `rspiro` if absent.
+- Unsupported equation: ensure equation is GLI, GLIgl, or NHANES3.
+- Unit issues: heights must be cm or m; volumes in liters. Convert inches or other units upstream.
+- Unmapped sex/ethnicity: check spelling/casing; unmapped values warn and become NA/Other.
+- High missingness: heed `na_warn_prop` warnings; consider `na_action = "omit"` for modeling.
+- All NA outputs: likely missing required fields, zero/negative heights, or failed mapping.
 
-- Requires the `rspiro` package; an explicit error is thrown if it is absent or the chosen equation is unsupported in the installed version.
-- Height heuristic: any height > 3 is assumed cm and converted to metres; non-positive heights trigger a warning and yield `NA` outputs.
-- Sex mapping accepts 1/2, 0/1 (shifted to 1/2), and "male"/"female"; unmapped values warn and become `NA`.
-- Ethnicity mapping defaults unknown values to code 5 ("Other/Mixed") with a warning; `GLIgl` ignores ethnicity.
-- When `na_action = "error"`, any missing required input aborts; `omit` drops those rows; `keep` propagates `NA` into outputs.
-- High missingness on required columns is reported at debug level when it exceeds `na_warn_prop`; set `verbose = TRUE` to see progress and completion summaries.
+## Tips for best results
+- Validate units before running; store heights in cm or m and volumes in liters.
+- Use `verbose = TRUE` during development/QC to see omissions and NA counts.
+- For modeling, prefer `na_action = "omit"` to avoid NA propagation.
+- Spot-check a few rows: `fev1_pctpred` should be `100 * fev1 / fev1_pred` when finite; `fev1_fvc_ratio` should match `fev1 / fvc`.
+- Pre-screen data with `summary()` to catch extremes before calling the function.
 
+## Validation notes
+- Expect ratios ~0.6–0.9 in adults; percent-predicted near 100% in healthy subjects.
+- If many z-scores are extreme, re-check age/height/sex/ethnicity coding and units.
+- If output is all NA, verify required columns and `rspiro` availability.
+
+## See also
+- Related vignettes: inflammatory_markers, metabolic_markers, nutrient_markers.
+- Function docs: `pulmo_markers()` and `rspiro` reference equation documentation.

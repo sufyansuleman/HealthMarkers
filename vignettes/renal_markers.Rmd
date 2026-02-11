@@ -1,88 +1,107 @@
 ---
-title: "renal_markers"
+title: "Renal Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{renal_markers}
+  %\VignetteIndexEntry{Renal Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute renal function, excretion, and injury markers: CKD-EPI 2009 creatinine eGFR (race factor retained), optional cystatin C and combined eGFR, BUN/Cr ratio, fractional excretion of urea (FE_Urea), plus pass-through urine injury markers (NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP). Includes mapping validation, missingness policies, optional extreme screening/capping, and zero-denominator warnings. No unit conversion is performed.
 
-`renal_markers()` computes renal function, injury, and excretion metrics from routine labs. It includes CKD-EPI 2009 creatinine eGFR (race factor retained), optional cystatin C and combined equations, BUN/Cr ratio, fractional excretion of urea (FE_Urea), and pass-through urine injury markers (NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP). Inputs are validated, required fields can be coerced to numeric with warnings, missingness is handled per policy, zero denominators are detected and warned, and optional extreme-value scanning/capping is available. No unit conversion is performed; supply measurements in expected units.
+## When to use this
+- You need eGFR (creatinine ± cystatin C) and FE_Urea for renal function or AKI assessment.
+- Your data includes required labs (creatinine, age, sex, race, BUN) and optionally cystatin C or urine assays.
+- You want clear handling of missingness, extreme-value screening, and transparent NA propagation.
 
-## Inputs
+## What you need (inputs & options)
 
-- `data`: data.frame/tibble containing renal labs.
-- `col_map`: named list mapping required keys and any optional markers:
-  - Required: `creatinine` (serum Cr, mg/dL), `age` (years), `sex` (1 male / 0 female or "male"/"female"), `race` ("white"/"black"/"other" aliases accepted), `BUN` (mg/dL).
-  - Optional for eGFR/FEUrea: `cystatin_C` (mg/L), `urea_serum` (mg/dL), `creatinine_urine` (mg/dL), `urea_urine` (mg/dL).
-  - Optional injury markers: `NGAL`, `KIM1`, `NAG`, `beta2_micro`, `IL18`, `L_FABP` (pass-through if mapped).
-Required mapped columns must exist in `data`; numeric-required columns are coerced when possible, introducing `NA` with warnings when coercion fails.
+| Argument       | Purpose / Options                                                                    | Notes                                                |
+|----------------|--------------------------------------------------------------------------------------|------------------------------------------------------|
+| data           | Data frame/tibble with renal labs                                                    | See required columns below                           |
+| col_map        | Named list mapping required/optional fields                                          | Required keys: creatinine, age, sex, race, BUN       |
+| na_action      | keep (propagate NA), omit (drop rows), error (abort if required missing)             | Default keep                                         |
+| na_warn_prop   | Proportion to trigger high-missingness warnings (default 0.2)                        | Applies to required inputs                           |
+| check_extreme  | TRUE/FALSE to scan inputs against bounds                                             | Default FALSE                                        |
+| extreme_action | warn, cap, error, ignore                                                             | Default warn                                         |
+| extreme_rules  | Optional named list of c(min, max) overrides                                         | Keys like creatinine, BUN, cystatin_C, urea_serum... |
+| verbose        | TRUE/FALSE for progress and summaries                                                | Default FALSE                                        |
 
-## Arguments
+**Required columns (col_map):** creatinine (mg/dL), age (years), sex (1/0 or "male"/"female"), race (aliases to white/black/other), BUN (mg/dL).
 
-- `na_action = c("keep","omit","error")`: policy for missing required inputs (propagate NA, drop rows, or abort).
-- `na_warn_prop = 0.2`: proportion threshold for high-missingness diagnostics on required inputs (debug level).
-- `check_extreme = FALSE`: scan selected inputs for out-of-range values using simple bounds.
-- `extreme_action = c("warn","cap","error","ignore")`: response to detected extremes; `cap` truncates to bounds and warns.
-- `extreme_rules = NULL`: optional named list of c(min,max) overrides for extreme scanning; defaults include ranges for creatinine, BUN, cystatin_C, urea_serum, creatinine_urine, urea_urine.
-- `verbose = FALSE`: emit progress, omission counts, and completion diagnostics.
+**Optional columns:** cystatin_C (mg/L), urea_serum (mg/dL), creatinine_urine (mg/dL), urea_urine (mg/dL), NGAL, KIM1, NAG, beta2_micro (outputs as Beta2Micro), IL18, L_FABP.
 
-## Output
+**Units:** No conversion. Serum creatinine/BUN/urea mg/dL; cystatin C mg/L; urine creatinine/urea mg/dL. FE_Urea requires urea_serum + creatinine_urine + urea_urine.
 
-Returns a tibble with columns:
-- `eGFR_cr`, `eGFR_cys`, `eGFR_combined`: CKD-EPI 2009 creatinine, cystatin C, and combined equations (cystatin-dependent outputs are `NA` when `cystatin_C` is absent).
-- `BUN_Cr_ratio`: blood urea nitrogen / creatinine; zero or non-finite denominators yield `NA` with a consolidated warning.
-- `FE_Urea`: fractional excretion of urea (%) when `urea_serum`, `creatinine_urine`, and `urea_urine` are all mapped; otherwise `NA`.
-- `NGAL`, `KIM1`, `NAG`, `Beta2Micro`, `IL18`, `L_FABP`: pass-through injury markers when provided; otherwise `NA`.
+## Handling and expectations
+- Validation & coercion: required columns must exist; numeric coercion applied with warnings if NAs introduced.
+- Missingness: keep = propagate NA; omit = drop rows with required NA; error = abort if required NA.
+- High-missingness diagnostics: `na_warn_prop` governs when debug warnings appear (verbose/debug).
+- Extreme screening (optional): `check_extreme` uses default bounds; `extreme_action` controls warn/cap/error/ignore; `extreme_rules` overrides per key.
+- Zero denominators: divisions to NA with a consolidated warning (e.g., BUN/Cr, FE_Urea components).
+- Race factor: CKD-EPI 2009 race coefficient retained (race-free not applied here).
+- Injury markers: NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP are passed through as.numeric without transformation or range checks.
 
-## Examples
+## Defaults and validation details
+- Default extreme bounds (used when `check_extreme = TRUE` and no overrides): creatinine 0.1–15 mg/dL; BUN 1–200 mg/dL; cystatin_C 0.2–8 mg/L; urea_serum 1–300 mg/dL; creatinine_urine 1–500 mg/dL; urea_urine 1–2000 mg/dL.
+- Sex mapping: accepts 1/0, 1/2, or male/female strings; unmapped values become NA with a warning.
+- Race mapping: common aliases map to "black" or "white"; everything else becomes "other" (no NA).
+- Zero denominators: consolidated warning lists which ratios hit zero (e.g., BUN_Cr_ratio, FE_Urea components) and how many.
+- NA diagnostics: high-missingness messages are emitted at debug/verbose levels; set `verbose = TRUE` during QC to see them.
+- Empty result: if `na_action = "omit"` removes all rows, returns a zero-row tibble with expected columns.
 
+## Outputs
+- Returns a tibble (rows follow `na_action`).
+- Columns: eGFR_cr, eGFR_cys (if cystatin_C provided), eGFR_combined (if Cys provided), BUN_Cr_ratio, FE_Urea (needs urea_serum + creatinine_urine + urea_urine), NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP (pass-through if mapped).
+- NA where inputs are missing/invalid, denominators zero, or optional inputs absent.
+
+## Worked example 1: Creatinine-only, keep NAs
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  Cr = c(1.0, 1.3),
-  Age = c(40, 72),
-  Sex = c(1, 0),      # 1 = male, 0 = female
-  Race = c("white", "black"),
-  BUN = c(14, 22)
-)
-
-cm <- list(
-  creatinine = "Cr",
-  age = "Age",
-  sex = "Sex",
-  race = "Race",
-  BUN = "BUN"
+  Cr = c(1.0, 1.3, NA),
+  Age = c(40, 72, 55),
+  Sex = c(1, 0, 1),
+  Race = c("white", "black", "other"),
+  BUN = c(14, 22, 18)
 )
 
 renal_markers(
   data = df,
-  col_map = cm,
+  col_map = list(
+    creatinine = "Cr",
+    age = "Age",
+    sex = "Sex",
+    race = "Race",
+    BUN = "BUN"
+  ),
   na_action = "keep",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
+*Interpretation:* eGFR_cr and BUN/Cr are returned; the third row yields NA outputs because creatinine is missing.
 
-## Examples
-
-Include cystatin C and urea inputs, enable extreme scanning with capping, and map one injury marker:
-
+## Worked example 2: Cystatin C, FE_Urea, cap extremes, drop incomplete
 ```{r}
 df2 <- tibble(
-  Cr = c(0.9, 2.2, 18),        # extreme creatinine will be capped when requested
+  Cr = c(0.9, 2.2, 18),
   Age = c(55, 68, 50),
   Sex = c("male", "female", "male"),
   Race = c("white", "other", "black"),
-  BUN = c(16, 40, 210),        # extreme BUN for demonstration
+  BUN = c(16, 40, 210),
   Cys = c(1.0, 1.4, 0.6),
   UreaS = c(28, 35, 18),
   CrU = c(120, 95, 80),
@@ -90,37 +109,47 @@ df2 <- tibble(
   NGAL = c(20, 35, 15)
 )
 
-cm2 <- list(
-  creatinine = "Cr",
-  age = "Age",
-  sex = "Sex",
-  race = "Race",
-  BUN = "BUN",
-  cystatin_C = "Cys",
-  urea_serum = "UreaS",
-  creatinine_urine = "CrU",
-  urea_urine = "UreaU",
-  NGAL = "NGAL"
-)
-
 renal_markers(
   data = df2,
-  col_map = cm2,
+  col_map = list(
+    creatinine = "Cr",
+    age = "Age",
+    sex = "Sex",
+    race = "Race",
+    BUN = "BUN",
+    cystatin_C = "Cys",
+    urea_serum = "UreaS",
+    creatinine_urine = "CrU",
+    urea_urine = "UreaU",
+    NGAL = "NGAL"
+  ),
   check_extreme = TRUE,
   extreme_action = "cap",
-  na_action = "keep",
+  na_action = "omit",
   verbose = TRUE
 )
 ```
+*Interpretation:* Rows with required NAs are dropped; extremes are capped; eGFR_cys, eGFR_combined, FE_Urea, and NGAL are returned where inputs exist.
 
-## Notes
+## Troubleshooting & common pitfalls
+- Missing columns: ensure required col_map entries exist and mapped columns are in data.
+- Units: no conversion; convert upstream (mg/dL for creatinine/BUN/urea, mg/L for cystatin C).
+- Race factor: CKD-EPI 2009 race coefficient retained; interpret accordingly.
+- Zero denominators: check for zeros in creatinine or urea_serum/urea_urine; warnings list counts.
+- All NA outputs: often missing required inputs, unmapped sex/race, or missing cystatin_C when expecting combined eGFR.
+- Extreme screening: tailor `extreme_rules`; use `cap` to mute outliers.
 
-- Units are assumed: serum creatinine and BUN in mg/dL; cystatin C in mg/L; serum/urine urea and urine creatinine in mg/dL. No automatic conversion is performed.
-- Race factor follows CKD-EPI 2009 (race-dependent) to preserve existing behavior; race-free variants are not applied here.
-- Sex mapping accepts 1/0, 2/0, or "male"/"female" variants; unmapped values warn and become `NA`.
-- Race mapping normalizes common aliases to `"white"`, `"black"`, or `"other"`; unknown values default to `"other"`.
-- When `na_action = "error"`, any missing required input aborts; `omit` drops those rows; `keep` propagates `NA`.
-- Zero denominators in ratio calculations yield `NA` and trigger a consolidated warning naming affected metrics.
-- Extreme scanning uses built-in bounds unless `extreme_rules` is supplied; `extreme_action = "cap"` truncates values into those ranges and warns.
-- High missingness on required columns is reported at debug level; use `verbose = TRUE` to view diagnostics and completion summaries.
+## Tips for best results
+- Validate units and mappings first; run `summary()` on key columns to catch implausible values.
+- Use `na_action = "omit"` for modeling to avoid NA propagation; `keep` for descriptive review.
+- Set `verbose = TRUE` during QC to see omission counts, extreme handling, and zero-denominator diagnostics.
+- FE_Urea requires urea_serum, creatinine_urine, and urea_urine; otherwise it will be NA.
 
+## Validation notes
+- Check: `BUN_Cr_ratio = BUN / creatinine`; `FE_Urea = 100 * (urea_urine/urea_serum) / (creatinine_urine/creatinine)` when finite.
+- eGFR_cr declines with higher creatinine and older age; race factor increases eGFR for Black race (CKD-EPI 2009).
+- If many values are extreme or NA, re-check units, mappings, and consider tightening `extreme_rules`.
+
+## See also
+- Related vignettes: metabolic_markers, inflammatory_markers, nutrient_markers.
+- Function docs: renal_markers() and CKD-EPI equation references.

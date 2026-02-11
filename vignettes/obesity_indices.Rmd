@@ -1,44 +1,46 @@
 ---
-title: "obesity_indices"
+title: "Obesity Indices"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{obesity_indices}
+  %\VignetteIndexEntry{Obesity Indices}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
 
-`obesity_indices()` computes anthropometric adiposity/shape indices: BMI (with WHO category), WHR (and optional WHRadjBMI), WHtR, AVI, BAI, ABSI, BRI, Conicity Index, waist/BMI and weight/height ratios, and optionally Relative Fat Mass (RFM). It handles unit conversion for weight (kg/lb) and height (m/cm), supports NA policies, optional extreme scanning with warn/cap/error behaviors, and verbose summaries. Inputs must already be in the specified units; no other conversions are performed.
+Compute anthropometric adiposity/shape indices (BMI + category, WHR/WHtR, AVI, BAI, ABSI, BRI, Conicity Index, waist/BMI and weight/height ratios, optional WHRadjBMI and RFM) with unit conversion, NA/extreme handling, and safe-division guards.
+
+## When to use
+
+- You have weight/height/waist/hip (and optionally sex) and want a comprehensive set of body composition proxies in one call.
+- You need built-in unit conversion (kg/lb, cm/m), NA policy controls, and optional extreme-value scanning/capping.
+- You want optional BMI-adjusted WHR and Relative Fat Mass when sex coding is available.
 
 ## Inputs
 
-- `data`: data.frame/tibble with columns for weight, height, waist, hip (numeric). Sex column is required only if `include_RFM = TRUE` (coded 0=male, 1=female).
-- Column arguments are unquoted column names: `weight`, `height`, `waist`, `hip`, and optional `sex`.
+- `data`: data frame/tibble with numeric columns for weight, height, waist, hip; `sex` needed only if `include_RFM = TRUE` (coded 0=male, 1=female).
+- Column arguments are unquoted: `weight`, `height`, `waist`, `hip`, optional `sex`.
 - Units: weight kg (or lb if `weight_unit = "lb"`), height m (or cm if `height_unit = "cm"`), waist/hip cm.
+- `weight_unit` / `height_unit`: convert to kg/m internally.
+- `adjust_WHR`: add BMI-adjusted WHR residuals.
+- `include_RFM`: compute Relative Fat Mass (requires `sex`).
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows missing required inputs; `error` aborts when required inputs contain NA.
+- `na_warn_prop`: threshold for high-missingness debug messages (default 0.2).
+- `check_extreme`: set TRUE to scan weight_kg/height_m/waist/hip; `extreme_action` (`warn`/`cap`/`error`/`ignore`) controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist 30–200 cm; hip 30–200 cm.
+- `verbose`: optional progress and summary logging.
 
-## Arguments
-
-- `weight_unit = c("kg","lb")`, `height_unit = c("cm","m")`: controls unit conversion to kg/m.
-- `adjust_WHR = FALSE`: add BMI-adjusted WHR residuals.
-- `include_RFM = FALSE`: compute Relative Fat Mass (requires `sex`).
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs (`omit` drops rows; `error` aborts).
-- `na_warn_prop = 0.2`: high-missingness warning threshold (debug-level messaging).
-- `check_extreme = FALSE`: enable range scan on weight_kg/height_m/waist/hip.
-- `extreme_action = c("warn","cap","error","ignore")`: handling for extremes when scanning (`cap` truncates; `warn` messages; `error` aborts; `ignore` no-op).
-- `extreme_rules = NULL`: override defaults (weight_kg 20–400; height_m 1.2–2.5; waist 30–200 cm; hip 30–200 cm).
-- `verbose = FALSE`: emit progress and completion summaries.
-
-## Output
-
-Returns the input data with added columns: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`, `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`, `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`, and optional `RFM`. Zero denominators are warned and yield `NA`; WHRadjBMI requires finite WHR/BMI variance; RFM requires sex coded 0/1.
-
-## Examples
+## Quick start
 
 ```{r}
 library(HealthMarkers)
@@ -69,9 +71,7 @@ obesity_indices(
 )
 ```
 
-## Examples
-
-Scan for extremes with capping and verbose summary, omitting rows with missing inputs:
+## Extreme scan and cap
 
 ```{r}
 obesity_indices(
@@ -92,9 +92,30 @@ obesity_indices(
 )
 ```
 
-## Notes
+## Missing-data policy
 
-- Required columns must be numeric; sex must be numeric 0/1 when `include_RFM = TRUE`.
-- WHRadjBMI is computed only when WHR and BMI have finite variance; otherwise it is set to `NA` with a warning.
-- Extreme screening uses broad heuristics; adjust `extreme_rules` for cohort-specific plausibility.
-- BMI categories use standard WHO cut points; units are normalized internally to kg/m before calculations.
+```{r}
+try(
+  obesity_indices(
+    data = df,
+    weight = wt,
+    height = ht,
+    waist = waist,
+    hip = hip,
+    na_action = "error"
+  )
+)
+```
+
+## Outputs and expectations
+
+- Adds: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`, `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`, `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`, optional `RFM`.
+- Zero denominators yield `NA` with warnings; WHRadjBMI requires variance in WHR and BMI; RFM requires sex coded 0/1.
+
+## Tips
+
+- Set weight/height units correctly; waist/hip are assumed cm.
+- Enable `include_RFM = TRUE` only with valid sex coding; leave FALSE otherwise.
+- WHRadjBMI needs variation in WHR and BMI; otherwise it returns `NA` with a warning.
+- Tighten `extreme_rules` to your cohort before using `extreme_action = "cap"` or `"error"`.
+- Use `na_action = "omit"` for row-complete outputs; keep during QA to see missingness.

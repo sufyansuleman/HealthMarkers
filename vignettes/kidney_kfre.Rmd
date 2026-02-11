@@ -1,5 +1,5 @@
 ---
-title: "kidney_failure_risk"
+title: "Kidney failure risk (KFRE)"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{kidney_failure_risk}
@@ -8,74 +8,86 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+4-variable Kidney Failure Risk Equation (KFRE) for 2- and 5-year ESKD risk. Includes NA policies, high-missingness warnings, optional extreme scanning with warn/cap/NA/error behaviors, and verbose summaries. Units: age (years), sex coded 1=male/2=female, eGFR (mL/min/1.73 m^2), UACR (mg/g); no unit conversion is performed.
 
-`kidney_failure_risk()` implements the 4-variable Kidney Failure Risk Equation (KFRE) for 2- and 5-year ESKD risk. It includes NA policies, optional high-missingness warnings, optional extreme screening with warn/cap/NA/error behaviors, and verbose summaries. Inputs are assumed in KFRE units: age (years), sex coded 1=male/2=female, eGFR (mL/min/1.73 m^2), UACR (mg/g); no unit conversion is done.
-
-## Inputs
-
-- `data`: data.frame/tibble with KFRE predictors.
-- `col_map`: named list mapping `age`, `sex`, `eGFR`, `UACR` (defaults: same names). All four mappings are required and columns must exist.
-- `sex` must be numeric/integer coded 1=male, 2=female.
-- Numeric columns must be numeric; non-finite values remain NA unless handled by policies.
-
-## Arguments
-
-- `na_action = c("keep","error","omit","warn")`: missing-data policy (`keep` propagates NA; `omit` drops rows; `error` aborts; `warn` retains rows with warnings).
-- `na_warn_prop = 0.2`: threshold for high-missingness warnings when `na_action = "warn"`.
-- `check_extreme = FALSE`: enable plausible-range scan (age/eGFR/UACR).
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response to extremes when scanning (`cap` truncates; `NA` blanks values).
-- `extreme_rules = NULL`: override default bounds (age 18–120, eGFR 1–200, UACR 0.1–10000 mg/g).
-- `verbose = FALSE`: emit progress and completion stats.
-
-## Output
-
-Returns a tibble with `KFRE_2yr` and `KFRE_5yr` risks (0–1). With `na_action = "omit"`, rows with missing required inputs are dropped; otherwise those rows produce `NA` risks. Extreme handling can cap or blank inputs before risk calculation.
-
-## Examples
+## Load packages and demo data
 
 ```{r}
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble(
-  age  = c(65, 72),
-  sex  = c(1, 2),
-  eGFR = c(45, 22),
-  UACR = c(300, 1200)
+  age  = c(65, 72, 80),
+  sex  = c(1, 2, 1),
+  eGFR = c(45, 22, 10),
+  UACR = c(300, 1200, 8000)
 )
+```
 
-kidney_failure_risk(
+## Column map (required)
+
+```{r}
+col_map <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+```
+
+## Core calculation
+Default `na_action = "keep"`: missing inputs propagate to `NA` risks; no extreme checks.
+
+```{r}
+kfre_default <- kidney_failure_risk(
   data = df,
-  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
+  col_map = col_map,
   na_action = "keep",
   check_extreme = FALSE,
   verbose = FALSE
 )
+
+kfre_default
 ```
 
-## Examples
-
-Cap extremes and warn, keeping all rows:
+## Extreme screening and capping
+Enable range checks and cap out-of-range inputs.
 
 ```{r}
-kidney_failure_risk(
+kfre_cap <- kidney_failure_risk(
   data = df,
-  col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
+  col_map = col_map,
   na_action = "warn",
   check_extreme = TRUE,
   extreme_action = "cap",
   verbose = TRUE
 )
+
+kfre_cap
 ```
 
-## Notes
+`extreme_action = "warn"` only warns; `error` aborts; `NA` blanks flagged values before calculation.
 
-- `sex` must be coded 1/2; invalid codes abort.
-- `na_action = "error"` enforces complete predictors; `omit` filters; `keep`/`warn` retain NA risks.
-- Extreme screening uses broad defaults; adjust `extreme_rules` if your cohort spans different ranges.
-- Logs require positive eGFR and UACR; warnings are issued for non-positive values.
+## Missing data handling
+`keep` propagates NA risks; `omit` drops rows with missing required inputs; `error` stops on missingness.
+
+```{r}
+df_na <- df
+df_na$eGFR[2] <- NA
+
+keep_out <- kidney_failure_risk(df_na, col_map, na_action = "keep")
+omit_out <- kidney_failure_risk(df_na, col_map, na_action = "omit")
+
+list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
+```
+
+## Expectations
+- All four predictors must be mapped and present; `sex` must be 1/2.
+- Inputs must be numeric; non-finite become `NA` and may propagate depending on `na_action`.
+- Extreme defaults: age 18–120, eGFR 1–200, UACR 0.1–10000 mg/g. Adjust via `extreme_rules` if needed.
+- Output: tibble with `KFRE_2yr`, `KFRE_5yr`; row count follows `na_action` and any row filtering you apply.
+
+## Tips
+- Check units before running (e.g., UACR mg/g vs mg/mmol); convert upstream if needed.
+- Use `na_action = "error"` for strict QA; `warn` to surface high missingness while retaining rows.
+- Tighten extreme bounds for your cohort; keep `verbose = TRUE` while setting them.

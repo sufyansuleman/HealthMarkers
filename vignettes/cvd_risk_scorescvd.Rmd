@@ -1,5 +1,5 @@
 ---
-title: "cvd_risk_scorescvd"
+title: "CVD Risk RiskScorescvd"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cvd_risk_scorescvd}
@@ -8,50 +8,47 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Passthrough to `RiskScorescvd::calc_scores()` with guarded optional dependency loading and safe fallback to NA.
 
-`cvd_risk_scorescvd()` is a thin passthrough to `RiskScorescvd::calc_scores()`, returning whatever that backend produces. It aborts if the optional package is missing and falls back to an `NA` row on backend errors.
+## When to use
+- You need SCORE2/SCORE2-CKD (or other models provided by RiskScorescvd) via a single call.
+- You can install the suggested package `RiskScorescvd`; execution is skipped otherwise.
+- You want a wrapper that fails softly to `risk = NA` if the backend errors.
 
-## Inputs
+## Inputs and requirements
+- `data`: data.frame/tibble containing all fields required by your chosen RiskScorescvd model(s).
+- Additional arguments: forwarded to `RiskScorescvd::calc_scores()` (e.g., model selection, region settings).
+- NA handling is delegated to the backend; the wrapper retries on a trimmed slice (up to 20 rows) before returning a single NA row.
 
-- `data`: data.frame/tibble with the variables required by `RiskScorescvd::calc_scores()`.
-- RiskScorescvd package must be installed; otherwise the function aborts.
-
-## Arguments
-
-- `...`: forwarded directly to `RiskScorescvd::calc_scores()`.
-
-## Output
-
-Returns the object produced by `RiskScorescvd::calc_scores()`. If the backend errors, a tibble with `model = "RiskScorescvd"`, `year = NA`, and `risk/value = NA` is returned to keep downstream results rectangular (e.g., in `cvd_risk(model = "ALL")`).
-
-## Examples
+## Load packages and data
+Use 30 simulated rows. Supply any additional fields required by your chosen RiskScorescvd models before calling.
 
 ```{r}
 library(HealthMarkers)
+library(dplyr)
 
-if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
-  # Replace `your_riskscores_data` with inputs expected by RiskScorescvd
-  # rs <- cvd_risk_scorescvd(your_riskscores_data)
-}
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, ]
 ```
 
-## Examples
+## Run RiskScorescvd
+Execute only when `RiskScorescvd` is available. Backend errors fall back to a single NA row.
 
-Pass through additional arguments to the backend calculator:
+```{r eval = requireNamespace("RiskScorescvd", quietly = TRUE)}
+scores <- cvd_risk_scorescvd(sim_small)
 
-```{r}
-if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
-  # rs <- cvd_risk_scorescvd(your_riskscores_data, some_option = TRUE)
-}
+head(scores)
 ```
 
-## Notes
-
-- Ensure `RiskScorescvd` is installed; otherwise this wrapper aborts. When called inside `cvd_risk(model = "ALL")`, errors are caught and replaced with an `NA` row placeholder.
-- No input coercion or validation is added beyond delegating to `RiskScorescvd::calc_scores()`.
-- Output type follows the backend; handle accordingly in downstream workflows.
+## Tips
+- Requires the suggested package `RiskScorescvd`; when absent, chunks are skipped and the function aborts with an informative error.
+- Supply every required column for the chosen RiskScorescvd model; missing inputs will yield `risk = NA` via the wrapper’s graceful fallback.
+- The wrapper retries on the first 20 rows if the full data fails (helpful for SCORE2 edge cases in simulated data).
+- Extend or rename inputs in `sim_small` as needed before calling.
+- Also available via `cvd_risk(model = "RiskScorescvd")`.

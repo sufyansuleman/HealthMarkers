@@ -1,5 +1,5 @@
 ---
-title: "atherogenic_indices"
+title: "Atherogenic Indices"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{atherogenic_indices}
@@ -7,81 +7,132 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
-knitr::opts_knit$set(purl = FALSE)
-```
+## Scope
+Compute atherogenic risk ratios from a lipid panel:
+- AIP = log10(TG / HDL_c)
+- Castelli Risk Index I (CRI_I) = TC / HDL_c
+- Castelli Risk Index II (CRI_II) = LDL_c / HDL_c
 
-## Overview
+All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
 
-`atherogenic_indices()` computes three lipid ratios: AIP = log10(TG/HDL_c), Castelli Risk Index I (TC/HDL_c), and Castelli Risk Index II (LDL_c/HDL_c). It validates required lipids, optionally screens extremes, and handles zero denominators safely.
+## When to use
+- You have triglycerides and HDL cholesterol and want AIP.
+- You also have total and/or LDL cholesterol and want Castelli indices.
+- You need optional extreme-value screening or strict missing-data handling.
 
-## Inputs
+## Requirements checklist
+- Packages: HealthMarkers, dplyr (for display).
+- Data frame with lipid columns; required keys: TG and HDL_c. Optional: TC and LDL_c.
+- Numeric lipids; non-numeric are coerced with warnings; non-finite become NA.
+- Decide row policy: na_action = keep (default), omit, or error.
+- Optional extreme screening: enable check_extreme and choose extreme_action.
 
-- `data`: data.frame/tibble with lipid columns.
-- `col_map`: named list with required `TG`, `HDL_c`; optional `TC`, `LDL_c` enable Castelli indices.
-- Units: any consistent lipid units (mg/dL or mmol/L); ratios are unitless. Non-numeric are coerced with warning; non-finite become `NA`.
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: handling of missing required lipid inputs.
-- `check_extreme = FALSE`: enable raw-range screening.
-- `extreme_action = c("warn","cap","error","ignore","NA")`: response when extremes detected (only if screening on).
-- `extreme_rules = NULL`: optional bounds (defaults mg/dL: TG 0–10000, HDL_c 0–1000, LDL_c 0–10000, TC 0–10000). Provide in your units.
-- `verbose`: emit progress messages.
-
-## Output
-
-Returns a tibble with:
-- `AIP = log10(TG / HDL_c)`
-- `CRI_I = TC / HDL_c` (NA if TC not mapped/present)
-- `CRI_II = LDL_c / HDL_c` (NA if LDL_c not mapped/present)
-
-Rows drop only when `na_action = "omit"`; zero HDL denominators yield `NA` and are counted in a warning.
-
-## Examples
+## Load packages and example data
+Replace the example slice with your data frame.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-lipids <- tibble(
-  TG    = c(150, 200, 90),
-  HDL_c = c(50, 40, 55),
-  TC    = c(200, 220, 180),
-  LDL_c = c(120, 150, 110)
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:50, ]
+```
+
+## Map lipid columns
+TG and HDL_c are required. TC and LDL_c are optional but needed for Castelli indices.
+
+```{r}
+col_map <- list(
+  TG = "TG",
+  HDL_c = "HDL_c",
+  TC = "TC",
+  LDL_c = "LDL_c"
 )
+```
 
-col_map <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
+## Quick start: compute indices
+Defaults keep rows with missing lipids and return NA for their ratios.
 
-atherogenic_indices(
-  data = lipids,
+```{r}
+aip_out <- atherogenic_indices(
+  data = sim_small,
   col_map = col_map,
   na_action = "keep",
   check_extreme = FALSE,
   extreme_action = "warn",
   verbose = FALSE
 )
+
+new_cols <- setdiff(names(aip_out), names(sim_small))
+head(select(aip_out, all_of(new_cols)))
 ```
 
-## Examples
+## Arguments that matter
+- col_map: named list for TG, HDL_c (required), and optional TC, LDL_c. Missing required keys error.
+- na_action: keep (default, rows retained; ratios become NA), omit (drop rows with NA in used lipids), error (abort on NA).
+- check_extreme: FALSE by default; if TRUE, screen lipids using extreme_rules.
+- extreme_action: warn (default, no change), cap, error, ignore, or NA. Defaults use wide mg/dL ranges: TG 0-10000, HDL_c 0-1000, LDL_c 0-10000, TC 0-10000.
+- verbose: emit step messages.
 
-Cap extreme inputs, drop incomplete rows, and compute all ratios:
+## Handling missing and zero denominators
+- Non-numeric lipids are coerced to numeric; NA introduced are warned. Non-finite become NA.
+- Zero HDL_c denominators yield NA ratios and a warning; Castelli indices use HDL_c as the divisor.
+- Row policy: keep vs omit vs error via na_action.
 
+### Compare row policies
 ```{r}
-atherogenic_indices(
-  data = lipids,
-  col_map = col_map,
-  na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = FALSE
+demo <- sim_small
+demo$HDL_c[c(2, 5)] <- NA
+
+aip_keep <- atherogenic_indices(demo, col_map, na_action = "keep")
+aip_omit <- atherogenic_indices(demo, col_map, na_action = "omit")
+
+list(
+  keep_rows = nrow(aip_keep),
+  omit_rows = nrow(aip_omit),
+  sample_ratios = head(select(aip_keep, AIP, CRI_I, CRI_II))
 )
 ```
 
-## Notes
+## Extreme-value screening (optional)
+Enable check_extreme to cap, warn, error, ignore, or set NA for out-of-range lipids.
 
-- Use `na_action = "error"` when lipid inputs must be complete; otherwise choose `"omit"` or `"keep"` based on tolerance for missing outputs.
-- Set `extreme_rules` in your lipid units; defaults assume mg/dL but ratios are unitless.
-- Zero HDL leads to NA ratios with a warning; consider pre-cleaning or capping very low HDL values if completeness is required.
+```{r}
+demo2 <- sim_small
+demo2$TG[5] <- 12000  # extreme TG
 
+aip_screen <- atherogenic_indices(
+  data = demo2,
+  col_map = col_map,
+  na_action = "keep",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  extreme_rules = list(TG = c(0, 10000), HDL_c = c(0, 1000), LDL_c = c(0, 10000), TC = c(0, 10000)),
+  verbose = FALSE
+)
+
+head(select(aip_screen, AIP, CRI_I, CRI_II))
+```
+
+## Outputs
+- AIP: log10(TG / HDL_c)
+- CRI_I: TC / HDL_c (NA if TC not mapped/present)
+- CRI_II: LDL_c / HDL_c (NA if LDL_c not mapped/present)
+Rows only drop when na_action = "omit" or when na_action = "error" encounters missing.
+
+## Pitfalls and tips
+- Keep lipid units consistent; ratios are unitless but inputs must share units.
+- Mapping omissions for TG or HDL_c throw errors; missing TC/LDL_c just yield NA Castelli indices.
+- Zero HDL_c produces NA ratios and a warning; address true zeros before computing.
+- Tighten extreme_rules if your lab ranges are narrower; use extreme_action = "error" for strict QA.
+- Use na_action = "error" for pipelines that must fail fast on missing lipids.
+
+## Validation ideas
+- Spot-check AIP: if TG = 150 and HDL_c = 50, expected AIP = log10(3) ~ 0.477.
+- CRI_I should decrease if HDL_c rises with other lipids unchanged; similar for CRI_II.
+- Confirm that rows with NA in TG/HDL_c are dropped only when na_action = "omit".
+
+## See also
+- health_summary() for combined marker panels.
+- glycemic_markers() for glucose and insulin-derived indices.

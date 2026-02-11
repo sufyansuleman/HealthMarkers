@@ -1,64 +1,79 @@
 ---
-title: "utils_validate"
+title: "Validation Helpers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{utils_validate}
+  %\VignetteIndexEntry{Validation Helpers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Document validation helpers used across HealthMarkers. Modern functions use `hm_validate_inputs()` and its wrappers; `validate_inputs()` here exists for backward compatibility with legacy code paths.
 
-`validate_inputs()` (in `R/zzz-validate_inputs.R`) is a legacy/internal helper to sanity-check a column map against a data frame. It is minimal: it only checks that required lipid marker keys are present and mapped when `fun_name = "lipid_markers"`, and otherwise returns silently. It returns invisibly on success or throws errors on failure.
+## When to use this
+- You are integrating or testing legacy functions still wired to `validate_inputs()`.
+- You need to understand how column mapping validation works (required/optional keys, duplicate handling, missing columns) before calling marker functions.
 
-## Inputs
+## Key helpers
+- `validate_inputs(data, col_map, required_keys, fn)`: thin wrapper over `hm_validate_inputs()` used by legacy code.
+- `hm_require_columns(data, col_map, required_keys, fn)`: asserts mapped required columns exist in `data` and aborts otherwise.
+- `hm_warn_high_missing(data, cols, prop, fn)`: emits debug-level messages when missingness in `cols` exceeds `prop` (default 0.2).
+- Legacy `validate_inputs()` (internal) normalizes `col_map`, checks missing/duplicate mappings, and missing columns with configurable actions.
 
-- `data`: data.frame/tibble being validated.
-- `col_map`: named list mapping keys to column names.
-- `fun_name`: character scalar naming the calling function (e.g., `"lipid_markers"`).
+## Inputs & options (legacy validate_inputs)
 
-## Arguments
+| Argument             | Purpose / Options                                                 | Notes                                   |
+|----------------------|-------------------------------------------------------------------|-----------------------------------------|
+| data                 | Data frame/tibble                                                 | Required                                 |
+| col_map              | Named list/character vector of key -> column                      | Required                                 |
+| required_keys        | Keys that must be mapped                                          | Defaults to names(col_map)               |
+| optional_keys        | Keys allowed but not required                                     | Optional                                 |
+| allow_extra_keys     | Allow keys beyond required/optional                               | Default TRUE                             |
+| duplicate_action     | Behavior on duplicate column mappings                             | "ignore" (default), "warn", "error"      |
+| missing_action       | Behavior when required mappings are NULL/empty                    | "error" (default), "warn", "ignore"     |
+| missing_cols_action  | Behavior when mapped columns are absent from data                 | "error" (default), "warn", "ignore"     |
+| normalize_map        | Trim/normalize map entries to character/NULL                      | Default TRUE                             |
+| trim_ws              | Trim whitespace when normalizing                                  | Default TRUE                             |
+| return_map           | Return normalized map instead of TRUE                             | Default FALSE                            |
+| verbose              | Print a summary of checks                                         | Default FALSE                            |
 
-- `fun_name`: used to pick which keys are required. Currently only `fun_name = "lipid_markers"` is handled, which requires `TG`, `HDL_c`, `LDL_c`, and `TC` to be mapped.
+## Behavior and expectations
+- Data must be a data.frame/tibble; `col_map` must be named; missing/duplicate mappings and missing columns are handled per actions above.
+- Non-NULL, non-empty mappings are considered; optional keys are checked only if provided.
+- Duplicate mappings can be ignored, warned, or errored based on `duplicate_action`.
+- High-missingness helper `hm_warn_high_missing()` only emits when invoked (debug level).
 
-## Output
+## Outputs
+- Modern helpers (`hm_validate_inputs`, `hm_require_columns`) abort on validation errors and return invisibly otherwise.
+- Legacy `validate_inputs()` returns `TRUE` (invisibly) or the normalized map (`return_map = TRUE`).
 
-- On success: invisibly returns `TRUE`.
-- On failure: throws an error if required mappings are missing or inputs are malformed.
-
-## Examples
-
+## Worked example: legacy mapping check
 ```{r}
 library(HealthMarkers)
 
 df <- data.frame(TG = c(120, 140), HDL_c = c(45, 50), LDL_c = c(90, 110), TC = c(180, 200))
 cm <- list(TG = "TG", HDL_c = "HDL_c", LDL_c = "LDL_c", TC = "TC")
 
-# Basic validation for lipid_markers
+# Legacy helper (used only for older lipid path)
 validate_inputs(df, cm, fun_name = "lipid_markers")
 ```
 
-## Examples
+## Troubleshooting & tips
+- Prefer `hm_validate_inputs()` in new code; use this only for legacy pathways.
+- If tests expect non-fatal behavior, set actions to `"warn"` or `"ignore"` instead of `"error"`.
+- Set `return_map = TRUE` to inspect how the map was normalized (trimming and NULL handling).
+- Use `hm_warn_high_missing()` during development to surface datasets with high missingness.
 
-Missing a required lipid marker triggers an error:
-
-```{r}
-try(
-  validate_inputs(
-    data = df,
-    col_map = list(TG = "TG", HDL_c = "HDL_c"),
-    fun_name = "lipid_markers"
-  )
-)
-```
-
-## Notes
-
-- Prefer `hm_validate_inputs()` for current marker functions; `validate_inputs()` is retained for backward compatibility with the original lipid marker implementation.
-- Errors are classed via `rlang::abort()`, which can be caught or tested in downstream code.
-
+## See also
+- Function docs: `?hm_validate_inputs`
+- Related: validate_inputs() (legacy lipid), hm_require_columns(), hm_warn_high_missing()

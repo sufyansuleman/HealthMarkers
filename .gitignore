@@ -5,6 +5,10 @@
 HealthMarkers.Rproj
 .vscode/
 doc/
+.DS_Store
+.Rcheck/
+*.tar.gz
+/inst/doc/
 .Rbuildignore
 .Rhistory
 .RData

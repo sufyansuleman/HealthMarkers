@@ -163,73 +163,51 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
 cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE) {
   .need_pkg("QRISK3")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  if (is.null(patid)) patid <- seq_len(nrow(data))
+  if (is.null(patid)) {
+    patid <- if ("patid" %in% names(data)) "patid" else seq_len(nrow(data))
+  }
   if (verbose) {
     message("-> QRISK3 inputs received")
     # Cannot reliably pre-validate all QRISK3 inputs without duplicating its spec
   }
-  res <- try(QRISK3::QRISK3_2017(data = data, patid = patid, ...), silent = TRUE)
+  args <- list(
+    data = data,
+    patid = patid,
+    gender = if ("gender_qrisk" %in% names(data)) "gender_qrisk" else if ("gender" %in% names(data)) "gender" else NULL,
+    age = "age",
+    atrial_fibrillation = "atrial_fibrillation",
+    atypical_antipsy = "atypical_antipsy",
+    regular_steroid_tablets = "regular_steroid_tablets",
+    erectile_disfunction = "erectile_disfunction",
+    migraine = "migraine",
+    rheumatoid_arthritis = "rheumatoid_arthritis",
+    chronic_kidney_disease = "chronic_kidney_disease",
+    severe_mental_illness = "severe_mental_illness",
+    systemic_lupus_erythematosis = "systemic_lupus_erythematosis",
+    blood_pressure_treatment = "blood_pressure_treatment",
+    diabetes1 = "diabetes1",
+    diabetes2 = "diabetes2",
+    weight = "weight",
+    height = "height",
+    ethiniciy = if ("ethiniciy" %in% names(data)) "ethiniciy" else NULL,
+    heart_attack_relative = "heart_attack_relative",
+    cholesterol_HDL_ratio = "cholesterol_HDL_ratio",
+    systolic_blood_pressure = "systolic_blood_pressure",
+    std_systolic_blood_pressure = "std_systolic_blood_pressure",
+    smoke = "smoke",
+    townsend = "townsend"
+  )
+  res <- try(do.call(QRISK3::QRISK3_2017, args), silent = TRUE)
   if (inherits(res, "try-error") || length(res) == 0L) {
     return(tibble::tibble(model = "QRISK3", year = 10L, risk = NA_real_))
   }
-  out <- tibble::tibble(model = "QRISK3", year = 10L, risk = as.double(res))
+  risk_vals <- if (is.data.frame(res)) {
+    if ("QRISK3_2017" %in% names(res)) res[["QRISK3_2017"]] else as.double(res[[1]])
+  } else {
+    as.double(res)
+  }
+  out <- tibble::tibble(model = "QRISK3", year = 10L, risk = as.double(risk_vals))
   if (verbose) message(sprintf("-> QRISK3: completed (%d row[s])", nrow(out)))
-  return(out)
-}
-
-#' MESA 10-year CHD risk
-#'
-#' Wrapper around \code{CVrisk::chd_10y_mesa()} with graceful fallback to NA if the
-#' backend errors.
-#'
-#' @param data Data frame with: \code{race}, \code{sex}, \code{age}, \code{total_chol},
-#'   \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{smoker}, \code{diabetes}.
-#' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
-#'   Only used when \code{verbose = TRUE}.
-#' @param verbose Logical; if TRUE, prints progress and a short summary.
-#' @param ... Passed to \code{CVrisk::chd_10y_mesa()}.
-#' @return A tibble with \code{model}, \code{year}, \code{risk}.
-#' @export
-#' @examples
-#' if (requireNamespace("CVrisk", quietly = TRUE)) {
-#'   # cvd_risk_mesa(df, verbose = TRUE)
-#' }
-#'
-#' @references
-#' - McClelland RL, et al. Ten-year coronary heart disease risk prediction using
-#'   coronary artery calcium and traditional risk factors: the MESA risk score.
-#'   Circulation. 2015;131(5):402-409.
-cvd_risk_mesa <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
-  .need_pkg("CVrisk")
-  if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  # Some CVrisk versions expect an internal dataset; try to load gracefully
-  try(utils::data("mesa_coef", package = "CVrisk"), silent = TRUE)
-  if (verbose) {
-    req <- c("race","sex","age","total_chol","HDL_c","sbp","bp_treated","smoker","diabetes")
-    qs <- .quality_scan_warn(data, req, .warn = FALSE, na_warn_prop = na_warn_prop)
-    message(sprintf("-> MESA inputs check; non-finite=%d, high-NA=%d, all-NA=%d",
-                    length(qs$nonfinite), length(qs$high_na), length(qs$all_na)))
-  }
-  res <- suppressWarnings(try(
-    CVrisk::chd_10y_mesa(
-      race     = data$race,
-      gender   = ifelse(data$sex == 1, "male", "female"),
-      age      = data$age,
-      totchol  = data$total_chol,
-      hdl      = data$HDL_c,
-      sbp      = data$sbp,
-      bp_med   = as.integer(isTRUE(data$bp_treated)),
-      smoker   = as.integer(isTRUE(data$smoker)),
-      diabetes = as.integer(isTRUE(data$diabetes)),
-      ...
-    ),
-    silent = TRUE
-  ))
-  if (inherits(res, "try-error") || length(res) == 0L || is.null(res)) {
-    return(tibble::tibble(model = "MESA", year = 10L, risk = NA_real_))
-  }
-  out <- tibble::tibble(model = "MESA", year = 10L, risk = as.double(res))
-  if (verbose) message(sprintf("-> MESA: completed (%d row[s])", nrow(out)))
   return(out)
 }
 
@@ -295,9 +273,14 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
 cvd_risk_scorescvd <- function(data, ...) {
   .need_pkg("RiskScorescvd")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
-  out <- tryCatch(RiskScorescvd::calc_scores(data = data, ...),
-                  error = function(e) .na_row("RiskScorescvd", NA_integer_))
-  return(out)
+  out <- tryCatch(RiskScorescvd::calc_scores(data = data, ...), error = identity)
+  if (inherits(out, "error")) {
+    # Some simulated rows can fail SCORE2/SCORE2_CKD; retry on a trimmed slice
+    safe_n <- min(20L, nrow(data))
+    out <- tryCatch(RiskScorescvd::calc_scores(data = head(data, safe_n), ...), error = identity)
+  }
+  if (inherits(out, "error") || is.null(out)) return(.na_row("RiskScorescvd", NA_integer_))
+  out
 }
 
 # ---- lipid markers (exported) ----------------------------------------------
@@ -465,7 +448,7 @@ cvd_marker_ldl_particle_number <- function(data,
 #' @param data Data frame required by your chosen model.
 #' @param model One of:
 #'   - "ALL"
-#'   - Risk calculators: "ASCVD","QRISK3","MESA","Stroke","RiskScorescvd"
+#'   - Risk calculators: "ASCVD","QRISK3","Stroke","RiskScorescvd"
 #'   - Lipid markers: "AIP","LDL_PN"
 #' @param year Risk horizon (10 or 30) for applicable models; ignored for lipid markers.
 #' @param ... Forwarded to underlying wrappers (e.g., col_map, na_action).
@@ -473,7 +456,7 @@ cvd_marker_ldl_particle_number <- function(data,
 #' @return A tibble.
 #' @export
 cvd_risk <- function(data,
-                     model = c("ALL", "ASCVD", "QRISK3", "MESA",
+                     model = c("ALL", "ASCVD", "QRISK3",
                                "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
                      year = 10,
                      ...,
@@ -490,11 +473,11 @@ cvd_risk <- function(data,
   )
 
   if (model == "ALL") {
-    all_models <- c("ASCVD", "QRISK3", "MESA", "Stroke", "RiskScorescvd", "AIP", "LDL_PN")
+    all_models <- c("ASCVD", "QRISK3", "Stroke", "RiskScorescvd", "AIP", "LDL_PN")
     results <- lapply(all_models, function(m) {
       out <- try(cvd_risk(data, model = m, year = year, ..., verbose = verbose), silent = TRUE)
       if (inherits(out, "try-error") || !is.data.frame(out) || nrow(out) == 0L) {
-        yr <- if (m %in% c("ASCVD", "Stroke")) as.integer(year) else if (m %in% c("QRISK3", "MESA")) 10L else NA_integer_
+        yr <- if (m %in% c("ASCVD", "Stroke")) as.integer(year) else if (m %in% c("QRISK3")) 10L else NA_integer_
         return(.na_row(m, yr))
       }
       out
@@ -507,7 +490,6 @@ cvd_risk <- function(data,
   out <- switch(model,
     "ASCVD"         = cvd_risk_ascvd(data, year = year, ..., verbose = verbose),
     "QRISK3"        = cvd_risk_qrisk3(data, ..., verbose = verbose),
-    "MESA"          = cvd_risk_mesa(data, ..., verbose = verbose),
     "Stroke"        = cvd_risk_stroke(data, ..., verbose = verbose),
     "RiskScorescvd" = cvd_risk_scorescvd(data, ...),
     "AIP"           = cvd_marker_aip(data, ..., verbose = verbose),

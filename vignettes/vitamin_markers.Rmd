@@ -1,44 +1,77 @@
 ---
-title: "vitamin_markers"
+title: "Vitamin Markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{vitamin_markers}
+  %\VignetteIndexEntry{Vitamin Markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
 
-`vitamin_markers()` computes composite vitamin/endocrine ratios and z-scores from serum/plasma analytes: `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`, plus pass-through `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`. It validates mappings, coerces required columns to numeric with warnings on introduced NAs, handles missingness per policy, optionally scans/caps extremes, and uses safe division with consolidated zero-denominator warnings. No unit conversion beyond the provided ratios/z-scores is applied; supply inputs in consistent assay units.
+`vitamin_markers()` builds composite vitamin/endocrine ratios and z-scores (VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R, Retinol_Z, Toco_Lip_R, Mg_Zn_R, Cu_Zn_R) and passes through PIVKA_II, VitC, Homocysteine, MMA. It validates mappings, enforces missing-data policy, can scan/cap extremes, and uses safe division to avoid inf/NaN.
 
-## Inputs
+## When to use this
 
-- `data`: data.frame/tibble with vitamin/analyte columns.
-- `col_map`: named list mapping required keys (all must be provided): `VitD`, `VitD_ref_mean`, `VitD_ref_sd`, `B12`, `Folate`, `Ferritin`, `TSat`, `Cortisol`, `DHEAS`, `Testosterone`, `Estradiol`, `TSH`, `free_T4`, `Retinol`, `Retinol_ref_mean`, `Retinol_ref_sd`, `Tocopherol`, `Total_lipids`, `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`, `Magnesium`, `Zinc`, `Copper`. Mapped columns must exist; non-numeric columns are coerced to numeric with warnings when NAs are introduced; non-finite values become `NA`.
+- Create harmonized nutrient/endocrine summaries for cohorts or dashboards.
+- QC pipelines where missingness/extremes should be handled uniformly across many analytes.
+- Downstream modeling that expects standardized ratios/z-scores rather than raw labs.
 
-## Arguments
+## Required inputs and mapping
 
-- `na_action = c("keep","omit","error")`: missing-data policy for required inputs.
-- `na_warn_prop = 0.2`: proportion threshold for high-missingness diagnostics (debug level).
-- `check_extreme = FALSE`: enable extreme-value scanning using broad defaults.
-- `extreme_action = c("warn","cap","error","ignore")`: handling when extremes are detected; `cap` truncates values and warns.
-- `extreme_rules = NULL`: optional c(min,max) overrides keyed by input names or column names.
-- `verbose = FALSE`: emit progress and completion diagnostics.
+All keys are required; no defaults. `col_map` must name every key to its column:
 
-## Output
+- VitD, VitD_ref_mean, VitD_ref_sd
+- B12, Folate
+- Ferritin, TSat
+- Cortisol, DHEAS
+- Testosterone, Estradiol
+- TSH, free_T4
+- Retinol, Retinol_ref_mean, Retinol_ref_sd
+- Tocopherol, Total_lipids
+- PIVKA_II, VitC, Homocysteine, MMA
+- Magnesium, Zinc, Copper
 
-Returns a tibble with:
-- `VitD_Z`, `B12_Fol_Ratio`, `Ferr_TSat_R`, `Cort_DHEA_R`, `T_E2_Ratio`, `TSH_fT4_R`, `Retinol_Z`, `Toco_Lip_R`, `Mg_Zn_R`, `Cu_Zn_R`.
-- Pass-through: `PIVKA_II`, `VitC`, `Homocysteine`, `MMA`.
+Columns must exist and be coercible to numeric. Non-finite values become `NA`; coercion that introduces NAs warns.
 
-Safe division sets zero/non-finite denominators to `NA` and records a consolidated warning. Z-scores use supplied reference means/SDs; ensure SDs are positive/non-zero.
+## Options that change behavior
+
+- `na_action = c("keep","omit","error")` (default "keep"): policy for missing required inputs. `omit` drops rows; `error` aborts.
+- `na_warn_prop = 0.2`: if debug-level verbose is enabled, flags columns with >=20% missing.
+- `check_extreme = FALSE`: enable plausible-range scanning (broad defaults per analyte).
+- `extreme_action = c("warn","cap","error","ignore")` (default "warn"): what to do with out-of-bounds values. `cap` truncates into range and warns; `error` aborts.
+- `extreme_rules = NULL`: override bounds keyed by required keys or by column names.
+- `verbose = FALSE`: progress summaries via `hm_inform()`.
+
+## How inputs are validated and cleaned
+
+- `hm_validate_inputs()` ensures `data` is a data frame and all keys are mapped; missing maps abort with scoped errors.
+- Each mapped column is coerced to numeric; any NA introduced is warned; non-finite is set to NA.
+- NA policy is applied across all required columns; with `omit` the output shrinks to rows fully observed on required inputs.
+- Extreme scanning (if enabled) uses key- or column-based bounds; depending on `extreme_action`, outliers are warned, capped, aborted, or ignored.
+- Safe division sets zero denominators to NA and emits a consolidated warning listing affected ratios.
+
+## Outputs
+
+Tibble with:
+- Ratios/z-scores: VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R, Retinol_Z, Toco_Lip_R, Mg_Zn_R, Cu_Zn_R
+- Pass-through: PIVKA_II, VitC, Homocysteine, MMA
+
+Output row count matches input unless `na_action = "omit"` removed rows.
 
 ## Examples
+
+Basic run
 
 ```{r}
 library(HealthMarkers)
@@ -62,18 +95,15 @@ cm <- as.list(names(df)); names(cm) <- names(df)
 vitamin_markers(
   data = df,
   col_map = cm,
-  na_action = "keep",
-  verbose = FALSE
+  na_action = "keep"
 )
 ```
 
-## Examples
-
-Enable extreme scanning with capping and show verbose diagnostics:
+Scan and cap extremes
 
 ```{r}
 df2 <- df
-# Introduce some extremes for demo
+# Force a few implausible values
 df2$TSat[2] <- 2.0
 df2$Zinc[1] <- 2000
 
@@ -82,16 +112,15 @@ vitamin_markers(
   col_map = cm,
   check_extreme = TRUE,
   extreme_action = "cap",
-  na_action = "keep",
+  na_action = "omit",
   verbose = TRUE
 )
 ```
 
-## Notes
+## Troubleshooting and tips
 
-- All required keys must be mapped; the function does not provide defaults.
-- Units should be consistent with your study; no automatic conversion is performed beyond the ratios/z-scores. Ensure reference SDs are > 0 to avoid `NA` in z-scores.
-- Zero denominators in ratios (e.g., TSat, free_T4, Zinc) yield `NA` and trigger a consolidated warning.
-- `na_action = "error"` aborts on missing required inputs; `omit` drops those rows; `keep` propagates `NA`.
-- Extreme scanning uses broad default bounds; customize via `extreme_rules` or disable via `check_extreme = FALSE`.
-
+- Incomplete or unnamed `col_map` aborts; ensure every key above is mapped.
+- If denominators are zero (e.g., TSat = 0), expect a warning and NA ratios; address upstream if this is unexpected.
+- Align units across inputs; no unit conversion is performed before ratios/z-scores.
+- Narrow `extreme_rules` to your lab ranges to catch or cap assay-specific outliers.
+- Use `na_action = "omit"` when downstream models cannot handle propagated NAs.

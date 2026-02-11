@@ -1,5 +1,5 @@
 ---
-title: "cvd_marker_ldl_particle_number"
+title: "CVD Marker LDL Particle Number"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cvd_marker_ldl_particle_number}
@@ -8,62 +8,96 @@ vignette: >
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(comment = "#", collapse = TRUE)
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_knit$set(purl = FALSE)
 ```
 
-## Overview
+## Scope
+Compute LDL particle number (LDL_PN) as the ApoB concentration (mg/dL) with explicit column mapping, numeric coercion, and NA policies.
 
-`cvd_marker_ldl_particle_number()` returns ApoB as a proxy for LDL particle number with HM-CS missing-data handling. Inputs are validated and coerced to numeric; non-finite values are set to `NA`.
+## When to use
+- You have ApoB (mg/dL) and want a quick LDL particle number proxy.
+- You need consistent NA handling (keep/omit/error) across pipelines.
+- Your ApoB column is named differently from the package default.
 
-## Inputs
+## Inputs and requirements
+- `data`: data.frame/tibble with an ApoB column.
+- `col_map`: named list mapping `ApoB` to the column in `data`.
+- Units: mg/dL; no unit conversion is applied.
+- Non-finite values are treated as missing before NA handling.
 
-- `data`: data.frame/tibble containing ApoB (mg/dL).
-- `col_map`: named list mapping `ApoB` to the column name (default: `ApoB`).
-
-## Arguments
-
-- `na_action = c("keep","omit","error")`: missing-data policy for ApoB (`keep` retains NA outputs; `omit` drops rows; `error` aborts on missing/non-finite values).
-- `col_map`: rename the ApoB column if needed.
-- `verbose = FALSE`: emit progress via `hm_inform()`.
-
-## Output
-
-Returns a tibble with columns `model = "LDL_PN"` and `value` (ApoB). Rows are dropped only when `na_action = "omit"`; otherwise missing/non-finite inputs yield `NA` values.
-
-## Examples
+## Load packages and data
+Use a 30-row slice of the simulated data with an ApoB column.
 
 ```{r}
 library(HealthMarkers)
-library(tibble)
+library(dplyr)
 
-apob <- tibble(ApoB = c(95, 110))
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim <- readRDS(sim_path)
+sim_small <- sim[1:30, c("ApoB")]
 
-cvd_marker_ldl_particle_number(
-  data = apob,
-  col_map = list(ApoB = "ApoB"),
+col_map <- list(ApoB = "ApoB")
+```
+
+## Quick start
+Compute LDL_PN with defaults and preview the first rows.
+
+```{r}
+ldl_pn <- cvd_marker_ldl_particle_number(
+  data = sim_small,
+  col_map = col_map,
   na_action = "keep",
   verbose = FALSE
 )
+
+head(ldl_pn)
 ```
 
-## Examples
-
-Drop rows with missing ApoB and compute the proxy on a renamed column:
+## Column mapping
+Rename the ApoB column and map it explicitly.
 
 ```{r}
-apob2 <- tibble(ApolipoproteinB = c(95, NA, 80))
+sim_renamed <- sim_small |> rename(apob_lab = ApoB)
 
-cvd_marker_ldl_particle_number(
-  data = apob2,
-  col_map = list(ApoB = "ApolipoproteinB"),
-  na_action = "omit",
-  verbose = FALSE
+ldl_pn_mapped <- cvd_marker_ldl_particle_number(
+  data = sim_renamed,
+  col_map = list(ApoB = "apob_lab")
 )
+
+head(ldl_pn_mapped)
 ```
 
-## Notes
+## Missing data handling
+Compare retaining vs omitting rows with missing ApoB. Use `[[]]` so an inserted `NA` is respected by `na_action = "omit"`.
 
-- Non-numeric ApoB inputs are coerced with a warning; non-finite values become `NA` before applying the NA policy.
-- Use `na_action = "error"` to enforce complete ApoB values; `omit` to filter missing rows; `keep` to retain NA outputs.
-- Units are assumed mg/dL; the function performs no unit conversion.
+```{r}
+demo <- as.data.frame(sim_small[1:8, ])
+demo[["ApoB"]][4] <- NA
+
+ldl_keep <- cvd_marker_ldl_particle_number(demo, col_map, na_action = "keep")
+ldl_omit <- cvd_marker_ldl_particle_number(demo, col_map, na_action = "omit")
+
+list(keep_rows = nrow(ldl_keep), omit_rows = nrow(ldl_omit))
+```
+
+Set `na_action = "error"` to halt when ApoB is missing or non-finite.
+
+## Numeric coercion
+Non-numeric inputs are coerced to numeric with a warning; any non-finite results become `NA` before NA handling.
+
+```{r}
+ch <- sim_small |> mutate(ApoB = as.character(ApoB))
+
+ldl_coerced <- cvd_marker_ldl_particle_number(ch, col_map)
+head(ldl_coerced)
+```
+
+## Outputs
+- Tibble with `model = "LDL_PN"` and `value` (ApoB numeric proxy for LDL particle number).
+- Rows drop only when `na_action = "omit"`; otherwise `value` is `NA` where inputs are missing or non-finite.
+
+## Tips
+- For modeling pipelines, prefer `na_action = "omit"` or `"error"` to avoid silent gaps; use `"keep"` for exploratory slices.
+- Pre-check units if your source is not mg/dL to prevent scale mistakes (no conversion performed).
+- Because the output is one column plus `model`, you can bind it back to `data` with `dplyr::bind_cols()`.
