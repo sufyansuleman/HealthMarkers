@@ -32,3 +32,12 @@ cognitive_score(
 \description{
 Cognitive composite (z-mean or PCA1)
 }
+\examples{
+df <- data.frame(task_a = c(1, 2), task_b = c(2, 3), task_c = c(3, 4))
+cm <- list(tasks = list(
+  task_a = "task_a",
+  task_b = "task_b",
+  task_c = "task_c"
+))
+cognitive_score(df, col_map = cm, method = "z_mean")
+}

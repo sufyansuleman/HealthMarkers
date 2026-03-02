@@ -44,8 +44,5 @@ if (requireNamespace("missForest", quietly = TRUE)) {
 
 }
 \references{
-\itemize{
-\item Stekhoven DJ, Buhlmann P (2012). MissForest-non-parametric missing value imputation for mixed-type data.
-Bioinformatics, 28(1):112-118. \doi{10.1093/bioinformatics/btr597}
-}
+\insertRef{stekhoven2012missforest}{HealthMarkers}
 }

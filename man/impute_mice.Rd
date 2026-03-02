@@ -44,9 +44,5 @@ if (requireNamespace("mice", quietly = TRUE)) {
 
 }
 \references{
-\itemize{
-\item Rubin DB (1987). Multiple Imputation for Nonresponse in Surveys. Wiley. \doi{10.1002/9780470316696}
-\item van Buuren S, Groothuis-Oudshoorn K (2011). mice: Multivariate Imputation by Chained Equations in R.
-Journal of Statistical Software, 45(3):1-67. \doi{10.18637/jss.v045.i03}
-}
+\insertRef{rubin1987mi}{HealthMarkers}; \insertRef{vanbuuren2011mice}{HealthMarkers}
 }

@@ -23,3 +23,11 @@ psych_med_flags(
 \description{
 Psychiatric medication flags aggregator
 }
+\examples{
+df <- data.frame(med_ssri = c(1, 0), med_antipsychotic = c(0, 1))
+cm <- list(med = list(
+  ssri = "med_ssri",
+  antipsychotic = "med_antipsychotic"
+))
+psych_med_flags(df, col_map = cm)
+}

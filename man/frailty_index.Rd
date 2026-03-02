@@ -124,9 +124,9 @@ if (requireNamespace("di", quietly = TRUE)) {
 
 }
 \references{
-Mitnitski AB, Mogilner AJ, Rockwood K (2001). Accumulation of deficits as a proxy measure of aging. Sci World J, 1:323-336. \doi{10.1100/tsw.2001.58}
-Rockwood K, Mitnitski A (2007). Frailty in relation to the accumulation of deficits. J Gerontol A Biol Sci Med Sci, 62(7):722-727. \doi{10.1093/gerona/62.7.722}
-Searle SD, Mitnitski A, Gahbauer EA, Gill TM, Rockwood K. A standard procedure for creating a frailty index. BMC Geriatr. 2008;8:24. \doi{10.1186/1471-2318-8-24}
-Rockwood K, Theou O. Using the clinical frailty scale in allocating scarce health care resources. Can Geriatr J. 2020;23(3):210-215. \doi{10.5770/cgj.23.463}
-Cesari M, Gambassi G, van Kan GA, Vellas B. The frailty phenotype and the frailty index: different instruments for different purposes. Age Ageing. 2014;43(1):10-12. \doi{10.1093/ageing/aft160}
+\insertRef{mitnitski2001deficit}{HealthMarkers}
+\insertRef{rockwood2007frailty}{HealthMarkers}
+\insertRef{searle2008frailtyindex}{HealthMarkers}
+\insertRef{rockwood2020cfs}{HealthMarkers}
+\insertRef{cesari2014frailtyphenotype}{HealthMarkers}
 }

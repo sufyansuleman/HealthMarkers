@@ -41,15 +41,7 @@ A tibble with:
 \item alm_bmi_ratio   (numeric)
 \item low_muscle_mass (logical; TRUE if below sex-specific cut-point;
 NA if sex unknown or ratio NA)
-#' @references
-McLean RR, Shardell MD, Alley DE, et al. (2014).
-Criteria for clinically relevant weakness and low lean mass: FNIH Sarcopenia Project.
-J Gerontol A Biol Sci Med Sci. 69(5):576-583. doi:10.1093/gerona/glu012
 }
-
-Studenski SA, Peters KW, Alley DE, et al. (2014).
-The FNIH Sarcopenia Project: Rationale, Study Description, Conference Recommendations, and Final Estimates.
-J Gerontol A Biol Sci Med Sci. 69(5):564-570. doi:10.1093/gerona/glu013
 }
 \description{
 Calculates the ratio of appendicular lean mass (ALM) to body mass index (BMI),
@@ -63,4 +55,7 @@ ALM/BMI reflects muscle mass relative to body size. FNIH cut-points:
 }
 
 ALM should be in kilograms and BMI in kg/m^2.
+}
+\references{
+\insertRef{mclean2014fnih}{HealthMarkers}; \insertRef{studenski2014fnih}{HealthMarkers}
 }

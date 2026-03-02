@@ -67,8 +67,6 @@ liver_fat_markers(
 )
 }
 \references{
-\itemize{
-\item Hepatic Steatosis Index (HSI) original description.
-\item NAFLD Liver Fat Score (Kotronen et al., 2009).
-}
+\insertRef{lee2010hsi}{HealthMarkers}
+\insertRef{kotronen2009nafldlfs}{HealthMarkers}
 }

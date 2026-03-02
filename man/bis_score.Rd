@@ -35,3 +35,11 @@ bis_score(
 \description{
 Barratt Impulsiveness Scale (key-driven)
 }
+\examples{
+bis_key <- list(items = sprintf("bis_\%02d", 1:5), min_val = 1, max_val = 4)
+df <- data.frame(bis_01 = 1, bis_02 = 2, bis_03 = 3, bis_04 = 4, bis_05 = 2)
+bis_score(df, key = bis_key)
+}
+\references{
+\insertRef{patton1995bis}{HealthMarkers}
+}

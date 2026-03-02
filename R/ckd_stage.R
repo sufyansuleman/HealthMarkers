@@ -16,8 +16,7 @@
 #'   - "error" - abort on any out-of-range value
 #'
 #' @return Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
-#' @references
-#' KDIGO 2012 CKD guideline. \doi{10.1038/kisup.2012.73}
+#' @references \insertRef{kdigo2012ckd}{HealthMarkers}
 #' @examples
 #' df <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
 #' ckd_stage(df, list(eGFR = "eGFR", UACR = "UACR"))

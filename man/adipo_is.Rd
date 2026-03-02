@@ -77,17 +77,11 @@ out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
 head(out)
 }
 \references{
-Katz A, et al. QUICKI. J Clin Endocrinol Metab (2000) \doi{10.1210/jcem.85.5.2402}
-
-Amato MC, et al. VAI. Diabetes Care (2010) \doi{10.2337/dc09-1825}
-
-Kahn HS. LAP. BMC Cardiovasc Disord (2005) \doi{10.1186/1471-2261-5-26}
-
-Guerrero-Romero F, et al. TyG. Diabetes Care (2018) \doi{10.2337/dc18-0010}
-
-Dobiasova M. Atherogenic indices (TG/HDL concept). Clin Chem Lab Med (2001) \doi{10.1515/CCLM.2001.095}
-
-Belfiore F, et al. Insulin sensitivity formulations. Mol Genet Metab (1998) \doi{10.1006/mgme.1998.2630}
-
-Raynaud E, et al. Revised QUICKI concept with NEFA/FFA. Diabetes Care (1999) \doi{10.2337/diacare.22.6.1003}
+\insertRef{katz2000quicki}{HealthMarkers};
+\insertRef{amato2010vai}{HealthMarkers};
+\insertRef{kahn2005lap}{HealthMarkers};
+\insertRef{guerreroromero2018tyg}{HealthMarkers};
+\insertRef{dobiasova2001atherogenic}{HealthMarkers};
+\insertRef{belfiore1998insulin}{HealthMarkers};
+\insertRef{raynaud1999fasting}{HealthMarkers}
 }

@@ -32,8 +32,5 @@ if (requireNamespace("QRISK3", quietly = TRUE)) {
 
 }
 \references{
-\itemize{
-\item Hippisley-Cox J, Coupland C, Brindle P. Development and validation of QRISK3
-risk prediction algorithms. BMJ. 2017;357:j2099.
-}
+\insertRef{hippisleycox2017qrisk3}{HealthMarkers}
 }

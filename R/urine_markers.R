@@ -61,8 +61,7 @@
 #'   Pediatr Nephrol. 1998;12(6):478-483. \doi{10.1007/s004670050480} (Albumin excretion normative values)
 #'
 #' ## Validation and consensus
-#' - Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group. KDIGO Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. 
-#'   Kidney Int Suppl. 2013;3(1):1-150. \doi{10.1038/kisup.2012.73} (Albuminuria stages A1-A3; UACR cutoffs)
+#' - \insertRef{kdigo2012ckd}{HealthMarkers} (Albuminuria stages A1-A3; UACR cutoffs)
 #' - de Zeeuw D, Parving HH, Henning RH. Microalbuminuria as an early marker for cardiovascular disease. 
 #'   J Am Soc Nephrol. 2006;17(8):2100-2105. \doi{10.1681/ASN.2006040388} (Prognostic validation of UACR)
 #' - Ichimura T, Hung CC, Yang SA, Stevens JL, Bonventre JV. Kidney injury molecule-1: a tissue and urinary biomarker for nephrotoxicant-induced renal injury. 

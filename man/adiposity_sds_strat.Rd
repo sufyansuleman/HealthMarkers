@@ -79,6 +79,6 @@ adiposity_sds_strat(
 )
 }
 \references{
-Cole TJ, Green PJ (1992) Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med 11(10):1305-1319. \doi{10.1002/sim.4780111005}
-WHO Expert Committee (1995) Physical Status: The Use and Interpretation of Anthropometry. WHO TRS 854.
+\insertRef{cole1992lms}{HealthMarkers};
+\insertRef{who1995anthro}{HealthMarkers}
 }

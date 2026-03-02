@@ -38,3 +38,9 @@ ghq12_score(
 \description{
 GHQ-12 scoring (Likert or binary)
 }
+\examples{
+df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
+                 ghq12_05 = 0, ghq12_06 = 1, ghq12_07 = 0, ghq12_08 = 1,
+                 ghq12_09 = 2, ghq12_10 = 1, ghq12_11 = 0, ghq12_12 = 1)
+ghq12_score(df, method = "likert")
+}

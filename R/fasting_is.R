@@ -24,14 +24,14 @@
 #'
 #' @return Tibble with 10 columns (indices listed above).
 #' @references
-#' Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985). Homeostasis model assessment (HOMA): insulin resistance and beta-cell function. Diabetologia, 28(7):412-419. \doi{10.1007/BF00280883}
-#' Katz A, Nambi S, Mather K, Baron AD, Follmann DA, Sullivan G, Quon MJ (2000). Quantitative insulin sensitivity check index (QUICKI). J Clin Endocrinol Metab, 85(7):2402-2410. \doi{10.1210/jcem.85.7.6661}
-#' Raynaud E, Perez-Martin A, Brun JF, Benhaddad AA, Mercier J (1999). Fasting plasma insulin and insulin resistance indices. Diabetes Metab, 25(6):524-532.
-#' Avignon A, Boegner C, Sultan A (1999). Simple assessment of insulin sensitivity from fasting insulin and glucose. Int J Obes Relat Metab Disord, 23(5):512-517.
-#' Belfiore F, Iannello S, Volpicelli G (1998). Insulin sensitivity indices from basal insulin and glucose. Mol Genet Metab, 63(2):134-141.
-#' Sluiter D, Erkelens DW, Reitsma WD, Doorenbos H (1976). Glucose tolerance and insulin release: a mathematical approach. Diabetes, 25:245-249.
-#' Hanson RL et al. (2000). Evaluation of simple indices of insulin sensitivity and insulin secretion for use in epidemiologic studies. Am J Epidemiol, 151(2):190-198.
-#' Anderson RL et al. (1995). Exploration of simple measures of insulin resistance. Am J Epidemiol, 142(7):724-732.
+#' \insertRef{matthews1985homa}{HealthMarkers};
+#' \insertRef{katz2000quicki}{HealthMarkers};
+#' \insertRef{raynaud1999fasting}{HealthMarkers};
+#' \insertRef{avignon1999ogtt}{HealthMarkers};
+#' \insertRef{belfiore1998insulin}{HealthMarkers};
+#' \insertRef{sluiter1976gtolerance}{HealthMarkers};
+#' \insertRef{hanson2000evaluation}{HealthMarkers};
+#' \insertRef{anderson1995exploration}{HealthMarkers}
 #'
 #' @examples
 #' # Minimal example (units: G0 in mmol/L, I0 in pmol/L)

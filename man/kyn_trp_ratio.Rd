@@ -48,11 +48,5 @@ inflammation and cell-mediated immune activation.
 Inputs should already be in Kyn (nmol/L) and Trp (mumol/L).
 }
 \references{
-Fuchs D, Moller AA, Reibnegger G, Werner ER, Werner-Felmayer G, Dierich MP, Wachter H. (1998).
-Serum kynurenine-to-tryptophan ratio increases with disease progression in HIV-1 infection.
-Clin Chem. 44(4):858-862. PMID:9555676
-
-Damerell V, Midttun O, Ulvik A, et al. (2025).
-Circulating tryptophan-kynurenine metabolites and mortality.
-Int J Cancer. 156(3):552-565. doi:10.1002/ijc.35183
+\insertRef{fuchs1998ktr}{HealthMarkers}; \insertRef{damerell2025kyn}{HealthMarkers}
 }

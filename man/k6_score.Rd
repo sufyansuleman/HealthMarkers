@@ -35,3 +35,10 @@ k6_score(
 \description{
 K6 scoring
 }
+\examples{
+df <- data.frame(k6_01 = 0, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 0, k6_06 = 1)
+k6_score(df)
+}
+\references{
+\insertRef{prochaska2012k6}{HealthMarkers}
+}

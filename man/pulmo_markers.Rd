@@ -53,9 +53,9 @@ auto-detected as cm when any height > 3; otherwise interpreted as metres (no
 automatic unit conversion beyond that heuristic, preserving prior behavior).
 }
 \references{
-Quanjer PH, Stanojevic S, Cole TJ, et al. (2012). Multi-ethnic reference values for spirometry for the 3-95-yr age range: the GLI equations. Eur Respir J, 40:1324-1343. \doi{10.1183/09031936.00162412}
-Hankinson JL, Odencrantz JR, Fedan KB (1999). Spirometric reference values from a sample of the general U.S. population. Am J Respir Crit Care Med, 159:179-187. \doi{10.1164/ajrccm.159.1.9712108}
-Bowerman SD, Quanjer PH, et al. (2023). GLI-Global update. Eur Respir J, 61:2201632. \doi{10.1183/13993003.01632-2023}
+\insertRef{quanjer2012}{HealthMarkers}
+\insertRef{hankinson1999spirometry}{HealthMarkers}
+\insertRef{bowerman2023gli}{HealthMarkers}
 }
 \seealso{
 rspiro

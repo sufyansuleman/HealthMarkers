@@ -75,8 +75,8 @@ metss(df)
 
 }
 \references{
-Gurka MJ, Lilly CL, Oliver MN, DeBoer MD (2014). Metabolic syndrome severity score and cardiovascular disease risk. J Clin Endocrinol Metab, 99(3):1073-1081. \doi{10.1210/jc.2013-3735}
-DeBoer MD, Gurka MJ, Woo JG, Morrison JA (2015). Severity of metabolic syndrome and its association with risk for type 2 diabetes and cardiovascular disease. Diabetologia, 58(12):2745-2752. \doi{10.1007/s00125-015-3759-2}
-Gurka MJ, Filipp SL, Musani SK, Sims M, DeBoer MD (2017). Independent associations between metabolic syndrome severity and future coronary heart disease by sex and race. Diabetes Care, 40(11):1693-1701. \doi{10.2337/dc17-0537}
-DeBoer MD, Filipp SL, Gurka MJ (2018). Longitudinal metabolic syndrome severity score and risk for cardiovascular disease and type 2 diabetes: the Atherosclerosis Risk in Communities study. J Am Heart Assoc, 7(14):e008232. \doi{10.1161/JAHA.117.008232}
+\insertRef{gurka2014metsss}{HealthMarkers}
+\insertRef{deboer2015metss}{HealthMarkers}
+\insertRef{gurka2017metss}{HealthMarkers}
+\insertRef{deboer2018metss}{HealthMarkers}
 }

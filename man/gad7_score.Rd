@@ -32,3 +32,11 @@ gad7_score(
 \description{
 GAD-7 scoring
 }
+\examples{
+df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
+                 gad7_05 = 0, gad7_06 = 1, gad7_07 = 2)
+gad7_score(df)
+}
+\references{
+\insertRef{spitzer2006gad7}{HealthMarkers}; \insertRef{plummer2016gad7}{HealthMarkers}
+}

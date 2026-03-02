@@ -35,3 +35,10 @@ who5_score(
 \description{
 WHO-5 scoring
 }
+\examples{
+df <- data.frame(who5_01 = 0, who5_02 = 1, who5_03 = 2, who5_04 = 3, who5_05 = 4)
+who5_score(df)
+}
+\references{
+\insertRef{topp2015who5}{HealthMarkers}
+}

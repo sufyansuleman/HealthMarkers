@@ -26,7 +26,7 @@ Run the ASCVD Pooled Cohort Equations (10- or 30-year) with guarded optional dep
 - `year`: 10 or 30.
 - Verbose mode runs a lightweight quality scan (non-finite, high/all NA counts).
 
-sim_small <- sim[1:30, c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")]
+Use a small subset (e.g., first 30 rows) if sampling from the simulated data: select `age`, `sex`, `race`, `smoker`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `diabetes`, `bmi`.
 ## Load packages and data
 Create a small synthetic data frame with correctly encoded inputs (sex = 1/0, race = white/black/other) to ensure non-NA output.
 

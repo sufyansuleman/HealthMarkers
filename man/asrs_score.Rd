@@ -41,3 +41,11 @@ asrs_score(
 \description{
 Adult ADHD Self-Report Scale scoring
 }
+\examples{
+df <- data.frame(matrix(2, nrow = 1, ncol = 18))
+names(df) <- sprintf("asrs_\%02d", 1:18)
+asrs_score(df)
+}
+\references{
+\insertRef{adler2006asrs}{HealthMarkers}; \insertRef{kessler2007asrs}{HealthMarkers}
+}

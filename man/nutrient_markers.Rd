@@ -131,14 +131,8 @@ nutrient_markers(df, verbose = TRUE)
 
 }
 \references{
-Original derivations
-Harris WS, von Schacky C. The Omega-3 Index: a new risk factor for death from coronary heart disease?
-Prostaglandins Leukot Essent Fatty Acids. 2004;71(5):263-270. \doi{10.1016/j.plefa.2004.05.011} (Omega-3 Index)
-Koga M, Kasayama S. Clinical impact of glycated albumin as another glycemic control marker.
-J Diabetes Investig. 2010;1(1-2):43-48. \doi{10.1111/j.2040-1124.2010.00011.x} (Glycated Albumin \%)
-Block GA, Hulbert-Shearon TE, Levin NW, Port FK. Association of serum phosphorus and calcium * phosphate product
-with mortality risk in chronic hemodialysis patients: a national study. Kidney Int. 1998;54(2):556-562.
-\doi{10.1046/j.1523-1755.1998.00005.x} (Calcium-phosphate product)
-Waikar SS, Bonventre JV. Creatinine kinetics and the definition of acute kidney injury.
-J Am Soc Nephrol. 2009;20(3):672-679. \doi{10.1681/ASN.2008070669} (BUN/Creatinine ratio)
+\insertRef{harris2004omega3}{HealthMarkers}
+\insertRef{koga2010glyalb}{HealthMarkers}
+\insertRef{block1998calcp}{HealthMarkers}
+\insertRef{waikar2009creak}{HealthMarkers}
 }

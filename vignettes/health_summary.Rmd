@@ -34,7 +34,7 @@ library(tibble)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
-sim_small <- sim[1:30, ]
+sim_small <- dplyr::slice_head(sim, n = 30)
 
 set.seed(123)
 demo <- sim_small %>%

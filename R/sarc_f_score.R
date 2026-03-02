@@ -20,13 +20,7 @@
 #' @return A tibble with:
 #'   - sarc_f_score (numeric 0-10; NA if any component is NA)
 #'   - sarc_f_high_risk (logical; TRUE if score >= 4, NA if score is NA)
-#'#' @references
-#' Malmstrom TK, Morley JE. (2013). SARC-F: a simple questionnaire to rapidly diagnose sarcopenia.
-#' J Am Med Dir Assoc. 14(8):531-532. doi:10.1016/j.jamda.2013.05.018
-#'
-#' Malmstrom TK, Miller DK, Simonsick EM, Ferrucci L, Morley JE. (2016).
-#' SARC-F: a symptomatic measure of sarcopenia predictive of poor function, disability, and mortality.
-#' J Cachexia Sarcopenia Muscle. 7(1):28-36. doi:10.1002/jcsm.12048
+#' @references \insertRef{malmstrom2013sarcf}{HealthMarkers}; \insertRef{malmstrom2016sarcf}{HealthMarkers}
 #' @export
 sarc_f_score <- function(
   data,

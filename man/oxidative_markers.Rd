@@ -32,7 +32,5 @@ oxidative_markers(df, col_map = list(GSH="GSH", GSSG="GSSG"))
 
 }
 \references{
-\itemize{
-\item Glutathione redox status as an oxidative stress indicator: standard laboratory/clinical biochemistry references.
-}
+\insertRef{glutathione_redox_review}{HealthMarkers}
 }

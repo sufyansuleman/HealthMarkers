@@ -42,3 +42,12 @@ psych_markers(
 \description{
 Psychometric markers dispatcher
 }
+\examples{
+df <- data.frame(
+  phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1, phq9_05 = 0,
+  phq9_06 = 1, phq9_07 = 2, phq9_08 = 1, phq9_09 = 0,
+  gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1, gad7_05 = 0,
+  gad7_06 = 1, gad7_07 = 2
+)
+psych_markers(df, which = c("phq9", "gad7"))
+}

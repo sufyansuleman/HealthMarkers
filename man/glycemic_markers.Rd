@@ -126,12 +126,10 @@ glycemic_markers(df,
 )
 }
 \references{
-\itemize{
-\item Paulmichl K, et al. (2016). SPISE: Single-Point Insulin Sensitivity Estimator. Clin Chem, 62(9):1211-1219.
-\item Bello-Chavolla OY, et al. (2018). METS-IR score. Eur J Endocrinol, 178(5):533-544.
-\item Fruhbeck G, et al. (2018). Adiponectin-leptin ratio. Adipocyte, 7(1):57-62.
-\item Matthews DR, et al. (1985). HOMA. Diabetologia, 28(7):412-419. \doi{10.1007/BF00280883}
-\item Simental-Mendia LE, et al. (2008). TyG index. Metab Syndr Relat Disord, 6(2):89-95. \doi{10.1089/met.2007.0038}
-\item Yang X, et al. (2006). Adiponectin/insulin ratio. Diabetes Res Clin Pract, 73(2):293-299.
-}
+\insertRef{paulmichl2016spise}{HealthMarkers};
+\insertRef{bellogaytan2018metsir}{HealthMarkers};
+\insertRef{fruhbeck2018adiponectinleptin}{HealthMarkers};
+\insertRef{matthews1985homa}{HealthMarkers};
+\insertRef{simentalmendia2008tyg}{HealthMarkers};
+\insertRef{yang2006adiponectininsulin}{HealthMarkers}
 }

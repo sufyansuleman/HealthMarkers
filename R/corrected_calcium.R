@@ -20,6 +20,7 @@
 #'
 #' @return A tibble with one column: corrected_calcium (numeric, in mg/dL for
 #'   conventional input or mmol/L for SI / auto-SI input).
+#' @references \insertRef{payne1973}{HealthMarkers}
 #'
 #' @export
 corrected_calcium <- function(

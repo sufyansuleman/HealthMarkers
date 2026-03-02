@@ -32,3 +32,10 @@ isi_score(
 \description{
 Insomnia Severity Index (ISI) scoring
 }
+\examples{
+df <- data.frame(isi_01 = 0, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 2)
+isi_score(df)
+}
+\references{
+\insertRef{bastien2001isi}{HealthMarkers}
+}

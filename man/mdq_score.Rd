@@ -38,3 +38,12 @@ mdq_score(
 \description{
 Mood Disorder Questionnaire scoring
 }
+\examples{
+df <- data.frame(matrix(0, nrow = 1, ncol = 13))
+names(df) <- sprintf("mdq_\%02d", 1:13)
+df$mdq_cluster <- 1; df$mdq_impair <- 1
+mdq_score(df)
+}
+\references{
+\insertRef{hirschfeld2000mdq}{HealthMarkers}
+}

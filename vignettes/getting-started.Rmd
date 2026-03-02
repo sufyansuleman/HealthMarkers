@@ -57,8 +57,8 @@ library(HealthMarkers)
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
 
-# Work with a small subset
-sim_small <- sim[1:30, ]
+# Work with a small subset using slice_head
+sim_small <- dplyr::slice_head(sim, n = 30)
 
 dim(sim_small)
 ```

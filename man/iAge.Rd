@@ -127,10 +127,7 @@ iAge(
 
 }
 \references{
-\itemize{
-\item Sayed N, et al. (2021). An inflammatory aging clock (iAge) predicts multimorbidity, immunosenescence, frailty and cardiovascular aging. Nat Aging, 1:598-610. \doi{10.1038/s43587-021-00136-0}
-\item Sayed N, et al. (2023). Multi-omic immune aging models quantify inflammatory dysregulation across adult lifespan. Sci Transl Med, 15(722):eabo4163. \doi{10.1126/scitranslmed.abo4163}
-}
+\insertRef{sayed2021iage}{HealthMarkers}; \insertRef{sayed2023multiomic}{HealthMarkers}
 }
 \seealso{
 \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=glycemic_markers]{glycemic_markers()}}

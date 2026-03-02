@@ -73,11 +73,7 @@
 #' )
 #' }
 #'
-#' @references
-#' Tangri N, Stevens LA, Griffith J, et al. (2011). A predictive model for progression of chronic kidney disease to kidney failure. JAMA, 305(15):1553-1559. \doi{10.1001/jama.2011.451}
-#' Tangri N, Grams ME, Levey AS, et al. (2016). Multinational assessment of accuracy of equations for predicting risk of kidney failure: a meta-analysis. JAMA, 315(2):164-174. \doi{10.1001/jama.2015.18202}
-#' Matsushita K, van der Velde M, Astor BC, et al. (2015). Estimated glomerular filtration rate and albuminuria for prediction of kidney failure: a collaborative meta-analysis. Ann Intern Med, 162(4):247-255. \doi{10.7326/M14-3312}
-#' Tangri N, Inker LA, Tighiouart H, et al. (2020). Validation of the kidney failure risk equation in advanced CKD. Kidney Int, 97(5):995-1004. \doi{10.1016/j.kint.2019.12.009}
+#' @references \insertRef{tangri2011kfre}{HealthMarkers}; \insertRef{tangri2016meta}{HealthMarkers}; \insertRef{matsushita2015egfr}{HealthMarkers}; \insertRef{tangri2020kfre}{HealthMarkers}
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
 #' @export

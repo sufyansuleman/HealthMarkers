@@ -258,11 +258,13 @@ all_insulin_indices <- function(
   if (mode == "IS") return(is_tbl)
 
   # IR inversion
-  ir_tbl <- purrr::map_dfc(names(is_tbl), function(nm) {
-    x <- is_tbl[[nm]]
-    out <- ifelse(is.na(x) | x == 0, NA_real_, 1 / x)
-    out
-  })
+  ir_tbl <- as.data.frame(
+    lapply(names(is_tbl), function(nm) {
+      x <- is_tbl[[nm]]
+      ifelse(is.na(x) | x == 0, NA_real_, 1 / x)
+    }),
+    stringsAsFactors = FALSE
+  )
   names(ir_tbl) <- paste0("IR_", names(is_tbl))
 
   if (mode == "IR") return(ir_tbl)

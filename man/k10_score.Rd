@@ -32,3 +32,8 @@ k10_score(
 \description{
 K10 scoring
 }
+\examples{
+df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
+                 k10_06 = 1, k10_07 = 2, k10_08 = 1, k10_09 = 0, k10_10 = 1)
+k10_score(df)
+}

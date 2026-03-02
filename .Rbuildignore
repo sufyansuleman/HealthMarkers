@@ -17,3 +17,8 @@
 ^\.Rproj\.user$
 ^_pkgdown\.yml$
 ^docs$
+^vignettes/libs$
+^HealthMarkers\.Rcheck$
+^vignettes/.*/libs/
+^vignettes/.*/_cache/
+^inst/doc/

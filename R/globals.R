@@ -32,7 +32,6 @@
 #' @importFrom stats sd median qnorm mad
 #' @importFrom stats na.omit setNames
 #' @importFrom utils head modifyList
-#' @importFrom magrittr "%>%"
 #'
 #' @examples
 #' x <- c(1, 2, 3, NA, 5)

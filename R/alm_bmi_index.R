@@ -26,15 +26,7 @@
 #'   - alm_bmi_ratio   (numeric)
 #'   - low_muscle_mass (logical; TRUE if below sex-specific cut-point;
 #'                      NA if sex unknown or ratio NA)
-#'#' @references
-#' McLean RR, Shardell MD, Alley DE, et al. (2014).
-#' Criteria for clinically relevant weakness and low lean mass: FNIH Sarcopenia Project.
-#' J Gerontol A Biol Sci Med Sci. 69(5):576-583. doi:10.1093/gerona/glu012
-#'
-#' Studenski SA, Peters KW, Alley DE, et al. (2014).
-#' The FNIH Sarcopenia Project: Rationale, Study Description, Conference Recommendations, and Final Estimates.
-#' J Gerontol A Biol Sci Med Sci. 69(5):564-570. doi:10.1093/gerona/glu013
-#' 
+#' @references \insertRef{mclean2014fnih}{HealthMarkers}; \insertRef{studenski2014fnih}{HealthMarkers}
 #' @export
 alm_bmi_index <- function(
   data,

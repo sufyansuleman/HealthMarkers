@@ -94,3 +94,6 @@ df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
 adiposity_sds(df, ref)
 
 }
+\references{
+\insertRef{cole1992lms}{HealthMarkers}
+}

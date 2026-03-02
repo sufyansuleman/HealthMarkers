@@ -24,6 +24,7 @@ library(dplyr)
 
 sim <- readRDS(system.file("extdata/simulated_hm_data.rds", package = "HealthMarkers"))
 lipids <- sim |>
+  dplyr::slice_head(n = 30) |>
   mutate(glucose = G0) |>
   select(TC, HDL_c, TG, LDL_c, ApoB, ApoA1, waist, BMI, glucose)
 ```

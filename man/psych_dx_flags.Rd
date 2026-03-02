@@ -23,3 +23,7 @@ psych_dx_flags(
 \description{
 Psychiatric diagnosis flags aggregator
 }
+\examples{
+df <- data.frame(dx_mdd = c(1, 0), dx_bipolar = c(0, 1))
+psych_dx_flags(df, col_map = list(dx = list(mdd = "dx_mdd", bipolar = "dx_bipolar")))
+}

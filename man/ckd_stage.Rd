@@ -44,5 +44,5 @@ df <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
 ckd_stage(df, list(eGFR = "eGFR", UACR = "UACR"))
 }
 \references{
-KDIGO 2012 CKD guideline. \doi{10.1038/kisup.2012.73}
+\insertRef{kdigo2012ckd}{HealthMarkers}
 }

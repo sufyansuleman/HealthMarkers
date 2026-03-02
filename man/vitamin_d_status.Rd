@@ -54,10 +54,5 @@ Note: Ensure input units are ng/mL. If values appear extremely high (e.g., media
 they might be in nmol/L (divide by 2.5 to convert to ng/mL).
 }
 \references{
-Institute of Medicine (US) Committee to Review Dietary Reference Intakes for Vitamin D and Calcium. (2011).
-Dietary Reference Intakes for Calcium and Vitamin D. National Academies Press. doi:10.17226/13050
-
-Holick MF, Binkley NC, Bischoff-Ferrari HA, et al. (2011).
-Evaluation, Treatment, and Prevention of Vitamin D Deficiency: an Endocrine Society Clinical Practice Guideline.
-J Clin Endocrinol Metab. 96(7):1911-1930. doi:10.1210/jc.2011-0385
+\insertRef{iomm2011calciumvitd}{HealthMarkers}; \insertRef{holick2011vitd}{HealthMarkers}
 }

@@ -45,6 +45,8 @@
 #' @return A tibble with one `<var>_SDS` column per reference variable, or a
 #'   list when `return_summary = TRUE`.
 #'
+#' @references \insertRef{cole1992lms}{HealthMarkers}
+#'
 #' @examples
 #' ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
 #' df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))

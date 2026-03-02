@@ -22,8 +22,8 @@
 #' @param verbose Logical; if TRUE, prints progress.
 #' @return A tibble with columns HSI and NAFLD_LFS.
 #' @references
-#' - Hepatic Steatosis Index (HSI) original description.
-#' - NAFLD Liver Fat Score (Kotronen et al., 2009).
+#' \insertRef{lee2010hsi}{HealthMarkers}
+#' \insertRef{kotronen2009nafldlfs}{HealthMarkers}
 #' @examples
 #' df <- data.frame(ALT=20, AST=25, BMI=27, sex="female", diabetes=FALSE, I0=60)
 #' liver_fat_markers(

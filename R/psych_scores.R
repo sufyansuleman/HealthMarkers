@@ -209,6 +209,12 @@ NULL
 #' @param variant Choose PHQ9 (9 items) or PHQ8 (drops suicidal ideation item).
 #' @param prefix Prefix for output column names.
 #' @param verbose Logical flag for verbose messaging (reserved).
+#' @references \insertRef{kroenke2001phq9}{HealthMarkers}
+#' @examples
+#' df <- data.frame(phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1,
+#'                  phq9_05 = 0, phq9_06 = 1, phq9_07 = 2, phq9_08 = 1,
+#'                  phq9_09 = 0)
+#' phq9_score(df)
 #' @export
 phq9_score <- function(data,
                        col_map = list(),
@@ -244,6 +250,11 @@ phq9_score <- function(data,
 
 #' GAD-7 scoring
 #' @inheritParams phq9_score
+#' @references \insertRef{spitzer2006gad7}{HealthMarkers}; \insertRef{plummer2016gad7}{HealthMarkers}
+#' @examples
+#' df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
+#'                  gad7_05 = 0, gad7_06 = 1, gad7_07 = 2)
+#' gad7_score(df)
 #' @export
 gad7_score <- function(data,
                        col_map = list(),
@@ -278,6 +289,10 @@ gad7_score <- function(data,
 #' K6 scoring
 #' @inheritParams phq9_score
 #' @param cutoff Threshold for the K6 case flag.
+#' @references \insertRef{prochaska2012k6}{HealthMarkers}
+#' @examples
+#' df <- data.frame(k6_01 = 0, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 0, k6_06 = 1)
+#' k6_score(df)
 #' @export
 k6_score <- function(data, col_map = list(),
                      na_action = c("keep","omit","error"),
@@ -305,6 +320,10 @@ k6_score <- function(data, col_map = list(),
 
 #' K10 scoring
 #' @inheritParams phq9_score
+#' @examples
+#' df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
+#'                  k10_06 = 1, k10_07 = 2, k10_08 = 1, k10_09 = 0, k10_10 = 1)
+#' k10_score(df)
 #' @export
 k10_score <- function(data, col_map = list(),
                       na_action = c("keep","omit","error"),
@@ -332,6 +351,11 @@ k10_score <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param method Scoring method: `likert` (0-3 per item) or `binary` (0/1 per item).
 #' @param case_cutoff_binary Cut-off for case status when using binary scoring.
+#' @examples
+#' df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
+#'                  ghq12_05 = 0, ghq12_06 = 1, ghq12_07 = 0, ghq12_08 = 1,
+#'                  ghq12_09 = 2, ghq12_10 = 1, ghq12_11 = 0, ghq12_12 = 1)
+#' ghq12_score(df, method = "likert")
 #' @export
 ghq12_score <- function(data, col_map = list(),
                         na_action = c("keep","omit","error"),
@@ -375,6 +399,10 @@ ghq12_score <- function(data, col_map = list(),
 #' WHO-5 scoring
 #' @inheritParams phq9_score
 #' @param low_cutoff_percent Percentage threshold for low well-being flag.
+#' @references \insertRef{topp2015who5}{HealthMarkers}
+#' @examples
+#' df <- data.frame(who5_01 = 0, who5_02 = 1, who5_03 = 2, who5_04 = 3, who5_05 = 4)
+#' who5_score(df)
 #' @export
 who5_score <- function(data, col_map = list(),
                        na_action = c("keep","omit","error"),
@@ -408,6 +436,10 @@ who5_score <- function(data, col_map = list(),
 
 #' Insomnia Severity Index (ISI) scoring
 #' @inheritParams phq9_score
+#' @references \insertRef{bastien2001isi}{HealthMarkers}
+#' @examples
+#' df <- data.frame(isi_01 = 0, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 2)
+#' isi_score(df)
 #' @export
 isi_score <- function(data, col_map = list(),
                       na_action = c("keep","omit","error"),
@@ -442,6 +474,12 @@ isi_score <- function(data, col_map = list(),
 #' @param symptom_cutoff Minimum symptom count for a positive screen.
 #' @param require_clustering Require clustering item == 1 to be positive.
 #' @param require_impairment Require impairment item == 1 to be positive.
+#' @references \insertRef{hirschfeld2000mdq}{HealthMarkers}
+#' @examples
+#' df <- data.frame(matrix(0, nrow = 1, ncol = 13))
+#' names(df) <- sprintf("mdq_%02d", 1:13)
+#' df$mdq_cluster <- 1; df$mdq_impair <- 1
+#' mdq_score(df)
 #' @export
 mdq_score <- function(data, col_map = list(),
                       na_action = c("keep","omit","error"),
@@ -494,6 +532,11 @@ mdq_score <- function(data, col_map = list(),
 #' @param partA_items Vector of Part A item IDs.
 #' @param partA_thresholds Numeric thresholds applied to Part A items.
 #' @param partA_cutoff Count threshold for Part A positivity.
+#' @references \insertRef{adler2006asrs}{HealthMarkers}; \insertRef{kessler2007asrs}{HealthMarkers}
+#' @examples
+#' df <- data.frame(matrix(2, nrow = 1, ncol = 18))
+#' names(df) <- sprintf("asrs_%02d", 1:18)
+#' asrs_score(df)
 #' @export
 asrs_score <- function(data, col_map = list(),
                        na_action = c("keep","omit","error"),
@@ -536,6 +579,11 @@ asrs_score <- function(data, col_map = list(),
 #' Barratt Impulsiveness Scale (key-driven)
 #' @inheritParams phq9_score
 #' @param key List with `items`, `min_val`, `max_val`, optional `reverse` and `subscales`.
+#' @references \insertRef{patton1995bis}{HealthMarkers}
+#' @examples
+#' bis_key <- list(items = sprintf("bis_%02d", 1:5), min_val = 1, max_val = 4)
+#' df <- data.frame(bis_01 = 1, bis_02 = 2, bis_03 = 3, bis_04 = 4, bis_05 = 2)
+#' bis_score(df, key = bis_key)
 #' @export
 bis_score <- function(data,
                       col_map = list(),
@@ -564,6 +612,11 @@ bis_score <- function(data,
 #' Schizotypal Personality Questionnaire (key-driven)
 #' @inheritParams phq9_score
 #' @param key List with `items`, `min_val`, `max_val`, optional `reverse` and `subscales`.
+#' @references \insertRef{raine1991spq}{HealthMarkers}
+#' @examples
+#' spq_key <- list(items = sprintf("spq_%02d", 1:5), min_val = 0, max_val = 1)
+#' df <- data.frame(spq_01 = 0, spq_02 = 1, spq_03 = 0, spq_04 = 1, spq_05 = 0)
+#' spq_score(df, key = spq_key)
 #' @export
 spq_score <- function(data,
                       col_map = list(),
@@ -595,6 +648,14 @@ spq_score <- function(data,
 #' @inheritParams phq9_score
 #' @param method Aggregation method: `z_mean` (average of z-scores) or `pca1` (first PC).
 #' @param col_map Named list with `tasks` mapping task IDs to column names (≥2 tasks required).
+#' @examples
+#' df <- data.frame(task_a = c(1, 2), task_b = c(2, 3), task_c = c(3, 4))
+#' cm <- list(tasks = list(
+#'   task_a = "task_a",
+#'   task_b = "task_b",
+#'   task_c = "task_c"
+#' ))
+#' cognitive_score(df, col_map = cm, method = "z_mean")
 #' @export
 cognitive_score <- function(data,
                             col_map = list(),
@@ -620,7 +681,7 @@ cognitive_score <- function(data,
 
   z <- scale(mat)
 
-  out <- tibble::tibble()
+  out <- tibble::tibble(.rows = nrow(data))
   if (method == "z_mean") {
     score <- rowMeans(z, na.rm = FALSE)
     score[too_missing] <- NA_real_
@@ -645,6 +706,9 @@ cognitive_score <- function(data,
 #' @inheritParams phq9_score
 #' @param col_map Named list `dx` mapping condition ids (e.g., mdd, bipolar) to columns of boolean/numeric flags.
 #' @param prefix Prefix for output flag columns.
+#' @examples
+#' df <- data.frame(dx_mdd = c(1, 0), dx_bipolar = c(0, 1))
+#' psych_dx_flags(df, col_map = list(dx = list(mdd = "dx_mdd", bipolar = "dx_bipolar")))
 #' @export
 psych_dx_flags <- function(data, col_map = list(),
                            prefix = "dx",
@@ -689,6 +753,13 @@ psych_dx_flags <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param col_map Named list `med` mapping medication classes (e.g., ssri, snri) to columns of boolean/numeric flags.
 #' @param prefix Prefix for output flag columns.
+#' @examples
+#' df <- data.frame(med_ssri = c(1, 0), med_antipsychotic = c(0, 1))
+#' cm <- list(med = list(
+#'   ssri = "med_ssri",
+#'   antipsychotic = "med_antipsychotic"
+#' ))
+#' psych_med_flags(df, col_map = cm)
 #' @export
 psych_med_flags <- function(data, col_map = list(),
                             prefix = "med",
@@ -730,6 +801,14 @@ psych_med_flags <- function(data, col_map = list(),
 #' @param spq_key SPQ key list passed to `spq_score` when requested.
 #' @param cognitive_method Method passed to `cognitive_score` ("z_mean" or "pca1").
 #' @param col_map Nested list of mappings per instrument (e.g., col_map$phq9, col_map$bis, col_map$dx_flags, ...).
+#' @examples
+#' df <- data.frame(
+#'   phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1, phq9_05 = 0,
+#'   phq9_06 = 1, phq9_07 = 2, phq9_08 = 1, phq9_09 = 0,
+#'   gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1, gad7_05 = 0,
+#'   gad7_06 = 1, gad7_07 = 2
+#' )
+#' psych_markers(df, which = c("phq9", "gad7"))
 #' @export
 psych_markers <- function(data,
                           col_map = list(),

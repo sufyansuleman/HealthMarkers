@@ -119,13 +119,13 @@ liver_markers(
 
 }
 \references{
-Bedogni G, Bellentani S, Miglioli L, et al. (2006). The Fatty Liver Index: a simple and accurate predictor of hepatic steatosis in the general population. BMC Gastroenterol, 6:33. \doi{10.1186/1471-230X-6-33}
-Angulo P, Hui JM, Marchesini G, et al. (2007). The NAFLD fibrosis score: a noninvasive system that identifies liver fibrosis in patients with NAFLD. Hepatology, 45(4):846-854. \doi{10.1002/hep.21496}
-Wai CT, Greenson JK, Fontana RJ, et al. (2003). A simple noninvasive index can predict both significant fibrosis and cirrhosis in patients with chronic hepatitis C. Hepatology, 38(2):518-526. \doi{10.1053/jhep.2003.50346}
-Sterling RK, Lissen E, Clumeck N, et al. (2006). Development of a simple noninvasive index to predict significant fibrosis in patients with HIV/HCV coinfection (FIB-4). Hepatology, 43(6):1317-1325. \doi{10.1002/hep.21178}
-Harrison SA, Oliver D, Arnold HL, et al. (2008). Development and validation of a simple NAFLD clinical scoring system for predicting advanced fibrosis (BARD). Hepatology, 47(1):154-160. \doi{10.1002/hep.21984}
-Johnson PJ, Berhane S, Kagebayashi C, et al. (2015). Assessment of liver function in patients with hepatocellular carcinoma: the ALBI grade. J Clin Oncol, 33(6):550-558. \doi{10.1200/JCO.2014.57.9151}
-Heuman DM, Abou-Assi SG, Habib A, et al. (2007). MELD-XI: a modified model for end-stage liver disease to exclude INR. Liver Transpl, 13(6):861-869. \doi{10.1002/lt.21030}
+\insertRef{bedogni2006fli}{HealthMarkers}
+\insertRef{angulo2007nfs}{HealthMarkers}
+\insertRef{wai2003apri}{HealthMarkers}
+\insertRef{sterling2006fib4}{HealthMarkers}
+\insertRef{harrison2008bard}{HealthMarkers}
+\insertRef{johnson2015albi}{HealthMarkers}
+\insertRef{heuman2007meldxi}{HealthMarkers}
 }
 \seealso{
 \code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=kidney_failure_risk]{kidney_failure_risk()}}, \code{\link[=iAge]{iAge()}}

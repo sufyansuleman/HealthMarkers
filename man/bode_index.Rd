@@ -50,5 +50,5 @@ mMRC dyspnea: 0-1 = 0; 2 = 1; 3 = 2; 4 = 3
 BMI: >21 = 0; <=21 = 1
 }
 \references{
-Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005-1012.
+\insertRef{celli2004bode}{HealthMarkers}
 }

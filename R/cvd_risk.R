@@ -97,10 +97,7 @@
 #'   cvd_risk_ascvd(df, year = 10, verbose = TRUE)
 #' }
 #'
-#' @references
-#' - Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline on the
-#'   Assessment of Cardiovascular Risk: a report of the ACC/AHA Task Force on Practice
-#'   Guidelines. Circulation. 2014;129(25 Suppl 2):S49-S73. (Pooled Cohort Equations)
+#' @references \insertRef{goff2014accaha}{HealthMarkers}
 cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
@@ -157,9 +154,7 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
 #'   # cvd_risk_qrisk3(your_data_frame, verbose = TRUE)
 #' }
 #'
-#' @references
-#' - Hippisley-Cox J, Coupland C, Brindle P. Development and validation of QRISK3
-#'   risk prediction algorithms. BMJ. 2017;357:j2099.
+#' @references \insertRef{hippisleycox2017qrisk3}{HealthMarkers}
 cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE) {
   .need_pkg("QRISK3")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
@@ -225,9 +220,7 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' @return A tibble with \code{model}, \code{year}, \code{risk}.
 #' @export
 #'
-#' @references
-#' - Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline
-#'   (Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49-S73.
+#' @references \insertRef{goff2014accaha}{HealthMarkers}
 cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")

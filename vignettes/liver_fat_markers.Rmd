@@ -24,6 +24,7 @@ library(dplyr)
 
 sim <- readRDS(system.file("extdata/simulated_hm_data.rds", package = "HealthMarkers"))
 liver <- sim |>
+  dplyr::slice_head(n = 30) |>
   mutate(MetS = 0, insulin = I0 / 6, glucose = G0) |>
   select(ALT, AST, BMI, sex, diabetes, MetS, insulin, I0, waist, TG, HDL_c, sbp, bp_sys, bp_treated, glucose, G0)
 ```

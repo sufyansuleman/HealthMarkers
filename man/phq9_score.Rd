@@ -35,3 +35,12 @@ phq9_score(
 \description{
 PHQ-9 / PHQ-8 scoring
 }
+\examples{
+df <- data.frame(phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1,
+                 phq9_05 = 0, phq9_06 = 1, phq9_07 = 2, phq9_08 = 1,
+                 phq9_09 = 0)
+phq9_score(df)
+}
+\references{
+\insertRef{kroenke2001phq9}{HealthMarkers}
+}

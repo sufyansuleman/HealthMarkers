@@ -7,6 +7,8 @@ Authors@R:
            email = "sufyansuleman@hotmail.com",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6612-6915"))
+Author: Sufyan Suleman [aut, cre]
+Maintainer: Sufyan Suleman <sufyansuleman@hotmail.com>
 Description: Provides functions to compute a broad suite of clinical and
     research biomarkers from routine data. Implemented measures include
     metabolic indices of insulin sensitivity and resistance (fasting, oral
@@ -22,15 +24,12 @@ Depends:
     R (>= 4.0)
 Imports:
     dplyr (>= 1.0.0),
-    magrittr (>= 2.0.0),
-    mice (>= 3.14.0),
-    missForest (>= 1.5.0),
-    purrr (>= 0.3.0),
     rlang (>= 1.0.0),
     stats,
     tibble (>= 3.0.0),
     utils,
-    vctrs
+    vctrs,
+    Rdpack
 Suggests:
     knitr,
     rmarkdown,
@@ -44,8 +43,11 @@ Suggests:
     RiskScorescvd,
     whoishRisk,
     usethis,
-    withr
+    withr,
+    mice,
+    missForest
 VignetteBuilder: knitr
+RdMacros: Rdpack
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

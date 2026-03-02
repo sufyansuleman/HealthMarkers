@@ -9,7 +9,7 @@
 #' @return A tibble with column GSH_GSSG_Ratio.
 #'
 #' @references
-#' - Glutathione redox status as an oxidative stress indicator: standard laboratory/clinical biochemistry references.
+#' \insertRef{glutathione_redox_review}{HealthMarkers}
 #'
 #' @examples
 #' df <- data.frame(GSH = c(5, 3), GSSG = c(1, 0.5))

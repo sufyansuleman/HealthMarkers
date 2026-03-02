@@ -36,14 +36,7 @@ A tibble with:
 \itemize{
 \item sarc_f_score (numeric 0-10; NA if any component is NA)
 \item sarc_f_high_risk (logical; TRUE if score >= 4, NA if score is NA)
-#' @references
-Malmstrom TK, Morley JE. (2013). SARC-F: a simple questionnaire to rapidly diagnose sarcopenia.
-J Am Med Dir Assoc. 14(8):531-532. doi:10.1016/j.jamda.2013.05.018
 }
-
-Malmstrom TK, Miller DK, Simonsick EM, Ferrucci L, Morley JE. (2016).
-SARC-F: a symptomatic measure of sarcopenia predictive of poor function, disability, and mortality.
-J Cachexia Sarcopenia Muscle. 7(1):28-36. doi:10.1002/jcsm.12048
 }
 \description{
 Computes the SARC-F questionnaire score, a quick screening tool for sarcopenia risk.
@@ -53,4 +46,7 @@ SARC-F has 5 items: Strength, Assistance in walking, Rise from a chair,
 Climb stairs, and Falls. Each item is scored 0 (no difficulty) to 2 (high difficulty).
 Total SARC-F score ranges 0-10. A score >= 4 indicates high risk of sarcopenia
 and suggests further assessment.
+}
+\references{
+\insertRef{malmstrom2013sarcf}{HealthMarkers}; \insertRef{malmstrom2016sarcf}{HealthMarkers}
 }

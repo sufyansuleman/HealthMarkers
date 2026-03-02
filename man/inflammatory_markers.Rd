@@ -82,16 +82,5 @@ inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
 
 }
 \references{
-Zahorec R. Ratio of neutrophil to lymphocyte counts-rapid and simple parameter of systemic inflammation and stress.
-Bratisl Lek Listy. 2001;102(1):5-14.
-Templeton AJ, et al. Prognostic role of neutrophil-to-lymphocyte ratio in solid tumors: a systematic review and meta-analysis.
-J Natl Cancer Inst. 2014;106(6):dju124.
-Hu B, et al. Systemic immune-inflammation index predicts prognosis of patients with hepatocellular carcinoma.
-Ann Surg Oncol. 2014;21(11):3819-27.
-Qi Q, et al. SIRI: a novel systemic inflammation response index for predicting survival in pancreatic cancer.
-Ann Surg Oncol. 2016;23(2):559-568.
-Fois AG, et al. The AISI (aggregate index of systemic inflammation) in COPD. Multidiscip Respir Med. 2020;15:35.
-Proctor MJ, et al. Systemic inflammation-based prognostic scores in cancer: the Glasgow Prognostic Score (mGPS).
-Br J Cancer. 2011;104(4):726-734.
-Pearson TA, et al. Markers of inflammation and CVD: CDC/AHA statement. Circulation. 2003;107(3):499-511.
+\insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 }

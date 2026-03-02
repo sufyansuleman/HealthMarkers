@@ -23,7 +23,7 @@
 #'                      Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).
 #' @param verbose logical; TRUE emits messages.
 #' @return tibble with bode_index (integer). NA if any required input missing (unless omitted).
-#' @references Celli BR et al. (2004). The BODE index in COPD. N Engl J Med. 350:1005-1012.
+#' @references \insertRef{celli2004bode}{HealthMarkers}
 #' @export
 bode_index <- function(
   data,

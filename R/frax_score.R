@@ -18,8 +18,8 @@
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return Tibble with frax_major_percent and frax_hip_percent.
 #' @references
-#' Kanis JA, Johnell O, Oden A, et al. (2008). FRAX and the assessment of fracture probability in men and women from the UK. Osteoporos Int. 19(4):385-397. doi:10.1007/s00198-007-0543-5
-#' Kanis JA, Harvey NC, Johansson H, et al. (2020). Overview of FRAX: a tool for assessing fracture risk. Osteoporos Int. 31(12):2399-2421. doi:10.1007/s00198-020-05373-7
+#' \insertRef{kanis2008frax}{HealthMarkers};
+#' \insertRef{kanis2020fraxoverview}{HealthMarkers}
 #' @export
 frax_score <- function(
   data,

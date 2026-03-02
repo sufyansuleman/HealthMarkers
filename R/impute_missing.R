@@ -177,10 +177,7 @@ impute_missing <- function(data,
 #' }
 #' }
 #'
-#' @references
-#' - Rubin DB (1987). Multiple Imputation for Nonresponse in Surveys. Wiley. \doi{10.1002/9780470316696}
-#' - van Buuren S, Groothuis-Oudshoorn K (2011). mice: Multivariate Imputation by Chained Equations in R.
-#'   Journal of Statistical Software, 45(3):1-67. \doi{10.18637/jss.v045.i03}
+#' @references \insertRef{rubin1987mi}{HealthMarkers}; \insertRef{vanbuuren2011mice}{HealthMarkers}
 impute_mice <- function(data,
                         m    = 5,
                         cols = NULL,
@@ -288,9 +285,7 @@ impute_mice <- function(data,
 #' }
 #' }
 #'
-#' @references
-#' - Stekhoven DJ, Buhlmann P (2012). MissForest-non-parametric missing value imputation for mixed-type data.
-#'   Bioinformatics, 28(1):112-118. \doi{10.1093/bioinformatics/btr597}
+#' @references \insertRef{stekhoven2012missforest}{HealthMarkers}
 impute_missforest <- function(data,
                               ntree = 100,
                               cols  = NULL,

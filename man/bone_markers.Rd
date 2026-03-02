@@ -69,7 +69,5 @@ bone_markers(df, col_map)
 
 }
 \references{
-Woo J, Leung J, Lau E, et al. (2002). The Osteoporosis Self-Assessment Tool (OSTA): a simple screening tool for osteoporosis. Maturitas, 41(2):227-232.
-Kelly TL, Wilson KE, Heymsfield SB (2009). Dual energy X-ray absorptiometry body composition reference values from NHANES. Int J Obes, 33(6):783-789.
-World Health Organization (1994). Assessment of fracture risk and its application to screening for postmenopausal osteoporosis. WHO Tech Rep Ser, 843:1-129.
+\insertRef{woo2002osta}{HealthMarkers}; \insertRef{kelly2009nhanesdxa}{HealthMarkers}; \insertRef{who1994osteoporosis}{HealthMarkers}
 }

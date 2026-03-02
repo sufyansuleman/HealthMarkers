@@ -66,7 +66,6 @@ atherogenic_indices(df, col_map = cm, verbose = FALSE)
 
 }
 \references{
-Dobiasova M (2004). Atherogenic Index of Plasma (AIP) log(TG/HDL-C): theoretical and practical implications. Clin Chem 50(7):1113-1115. \doi{10.1373/clinchem.2004.035220}
-
-Castelli WP, et al. (1977). HDL cholesterol and other lipids in coronary heart disease: The Framingham Study. Am J Med 62(5):707-714. \doi{10.1016/0002-9343(77)90874-9}
+\insertRef{dobiasova2004aip}{HealthMarkers};
+\insertRef{castelli1977framingham}{HealthMarkers}
 }

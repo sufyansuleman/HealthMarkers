@@ -116,7 +116,7 @@ out_tbl <- calc_sds(
 )
 }
 \references{
-Cole, T. J., & Green, P. J. (1992). Smoothing reference centile curves: the LMS method and penalized likelihood. Stat Med, 11(10), 1305-1319. \doi{10.1002/sim.4780111005}
-de Onis, M., et al. (2006). WHO Child Growth Standards: Methods and development. World Health Organization.
-Kuczmarski, R. J., et al. (2000). CDC growth charts: United States. Adv Data, (314), 1-27.
+\insertRef{cole1992lms}{HealthMarkers};
+\insertRef{deonis2006who}{HealthMarkers};
+\insertRef{kuczmarski2000cdc}{HealthMarkers}
 }

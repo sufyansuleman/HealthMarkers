@@ -25,8 +25,5 @@ Wrapper around \code{PooledCohort::predict_10yr_stroke_risk()} with quiet
 fallback to NA if the backend errors.
 }
 \references{
-\itemize{
-\item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline
-(Pooled Cohort Equations include stroke prediction component). Circulation. 2014;129:S49-S73.
-}
+\insertRef{goff2014accaha}{HealthMarkers}
 }

@@ -35,3 +35,11 @@ spq_score(
 \description{
 Schizotypal Personality Questionnaire (key-driven)
 }
+\examples{
+spq_key <- list(items = sprintf("spq_\%02d", 1:5), min_val = 0, max_val = 1)
+df <- data.frame(spq_01 = 0, spq_02 = 1, spq_03 = 0, spq_04 = 1, spq_05 = 0)
+spq_score(df, key = spq_key)
+}
+\references{
+\insertRef{raine1991spq}{HealthMarkers}
+}

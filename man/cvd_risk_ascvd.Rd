@@ -40,9 +40,5 @@ if (requireNamespace("PooledCohort", quietly = TRUE)) {
 
 }
 \references{
-\itemize{
-\item Goff DC Jr, Lloyd-Jones DM, Bennett G, et al. 2014 ACC/AHA Guideline on the
-Assessment of Cardiovascular Risk: a report of the ACC/AHA Task Force on Practice
-Guidelines. Circulation. 2014;129(25 Suppl 2):S49-S73. (Pooled Cohort Equations)
-}
+\insertRef{goff2014accaha}{HealthMarkers}
 }
