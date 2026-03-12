@@ -1,4 +1,3 @@
-# R/liver_markers.R
 
 #' Compute liver-related indices (FLI, NFS, APRI, FIB-4, BARD, ALBI, MELD-XI) with validation and diagnostics
 #'

@@ -1,4 +1,3 @@
-# R/cvd_risk.R
 # Core cardiovascular risk calculators & markers + dispatcher
 # Optional deps live in Suggests: PooledCohort, QRISK3, CVrisk, RiskScorescvd
 

@@ -1,4 +1,3 @@
-# R/zzz-deps.R
 
 # List ALL optional (Suggests) namespaces in one place
 .optional_deps <- c(

@@ -1,4 +1,3 @@
-# File: R/metss.R
 
 #' Calculate Metabolic Syndrome Severity Score (MetSSS)
 #'

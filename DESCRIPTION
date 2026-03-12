@@ -1,7 +1,7 @@
 Package: HealthMarkers
 Type: Package
-Title: HealthMarkers: A Toolkit for Clinical, Metabolic, Cardiovascular & Pulmonary Biomarker Calculation
-Version: 1.0
+Title: Toolkit for Clinical, Metabolic, Cardiovascular, and Pulmonary Biomarker Calculation
+Version: 0.1.0
 Authors@R:
     person(given = "Sufyan", family = "Suleman",
            email = "sufyansuleman@hotmail.com",
@@ -14,7 +14,7 @@ Description: Provides functions to compute a broad suite of clinical and
     metabolic indices of insulin sensitivity and resistance (fasting, oral
     glucose tolerance test, adipose, tracer or DXA based), lipid markers,
     liver steatosis and fibrosis scores, anthropometric z-scores, obesity
-    indices, cardiovascular risk scores and blood pressure indices,
+    indices, cardiovascular risk scores and blood pressure indices, psychiatric risk scores,
     pulmonary function measures, biomarker panels from alternate biofluids (urine, saliva, sweat).
     All calculations can be accessed through a unified 'health_markers()' dispatcher function.
 License: MIT + file LICENSE

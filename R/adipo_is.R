@@ -1,4 +1,3 @@
-# R/adipo_is.R
 
 #' Adipose insulin sensitivity indices (QUICKI, VAI, LAP, TyG, TG/HDL, Belfiore)
 #'

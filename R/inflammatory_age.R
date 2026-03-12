@@ -1,4 +1,3 @@
-# R/inflammatory_age.R
 
 #' Compute a simplified Inflammatory Age Index (iAge) with QA and verbose summaries
 #'

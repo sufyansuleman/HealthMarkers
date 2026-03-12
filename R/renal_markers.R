@@ -1,4 +1,3 @@
-# File: R/renal_markers.R
 
 #' Calculate a Suite of Renal Function, Injury, and Excretion Markers
 #'

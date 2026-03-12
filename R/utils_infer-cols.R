@@ -1,4 +1,3 @@
-# R/utils-infer-cols.R
 
 #' Infer column names from user data based on flexible patterns, with logging
 #'

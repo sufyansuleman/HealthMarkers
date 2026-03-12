@@ -1,4 +1,3 @@
-# File: R/glycemic_markers.R
 
 #' Calculate glycemic-, C-peptide-, and additional metabolic markers
 #'

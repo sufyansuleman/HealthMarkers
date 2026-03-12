@@ -1,4 +1,3 @@
-# R/saliva_markers.R
 
 #' Calculate saliva-based stress & glycemic markers
 #'

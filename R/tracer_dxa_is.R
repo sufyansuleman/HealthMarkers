@@ -1,4 +1,3 @@
-# R/tracer_dxa_is.R
 
 #' Compute tracer/DXA-based insulin sensitivity indices
 #'
@@ -89,9 +88,7 @@ tracer_dxa_is <- function(data, col_map,
   full_keys <- c(adipose_keys, "G0","G30","G120","I30","I120","TG","FFA")
 
   required_keys <- if (adipose_only) adipose_keys else full_keys
-+
-+  # HM-CS v2 standardized validation
-+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "tracer_dxa_is")
+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "tracer_dxa_is")
 
   # Validate col_map has required keys
   missing_map <- setdiff(required_keys, names(col_map))
@@ -132,8 +129,7 @@ tracer_dxa_is <- function(data, col_map,
   }
 
   # High-missingness warnings on required inputs
--  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
-+  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
+  .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
 
   # NA policy on required inputs
   if (na_action == "error") {

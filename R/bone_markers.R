@@ -1,4 +1,3 @@
-# File: R/bone_markers.R
 
 #' Compute Bone Health & Body-Composition Markers (HM-CS v3)
 #'

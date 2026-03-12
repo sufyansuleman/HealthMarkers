@@ -1,4 +1,3 @@
-# File: R/frailty_index.R
 
 #' Compute Frailty (Deficit) Index using di::di with QA and verbose summaries
 #'

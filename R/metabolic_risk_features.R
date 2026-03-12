@@ -1,4 +1,3 @@
-# R/metabolic_risk_features.R
 
 #' Calculate metabolic risk feature flags (pediatric-friendly thresholds)
 #'

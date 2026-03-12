@@ -1,4 +1,3 @@
-# R/sweat_markers.R
 
 #' Calculate sweat-based ionic & metabolic markers
 #'

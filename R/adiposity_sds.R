@@ -1,4 +1,3 @@
-# R/adiposity_sds.R
 #' Calculate standardized scores (SDS) for adiposity measures
 #'
 #' Computes standard deviation (z) scores for anthropometric variables relative to

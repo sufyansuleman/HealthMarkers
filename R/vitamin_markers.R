@@ -1,4 +1,3 @@
-# File: R/vitamin_markers.R
 
 #' Compute composite vitamin and endocrine marker ratios and z-scores
 #'

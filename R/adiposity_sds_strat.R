@@ -1,4 +1,3 @@
-# R/adiposity_sds_strat.R
 
 #' Compute sex-stratified standardized scores (SDS) for adiposity measures
 #'

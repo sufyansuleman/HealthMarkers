@@ -1,4 +1,3 @@
-# R/kidney_kfre.R
 
 #' Kidney Failure Risk Equation (KFRE, 2- and 5-year risk)
 #'

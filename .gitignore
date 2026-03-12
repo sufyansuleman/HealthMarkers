@@ -2,11 +2,15 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rprofile
 HealthMarkers.Rproj
 .vscode/
 doc/
 .DS_Store
 .Rcheck/
+*.Rcheck/
+HealthMarkers.Rcheck/
+vign_test/
 *.tar.gz
 /inst/doc/
 .Rbuildignore

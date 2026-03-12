@@ -1,4 +1,3 @@
-# File: R/impute_missing.R
 
 #' Impute missing values in a data.frame or tibble (simple, column-wise)
 #'

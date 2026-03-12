@@ -1,4 +1,3 @@
-# R/utils-validate.R
 
 #' Validate that col_map is fully specified and data has the mapped columns
 #'

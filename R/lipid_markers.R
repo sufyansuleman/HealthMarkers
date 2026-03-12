@@ -1,4 +1,3 @@
-# R/lipid_markers.R
 
 #' Calculate lipid-panel markers, Visceral Adiposity Index (VAI),
 #' Lipid Accumulation Product (LAP), and TyG-BMI index

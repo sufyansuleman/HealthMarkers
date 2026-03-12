@@ -1,4 +1,3 @@
-# R/hormone_markers.R
 
 #' Compute a suite of hormone ratio markers with QA and verbose summaries
 #'

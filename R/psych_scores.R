@@ -1,5 +1,3 @@
-# R/psych_scores.R
-
 #' @importFrom stats prcomp complete.cases
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble as_tibble

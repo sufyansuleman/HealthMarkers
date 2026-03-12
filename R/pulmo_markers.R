@@ -1,4 +1,3 @@
-# File: R/pulmo_markers.R
 
 #' Calculate pulmonary function markers (FEV1/FVC, z-scores, percent predicted, LLN, etc.)
 #'

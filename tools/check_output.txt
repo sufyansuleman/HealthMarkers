@@ -1,0 +1,90 @@
+Running safe devtools check (Quarto temporarily removed from PATH)...
+══ Documenting ═════════════════════════════════════════════════════════════════
+ℹ Updating HealthMarkers documentation
+ℹ Loading HealthMarkers
+
+══ Building ════════════════════════════════════════════════════════════════════
+Setting env vars:
+• CFLAGS    : -Wall -pedantic
+• CXXFLAGS  : -Wall -pedantic
+• CXX11FLAGS: -Wall -pedantic
+• CXX14FLAGS: -Wall -pedantic
+• CXX17FLAGS: -Wall -pedantic
+• CXX20FLAGS: -Wall -pedantic
+── R CMD build ─────────────────────────────────────────────────────────────────
+* checking for file 'C:\R_packages\HealthMarkers/DESCRIPTION' ... OK
+* preparing 'HealthMarkers':
+* checking DESCRIPTION meta-information ... OK
+* installing the package to process help pages
+Loading required namespace: HealthMarkers
+* saving partial Rd database
+* creating vignettes ... OK
+* checking for LF line-endings in source and make files and shell scripts
+* checking for empty or unneeded directories
+Removed empty directory 'HealthMarkers/inst/doc'
+* building 'HealthMarkers_1.0.tar.gz'
+
+══ Checking ════════════════════════════════════════════════════════════════════
+Setting env vars:
+• _R_CHECK_CRAN_INCOMING_REMOTE_               : FALSE
+• _R_CHECK_CRAN_INCOMING_                      : FALSE
+• _R_CHECK_FORCE_SUGGESTS_                     : FALSE
+• _R_CHECK_PACKAGES_USED_IGNORE_UNUSED_IMPORTS_: FALSE
+• NOT_CRAN                                     : true
+── R CMD check ─────────────────────────────────────────────────────────────────
+* using log directory 'C:/Users/au773972/AppData/Local/Temp/RtmpquyJCW/file67704c6a25ec/HealthMarkers.Rcheck'
+* using R version 4.4.0 (2024-04-24 ucrt)
+* using platform: x86_64-w64-mingw32
+* R was compiled by
+    gcc.exe (GCC) 13.2.0
+    GNU Fortran (GCC) 13.2.0
+* running under: Windows 11 x64 (build 26200)
+* using session charset: UTF-8
+* using options '--no-manual --no-build-vignettes --as-cran'
+* checking for file 'HealthMarkers/DESCRIPTION' ... OK
+* checking extension type ... Package
+* this is package 'HealthMarkers' version '1.0'
+* package encoding: UTF-8
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking whether package 'HealthMarkers' can be installed ... ERROR
+Installation failed.
+See 'C:/Users/au773972/AppData/Local/Temp/RtmpquyJCW/file67704c6a25ec/HealthMarkers.Rcheck/00install.out' for details.
+* DONE
+
+Status: 1 ERROR
+See
+  'C:/Users/au773972/AppData/Local/Temp/RtmpquyJCW/file67704c6a25ec/HealthMarkers.Rcheck/00check.log'
+for details.
+
+── R CMD check results ────────────────────────────────── HealthMarkers 1.0 ────
+Duration: 23s
+
+❯ checking whether package 'HealthMarkers' can be installed ... ERROR
+  See below...
+
+── Install failure ─────────────────────────────────────────────────────────────
+
+* installing *source* package 'HealthMarkers' ...
+** using staged installation
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** installing vignettes
+Warning in file(con, "w") :
+  cannot open file 'C:/Users/au773972/AppData/Local/Temp/RtmpquyJCW/file67704c6a25ec/HealthMarkers.Rcheck/00LOCK-HEALTH~1/00new/HealthMarkers/doc/index.html': No such file or directory
+Error in file(con, "w") : cannot open the connection
+ERROR: installing vignettes failed
+* removing 'C:/Users/au773972/AppData/Local/Temp/RtmpquyJCW/file67704c6a25ec/HealthMarkers.Rcheck/HealthMarkers'
+
+1 error ✖ | 0 warnings ✔ | 0 notes ✔
+Error: R CMD check found ERRORs
+Execution halted

@@ -1,4 +1,3 @@
-# R/fasting_is.R
 
 #' Calculate fasting-based insulin sensitivity indices
 #'

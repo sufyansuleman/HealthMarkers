@@ -21,4 +21,5 @@
 ^HealthMarkers\.Rcheck$
 ^vignettes/.*/libs/
 ^vignettes/.*/_cache/
-^inst/doc/
+^vign_test$
+^.*\.Rcheck$

@@ -1,4 +1,3 @@
-# R/ogtt_is.R
 
 #' Calculate OGTT-based insulin sensitivity indices
 #'

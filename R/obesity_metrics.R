@@ -1,4 +1,3 @@
-# R/obesity_metrics.R
 
 #' Compute anthropometric obesity & adiposity indices
 #'
