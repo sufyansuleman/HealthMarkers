@@ -88,6 +88,15 @@ z_HOMA is a within-sample or external z-score of HOMA-IR.
 => hypertension = 1.
 }
 }
+\examples{
+df <- data.frame(
+  chol_total = c(5.2, 6.4), chol_ldl = c(3.2, 4.1), chol_hdl = c(1.3, 1.0),
+  triglycerides = c(1.8, 2.5), age_year = c(45, 60), z_HOMA = c(0.5, 1.2),
+  glucose = c(5.5, 6.8), HbA1c = c(38, 46), bp_sys_z = c(0.2, 1.1),
+  bp_dia_z = c(0.1, 0.9)
+)
+metabolic_risk_features(df)
+}
 \seealso{
 \code{\link[=liver_markers]{liver_markers()}}, \code{\link[=lipid_markers]{lipid_markers()}}, \code{\link[=kidney_failure_risk]{kidney_failure_risk()}}, \code{\link[=inflammatory_markers]{inflammatory_markers()}}
 }

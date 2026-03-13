@@ -55,6 +55,15 @@
 #' @importFrom rlang abort warn inform
 #' @importFrom dplyr transmute if_else
 #' @importFrom tibble as_tibble
+#'
+#' @examples
+#' df <- data.frame(
+#'   chol_total = c(5.2, 6.4), chol_ldl = c(3.2, 4.1), chol_hdl = c(1.3, 1.0),
+#'   triglycerides = c(1.8, 2.5), age_year = c(45, 60), z_HOMA = c(0.5, 1.2),
+#'   glucose = c(5.5, 6.8), HbA1c = c(38, 46), bp_sys_z = c(0.2, 1.1),
+#'   bp_dia_z = c(0.1, 0.9)
+#' )
+#' metabolic_risk_features(df)
 #' @export
 metabolic_risk_features <- function(
   data,
@@ -83,7 +92,7 @@ metabolic_risk_features <- function(
   )
 
   if (is.null(col_map)) {
-    col_map <- stats::setNames(required_cols, required_cols)
+    col_map <- as.list(stats::setNames(required_cols, required_cols))
   } else {
     miss_keys <- setdiff(required_cols, names(col_map))
     if (length(miss_keys)) {

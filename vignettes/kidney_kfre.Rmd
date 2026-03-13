@@ -2,7 +2,7 @@
 title: "Kidney failure risk (KFRE)"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{kidney_failure_risk}
+  %\VignetteIndexEntry{kidney_kfre}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

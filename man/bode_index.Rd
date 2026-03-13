@@ -49,6 +49,11 @@ FEV1 \% predicted: >=65 = 0; 50-64 = 1; 36-49 = 2; <=35 = 3
 mMRC dyspnea: 0-1 = 0; 2 = 1; 3 = 2; 4 = 3
 BMI: >21 = 0; <=21 = 1
 }
+\examples{
+df <- data.frame(FEV1pct = c(68, 45, 30), Walk_m = c(400, 280, 140),
+                 mMRC = c(1, 2, 3), BMI = c(24, 19, 18))
+bode_index(df)
+}
 \references{
 \insertRef{celli2004bode}{HealthMarkers}
 }

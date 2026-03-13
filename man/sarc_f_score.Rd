@@ -47,6 +47,11 @@ Climb stairs, and Falls. Each item is scored 0 (no difficulty) to 2 (high diffic
 Total SARC-F score ranges 0-10. A score >= 4 indicates high risk of sarcopenia
 and suggests further assessment.
 }
+\examples{
+df <- data.frame(Strength = c(1, 2, 0), Walking = c(0, 1, 2),
+                 Chair = c(1, 1, 2), Stairs = c(0, 2, 2), Falls = c(0, 1, 1))
+sarc_f_score(df)
+}
 \references{
 \insertRef{malmstrom2013sarcf}{HealthMarkers}; \insertRef{malmstrom2016sarcf}{HealthMarkers}
 }

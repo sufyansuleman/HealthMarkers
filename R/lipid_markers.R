@@ -49,6 +49,12 @@
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
+#'
+#' @examples
+#' df <- data.frame(TC = c(5.2, 6.1), HDL_c = c(1.3, 1.1), TG = c(1.8, 2.3),
+#'                  LDL_c = c(3.2, 4.1), WC = c(88, 95), BMI = c(26, 29),
+#'                  Sex = c("female", "male"))
+#' lipid_markers(df)
 #' @export
 lipid_markers <- function(
   data,

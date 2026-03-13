@@ -38,6 +38,16 @@
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
+#'
+#' @examples
+#' if (requireNamespace("rspiro", quietly = TRUE)) {
+#'   df <- data.frame(
+#'     age = c(40, 55), sex = c("male", "female"),
+#'     height = c(175, 162), ethnicity = c("Caucasian", "Caucasian"),
+#'     fev1 = c(3.5, 2.4), fvc = c(4.4, 3.1)
+#'   )
+#'   pulmo_markers(df)
+#' }
 #' @export
 pulmo_markers <- function(data,
                           equation = c("GLI", "GLIgl", "NHANES3"),

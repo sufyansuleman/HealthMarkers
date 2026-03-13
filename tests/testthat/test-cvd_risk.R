@@ -101,3 +101,97 @@ test_that("cvd_risk ALL returns one row per model with expected columns", {
   )
   expect_equal(nrow(out_all), 6L)
 })
+
+# ---- Direct: cvd_marker_aip ------------------------------------------------
+test_that("cvd_marker_aip returns tibble with model=AIP and numeric value", {
+  df_aip <- tibble::tibble(TG = 150, HDL_c = 50)
+  out <- cvd_marker_aip(df_aip)
+  expect_s3_class(out, "tbl_df")
+  expect_identical(out$model, "AIP")
+  expect_equal(out$value, log10(150 / 50))
+})
+
+test_that("cvd_marker_aip errors on missing col_map keys", {
+  df_aip <- tibble::tibble(TG = 150, HDL_c = 50)
+  expect_error(cvd_marker_aip(df_aip, col_map = list(TG = "TG")))
+})
+
+test_that("cvd_marker_aip returns NA value when inputs missing (na_action='keep')", {
+  df_na <- tibble::tibble(TG = NA_real_, HDL_c = 50)
+  out <- cvd_marker_aip(df_na, na_action = "keep")
+  expect_true(is.na(out$value))
+})
+
+# ---- Direct: cvd_marker_ldl_particle_number --------------------------------
+test_that("cvd_marker_ldl_particle_number returns tibble with model=LDL_PN", {
+  df_ldl <- tibble::tibble(ApoB = 120)
+  out <- cvd_marker_ldl_particle_number(df_ldl)
+  expect_s3_class(out, "tbl_df")
+  expect_identical(out$model, "LDL_PN")
+  expect_identical(out$value, 120)
+})
+
+test_that("cvd_marker_ldl_particle_number errors on missing ApoB column", {
+  df_ldl <- tibble::tibble(x = 1)
+  expect_error(cvd_marker_ldl_particle_number(df_ldl))
+})
+
+# ---- Direct: cvd_risk_ascvd ------------------------------------------------
+test_that("cvd_risk_ascvd returns tibble with model, year, risk (PooledCohort)", {
+  skip_if_not_installed("PooledCohort")
+  out <- cvd_risk_ascvd(dummy_df, year = 10)
+  expect_s3_class(out, "tbl_df")
+  expect_identical(out$model, "ASCVD")
+  expect_identical(out$year, 10L)
+  expect_type(out$risk, "double")
+})
+
+test_that("cvd_risk_ascvd errors on invalid year", {
+  skip_if_not_installed("PooledCohort")
+  expect_error(cvd_risk_ascvd(dummy_df, year = 5))
+})
+
+test_that("cvd_risk_ascvd errors if PooledCohort missing", {
+  skip_if(requireNamespace("PooledCohort", quietly = TRUE))
+  expect_error(cvd_risk_ascvd(dummy_df))
+})
+
+# ---- Direct: cvd_risk_stroke -----------------------------------------------
+test_that("cvd_risk_stroke returns tibble with model=Stroke (PooledCohort)", {
+  skip_if_not_installed("PooledCohort")
+  out <- cvd_risk_stroke(dummy_df)
+  expect_s3_class(out, "tbl_df")
+  expect_identical(out$model, "Stroke")
+  expect_identical(out$year, 10L)
+  expect_type(out$risk, "double")
+})
+
+test_that("cvd_risk_stroke errors on non-data.frame input", {
+  skip_if_not_installed("PooledCohort")
+  expect_error(cvd_risk_stroke("not a df"))
+})
+
+# ---- Direct: cvd_risk_qrisk3 -----------------------------------------------
+test_that("cvd_risk_qrisk3 returns tibble with model=QRISK3 (QRISK3 pkg)", {
+  skip_if_not_installed("QRISK3")
+  out <- cvd_risk_qrisk3(dummy_df)
+  expect_s3_class(out, "tbl_df")
+  expect_identical(out$model, "QRISK3")
+})
+
+test_that("cvd_risk_qrisk3 errors if QRISK3 package missing", {
+  skip_if(requireNamespace("QRISK3", quietly = TRUE))
+  expect_error(cvd_risk_qrisk3(dummy_df))
+})
+
+# ---- Direct: cvd_risk_scorescvd --------------------------------------------
+test_that("cvd_risk_scorescvd returns a data frame when RiskScorescvd present", {
+  skip_if_not_installed("RiskScorescvd")
+  out <- cvd_risk_scorescvd(dummy_df)
+  expect_true(is.data.frame(out))
+})
+
+test_that("cvd_risk_scorescvd errors if RiskScorescvd package missing", {
+  skip_if(requireNamespace("RiskScorescvd", quietly = TRUE))
+  expect_error(cvd_risk_scorescvd(dummy_df))
+})

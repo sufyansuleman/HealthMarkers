@@ -86,3 +86,72 @@ test_that("diagnosis and medication flags aggregate", {
   expect_true(med_out$med_any_psych)
   expect_equal(med_out$med_count, 1)
 })
+
+# ---- K6 --------------------------------------------------------------------
+test_that("k6_score returns tibble with total and case flag", {
+  out <- k6_score(sample_psych_df)
+  expect_s3_class(out, "tbl_df")
+  expect_true("K6_total" %in% names(out))
+  expect_true("K6_case" %in% names(out))
+  expect_equal(out$K6_total, sum(c(2, 1, 2, 1, 2, 1)))
+})
+
+test_that("k6_score errors on missing columns", {
+  expect_error(k6_score(data.frame(x = 1)))
+})
+
+# ---- K10 -------------------------------------------------------------------
+test_that("k10_score returns tibble with total", {
+  out <- k10_score(sample_psych_df)
+  expect_s3_class(out, "tbl_df")
+  expect_true("K10_total" %in% names(out))
+  expect_equal(out$K10_total, 10L)
+})
+
+# ---- GHQ-12 ----------------------------------------------------------------
+test_that("ghq12_score likert returns total_likert", {
+  out <- ghq12_score(sample_psych_df, method = "likert")
+  expect_s3_class(out, "tbl_df")
+  expect_true("GHQ12_total_likert" %in% names(out))
+})
+
+test_that("ghq12_score binary returns total_binary and case", {
+  out <- ghq12_score(sample_psych_df, method = "binary")
+  expect_s3_class(out, "tbl_df")
+  expect_true("GHQ12_total_binary" %in% names(out))
+  expect_true("GHQ12_case_binary" %in% names(out))
+})
+
+# ---- ISI -------------------------------------------------------------------
+test_that("isi_score returns tibble with total and severity", {
+  out <- isi_score(sample_psych_df)
+  expect_s3_class(out, "tbl_df")
+  expect_true("ISI_total" %in% names(out))
+  expect_true("ISI_severity" %in% names(out))
+  expect_equal(out$ISI_total, sum(c(2, 1, 2, 1, 0, 1, 0)))
+})
+
+# ---- MDQ -------------------------------------------------------------------
+test_that("mdq_score returns tibble with symptom_count and positive_screen", {
+  out <- mdq_score(sample_psych_df)
+  expect_s3_class(out, "tbl_df")
+  expect_true("MDQ_symptom_count" %in% names(out))
+  expect_true("MDQ_positive_screen" %in% names(out))
+  expect_equal(out$MDQ_symptom_count, sum(c(1,1,1,0,1,1,1,0,1,1,0,1,1)))
+})
+
+# ---- SPQ -------------------------------------------------------------------
+test_that("spq_score returns tibble with total using key", {
+  spq_key <- list(items = c("mdq_01", "mdq_02", "mdq_03"), min_val = 0, max_val = 1)
+  out <- spq_score(sample_psych_df, key = spq_key, prefix = "SPQ")
+  expect_s3_class(out, "tbl_df")
+  expect_true("SPQ_total" %in% names(out))
+})
+
+test_that("psych_dx_flags errors when dx map is missing", {
+  expect_error(psych_dx_flags(data.frame(x = 1:2), col_map = list()))
+})
+
+test_that("psych_med_flags errors when med map is missing", {
+  expect_error(psych_med_flags(data.frame(x = 1:2), col_map = list()))
+})

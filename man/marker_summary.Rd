@@ -17,3 +17,8 @@ Tibble with columns: variable, mean, sd, iqr
 \description{
 Computes simple summaries (mean, SD, IQR) for numeric columns.
 }
+\examples{
+df <- data.frame(glucose = c(5.5, 6.1, 4.9), insulin = c(60, 88, 55),
+                 bmi = c(24, 27, 22))
+marker_summary(df)
+}

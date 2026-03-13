@@ -7,6 +7,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_knit$set(purl = FALSE)
+```
+
 ## Scope
 Compute the 0-10 BODE score (BMI, Obstruction, Dyspnea, Exercise capacity) from FEV1 % predicted, 6-minute walk distance, mMRC dyspnea, and BMI. Accepts a percent-predicted column or derives it from raw/predicted FEV1. Higher scores indicate worse prognosis.
 

@@ -52,6 +52,16 @@ Inputs are validated, missingness is handled via \code{na_action}, and heights a
 auto-detected as cm when any height > 3; otherwise interpreted as metres (no
 automatic unit conversion beyond that heuristic, preserving prior behavior).
 }
+\examples{
+if (requireNamespace("rspiro", quietly = TRUE)) {
+  df <- data.frame(
+    age = c(40, 55), sex = c("male", "female"),
+    height = c(175, 162), ethnicity = c("Caucasian", "Caucasian"),
+    fev1 = c(3.5, 2.4), fvc = c(4.4, 3.1)
+  )
+  pulmo_markers(df)
+}
+}
 \references{
 \insertRef{quanjer2012}{HealthMarkers}
 \insertRef{hankinson1999spirometry}{HealthMarkers}

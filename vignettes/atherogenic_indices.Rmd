@@ -7,6 +7,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_knit$set(purl = FALSE)
+```
+
 ## Scope
 Compute atherogenic risk ratios from a lipid panel:
 - AIP = log10(TG / HDL_c)

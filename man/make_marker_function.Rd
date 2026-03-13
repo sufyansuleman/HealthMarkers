@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_marker_function.R
 \name{make_marker_function}
 \alias{make_marker_function}
-\title{Generate a marker function (HM-VS v2 template)}
+\title{Generate a marker function}
 \usage{
 make_marker_function(
   name,
@@ -35,4 +35,17 @@ the parent frame.
 Creates and assigns a marker function with consistent validation, NA/extreme
 handling, and hm_inform logging. Intended for internal scaffolding of new
 HealthMarkers functions.
+}
+\examples{
+\dontrun{
+make_marker_function(
+  name = "my_marker",
+  required_keys = c("var1", "var2"),
+  compute_body = list(
+    fn = function(data, col_map) {
+      tibble::tibble(result = data[[col_map$var1]] + data[[col_map$var2]])
+    }
+  )
+)
+}
 }

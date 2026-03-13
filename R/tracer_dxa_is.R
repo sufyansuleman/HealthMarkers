@@ -40,6 +40,17 @@
 #' - Adipose-only tibble columns: LIRI_inv, Lipo_inv, ATIRI_inv
 #' - Full-mode tibble columns: I_AUC, FFA_AUC, tracer_palmitate_SI, tracer_glycerol_SI, LIRI_inv, Lipo_inv, ATIRI_inv
 #'
+#' @examples
+#' df <- data.frame(
+#'   I0 = c(60, 75), rate_glycerol = c(2.1, 2.8), rate_palmitate = c(1.8, 2.3),
+#'   fat_mass = c(18, 24), weight = c(72, 85), BMI = c(24, 29),
+#'   HDL_c = c(1.3, 1.1)
+#' )
+#' col_map <- list(I0="I0", rate_glycerol="rate_glycerol",
+#'                 rate_palmitate="rate_palmitate", fat_mass="fat_mass",
+#'                 weight="weight", bmi="BMI", HDL_c="HDL_c")
+#' tracer_dxa_is(df, col_map = col_map)
+#'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
 #' @export

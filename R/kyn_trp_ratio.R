@@ -21,6 +21,10 @@
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return A tibble with one column: kyn_trp_ratio (numeric).
 #'
+#' @examples
+#' df <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
+#' kyn_trp_ratio(df)
+#'
 #' @references \insertRef{fuchs1998ktr}{HealthMarkers}; \insertRef{damerell2025kyn}{HealthMarkers}
 #'
 #' @export

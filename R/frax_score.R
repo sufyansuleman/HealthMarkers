@@ -17,6 +17,10 @@
 #' @param extreme_rules Optional overrides for defaults (age, bmd).
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return Tibble with frax_major_percent and frax_hip_percent.
+#'
+#' @examples
+#' df <- data.frame(Age = c(65, 72, 58), Sex = c("female", "female", "male"))
+#' frax_score(df)
 #' @references
 #' \insertRef{kanis2008frax}{HealthMarkers};
 #' \insertRef{kanis2020fraxoverview}{HealthMarkers}

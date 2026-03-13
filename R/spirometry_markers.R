@@ -12,6 +12,10 @@
 #'
 #' @references \insertRef{miller2005spirometry}{HealthMarkers}; \insertRef{quanjer2012}{HealthMarkers}; \insertRef{ats2002sixmw}{HealthMarkers}; \insertRef{gold2025copd}{HealthMarkers}
 #' @return Tibble with ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
+#'
+#' @examples
+#' df <- data.frame(FEV1 = c(3.2, 2.1, 1.5), FVC = c(4.0, 3.0, 2.5))
+#' spirometry_markers(df)
 #' @export
 spirometry_markers <- function(
   data,
@@ -145,9 +149,10 @@ spirometry_markers <- function(
   obstruction_lln <- rep(NA, length(ratio_pre))
   gold_grade <- rep(NA_character_, length(ratio_pre))
 
-  have_demo <- all(c("age","height","sex","ethnicity") %in% names(col_map)) &&
-               all(nzchar(unlist(col_map[c("age","height","sex","ethnicity")]))) &&
-               all(unlist(col_map[c("age","height","sex","ethnicity")]) %in% names(data))
+  demo_vals <- unlist(col_map[c("age","height","sex","ethnicity")], use.names = FALSE)
+  have_demo <- length(demo_vals) == 4L &&
+               all(nzchar(demo_vals)) &&
+               all(demo_vals %in% names(data))
   if (have_demo && requireNamespace("rspiro", quietly = TRUE)) {
     age <- data[[col_map$age]][keep]
     height <- data[[col_map$height]][keep]

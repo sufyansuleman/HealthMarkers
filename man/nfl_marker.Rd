@@ -43,6 +43,11 @@ Interpretation requires context-specific and age-adjusted references. This funct
 simply returns the input NfL values (assumed in a single matrix/fluid, e.g., plasma pg/mL)
 without classification.
 }
+\examples{
+df <- data.frame(NfL = c(8.5, 14.2, 22.1))
+nfl_marker(df)
+
+}
 \references{
 \insertRef{simren2022nfl}{HealthMarkers}; \insertRef{disanto2017nfl}{HealthMarkers}
 }

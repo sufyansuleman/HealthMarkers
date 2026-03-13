@@ -46,6 +46,10 @@ Payne formula (conventional units): Corrected Ca (mg/dL) = measured Ca (mg/dL) +
 If inputs appear to be in SI units (calcium mmol/L, albumin g/L), they are converted to mg/dL and g/dL
 (using 1 mmol/L ~= 4 mg/dL; 1 g/L = 0.1 g/dL) for the correction and converted back to mmol/L for output.
 }
+\examples{
+df <- data.frame(Ca = c(2.3, 2.5, 2.1), Alb = c(38, 42, 30))
+corrected_calcium(df)
+}
 \references{
 \insertRef{payne1973}{HealthMarkers}
 }

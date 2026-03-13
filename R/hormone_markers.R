@@ -23,6 +23,24 @@
 #' @param extreme_rules Optional list of c(min,max) per key to override defaults.
 #' @param verbose Logical; print progress and completion summary.
 #' @return Tibble with the nine ratio markers.
+#'
+#' @examples
+#' df <- data.frame(
+#'   TT = c(15, 12), SHBG = c(40, 35), LH = c(5, 6), FSH = c(4, 5),
+#'   E2 = c(100, 120), Prog = c(0.5, 0.6), fT3 = c(4.5, 4.2),
+#'   fT4 = c(15, 14), Aldo = c(200, 180), Renin = c(10, 12),
+#'   Ins = c(60, 70), Gluc = c(8, 9), GH = c(1.2, 1.0),
+#'   IGF1 = c(180, 160), Prl = c(10, 12), Cort0 = c(400, 380),
+#'   Cort30 = c(600, 580)
+#' )
+#' col_map <- list(
+#'   total_testosterone = "TT", SHBG = "SHBG", LH = "LH", FSH = "FSH",
+#'   estradiol = "E2", progesterone = "Prog", free_T3 = "fT3",
+#'   free_T4 = "fT4", aldosterone = "Aldo", renin = "Renin",
+#'   insulin = "Ins", glucagon = "Gluc", GH = "GH", IGF1 = "IGF1",
+#'   prolactin = "Prl", cortisol_0 = "Cort0", cortisol_30 = "Cort30"
+#' )
+#' hormone_markers(df, col_map = col_map)
 #' @export
 hormone_markers <- function(
   data,

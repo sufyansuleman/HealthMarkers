@@ -56,6 +56,11 @@ ALM/BMI reflects muscle mass relative to body size. FNIH cut-points:
 
 ALM should be in kilograms and BMI in kg/m^2.
 }
+\examples{
+df <- data.frame(ALM_kg = c(7.2, 5.8, 6.5), BMI = c(24, 28, 22),
+                 Sex = c("male", "female", "male"))
+alm_bmi_index(df)
+}
 \references{
 \insertRef{mclean2014fnih}{HealthMarkers}; \insertRef{studenski2014fnih}{HealthMarkers}
 }

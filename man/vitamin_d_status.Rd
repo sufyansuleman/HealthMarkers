@@ -53,6 +53,11 @@ levels (assumed in ng/mL) into categories:
 Note: Ensure input units are ng/mL. If values appear extremely high (e.g., median > 150),
 they might be in nmol/L (divide by 2.5 to convert to ng/mL).
 }
+\examples{
+df <- data.frame(VitD = c(18, 45, 72))
+vitamin_d_status(df)
+
+}
 \references{
 \insertRef{iomm2011calciumvitd}{HealthMarkers}; \insertRef{holick2011vitd}{HealthMarkers}
 }

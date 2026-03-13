@@ -24,6 +24,11 @@
 #' @param verbose logical; TRUE emits messages.
 #' @return tibble with bode_index (integer). NA if any required input missing (unless omitted).
 #' @references \insertRef{celli2004bode}{HealthMarkers}
+#'
+#' @examples
+#' df <- data.frame(FEV1pct = c(68, 45, 30), Walk_m = c(400, 280, 140),
+#'                  mMRC = c(1, 2, 3), BMI = c(24, 19, 18))
+#' bode_index(df)
 #' @export
 bode_index <- function(
   data,

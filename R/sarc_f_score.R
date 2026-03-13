@@ -21,6 +21,11 @@
 #'   - sarc_f_score (numeric 0-10; NA if any component is NA)
 #'   - sarc_f_high_risk (logical; TRUE if score >= 4, NA if score is NA)
 #' @references \insertRef{malmstrom2013sarcf}{HealthMarkers}; \insertRef{malmstrom2016sarcf}{HealthMarkers}
+#'
+#' @examples
+#' df <- data.frame(Strength = c(1, 2, 0), Walking = c(0, 1, 2),
+#'                  Chair = c(1, 1, 2), Stairs = c(0, 2, 2), Falls = c(0, 1, 1))
+#' sarc_f_score(df)
 #' @export
 sarc_f_score <- function(
   data,

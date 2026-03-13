@@ -22,6 +22,9 @@
 #'   conventional input or mmol/L for SI / auto-SI input).
 #' @references \insertRef{payne1973}{HealthMarkers}
 #'
+#' @examples
+#' df <- data.frame(Ca = c(2.3, 2.5, 2.1), Alb = c(38, 42, 30))
+#' corrected_calcium(df)
 #' @export
 corrected_calcium <- function(
   data,

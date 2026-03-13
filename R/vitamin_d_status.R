@@ -25,6 +25,10 @@
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return A tibble with one column: vitamin_d_status (ordered factor with levels "Deficient","Insufficient","Sufficient").
 #'
+#' @examples
+#' df <- data.frame(VitD = c(18, 45, 72))
+#' vitamin_d_status(df)
+#'
 #' @references \insertRef{iomm2011calciumvitd}{HealthMarkers}; \insertRef{holick2011vitd}{HealthMarkers}
 #'
 #' @export
