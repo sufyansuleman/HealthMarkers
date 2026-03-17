@@ -17,7 +17,7 @@ cognitive_score(
 \arguments{
 \item{data}{Data frame containing questionnaire item columns.}
 
-\item{col_map}{Named list with \code{tasks} mapping task IDs to column names (≥2 tasks required).}
+\item{col_map}{Named list with \code{tasks} mapping task IDs to column names (>= 2 tasks required).}
 
 \item{na_action}{How to handle rows with missing items: \code{keep}, \code{omit}, or \code{error}.}
 

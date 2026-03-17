@@ -34,3 +34,7 @@ A tibble with columns model = "LDL_PN" and value.
 \description{
 Returns ApoB as a proxy for LDL particle number with HM-CS NA handling.
 }
+\examples{
+df <- data.frame(ApoB = c(80, 120, 100))
+cvd_marker_ldl_particle_number(df)
+}

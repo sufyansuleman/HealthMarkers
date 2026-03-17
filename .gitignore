@@ -1,4 +1,5 @@
-.Rproj.user
+.Rproj.user/
+.Rproj.user/*
 .Rhistory
 .RData
 .Ruserdata
@@ -6,6 +7,7 @@
 HealthMarkers.Rproj
 .vscode/
 doc/
+/doc/
 .DS_Store
 .Rcheck/
 *.Rcheck/
@@ -14,12 +16,5 @@ vign_test/
 *.tar.gz
 /inst/doc/
 .Rbuildignore
-.Rhistory
-.RData
-.Ruserdata
-.Rproj.user
-.Rproj.user/
-.Rproj.user/*
-/doc/
 /Meta/
 /vignettes/libs/

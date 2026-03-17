@@ -36,3 +36,7 @@ Dispatch to the appropriate risk or marker function, or run all of them.
 Includes basic argument validation and robust fallback to NA rows if
 individual calculators fail.
 }
+\examples{
+df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
+cvd_risk(df, model = "AIP")
+}

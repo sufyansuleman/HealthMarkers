@@ -35,3 +35,7 @@ A tibble with columns model = "AIP" and value.
 \description{
 Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 }
+\examples{
+df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
+cvd_marker_aip(df)
+}

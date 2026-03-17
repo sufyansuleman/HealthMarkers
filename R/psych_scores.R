@@ -645,7 +645,7 @@ spq_score <- function(data,
 #' Cognitive composite (z-mean or PCA1)
 #' @inheritParams phq9_score
 #' @param method Aggregation method: `z_mean` (average of z-scores) or `pca1` (first PC).
-#' @param col_map Named list with `tasks` mapping task IDs to column names (≥2 tasks required).
+#' @param col_map Named list with `tasks` mapping task IDs to column names (>= 2 tasks required).
 #' @examples
 #' df <- data.frame(task_a = c(1, 2), task_b = c(2, 3), task_c = c(3, 4))
 #' cm <- list(tasks = list(

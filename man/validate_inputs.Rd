@@ -20,3 +20,10 @@ invisibly TRUE on success; otherwise aborts
 Ensures required keys exist in \code{col_map} and have non-empty mappings.
 Missing keys are reported in a stable order aligned with tests.
 }
+\examples{
+df <- data.frame(TG = c(1.5, 2.0), HDL_c = c(1.2, 1.0),
+  LDL_c = c(2.0, 2.5), TC = c(4.5, 5.0))
+validate_inputs(df,
+  list(TG = "TG", HDL_c = "HDL_c", LDL_c = "LDL_c", TC = "TC"),
+  fun_name = "lipid_markers")
+}

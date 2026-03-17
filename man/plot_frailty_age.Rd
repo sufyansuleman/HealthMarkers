@@ -84,3 +84,10 @@ The object returned by frailty_index() (di::di object if return="list").
 Calls frailty_index() with visible = TRUE; see frailty_index() for arguments,
 validation, and references.
 }
+\examples{
+if (requireNamespace("di", quietly = TRUE)) {
+  df <- data.frame(age = c(70, 75, 80), d1 = c(0, 1, 1),
+    d2 = c(0.2, 0.8, 1.0), d3 = c(TRUE, FALSE, TRUE))
+  plot_frailty_age(df, cols = c("d1", "d2", "d3"), age = "age")
+}
+}

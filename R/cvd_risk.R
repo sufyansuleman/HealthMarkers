@@ -217,6 +217,13 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
 #' @param ... Passed to \code{PooledCohort::predict_10yr_stroke_risk()}.
 #' @return A tibble with \code{model}, \code{year}, \code{risk}.
+#' @examples
+#' if (requireNamespace("PooledCohort", quietly = TRUE)) {
+#'   df <- data.frame(age = 55, sex = 1, race = "white", smoker = FALSE,
+#'     total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
+#'     diabetes = FALSE, bmi = 27)
+#'   cvd_risk_stroke(df)
+#' }
 #' @export
 #'
 #' @references \insertRef{goff2014accaha}{HealthMarkers}
@@ -261,6 +268,10 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
 #' @param data Data required by \code{RiskScorescvd::calc_scores()}.
 #' @param ... Passed to \code{RiskScorescvd::calc_scores()}.
 #' @return Object returned by \code{RiskScorescvd::calc_scores()}.
+#' @examples
+#' if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
+#'   # cvd_risk_scorescvd(your_data_frame)
+#' }
 #' @export
 cvd_risk_scorescvd <- function(data, ...) {
   .need_pkg("RiskScorescvd")
@@ -291,6 +302,9 @@ cvd_risk_scorescvd <- function(data, ...) {
 #'   - "error" (abort if any required input missing/non-finite)
 #' @param verbose Logical; if TRUE, emit hm_inform() progress messages.
 #' @return A tibble with columns model = "AIP" and value.
+#' @examples
+#' df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
+#' cvd_marker_aip(df)
 #' @export
 cvd_marker_aip <- function(data,
                            col_map = list(TG = "TG", HDL_c = "HDL_c"),
@@ -378,6 +392,9 @@ cvd_marker_aip <- function(data,
 #'   - "error" (abort if input missing/non-finite)
 #' @param verbose Logical; if TRUE, emit hm_inform() progress messages.
 #' @return A tibble with columns model = "LDL_PN" and value.
+#' @examples
+#' df <- data.frame(ApoB = c(80, 120, 100))
+#' cvd_marker_ldl_particle_number(df)
 #' @export
 cvd_marker_ldl_particle_number <- function(data,
                                            col_map = list(ApoB = "ApoB"),
@@ -446,6 +463,9 @@ cvd_marker_ldl_particle_number <- function(data,
 #' @param ... Forwarded to underlying wrappers (e.g., col_map, na_action).
 #' @param verbose Logical; if TRUE, prints progress (legacy; messages now routed via hm_inform).
 #' @return A tibble.
+#' @examples
+#' df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
+#' cvd_risk(df, model = "AIP")
 #' @export
 cvd_risk <- function(data,
                      model = c("ALL", "ASCVD", "QRISK3",

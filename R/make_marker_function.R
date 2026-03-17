@@ -17,17 +17,20 @@
 #'   the parent frame.
 #'
 #' @examples
-#' \dontrun{
-#' make_marker_function(
-#'   name = "my_marker",
-#'   required_keys = c("var1", "var2"),
-#'   compute_body = list(
-#'     fn = function(data, col_map) {
-#'       tibble::tibble(result = data[[col_map$var1]] + data[[col_map$var2]])
-#'     }
+#' # Use local() to prevent assigning into the global environment
+#' local({
+#'   make_marker_function(
+#'     name = "my_marker",
+#'     required_keys = c("var1", "var2"),
+#'     compute_body = list(
+#'       expr = quote(out <- tibble::tibble(
+#'         result = data[[col_map$var1]] + data[[col_map$var2]]
+#'       )),
+#'       empty_out = tibble::tibble(result = numeric(0))
+#'     )
 #'   )
-#' )
-#' }
+#'   is.function(my_marker)
+#' })
 #' @export
 make_marker_function <- function(name,
                                  required_keys,

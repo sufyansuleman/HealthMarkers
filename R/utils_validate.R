@@ -201,11 +201,6 @@ validate_inputs <- function(data,
 # null coalescing
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
-# HM-VS v2: thin wrappers over hm_validate_inputs for legacy entry points
-validate_inputs <- function(data, col_map, required_keys, fn) {
-  hm_validate_inputs(data, col_map, required_keys, fn)
-}
-
 # HM-VS v2: check that mapped columns exist in data (common across functions)
 hm_require_columns <- function(data, col_map, required_keys, fn) {
   req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))

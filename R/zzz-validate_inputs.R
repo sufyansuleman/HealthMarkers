@@ -7,6 +7,12 @@
 #' @param col_map named list mapping keys to column names
 #' @param fun_name character scalar naming the calling function (e.g., "lipid_markers")
 #' @return invisibly TRUE on success; otherwise aborts
+#' @examples
+#' df <- data.frame(TG = c(1.5, 2.0), HDL_c = c(1.2, 1.0),
+#'   LDL_c = c(2.0, 2.5), TC = c(4.5, 5.0))
+#' validate_inputs(df,
+#'   list(TG = "TG", HDL_c = "HDL_c", LDL_c = "LDL_c", TC = "TC"),
+#'   fun_name = "lipid_markers")
 #' @export
 validate_inputs <- function(data, col_map, fun_name) {
   if (!is.data.frame(data)) {

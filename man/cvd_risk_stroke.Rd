@@ -24,6 +24,14 @@ A tibble with \code{model}, \code{year}, \code{risk}.
 Wrapper around \code{PooledCohort::predict_10yr_stroke_risk()} with quiet
 fallback to NA if the backend errors.
 }
+\examples{
+if (requireNamespace("PooledCohort", quietly = TRUE)) {
+  df <- data.frame(age = 55, sex = 1, race = "white", smoker = FALSE,
+    total_chol = 200, HDL_c = 50, sbp = 140, bp_treated = FALSE,
+    diabetes = FALSE, bmi = 27)
+  cvd_risk_stroke(df)
+}
+}
 \references{
 \insertRef{goff2014accaha}{HealthMarkers}
 }

@@ -15,9 +15,11 @@
 \.linter
 ^_pkgdown\.yml$
 ^vignettes/libs$
+^vignettes/sim_data($|/)
 ^HealthMarkers\.Rcheck$
 ^vignettes/.*/libs/
 ^vignettes/.*/_cache/
 ^vign_test$
 ^.*\.Rcheck$
 ^cran-comments\.md$
+^\.Rproj\.user$

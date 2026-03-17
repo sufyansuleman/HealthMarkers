@@ -17,3 +17,8 @@ Object returned by \code{RiskScorescvd::calc_scores()}.
 \description{
 Passthrough to \code{RiskScorescvd::calc_scores()} with graceful fallback to NA.
 }
+\examples{
+if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
+  # cvd_risk_scorescvd(your_data_frame)
+}
+}
