@@ -6,6 +6,8 @@
 ^\.Rproj\.user($|/)
 ^check\.log$
 ^\.DS_Store$
+^\.gitignore$
+^vignettes/\.gitignore$
 ^tools($|/)
 ^docs$
 ^doc$

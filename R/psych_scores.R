@@ -1,6 +1,7 @@
 #' @importFrom stats prcomp complete.cases
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble as_tibble
+#' @importFrom rlang :=
 NULL
 
 # Internal helpers -------------------------------------------------------------

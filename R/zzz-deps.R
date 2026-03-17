@@ -47,6 +47,7 @@
 }
 
 utils::globalVariables(c(
+  ":=",
   "chol_total","chol_ldl","chol_hdl","triglycerides","age_year","z_HOMA",
   "glucose","HbA1c","bp_sys_z","bp_dia_z","weight_kg","height_m",
   "BMI","Avignon_Si0","Avignon_Si120"
