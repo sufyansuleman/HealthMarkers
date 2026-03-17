@@ -25,3 +25,4 @@
 ^.*\.Rcheck$
 ^cran-comments\.md$
 ^\.Rproj\.user$
+^CRAN-SUBMISSION$
