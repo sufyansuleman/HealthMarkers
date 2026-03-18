@@ -60,7 +60,7 @@ If NULL, broad defaults are applied for common measures (BMI, waist, weight, hei
 \item{verbose}{Logical; when TRUE emit progress via package logger; by default logging is controlled by options(healthmarkers.verbose)}
 }
 \value{
-A tibble with one SDS column per retained variable: \if{html}{\out{<prefix>}}\if{html}{\out{<var>}}_SDS
+A tibble with one SDS column per retained variable: \code{varname_SDS}, where \code{varname} is the original variable name (optionally prefixed by \code{prefix}).
 }
 \description{
 Computes sex-specific SDS (z-scores) for selected anthropometric variables using

@@ -108,7 +108,8 @@ ogtt_is(
 \insertRef{hansen2007bigtt}{HealthMarkers};
 \insertRef{avignon1999ogtt}{HealthMarkers};
 \insertRef{belfiore1998insulin}{HealthMarkers};
-\insertRef{matthews1985homa}{HealthMarkers}
+\insertRef{matthews1985homa}{HealthMarkers};
+\insertRef{suleman2024is}{HealthMarkers}
 }
 \seealso{
 \code{\link[=fasting_is]{fasting_is()}}, \code{\link[=normalize_vec]{normalize_vec()}}

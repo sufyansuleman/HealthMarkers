@@ -41,7 +41,7 @@
 #'   filled mapping list. "list" returns a list(map = ..., log = tibble) for auditing.
 #'
 #' @return By default, invisibly returns the filled `map`. If return = "list",
-#'   returns a list(map = <named list>, log = <tibble>).
+#'   returns a list(map = \code{named list}, log = \code{tibble}).
 #' @export
 #'
 #' @examples
@@ -655,7 +655,6 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   ASCVD  = c("ASCVD","cvd_risk_ascvd"),
   QRISK3 = c("QRISK3"),
   PooledCohort = c("PooledCohort"),
-  whoishRisk   = c("whoishRisk"),
   CVrisk       = c("CVrisk","RiskScorescvd"),
 
   ## =========================================================

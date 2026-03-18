@@ -45,13 +45,24 @@
   add("insulin_tracer_dxa", "tracer_dxa_is",         TRUE)
 
   # Body composition / obesity
-  add("adiposity_sds",      "adiposity_sds",         FALSE)
-  add("obesity_metrics",    "obesity_metrics",       FALSE)
+  add("adiposity_sds",        "adiposity_sds",           FALSE)
+  add("adiposity_sds_strat",  "adiposity_sds_strat",     TRUE)
+  add("obesity_metrics",      "obesity_indices",         FALSE)  # fixed: function is obesity_indices
+  add("alm_bmi",              "alm_bmi_index",           TRUE)
 
   # Lipid and atherogenic
   add("lipid",                  "lipid_markers",         FALSE)
   add("atherogenic_indices",    "atherogenic_indices",   TRUE)
   add("atherogenic",            "atherogenic_indices",   TRUE)  # alias
+  add("cvd_aip",                "cvd_marker_aip",        TRUE)
+  add("cvd_ldl_particles",      "cvd_marker_ldl_particle_number", TRUE)
+
+  # Cardiovascular risk scores
+  add("cvd_risk",           "cvd_risk",              FALSE)
+  add("cvd_ascvd",          "cvd_risk_ascvd",        FALSE)
+  add("cvd_qrisk3",         "cvd_risk_qrisk3",       FALSE)
+  add("cvd_scorescvd",      "cvd_risk_scorescvd",    FALSE)
+  add("cvd_stroke",         "cvd_risk_stroke",       FALSE)
 
   # Liver
   add("liver",              "liver_markers",         FALSE)
@@ -66,6 +77,8 @@
 
   # Pulmonary
   add("pulmo",              "pulmo_markers",         FALSE)
+  add("spirometry",         "spirometry_markers",    TRUE)
+  add("bode",               "bode_index",            TRUE)
 
   # Saliva, Sweat, Urine
   add("saliva",             "saliva_markers",        TRUE)
@@ -74,7 +87,7 @@
 
   # Renal and CKD
   add("renal",              "renal_markers",         TRUE)
-  add("kidney_kfre",        "kidney_kfre",           FALSE)
+  add("kidney_kfre",        "kidney_failure_risk",   TRUE)   # fixed: function is kidney_failure_risk
   add("ckd_stage",          "ckd_stage",             TRUE)
 
   # Nutrients and vitamins
@@ -84,10 +97,10 @@
   # Hormone and inflammation
   add("hormone",            "hormone_markers",       TRUE)
   add("inflammatory",       "inflammatory_markers",  TRUE)
-  add("inflammatory_age",   "inflammatory_age",      FALSE)
 
-  # Bone and allostatic load
+  # Bone, FRAX, and allostatic load
   add("bone",               "bone_markers",          TRUE)
+  add("frax",               "frax_score",            TRUE)
   add("allostatic_load",    "allostatic_load",       FALSE)
 
   # Oxidative stress
@@ -98,10 +111,13 @@
   add("charlson",           "charlson_index",       TRUE)
   add("sarc_f",             "sarc_f_score",         TRUE)
 
+  # Psychiatric markers
+  add("psych",              "psych_markers",        TRUE)
+
   # Neuro / aging markers
   add("nfl",                "nfl_marker",           TRUE)
-  add("inflammatory_age",   "inflammatory_age",     FALSE)  # already present
   add("iAge",               "iAge",                 TRUE)
+  add("inflammatory_age",   "inflammatory_age",     FALSE)
 
   # Micronutrient / vitamin sub-panels
   add("vitamin_d_status",   "vitamin_d_status",     TRUE)
@@ -218,6 +234,7 @@
 #' @references
 #' Aggregator wrapper. See underlying function help pages for full references:
 #' fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
+#' \insertRef{suleman2024is}{HealthMarkers}
 #' @export
 #' @examples
 #' df <- data.frame(
@@ -471,7 +488,8 @@ all_health_markers <- function(
   reg_names <- names(reg)
 
   if (identical(which, "all")) {
-    which_vec <- setdiff(reg_names, c("atherogenic_indices"))
+    # Exclude alias entries that duplicate another group's function call
+    which_vec <- setdiff(reg_names, c("atherogenic_indices", "cvd_risk"))
   } else {
     unknown <- setdiff(which, reg_names)
     if (length(unknown)) {

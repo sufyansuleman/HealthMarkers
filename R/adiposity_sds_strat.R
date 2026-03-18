@@ -31,7 +31,7 @@
 #' @param prefix Optional prefix for output columns (default "")
 #' @param verbose Logical; when TRUE emit progress via package logger; by default logging is controlled by options(healthmarkers.verbose)
 #'
-#' @return A tibble with one SDS column per retained variable: <prefix><var>_SDS
+#' @return A tibble with one SDS column per retained variable: \code{varname_SDS}, where \code{varname} is the original variable name (optionally prefixed by \code{prefix}).
 #'
 #' @references
 #' \insertRef{cole1992lms}{HealthMarkers};

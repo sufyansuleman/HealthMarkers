@@ -107,6 +107,6 @@ test_that("frailty_index verbose messages", {
   expect_message(
     frailty_index(df, cols = c("d1", "d2"), verbose = TRUE),
     "frailty_index: completed",
-    all = NA
+    all = FALSE
   )
 })

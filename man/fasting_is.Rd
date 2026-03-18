@@ -69,5 +69,6 @@ fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep",
 \insertRef{belfiore1998insulin}{HealthMarkers};
 \insertRef{sluiter1976gtolerance}{HealthMarkers};
 \insertRef{hanson2000evaluation}{HealthMarkers};
-\insertRef{anderson1995exploration}{HealthMarkers}
+\insertRef{anderson1995exploration}{HealthMarkers};
+\insertRef{suleman2024is}{HealthMarkers}
 }

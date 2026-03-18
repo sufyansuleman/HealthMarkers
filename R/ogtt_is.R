@@ -58,7 +58,8 @@
 #' \insertRef{hansen2007bigtt}{HealthMarkers};
 #' \insertRef{avignon1999ogtt}{HealthMarkers};
 #' \insertRef{belfiore1998insulin}{HealthMarkers};
-#' \insertRef{matthews1985homa}{HealthMarkers}
+#' \insertRef{matthews1985homa}{HealthMarkers};
+#' \insertRef{suleman2024is}{HealthMarkers}
 #'
 #' @examples
 #' df <- tibble::tibble(

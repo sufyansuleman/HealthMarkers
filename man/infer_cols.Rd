@@ -66,7 +66,7 @@ error is raised.}
 }
 \value{
 By default, invisibly returns the filled \code{map}. If return = "list",
-returns a list(map = \if{html}{\out{<named list>}}, log = \if{html}{\out{<tibble>}}).
+returns a list(map = \code{named list}, log = \code{tibble}).
 
 Named list mapping keys to column names; unresolved non-required keys
 become \code{NA_character_}.

@@ -87,7 +87,7 @@
 #'   check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
 #' )
 #'
-#' @references \insertRef{sayed2021iage}{HealthMarkers}; \insertRef{sayed2023multiomic}{HealthMarkers}
+#' @references \insertRef{sayed2021iage}{HealthMarkers}
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform

@@ -54,4 +54,5 @@ all_insulin_indices(df, col_map = list(
 \references{
 Aggregator wrapper. See underlying function help pages for full references:
 fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
+\insertRef{suleman2024is}{HealthMarkers}
 }

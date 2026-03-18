@@ -127,7 +127,7 @@ iAge(
 
 }
 \references{
-\insertRef{sayed2021iage}{HealthMarkers}; \insertRef{sayed2023multiomic}{HealthMarkers}
+\insertRef{sayed2021iage}{HealthMarkers}
 }
 \seealso{
 \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=glycemic_markers]{glycemic_markers()}}

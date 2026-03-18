@@ -90,6 +90,6 @@ test_that("verbose = TRUE prints a progress/completion message", {
     fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), verbose = TRUE),
     "Completed fasting_is:",
     fixed = TRUE,
-    all = NA  # match against any of the emitted messages
+    all = FALSE
   )
 })

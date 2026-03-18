@@ -40,7 +40,7 @@
 #' @return A tibble with one column per marker: `FLI`, `NFS`, `APRI`, `FIB4`, `BARD`, `ALBI`, `MELD_XI`.
 #'
 #' @details
-#' Formulas (unchanged from prior implementation):
+#' Formulas 
 #' - FLI      = logistic(0.953*ln(TG) + 0.139*BMI + 0.718*ln(GGT) + 0.053*waist - 15.745) * 100
 #' - NFS      = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes + 0.99*(AST/ALT) - 0.013*platelets - 0.66*albumin
 #' - APRI     = (AST / 40) / platelets * 100; assumes AST upper limit of normal = 40 U/L

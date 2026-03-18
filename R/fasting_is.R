@@ -30,7 +30,8 @@
 #' \insertRef{belfiore1998insulin}{HealthMarkers};
 #' \insertRef{sluiter1976gtolerance}{HealthMarkers};
 #' \insertRef{hanson2000evaluation}{HealthMarkers};
-#' \insertRef{anderson1995exploration}{HealthMarkers}
+#' \insertRef{anderson1995exploration}{HealthMarkers};
+#' \insertRef{suleman2024is}{HealthMarkers}
 #'
 #' @examples
 #' # Minimal example (units: G0 in mmol/L, I0 in pmol/L)
