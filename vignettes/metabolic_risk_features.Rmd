@@ -37,8 +37,6 @@ Create pediatric-friendly binary risk flags (dyslipidemia, insulin resistance, h
 
 ## Quick start
 
-## Quick start
-
 ```{r}
 library(HealthMarkers)
 library(tibble)
@@ -149,6 +147,22 @@ list(rows_returned = nrow(out_cap), flags = out_cap)
 - Missingness: `keep/ignore` propagate NA; `omit` drops rows with missing required inputs; `warn` logs high-missingness; `error` aborts on missing required inputs.
 - Extreme values: with `check_extreme = TRUE`, scan against defaults or `extreme_rules`; choose `extreme_action` to warn, cap, NA, ignore, or error.
 - Outputs: tibble with factor columns `dyslipidemia`, `insulin_resistance`, `hyperglycemia`, `hypertension` (levels `0`/`1`). Age-based TG cutoffs: >1.1 mmol/L (0–9 y) or >1.5 mmol/L (10–19 y) for dyslipidemia; BP z > 1.64 for hypertension; z_HOMA > 1.28 for insulin resistance; glucose 5.6–6.9 or HbA1c 39–47 for hyperglycemia.
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+metabolic_risk_features(
+  data = peds,
+  col_map = list(
+    chol_total = "chol_total", chol_ldl = "chol_ldl", chol_hdl = "chol_hdl",
+    triglycerides = "triglycerides", age_year = "age_year", z_HOMA = "z_HOMA",
+    glucose = "glucose", HbA1c = "HbA1c", bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
 
 ## Tips
 

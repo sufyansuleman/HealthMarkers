@@ -119,13 +119,24 @@ test_that("check_extreme='error' aborts on out-of-range", {
   )
 })
 
-test_that("verbose prints progress and summary", {
-  df <- tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
-  expect_message(
-    kidney_failure_risk(df, col_map = cm, verbose = TRUE),
-    "-> kidney_failure_risk: computing KFRE risks"
+  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "kidney_failure_risk")
+  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
+  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  msgs <- testthat::capture_messages(
+    kidney_failure_risk(df, col_map = cm, verbose = TRUE)
   )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("non-positive eGFR triggers log warning", {

@@ -117,8 +117,7 @@ nutrient_markers <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> nutrient_markers: validating inputs")
+  hm_inform("nutrient_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # HM-CS v2 validation hook; no strictly required keys for this summarizer
   hm_validate_inputs(data, col_map, required_keys = character(0), fn = "nutrient_markers")
@@ -141,6 +140,9 @@ nutrient_markers <- function(
 
   mapped <- unlist(col_map, use.names = TRUE)
   used_cols <- intersect(unname(mapped), names(data))
+
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[intersect(names(col_map), names(data))], "nutrient_markers"))
 
   # Coerce used inputs to numeric; NA on non-finite
   for (cn in used_cols) {
@@ -166,7 +168,7 @@ nutrient_markers <- function(
     }
   } else if (na_action == "omit" && length(used_cols)) {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> nutrient_markers: omitting %d rows with NA in used inputs", sum(!keep)))
+    hm_inform(sprintf("nutrient_markers(): omitting %d rows with NA in used inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -199,7 +201,7 @@ nutrient_markers <- function(
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> nutrient_markers: computing markers")
+  hm_inform("nutrient_markers(): computing markers", level = "debug")
 
   n <- nrow(data)
   getcol <- function(key) {
@@ -283,15 +285,8 @@ nutrient_markers <- function(
     rlang::warn(sprintf("nutrient_markers(): zero denominators detected in %d cases (%s).", dz_total, which_str))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-       "Completed nutrient_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-       nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-       capped_n, dz_total, elapsed
-     ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "nutrient_markers"))
   out
 }
 

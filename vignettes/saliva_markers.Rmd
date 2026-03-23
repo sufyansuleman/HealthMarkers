@@ -121,6 +121,22 @@ saliva_markers(
 - Times validation: must be numeric length 3 and non-decreasing; otherwise the function aborts.
 - All NA outputs: typically due to missing cortisol triplets, non-positive cortisol/amylase, or aggressive `na_action = "omit"`.
 
+## Verbose diagnostics
+
+Enable verbose output to inspect column mapping, row counts, and result summaries during QC:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+saliva_markers(
+  tibble::tibble(
+    saliva_cort1   = 12, saliva_cort2   = 20, saliva_cort3   = 14,
+    saliva_amylase = 150, saliva_glucose = 5.5
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Confirm assay units upfront; no conversions are applied.
 - Use `check_extreme = TRUE` with `extreme_action = "warn"` first to see how many inputs are implausible; switch to `cap` to truncate.

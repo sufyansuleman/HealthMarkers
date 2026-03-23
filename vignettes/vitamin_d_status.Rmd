@@ -84,6 +84,17 @@ vitamin_d_status(
 )
 ```
 
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+vitamin_d_status(
+  data = tibble(VitD = c(15, 32)),
+  col_map = list(vitamin_d = "VitD"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Troubleshooting and tips
 
 - If medians are ~150-250 without obvious outliers, verify units (nmol/L should be divided by 2.5 to get ng/mL).

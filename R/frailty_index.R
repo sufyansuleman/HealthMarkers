@@ -160,16 +160,21 @@ frailty_index <- function(data,
 
   # Start messages
   if (verbose) {
-    message(sprintf("frailty_index: starting (%d rows, %d deficits%s)",
-                    nrow(df), length(cols), if (!is.null(age)) ", age provided" else ""))
-    message(sprintf("- selected deficits: %s", paste(head(cols, 8), collapse = ", ")))
-    if (length(cols) > 8) message(sprintf("- ... and %d more", max(0, length(cols) - 8)))
-    message(sprintf("- NA scan: %d column(s) with any NA; %d column(s) high-NA (>= %.0f%%)",
-                    length(qa_all$any_na_cols), length(qa_all$high_na_cols), 100 * na_warn_prop))
+    hm_inform(sprintf("frailty_index(): preparing inputs (%d rows, %d deficits%s)",
+                      nrow(df), length(cols),
+                      if (!is.null(age)) ", age provided" else ""),
+              level = "inform")
+    hm_inform(sprintf("frailty_index(): column map: %s%s",
+                      paste(head(cols, 8), collapse = ", "),
+                      if (length(cols) > 8) sprintf(" ... and %d more", length(cols) - 8) else ""),
+              level = "inform")
+    hm_inform(sprintf("frailty_index(): NA scan: %d col(s) with any NA; %d col(s) high-NA (>= %.0f%%)",
+                      length(qa_all$any_na_cols), length(qa_all$high_na_cols), 100 * na_warn_prop),
+              level = "debug")
     if (!isTRUE(rescale)) {
-      message(sprintf("- out-of-range scan (<0 or >1): %d column(s) flagged", length(qa_all$out_of_range_cols)))
-    } else {
-      message("- rescale=TRUE: numeric columns may be outside [0,1] pre-rescale (range check skipped)")
+      hm_inform(sprintf("frailty_index(): out-of-range scan (<0 or >1): %d col(s) flagged",
+                        length(qa_all$out_of_range_cols)),
+                level = "debug")
     }
   } else {
     hm_inform("frailty_index(): computing", level = "debug")
@@ -202,7 +207,7 @@ frailty_index <- function(data,
     } else if (extreme_action == "cap") {
       sel_df <- .cap_01(sel_df)
       df[, cols] <- sel_df
-      if (verbose) message("- capped out-of-range values to [0,1] in selected deficits")
+      if (verbose) hm_inform("frailty_index(): capped out-of-range values to [0,1]", level = "debug")
     } else if (extreme_action == "NA") {
       for (v in oor_cols) {
         x <- sel_df[[v]]
@@ -210,7 +215,7 @@ frailty_index <- function(data,
         sel_df[[v]] <- x
       }
       df[, cols] <- sel_df
-      if (verbose) message("- set out-of-range values to NA in selected deficits")
+      if (verbose) hm_inform("frailty_index(): set out-of-range values to NA", level = "debug")
     } # "ignore": do nothing
   }
 
@@ -235,30 +240,34 @@ frailty_index <- function(data,
   }
 
   # Completion summary
-  if (verbose) {
+  if (return == "data") {
     di_vec <- tryCatch(di_res$di, error = function(e) NULL)
-    if (is.numeric(di_vec)) {
-      rng <- range(di_vec, na.rm = TRUE)
-      message(sprintf("frailty_index: completed (%d rows, %d deficits) DI range: [%.3f, %.3f]",
-                      length(di_vec), length(cols),
-                      ifelse(is.finite(rng[1]), rng[1], NA_real_),
-                      ifelse(is.finite(rng[2]), rng[2], NA_real_)))
-    } else {
-      message("frailty_index: completed")
+    out_tbl <- {
+      out_tmp <- data.frame(di = as.numeric(di_vec), stringsAsFactors = FALSE)
+      keep_cols <- unique(c(cols, age))
+      if (length(keep_cols)) out_tmp <- cbind(out_tmp, df[, keep_cols, drop = FALSE])
+      tibble::as_tibble(out_tmp)
     }
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = hm_result_summary(out_tbl["di"], "frailty_index"))
+    return(out_tbl)
   } else {
-    hm_inform("frailty_index(): completed", level = "debug")
-  }
-
-  if (return == "list") {
+    if (verbose) {
+      di_vec <- tryCatch(di_res$di, error = function(e) NULL)
+      if (is.numeric(di_vec)) {
+        rng <- range(di_vec, na.rm = TRUE)
+        hm_inform(sprintf("frailty_index(): results: di range [%.3f, %.3f] (%d rows, %d deficits)",
+                          ifelse(is.finite(rng[1]), rng[1], NA_real_),
+                          ifelse(is.finite(rng[2]), rng[2], NA_real_),
+                          length(di_vec), length(cols)),
+                  level = "inform")
+      } else {
+        hm_inform("frailty_index(): completed", level = "inform")
+      }
+    } else {
+      hm_inform("frailty_index(): completed", level = "debug")
+    }
     return(di_res)
-  } else {
-    di_vec <- di_res$di
-    out <- data.frame(di = as.numeric(di_vec), stringsAsFactors = FALSE)
-    keep_cols <- unique(c(cols, age))
-    if (length(keep_cols)) out <- cbind(out, df[, keep_cols, drop = FALSE])
-    out <- tibble::as_tibble(out)
-    return(out)
   }
 }
 

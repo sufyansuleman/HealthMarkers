@@ -6,8 +6,14 @@
 .Rprofile
 HealthMarkers.Rproj
 .vscode/
+
+# Generated vignette output (R CMD build artefact)
 doc/
 /doc/
+
+# pkgdown site output — CI deploys to gh-pages; don't commit to main
+docs/
+
 .DS_Store
 .Rcheck/
 *.Rcheck/
@@ -18,3 +24,9 @@ vign_test/
 .Rbuildignore
 /Meta/
 /vignettes/libs/
+
+# Stray build / test log files
+doc_out.txt
+render_out.txt
+test_output.txt
+tools/*.txt

@@ -20,7 +20,6 @@ Here we build a tiny synthetic row with required item columns. Replace with your
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 psych_df <- tibble::tibble(
   phq9_01 = 1, phq9_02 = 2, phq9_03 = 1, phq9_04 = 0, phq9_05 = 1, phq9_06 = 2, phq9_07 = 1, phq9_08 = 2, phq9_09 = 1,
@@ -98,7 +97,19 @@ out <- psych_markers(
 )
 
 new_cols <- setdiff(names(out), names(psych_df))
-select(out, all_of(new_cols))
+dplyr::select(out, dplyr::all_of(new_cols))
+```
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+psych_markers(
+  data = psych_df,
+  which = c("phq9", "gad7"),
+  verbose = TRUE
+)
+options(old_opt)
 ```
 
 ## Notes

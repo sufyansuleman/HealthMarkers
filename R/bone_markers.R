@@ -22,6 +22,7 @@
 #'   names contain "sds" (case-insensitive) for absolute values > `sds_limit`.
 #' @param sds_limit Positive numeric; SDS magnitude limit used when `check_extreme` is TRUE.
 #' @param extreme_action One of "cap", "NA", or "error" for handling extreme SDS-like values.
+#' @param verbose Logical; if TRUE, emits progress messages via `hm_inform()`.
 #'
 #' @return A tibble with columns: `OSTA`, `ALMI`, `FMI`, `BMD_Tscore`, and
 #'   optionally `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin` (in that order).
@@ -50,7 +51,8 @@ bone_markers <- function(
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   sds_limit = 6,
-  extreme_action = c("cap", "NA", "error")
+  extreme_action = c("cap", "NA", "error"),
+  verbose = FALSE
 ) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
@@ -82,7 +84,11 @@ bone_markers <- function(
     )
   }
 
-  hm_inform("bone_markers(): computing bone markers", level = "inform")
+  hm_inform(level = "debug", msg = "bone_markers(): computing bone markers")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[required], "bone_markers")
+  )
 
   # Coerce required and present optional columns to numeric; warn if NAs introduced
   present_opt_cols <- intersect(unname(unlist(col_map[intersect(optional, names(col_map))], use.names = FALSE)), names(data))
@@ -166,8 +172,8 @@ bone_markers <- function(
       }
     }
     if (total_adj > 0 && extreme_action %in% c("cap","NA")) {
-      hm_inform(sprintf("bone_markers(): adjusted %d SDS-like extreme values (%s).",
-                        total_adj, extreme_action), level = "inform")
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+               msg = sprintf("bone_markers(): adjusted %d SDS-like extreme values (%s).", total_adj, extreme_action))
     }
   }
 
@@ -205,11 +211,11 @@ bone_markers <- function(
     Osteocalcin = Osteocalcin
   )
 
-  hm_inform("bone_markers(): completed", level = "inform")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = "bone_markers(): completed")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(result, "bone_markers")
+  )
   result
-}
-
-# ---- internal helpers (not exported) ----
-.bm_validate_misc_args <- function(verbose, na_warn_prop, check_extreme_sds, sds_limit) {
-  invisible(TRUE)
 }

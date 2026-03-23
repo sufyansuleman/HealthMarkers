@@ -180,21 +180,20 @@ test_that("custom extreme_rules override defaults (capping within new bounds)", 
   expect_true(all(is.finite(out$corrected_calcium) | is.na(out$corrected_calcium)))
 })
 
-test_that("verbose emits preparing, computing, and completion messages", {
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Ca = 9.0, Alb = 3.5)
+  expect_message(corrected_calcium(df, cm, verbose = TRUE), "corrected_calcium")
+  expect_message(corrected_calcium(df, cm, verbose = TRUE), "column map")
+  expect_message(corrected_calcium(df, cm, verbose = TRUE), "results:")
+})
 
-  expect_message(
-    corrected_calcium(df, cm, verbose = TRUE),
-    "-> corrected_calcium: preparing inputs"
-  )
-  expect_message(
-    corrected_calcium(df, cm, verbose = TRUE),
-    "-> corrected_calcium: computing result"
-  )
-  expect_message(
-    corrected_calcium(df, cm, verbose = TRUE),
-    "Completed corrected_calcium:"
-  )
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- data.frame(Ca = 9.0, Alb = 3.5)
+  msgs <- testthat::capture_messages(corrected_calcium(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("empty input returns 0-row tibble with column", {

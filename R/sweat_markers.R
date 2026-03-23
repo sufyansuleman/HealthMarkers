@@ -83,9 +83,7 @@ sweat_markers <- function(data,
     "weight_before", "weight_after", "duration", "body_surface_area"
   )
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "sweat_markers")
-
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> sweat_markers: validating inputs")
-  t0 <- Sys.time()
+  hm_inform("sweat_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Ensure mapped columns exist
   req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
@@ -120,6 +118,9 @@ sweat_markers <- function(data,
     }
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[required_keys], "sweat_markers"))
+
   # NA policy
   if (na_action == "error") {
     has_na <- Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
@@ -129,7 +130,9 @@ sweat_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> sweat_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("sweat_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -197,7 +200,7 @@ sweat_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> sweat_markers: computing markers")
+  hm_inform("sweat_markers(): computing markers", level = "debug")
 
   # Safe division helper with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
@@ -243,16 +246,8 @@ sweat_markers <- function(data,
     rlang::warn(sprintf("sweat_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed sweat_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "sweat_markers"))
 
   out
 }

@@ -135,6 +135,38 @@ Rows only drop with na_action = "omit" or when na_action = "error" aborts.
 - Verify that rows with NA mmrc are retained vs dropped according to na_action.
 - Confirm percent-predicted derivation: fev1_pp should match 100 * fev1 / fev1_pred for a test row.
 
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key resolved to.
+   Example: `bode_index(): column map: fev1_pct -> 'FEV1pct', sixmwd -> 'Walk_m', mmrc -> 'mMRC', bmi -> 'BMI'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `bode_index(): results: bode_index 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- data.frame(
+  FEV1pct = c(68, 45, 30),
+  Walk_m  = c(400, 280, 140),
+  mMRC    = c(1, 2, 3),
+  BMI     = c(24, 19, 18)
+)
+bode_index(
+  df_v,
+  col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI"),
+  verbose = TRUE
+)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
 ## See also
 - spirometry_markers() for broader spirometry-derived metrics.
 - pulmo_markers() for additional pulmonary markers.

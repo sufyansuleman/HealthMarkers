@@ -121,11 +121,11 @@ charlson_index <- function(
   }
 
   # --- verbose / debug ------------------------------------------------------
-  if (isTRUE(verbose)) {
-    rlang::inform("-> charlson_index: preparing inputs")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("charlson_index(): preparing inputs", level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "charlson_index(): preparing inputs")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[keys], "charlson_index")
+  )
 
   # --- coerce to numeric 0/1; track NA coercion -----------------------------
   for (cn in mapped) {
@@ -221,11 +221,7 @@ charlson_index <- function(
     }
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform("-> charlson_index: computing")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("charlson_index(): computing", level = "debug")
-  }
+  hm_inform(level = "debug", msg = "charlson_index(): computing")
 
   # --- scoring --------------------------------------------------------------
   base <- 0
@@ -253,11 +249,10 @@ charlson_index <- function(
     out <- out_core
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform(sprintf("Completed charlson_index: %d rows.", nrow(out)))
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform(sprintf("charlson_index(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "charlson_index")
+  )
 
   out
 }

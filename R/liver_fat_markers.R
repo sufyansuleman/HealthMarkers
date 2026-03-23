@@ -89,9 +89,11 @@ liver_fat_markers <- function(data,
       paste(miss, collapse = ", ")
     ))
   
-  if (isTRUE(verbose))
-    rlang::inform("-> liver_fat_markers: coercing inputs to numeric (if needed)")
-  
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = "liver_fat_markers(): preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req], "liver_fat_markers"))
+
   # Columns potentially used directly in formulas
   direct_keys <- c("ALT", "AST", "BMI", "sex", "diabetes", "MetS", "insulin", "I0")
   # Additional optional used for MetS derivation
@@ -330,6 +332,8 @@ liver_fat_markers <- function(data,
   if (is.null(dm2_flag))
     dm2_flag <- rep(0L, length(BMI))
   
+  hm_inform(level = "debug", msg = "liver_fat_markers(): computing")
+
   # HSI
   HSI <- 8 * sdiv(ALT, AST) + BMI + ifelse(female_flag == 1L, 2, 0) + ifelse(dm2_flag == 1L, 2, 0)
   
@@ -383,13 +387,18 @@ liver_fat_markers <- function(data,
   NAFLD_LFS <- -2.89 + 1.18 * MetS + 0.45 * dm2_flag + 0.15 * Ins_u + 0.04 * AST - 0.94 * sdiv(AST, ALT)
   
   out <- tibble::tibble(HSI = as.numeric(HSI), NAFLD_LFS = as.numeric(NAFLD_LFS))
-  if (na_action_eff == "omit")
+  if (na_action_eff == "omit") {
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = hm_result_summary(out, "liver_fat_markers"))
     return(out)
+  }
   
   # if keep/error, preserve original row count by padding
   res <- tibble::tibble(HSI = rep(NA_real_, nrow(data)),
                         NAFLD_LFS = rep(NA_real_, nrow(data)))
   res$HSI[keep] <- out$HSI
   res$NAFLD_LFS[keep] <- out$NAFLD_LFS
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(res, "liver_fat_markers"))
   res
 }

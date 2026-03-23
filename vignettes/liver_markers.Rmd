@@ -78,6 +78,22 @@ liver_markers(
 - Bilirubin is converted to umol/L internally for ALBI; other inputs use provided units.
 - Zero or nonpositive platelets, TG, GGT, bilirubin, creatinine, or negative ALT trigger warnings and yield NA in affected indices.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+liver_markers(
+  data = liver,
+  col_map = list(
+    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
+    bilirubin = "bilirubin", creatinine = "creatinine"
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 
 - Confirm triglycerides are in mg/dL (not mmol/L) and albumin in g/L.

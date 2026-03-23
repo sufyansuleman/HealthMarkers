@@ -100,7 +100,8 @@ ogtt_is <- function(data,
     fn = "ogtt_is"
   )
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> ogtt_is: validating and preparing inputs")
+  hm_inform("ogtt_is(): preparing inputs",
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Coerce required columns to numeric if needed (warn on NAs introduced)
   keys_to_check <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
@@ -122,6 +123,8 @@ ogtt_is <- function(data,
     vars = unname(unlist(col_map[keys_to_check], use.names = FALSE)),
     na_warn_prop = na_warn_prop
   )
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[keys_to_check], "ogtt_is"))
 
   # NA policy on required inputs
   used_cols <- unname(unlist(col_map[keys_to_check], use.names = FALSE))
@@ -133,11 +136,12 @@ ogtt_is <- function(data,
     }
   } else if (na_action == "omit" && length(used_cols)) {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> ogtt_is: omitting %d rows with NA in required inputs", sum(!keep)))
+      hm_inform(sprintf("ogtt_is(): omitting %d rows with NA in required inputs", sum(!keep)),
+                level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "debug", msg = "-> converting units (glucose mmol/L -> mg/dL; insulin pmol/L -> muU/mL)")
+  hm_inform("ogtt_is(): converting units", level = "debug")
 
   # 1) Extract & convert raw inputs
   G0   <- data[[col_map$G0]]   * 18 # mg/dL
@@ -152,7 +156,7 @@ ogtt_is <- function(data,
   age  <- data[[col_map$age]]
   sex  <- data[[col_map$sex]]
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> computing indices")
+  hm_inform("ogtt_is(): computing indices", level = "debug")
 
   # Helpers: safe log and safe division
   lg <- function(x) .ogtt_log(x)
@@ -233,12 +237,8 @@ ogtt_is <- function(data,
     )
   )
 
-  if (isTRUE(verbose)) {
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed ogtt_is: %d rows; extremes=%d",
-      nrow(data), extreme_count
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "ogtt_is"))
 
   out
 }

@@ -51,12 +51,32 @@ test_that("missing columns reported clearly", {
   expect_error(atherogenic_indices(dat, col_map = cm), "missing required columns in data: HDL_c")
 })
 
-test_that("package-level verbosity emits message when enabled globally", {
+test_that("package-level verbosity emits results summary message", {
   dat <- tibble(TG = 150, HDL_c = 50)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
-    atherogenic_indices(dat, col_map = cm),
-    "atherogenic_indices\\(\\): computed atherogenic indices"
+    atherogenic_indices(dat, col_map = cm, verbose = TRUE),
+    "results:"
   )
+})
+
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  dat <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
+  cm2 <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
+  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "atherogenic_indices")
+  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "column map")
+  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  dat  <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
+  cm2  <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
+  msgs <- testthat::capture_messages(
+    atherogenic_indices(dat, col_map = cm2, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

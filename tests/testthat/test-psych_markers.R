@@ -2,7 +2,6 @@
 
 library(testthat)
 library(tibble)
-library(dplyr)
 
 mini_df <- tibble(
   phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1, phq9_05 = 1, phq9_06 = 1, phq9_07 = 1, phq9_08 = 1, phq9_09 = 0,
@@ -90,4 +89,16 @@ test_that("missingness policy propagate NA when too much is missing", {
   df_na$phq9_02 <- NA
   out <- phq9_score(df_na, col_map = col_map_all$phq9, missing_prop_max = 0.1, impute = "none", na_action = "keep")
   expect_true(is.na(out$PHQ9_total))
+})
+
+test_that("psych_markers verbose emits preparing and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(psych_markers(mini_df, which = "phq9", verbose = TRUE), "psych_markers")
+  expect_message(psych_markers(mini_df, which = "phq9", verbose = TRUE), "results:")
+})
+
+test_that("psych_markers verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(psych_markers(mini_df, which = "phq9", verbose = TRUE))
+  expect_equal(sum(grepl("results:", msgs)), 1L)
 })

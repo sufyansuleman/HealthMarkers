@@ -22,7 +22,8 @@ Description: Computes over 50 specialist health marker functions covering
     imputation helpers and a unified 'all_health_markers()' dispatcher that
     returns all requested marker groups as a single wide tibble are included.
 License: MIT + file LICENSE
-URL: https://github.com/sufyansuleman/HealthMarkers
+URL: https://sufyansuleman.github.io/HealthMarkers/,
+    https://github.com/sufyansuleman/HealthMarkers
 BugReports: https://github.com/sufyansuleman/HealthMarkers/issues
 Depends:
     R (>= 4.0)

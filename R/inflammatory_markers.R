@@ -63,7 +63,7 @@ inflammatory_markers <- function(data, col_map,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  hm_inform("inflammatory_markers(): preparing inputs", level = "debug")
+  hm_inform("inflammatory_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   if (!is.data.frame(data)) {
     rlang::abort("inflammatory_markers(): `data` must be a data.frame or tibble.",
@@ -107,8 +107,10 @@ inflammatory_markers <- function(data, col_map,
     rlang::abort("inflammatory_markers(): missing col_map entries for: albumin",
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req_keys], "inflammatory_markers"))
 
-  if (isTRUE(verbose)) rlang::inform("-> inflammatory_markers: computing indices")
+  hm_inform("inflammatory_markers(): computing indices", level = "debug")
 
   supported_keys <- c("neutrophils","lymphocytes","monocytes","platelets","WBC","CRP","albumin","eosinophils","ESR")
   get_col <- function(key) if (key %in% names(col_map)) as.character(col_map[[key]])[1] else NA_character_
@@ -250,7 +252,8 @@ inflammatory_markers <- function(data, col_map,
   }
 
   if (dz_count > 0L) rlang::warn("inflammatory_markers(): zero denominators detected.")
-  if (isTRUE(verbose)) rlang::inform("inflammatory_markers(): computed inflammatory indices")
-
-  tibble::as_tibble(out)
+  out <- tibble::as_tibble(out)
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "inflammatory_markers"))
+  out
 }

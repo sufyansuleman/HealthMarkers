@@ -138,6 +138,38 @@ Rows only drop when na_action = "omit" or when na_action = "error" encounters mi
 - CRI_I should decrease if HDL_c rises with other lipids unchanged; similar for CRI_II.
 - Confirm that rows with NA in TG/HDL_c are dropped only when na_action = "omit".
 
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each lipid key resolved to.
+   Example: `atherogenic_indices(): column map: TG -> 'TG', HDL_c -> 'HDL_c', TC -> 'TC', LDL_c -> 'LDL_c'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `atherogenic_indices(): results: AIP 28/30, CRI_I 30/30, CRI_II 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- tibble::tibble(
+  TG    = c(150, 200),
+  HDL_c = c(50,  40),
+  TC    = c(200, 220),
+  LDL_c = c(120, 150)
+)
+atherogenic_indices(
+  df_v,
+  col_map = list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c"),
+  verbose = TRUE
+)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
 ## See also
 - health_summary() for combined marker panels.
 - glycemic_markers() for glucose and insulin-derived indices.

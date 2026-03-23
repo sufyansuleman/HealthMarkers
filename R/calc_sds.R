@@ -164,6 +164,8 @@ calc_sds <- function(
     msg_id <- if (is.null(id_col)) "" else paste0(" (id: ", id_col, ")")
     hm_inform(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s",
                       total_rows, length(vars), msg_id), level = "inform")
+    hm_inform(level = "inform",
+              msg = hm_col_report(as.list(stats::setNames(vars, vars)), "calc_sds"))
   }
 
   warns <- character(0)
@@ -278,9 +280,7 @@ calc_sds <- function(
 
   # --- Verbose completion summary ---
   if (isTRUE(verbose)) {
-    # Emit completion via base message to satisfy expect_message() without requiring options()
-    message("calc_sds: completed")
-    hm_inform("calc_sds: completed", level = "inform")
+    hm_inform(level = "inform", msg = "calc_sds: completed")
     hm_inform(sprintf("- rows in:    %d", n_rows_in), level = "debug")
     hm_inform(sprintf("- rows out:   %d", n_rows_out), level = "debug")
     hm_inform(sprintf("- omitted:    %d (na_strategy = '%s')", omitted_rows, na_strategy), level = "debug")
@@ -288,6 +288,9 @@ calc_sds <- function(
     if (!is.null(id_col) && n_rows_out > 0 && anyDuplicated(out[[id_col]]) > 0) {
       hm_inform("- note: duplicate IDs detected", level = "debug")
     }
+    hm_inform(level = "inform", msg = hm_result_summary(
+      tibble::as_tibble(out)[paste0(vars, "_sds")], "calc_sds"
+    ))
   }
 
   out_tbl <- tibble::as_tibble(out)

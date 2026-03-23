@@ -58,6 +58,40 @@ test_that("vectorized input produces matching row count", {
   expect_equal(nrow(out2), 2)
 })
 
+test_that("McAuley_index uses TG in mmol/L (not mg/dL)", {
+  I0_u   <- base_df$I0 / 6          # pmol/L -> mU/L
+  TG_mmol <- base_df$TG             # mmol/L: use raw, NOT * 88.57
+  manual_mc <- exp(2.63 - 0.28 * log(I0_u) - 0.31 * log(TG_mmol))
+  out <- run_adipo(base_df)
+  expect_equal(out$McAuley_index, manual_mc, tolerance = 1e-8)
+  # Sanity: typical adults -> McAuley ~3-10
+  expect_gt(out$McAuley_index, 2)
+  expect_lt(out$McAuley_index, 15)
+})
+
+test_that("LAP uses TG in mmol/L (not mg/dL)", {
+  TG_mmol <- base_df$TG             # mmol/L: use raw
+  manual_lap_m <- -((base_df$waist - 65) * TG_mmol)
+  manual_lap_f <- -((base_df$waist - 58) * TG_mmol)
+  out <- run_adipo(base_df)
+  expect_equal(out$LAP_Men_inv,   manual_lap_m, tolerance = 1e-8)
+  expect_equal(out$LAP_Women_inv, manual_lap_f, tolerance = 1e-8)
+  # Typical men WC=80, TG=1.2: LAP_Men = (80-65)*1.2 = 18; _inv = -18
+  expect_lt(out$LAP_Men_inv, 0)
+})
+
+test_that("VAI uses TG and HDL in mmol/L (Amato 2010 reference constants)", {
+  TG_mmol  <- base_df$TG      # mmol/L
+  HDL_mmol <- base_df$HDL_c   # mmol/L
+  manual_vai_m <- -(
+    (base_df$waist / (39.68 + 1.88 * base_df$bmi)) *
+    (TG_mmol / 1.03) *
+    (1.31 / HDL_mmol)
+  )
+  out <- run_adipo(base_df)
+  expect_equal(out$VAI_Men_inv, manual_vai_m, tolerance = 1e-8)
+})
+
 test_that("Revised_QUICKI matches manual computation", {
   I0_u <- base_df$I0 / 6
   G0_mgdL <- base_df$G0 * 18
@@ -154,8 +188,42 @@ test_that("zero denominator yields NA without error", {
   expect_true(is.na(out_zero$TG_HDL_C_inv))
 })
 
-test_that("package-level verbosity produces debug messages", {
-  local_options(list(healthmarkers.verbose = "debug"))
-  expect_message(run_adipo(base_df), "adipo_is\\(\\): preparing inputs")
-  expect_message(run_adipo(base_df), "adipo_is\\(\\): computed adipose indices")
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): preparing inputs")
+  expect_message(run_adipo(base_df, verbose = TRUE), "column map")
+  expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): results")
+})
+
+test_that("verbose column map lists all required keys", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
+  map_msg <- msgs[grepl("column map", msgs)]
+  expect_length(map_msg, 1L)
+  for (key in c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "bmi")) {
+    expect_true(grepl(key, map_msg), info = paste("key missing from column map msg:", key))
+  }
+})
+
+test_that("verbose results line reports correct non-NA counts", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  # base_df has 1 complete row -> expect all columns show 1/1
+  msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
+  res_msg <- msgs[grepl("results:", msgs)]
+  expect_length(res_msg, 1L)
+  expect_true(grepl("Revised_QUICKI 1/1", res_msg))
+  expect_true(grepl("McAuley_index 1/1", res_msg))
+})
+
+test_that("verbose = TRUE with inform option emits messages exactly once (no double-fire)", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
+  expect_equal(sum(grepl("preparing",  msgs)), 1L)
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
+})
+
+test_that("verbose = FALSE suppresses messages even at inform global level", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_no_message(run_adipo(base_df, verbose = FALSE))
 })

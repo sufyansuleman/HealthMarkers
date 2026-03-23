@@ -81,7 +81,9 @@ vitamin_d_status <- function(
     )
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> vitamin_d_status: preparing inputs")
+  hm_inform("vitamin_d_status(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[key_used], "vitamin_d_status"))
 
   # Coerce numeric
   vitd <- data[[vitd_col]]
@@ -147,7 +149,7 @@ vitamin_d_status <- function(
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> vitamin_d_status: computing status")
+  hm_inform("vitamin_d_status(): computing status", level = "debug")
 
   # Simple status bands (ng/mL): <20 Deficient, 20-29 Insufficient, >=30 Sufficient
   status <- ifelse(is.na(d_vitd), NA_character_,
@@ -165,7 +167,8 @@ vitamin_d_status <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("Completed vitamin_d_status: %d rows.", nrow(out)))
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "vitamin_d_status"))
   out
  
 }

@@ -44,15 +44,20 @@ test_that("iAge NA handling gives zero for all-NA row with na_action='omit'", {
 })
 
 # 4) Verbose message
-test_that("iAge verbose prints progress message", {
+test_that("iAge verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
-  old <- getOption("healthmarkers.verbose", "none")
-  on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(
-    iAge(df_ok, col_map = col_map, verbose = TRUE),
-    "-> iAge: computing weighted sum"
-  )
+  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "iAge")
+  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "column map")
+  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "results:")
+})
+
+test_that("iAge verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
+  msgs <- testthat::capture_messages(iAge(df_ok, col_map = col_map, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 # 5) Errors on invalid inputs

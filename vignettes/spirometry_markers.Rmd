@@ -135,6 +135,20 @@ try(
 - Zero/negative volumes: produce warnings; zero FVC yields NA ratios.
 - Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible volumes.
 
+## Verbose diagnostics
+
+Enable verbose output to inspect column mapping, row counts, and result summaries during QC:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+spirometry_markers(
+  data.frame(FEV1 = 2.8, FVC = 3.5),
+  col_map = list(fev1 = "FEV1", fvc = "FVC"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Provide demographics and install `rspiro` when GLI-based percent-predicted and GOLD grades are needed; otherwise rely on fixed 0.70 flag.
 - Use `na_action = "omit"` for modeling datasets that require complete spirometry; `keep`/`warn` for exploratory review.

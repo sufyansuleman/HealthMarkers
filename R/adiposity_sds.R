@@ -120,7 +120,6 @@ adiposity_sds <- function(
     rlang::warn("adiposity_sds(): extreme_action values 'warn' and 'ignore' are deprecated; prefer 'cap', 'NA', or 'error'.")
   }
 
-  t0 <- Sys.time()
   collected_warnings <- character()
 
   .warn <- function(msg) {
@@ -129,8 +128,8 @@ adiposity_sds <- function(
   }
   .abort <- function(msg, class) rlang::abort(msg, class = class)
   .inform <- function(msg) {
-    # honor package-level verbosity; still respect existing verbose=TRUE
-    if (isTRUE(verbose)) rlang::inform(msg)
+    # hm_inform() respects options(healthmarkers.verbose); verbose=TRUE arg has
+    # no additional effect here — avoids double-firing when both are active.
     hm_inform(msg, level = "inform")
   }
 
@@ -171,14 +170,6 @@ adiposity_sds <- function(
     )
   }
 
-  # Use centralized validation to check columns exist
-  #  hm_validate_inputs(
-#    data = data,
-#    col_map = as.list(var_map),   # keys are ref vars, values are data columns
-#    required_keys = vars,
-#    fn = "adiposity_sds"
-#  )
-
   if (!is.null(id_col) && !id_col %in% names(data)) {
     .abort(sprintf("adiposity_sds(): id_col '%s' not found in data.", id_col),
            "healthmarkers_adiposds_error_idcol_missing")
@@ -192,7 +183,8 @@ adiposity_sds <- function(
   }
 
   total_rows <- nrow(data)
-  .inform(sprintf("-> adiposity_sds: starting (%d rows, %d vars)", total_rows, length(vars)))
+  .inform(sprintf("adiposity_sds(): preparing inputs (%d rows, %d vars)", total_rows, length(vars)))
+  .inform(hm_col_report(as.list(var_map), "adiposity_sds"))
 
   # ---- Copy & numeric coercion ----
   df <- data
@@ -338,16 +330,7 @@ adiposity_sds <- function(
   }
 
   # ---- Verbose/package-level completion summary ----
-  elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-  .inform(paste0(
-    "Completed adiposity_sds: rows_in=", n_rows_in,
-    " rows_out=", n_rows_out,
-    " omitted=", omitted_rows,
-    " raw_adjusted=", capped_raw,
-    " sds_extreme=", total_extreme,
-    " vars=", length(vars),
-    sprintf(" elapsed=%.2fs", elapsed)
-  ))
+  .inform(hm_result_summary(out, "adiposity_sds"))
 
   # ---- Return ----
   if (isTRUE(return_summary)) {

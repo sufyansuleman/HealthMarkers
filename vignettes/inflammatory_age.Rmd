@@ -101,6 +101,16 @@ iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
 - Extreme scan uses broad defaults (CRP 0–300, IL6 0–1000, TNFa 0–2000); adjust via `extreme_rules` for your lab ranges.
 - Output: one-column tibble `iAge`; rows match input unless you subset beforehand.
 
+## Verbose diagnostics
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three structured messages on each call: preparing inputs, the column map, and a results summary.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+df_v <- tibble(CRP = 1.2, IL6 = 2.0, TNFa = 1.0)
+iAge(df_v, col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"), verbose = TRUE)
+options(old_opt)
+```
+
 ## Tips
 - Keep units consistent (CRP mg/L; IL6/TNFa pg/mL). Convert before calling if needed.
 - Prefer `na_action = "keep"` when you want to see which rows are incomplete; use `omit` when you want continuity of the score despite single missing markers.

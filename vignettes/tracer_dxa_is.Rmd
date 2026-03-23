@@ -143,6 +143,33 @@ tracer_dxa_is(
 - Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
 - All NA outputs: usually due to missing/invalid inputs, zero denominators, or aggressive `na_action = "omit"`.
 
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+tracer_dxa_is(
+  data = tibble(
+    I0             = 60,
+    rate_glycerol  = 150,
+    rate_palmitate = 120,
+    fat_mass       = 25,
+    weight         = 70,
+    HDL_c          = 1.2,
+    bmi            = 24
+  ),
+  col_map = list(
+    I0             = "I0",
+    rate_glycerol  = "rate_glycerol",
+    rate_palmitate = "rate_palmitate",
+    fat_mass       = "fat_mass",
+    weight         = "weight",
+    HDL_c          = "HDL_c",
+    bmi            = "bmi"
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to plausible ranges.
 - Choose `na_action = "omit"` for modeling datasets that require complete cases; use `keep` for exploratory review.

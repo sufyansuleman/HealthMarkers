@@ -80,7 +80,8 @@ test_that("metss errors when params key for sex-race is missing", {
 })
 
 # ---- Verbose messages ----
-test_that("verbose = TRUE prints validation and compute messages", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     waist   = 94,
     bp_sys  = 120,
@@ -91,14 +92,21 @@ test_that("verbose = TRUE prints validation and compute messages", {
     sex     = 1,
     race    = "NHW"
   )
-  expect_message(
-    metss(df, verbose = TRUE),
-    "-> metss: validating inputs"
+  expect_message(metss(df, verbose = TRUE), "metss")
+  expect_message(metss(df, verbose = TRUE), "column map")
+  expect_message(metss(df, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(
+    waist   = 94, bp_sys = 120, bp_dia = 80,
+    TG = 1.5, HDL_c = 1.1, glucose = 5.3,
+    sex = 1, race = "NHW"
   )
-  expect_message(
-    metss(df, verbose = TRUE),
-    "-> metss: computing score"
-  )
+  msgs <- testthat::capture_messages(metss(df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 # ---- NA handling policies ----

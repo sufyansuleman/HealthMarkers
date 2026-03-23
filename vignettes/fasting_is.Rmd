@@ -32,7 +32,6 @@ Use a small subset of the simulated data (30-50 rows). Swap `sim_small` with you
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
@@ -71,7 +70,7 @@ fis <- fasting_is(
 )
 
 fis_new <- setdiff(names(fis), names(sim_small))
-head(select(fis, all_of(fis_new)))
+head(dplyr::select(fis, dplyr::all_of(fis_new)))
 ```
 
 The preview shows only the newly computed indices. `_inv` columns are inverted so larger negatives indicate greater insulin resistance; `QUICKI`, `Raynaud`, and `Isi_basal` decrease as resistance worsens. All rows are retained here because `na_action = "keep"`.
@@ -118,7 +117,7 @@ fis_extreme <- fasting_is(
 list(
   keep_rows = nrow(fis_keep),
   omit_rows = nrow(fis_omit),
-  extreme_head = head(select(fis_extreme, all_of(fis_new)))
+  extreme_head = head(dplyr::select(fis_extreme, dplyr::all_of(fis_new)))
 )
 ```
 
@@ -129,6 +128,32 @@ Here `na_action = "keep"` preserves all six rows (with NA-derived outputs), whil
 - `na_action`: `keep` leaves NA-derived outputs; `omit` drops rows; `error` stops on any missing input.
 - `check_extreme` screens outputs for magnitudes beyond `extreme_limit`; adjust `extreme_limit` and choose `extreme_action` (`cap`/`NA`/`error`).
 - `normalize` is optional post-hoc scaling; set to `"none"` to preserve native scales.
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key resolved to.
+   Example: `fasting_is(): column map: G0 -> 'G0', I0 -> 'I0'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `fasting_is(): results: Fasting_inv 28/30, HOMA_IR_inv 28/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+invisible(fasting_is(
+  data    = sim_small[1:5, ],
+  col_map = col_map,
+  verbose = TRUE
+))
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Tips
 - Non-numeric inputs are coerced to numeric; coercion that introduces NAs triggers a warning.

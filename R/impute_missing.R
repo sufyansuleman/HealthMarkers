@@ -75,16 +75,16 @@ impute_missing <- function(data,
   }
 
   if (length(cols) == 0L) {
-    if (isTRUE(verbose)) hm_inform("impute_missing: nothing to impute (no numeric columns with NA).", level = "inform")
-    else hm_inform("impute_missing(): nothing to impute", level = "debug")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "impute_missing(): nothing to impute (no numeric columns with NA)")
     return(data)
   }
 
   if (isTRUE(verbose)) {
-    hm_inform(sprintf("-> impute_missing: starting (%d rows, %d column(s), method='%s')",
+    hm_inform(sprintf("impute_missing(): preparing inputs (%d rows, %d column(s), method='%s')",
                       nrow(data), length(cols), method), level = "inform")
   } else {
-    hm_inform("impute_missing(): starting", level = "debug")
+    hm_inform("impute_missing(): preparing inputs", level = "debug")
   }
 
   # High-missingness scan
@@ -123,7 +123,7 @@ impute_missing <- function(data,
     }
 
     if (isTRUE(verbose)) {
-      hm_inform(sprintf(".. impute_missing: '%s' -> replacing %d NA(s) with %s",
+      hm_inform(sprintf("impute_missing(): column '%s' -> replacing %d NA(s) with %s",
                         col, n_nas, format(replacement)), level = "debug")
     }
 
@@ -132,17 +132,13 @@ impute_missing <- function(data,
     imputed_counts[i] <- n_nas
   }
 
-  if (isTRUE(verbose)) {
-    total_imp <- sum(imputed_counts)
-    by_col <- paste(names(imputed_counts[imputed_counts > 0]),
-                    imputed_counts[imputed_counts > 0], sep = "=")
-    hm_inform(sprintf("Completed impute_missing: total imputed %d values across %d columns%s",
-                      total_imp, sum(imputed_counts > 0),
-                      if (length(by_col)) paste0(" [", paste(by_col, collapse = ", "), "]") else ""),
-              level = "inform")
-  } else {
-    hm_inform("impute_missing(): completed", level = "debug")
-  }
+  total_imp <- sum(imputed_counts)
+  by_col <- paste(names(imputed_counts[imputed_counts > 0]),
+                  imputed_counts[imputed_counts > 0], sep = "=")
+  hm_inform(sprintf("impute_missing(): results: imputed %d values across %d columns%s",
+                    total_imp, sum(imputed_counts > 0),
+                    if (length(by_col)) paste0(" [", paste(by_col, collapse = ", "), "]") else ""),
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   return(out)
 }
@@ -209,7 +205,8 @@ impute_mice <- function(data,
   }
   num_cols <- names(data)[is_num]
   if (length(num_cols) == 0L) {
-    if (isTRUE(verbose)) message("-> impute_mice: no numeric columns selected; returning input unchanged.")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "impute_mice(): no numeric columns selected; returning input unchanged")
     return(data)
   }
 
@@ -217,7 +214,8 @@ impute_mice <- function(data,
   has_na <- vapply(data[num_cols], anyNA, logical(1))
   target_cols <- num_cols[has_na]
   if (length(target_cols) == 0L) {
-    if (isTRUE(verbose)) message("-> impute_mice: no NAs in selected numeric columns; returning input unchanged.")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "impute_mice(): no NAs in selected numeric columns; returning input unchanged")
     return(data)
   }
   if (length(target_cols) < 2L) {
@@ -225,7 +223,7 @@ impute_mice <- function(data,
                  class = "healthmarkers_impute_error_min_cols_mice")
   }
 
-  if (isTRUE(verbose)) hm_inform(sprintf("-> impute_mice: starting (m=%d, %d columns, %d rows)", m, length(target_cols), nrow(data)), level = "inform")
+    if (isTRUE(verbose)) hm_inform(sprintf("impute_mice(): preparing inputs (%d rows, %d columns)", nrow(data), length(target_cols)), level = "inform") else hm_inform("impute_mice(): preparing inputs", level = "debug")
 
   num_data <- data[, target_cols, drop = FALSE]
 
@@ -244,13 +242,9 @@ impute_mice <- function(data,
   out <- data
   out[, names(out_num)] <- out_num
 
-  if (isTRUE(verbose)) {
-    total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-    hm_inform(sprintf("Completed impute_mice: imputed %d values across %d columns.", total_imp, length(target_cols)),
-              level = "inform")
-  } else {
-    hm_inform("impute_mice(): completed", level = "debug")
-  }
+  total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
+  hm_inform(sprintf("impute_mice(): results: imputed %d values across %d columns.", total_imp, length(target_cols)),
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   return(out)
 }
@@ -316,7 +310,8 @@ impute_missforest <- function(data,
   }
   num_cols <- names(data)[is_num]
   if (length(num_cols) == 0L) {
-    if (isTRUE(verbose)) message("-> impute_missforest: no numeric columns selected; returning input unchanged.")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "impute_missforest(): no numeric columns selected; returning input unchanged")
     return(data)
   }
 
@@ -324,7 +319,8 @@ impute_missforest <- function(data,
   has_na <- vapply(data[num_cols], anyNA, logical(1))
   target_cols <- num_cols[has_na]
   if (length(target_cols) == 0L) {
-    if (isTRUE(verbose)) message("-> impute_missforest: no NAs in selected numeric columns; returning input unchanged.")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "impute_missforest(): no NAs in selected numeric columns; returning input unchanged")
     return(data)
   }
   if (length(target_cols) < 2L) {
@@ -332,7 +328,7 @@ impute_missforest <- function(data,
                  class = "healthmarkers_impute_error_min_cols_missforest")
   }
 
-  if (isTRUE(verbose)) hm_inform(sprintf("-> impute_missforest: starting (ntree=%d, %d columns, %d rows)", ntree, length(target_cols), nrow(data)), level = "inform")
+    if (isTRUE(verbose)) hm_inform(sprintf("impute_missforest(): preparing inputs (%d rows, %d columns)", nrow(data), length(target_cols)), level = "inform") else hm_inform("impute_missforest(): preparing inputs", level = "debug")
 
   num_data <- data[, target_cols, drop = FALSE]
 
@@ -352,23 +348,21 @@ impute_missforest <- function(data,
     out <- impute_missing(out, method = "mean", cols = target_cols, verbose = FALSE)
     if (isTRUE(verbose)) {
       total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-      hm_inform(sprintf("Completed impute_missforest: fallback mean imputation; imputed %d values across %d columns.",
+      hm_inform(sprintf("impute_missforest(): results: fallback mean imputation; imputed %d values across %d columns.",
                         total_imp, length(target_cols)), level = "inform")
     } else {
-      hm_inform("impute_missforest(): completed (fallback)", level = "debug")
+      total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
+      hm_inform(sprintf("impute_missforest(): results: fallback mean imputation; imputed %d values across %d columns.",
+                        total_imp, length(target_cols)), level = "debug")
     }
     return(out)
   }
 
   out[, names(res$ximp)] <- res$ximp
 
-  if (isTRUE(verbose)) {
-    total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
-    hm_inform(sprintf("Completed impute_missforest: imputed %d values across %d columns.", total_imp, length(target_cols)),
-              level = "inform")
-  } else {
-    hm_inform("impute_missforest(): completed", level = "debug")
-  }
+  total_imp <- sum(vapply(target_cols, function(cn) sum(is.na(data[[cn]])), integer(1)))
+  hm_inform(sprintf("impute_missforest(): results: imputed %d values across %d columns.", total_imp, length(target_cols)),
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   return(out)
 }

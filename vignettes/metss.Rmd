@@ -139,6 +139,27 @@ metss(
 - `na_action = "omit"` drops rows missing required inputs; otherwise missing inputs propagate `NA` into `MetSSS`.
 - Extreme handling can cap/NA/warn/error; diagnostics run independently and can still warn after capping.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+metss(
+  data = mets,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 
 - Confirm sex encoded as 1/2 and race matches a `params` key; only the first-row key is used.

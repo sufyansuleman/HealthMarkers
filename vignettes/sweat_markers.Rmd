@@ -129,6 +129,35 @@ sweat_markers(
 - Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
 - All NA outputs: usually due to missing/invalid inputs, zero denominators, or aggressive `na_action = "omit"`.
 
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+sweat_markers(
+  data = tibble(
+    sweat_chloride    = 45,
+    sweat_Na          = 55,
+    sweat_K           = 5,
+    sweat_lactate     = 4.8,
+    weight_before     = 70,
+    weight_after      = 69.5,
+    duration          = 1.0,
+    body_surface_area = 1.9
+  ),
+  col_map = list(
+    sweat_chloride    = "sweat_chloride",
+    sweat_Na          = "sweat_Na",
+    sweat_K           = "sweat_K",
+    sweat_lactate     = "sweat_lactate",
+    weight_before     = "weight_before",
+    weight_after      = "weight_after",
+    duration          = "duration",
+    body_surface_area = "body_surface_area"
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to plausible ranges.
 - Choose `na_action = "omit"` for modeling datasets that require complete cases; use `keep` for exploratory review.

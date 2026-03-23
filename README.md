@@ -3,14 +3,14 @@ HealthMarkers
 
 - [HealthMarkers](#healthmarkers)
   - [Installation](#installation)
-  - [Package overview by domain](#package-overview-by-domain)
-  - [The two ways to use
-    HealthMarkers](#the-two-ways-to-use-healthmarkers)
+  - [Package overview](#package-overview)
+  - [How to use HealthMarkers](#how-to-use-healthmarkers)
   - [Function-by-function guide](#function-by-function-guide)
   - [Column mapping](#column-mapping)
   - [Handle missing data before
     computing](#handle-missing-data-before-computing)
   - [Verbose diagnostics](#verbose-diagnostics)
+  - [Further information](#further-information)
   - [Vignettes](#vignettes)
   - [Contributing](#contributing)
   - [Citation](#citation)
@@ -35,7 +35,9 @@ scores, inflammatory aging clocks, frailty indices, psychiatric rating
 scales, alternate-biofluid panels, and much more — all accessible
 through a unified dispatcher, `all_health_markers()`.
 
-### Why HealthMarkers?
+> **Full documentation, function reference, and vignettes** are
+> available at the package website:\
+> <https://sufyansuleman.github.io/HealthMarkers/>
 
 - **One interface, many markers.** A single `all_health_markers()` call
   returns glycaemic, lipid, liver, renal, pulmonary, inflammatory,
@@ -47,7 +49,7 @@ through a unified dispatcher, `all_health_markers()`.
 - **Reproducible.** Explicit `col_map` arguments map *your* column names
   to expected internal keys — no silent renaming.
 - **Reference-backed.** Every function cites the primary paper. Full
-  bibliography in `inst/REFERENCES.bib`. 43 vignettes with worked
+  bibliography in `inst/REFERENCES.bib`. 46 vignettes with worked
   clinical examples are included.
 
 ------------------------------------------------------------------------
@@ -71,7 +73,7 @@ install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
 
 ------------------------------------------------------------------------
 
-## Package overview by domain
+## Package overview
 
 | Domain | Functions | Outputs |
 |----|----|----|
@@ -96,7 +98,7 @@ install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
 
 ------------------------------------------------------------------------
 
-## The two ways to use HealthMarkers
+## How to use HealthMarkers
 
 ### Path 1 — `all_health_markers()`: the dispatcher
 
@@ -131,8 +133,9 @@ The `which` argument accepts any of the following group keys:
 
     insulin_fasting     insulin_ogtt        insulin_adipose     insulin_tracer_dxa
     glycemic            lipid               atherogenic         cvd_aip
-    cvd_ldl_particles   cvd_ascvd           cvd_qrisk3          cvd_scorescvd
-    cvd_stroke          liver               liver_fat           mets
+    cvd_risk            cvd_ldl_particles   cvd_ascvd           cvd_qrisk3
+    cvd_scorescvd       cvd_stroke          liver               liver_fat
+    mets
     metabolic_risk      pulmo               spirometry          bode
     saliva              sweat               urine               renal
     kidney_kfre         ckd_stage           nutrient            vitamin
@@ -280,7 +283,7 @@ charlson_index(data, col_map = list(mi="MI", chf="CHF", diabetes="DM",...))
 sarc_f_score(data, col_map = list(strength="Q1", walking="Q2",...))
 ```
 
-### Psychiatric rating scales
+### Psychiatric scores
 
 **When to use:** mental health research; epidemiological surveys with
 standardised questionnaires.
@@ -436,13 +439,26 @@ options(healthmarkers.verbose = TRUE)
 
 ------------------------------------------------------------------------
 
+## Further information
+
+The **package website** contains the full function reference, rendered
+vignettes, and a searchable article index:
+
+- **Website:** <https://sufyansuleman.github.io/HealthMarkers/>
+- **Function reference:**
+  <https://sufyansuleman.github.io/HealthMarkers/reference/>
+- **All articles / vignettes:**
+  <https://sufyansuleman.github.io/HealthMarkers/articles/>
+
+------------------------------------------------------------------------
+
 ## Vignettes
 
 Each domain has a dedicated vignette with worked examples and clinical
-interpretation:
+interpretation. Browse them online or from within R:
 
 ``` r
-# Browse all 43 vignettes
+# Browse all 46 vignettes
 browseVignettes("HealthMarkers")
 
 # Open specific ones
@@ -452,9 +468,15 @@ vignette("cvd_risk",           package = "HealthMarkers")
 vignette("kidney_kfre",        package = "HealthMarkers")
 vignette("frailty_index",      package = "HealthMarkers")
 vignette("inflammatory_age",   package = "HealthMarkers")
-vignette("psych_scores",       package = "HealthMarkers")
+vignette("psych_markers",      package = "HealthMarkers")
 vignette("frax_score",         package = "HealthMarkers")
+vignette("liver_fat_markers",  package = "HealthMarkers")
+vignette("nfl_marker",         package = "HealthMarkers")
+vignette("impute_missing",     package = "HealthMarkers")
 ```
+
+All 46 vignettes are also rendered and searchable at
+<https://sufyansuleman.github.io/HealthMarkers/articles/>.
 
 ------------------------------------------------------------------------
 

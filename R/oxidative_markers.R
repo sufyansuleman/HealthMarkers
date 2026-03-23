@@ -26,7 +26,8 @@ oxidative_markers <- function(
 ) {
   na_action <- match.arg(na_action)
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> oxidative_markers: validating inputs")
+  hm_inform("oxidative_markers(): preparing inputs",
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   # HM-CS v2 validation
   hm_validate_inputs(
@@ -65,6 +66,8 @@ oxidative_markers <- function(
       hm_inform(level = "debug", msg = sprintf("oxidative_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[c("GSH", "GSSG")], "oxidative_markers"))
 
   # NA policy
   if (na_action == "error") {
@@ -75,11 +78,13 @@ oxidative_markers <- function(
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> oxidative_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(sprintf("oxidative_markers(): omitting %d rows with NA in required inputs", sum(!keep)),
+                level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> oxidative_markers: computing markers")
+  hm_inform("oxidative_markers(): computing markers", level = "debug")
 
   # Accessors (post-filter)
   GSH  <- data[[col_map$GSH]]
@@ -94,13 +99,8 @@ oxidative_markers <- function(
 
   out <- tibble::tibble(GSH_GSSG_Ratio = sdiv(GSH, GSSG))
 
-  if (isTRUE(verbose)) {
-    na_count <- sum(is.na(out$GSH_GSSG_Ratio) | !is.finite(out$GSH_GSSG_Ratio))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed oxidative_markers: %d rows; NA/Inf in GSH_GSSG_Ratio=%d",
-      nrow(out), na_count
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "oxidative_markers"))
 
   out
 }

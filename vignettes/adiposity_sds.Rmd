@@ -53,6 +53,8 @@ col_map <- list(
 
 ## Walkthrough (build ref, compute SDS)
 
+`adiposity_sds()` returns a tibble of **only the `<var>_SDS` columns** — not the original data. Bind back with `dplyr::bind_cols()` if needed.
+
 ```{r}
 ref <- list(
   BMI = c(mean = mean(sim_small$BMI, na.rm = TRUE), sd = sd(sim_small$BMI, na.rm = TRUE)),
@@ -72,7 +74,7 @@ asds <- adiposity_sds(
 )
 
 new_cols <- setdiff(names(asds), names(sim_small))
-asds |> slice_head(n = 5) |> select(all_of(new_cols))
+asds %>% slice_head(n = 5) %>% select(all_of(new_cols))
 ```
 
 Interpretation: each `<var>_SDS` is `(x - mean)/sd`; values near 0 are average, positive above, negative below the reference. `extreme_action = "cap"` would cap SDS beyond `sds_cap` if present.
@@ -111,9 +113,55 @@ demo_omit <- adiposity_sds(
 list(
   keep_rows = nrow(demo_keep),
   omit_rows = nrow(demo_omit),
-  capped_preview = demo_keep |> select(ends_with("_SDS")) |> slice_head(n = 3)
+  capped_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
 )
 ```
+
+## Diagnostics summary with `return_summary`
+
+Set `return_summary = TRUE` to get a list with the SDS tibble plus counts of omitted rows, raw extreme adjustments, and SDS extremes:
+
+```{r}
+res <- adiposity_sds(
+  data           = demo,
+  col_map        = col_map,
+  ref            = ref,
+  na_action      = "omit",
+  check_extreme  = TRUE,
+  extreme_action = "cap",
+  sds_cap        = 5,
+  return_summary = TRUE
+)
+
+res$summary
+head(res$data)     # SDS tibble
+res$warnings       # any diagnostic messages collected
+```
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each mapped variable resolved to.
+   Example: `adiposity_sds(): column map: BMI -> 'BMI', waist -> 'waist', ...`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `adiposity_sds(): results: BMI_SDS 28/30, waist_SDS 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+invisible(adiposity_sds(
+  data  = sim_small[1:5, ],
+  col_map = col_map,
+  ref   = ref,
+  na_action = "keep"
+))
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Expectations
 - Each mapped variable must exist; `ref` must provide finite `mean` and `sd > 0` for it.

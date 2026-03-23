@@ -1,3 +1,5 @@
+url: https://sufyansuleman.github.io/HealthMarkers/
+
 template:
   bootstrap: 5
 
@@ -8,21 +10,114 @@ navbar:
   components:
     github:
       icon: fa-github
+      aria-label: GitHub repository
       href: https://github.com/sufyansuleman/HealthMarkers
 
 reference:
-  - title: Dispatchers
+  - title: "Dispatcher functions"
+    desc: "Compute many marker groups at once and return a single wide tibble."
     contents:
-      - health_markers
+      - all_health_markers
+      - all_insulin_indices
+      - metabolic_markers
+
+  - title: "Insulin sensitivity"
+    desc: "Fasting, OGTT, adipose-tissue, tracer and DXA-based indices."
+    contents:
+      - fasting_is
+      - ogtt_is
+      - adipo_is
+      - tracer_dxa_is
+
+  - title: "Glycaemic & lipid markers"
+    contents:
+      - glycemic_markers
+      - lipid_markers
+      - atherogenic_indices
+      - cvd_marker_aip
+      - cvd_marker_ldl_particle_number
+
+  - title: "Cardiovascular risk"
+    contents:
+      - cvd_risk
+      - cvd_risk_ascvd
+      - cvd_risk_qrisk3
+      - cvd_risk_scorescvd
+      - cvd_risk_stroke
+
+  - title: "Liver function"
+    contents:
+      - liver_markers
+      - liver_fat_markers
+
+  - title: "Metabolic syndrome & allostatic load"
+    contents:
+      - metss
+      - metabolic_risk_features
+      - allostatic_load
+
+  - title: "Renal / CKD"
+    contents:
+      - kidney_failure_risk
+      - renal_markers
+      - ckd_stage
+      - urine_markers
+
+  - title: "Pulmonary function"
+    contents:
+      - pulmo_markers
+      - spirometry_markers
+      - bode_index
+
+  - title: "Inflammatory & aging markers"
+    contents:
+      - inflammatory_markers
+      - iAge
+      - oxidative_markers
+      - kyn_trp_ratio
+
+  - title: "Hormonal markers"
+    contents:
+      - hormone_markers
+
+  - title: "Body composition & anthropometry"
+    contents:
+      - obesity_indices
+      - adiposity_sds
+      - adiposity_sds_strat
+      - alm_bmi_index
+      - calc_sds
+
+  - title: "Bone & fracture risk"
+    contents:
+      - bone_markers
+      - frax_score
+
+  - title: "Frailty & comorbidity"
+    contents:
+      - frailty_index
+      - charlson_index
+      - sarc_f_score
+
+  - title: "Vitamins & nutrients"
+    contents:
+      - vitamin_markers
+      - vitamin_d_status
+      - nutrient_markers
+
+  - title: "Alternate biofluids"
+    contents:
+      - saliva_markers
+      - sweat_markers
+
+  - title: "Neurological & calcium"
+    contents:
+      - nfl_marker
+      - corrected_calcium
+
+  - title: "Psychiatric rating scales"
+    contents:
       - psych_markers
-  - title: Metabolic and clinical
-    contents:
-      - starts_with("adipo")
-      - ends_with("_markers")
-      - ends_with("_risk")
-      - ends_with("_index")
-  - title: Psych scales
-    contents:
       - phq9_score
       - gad7_score
       - k6_score
@@ -38,10 +133,119 @@ reference:
       - psych_dx_flags
       - psych_med_flags
 
+  - title: "Utilities"
+    contents:
+      - infer_cols
+      - impute_missing
+      - impute_mice
+      - impute_missforest
+      - normalize_vec
+      - validate_inputs
+      - make_marker_function
+      - marker_summary
+      - health_summary
+      - plot_frailty_age
+
 articles:
-  - title: Getting started
+  - title: "Getting started"
     contents:
       - getting-started
-  - title: Psychometrics
+
+  - title: "Insulin sensitivity"
+    contents:
+      - fasting_is
+      - ogtt_is
+      - adipo_is
+      - tracer_dxa_is
+
+  - title: "Glycaemic & lipid"
+    contents:
+      - glycemic_markers
+      - lipid_markers
+      - atherogenic_indices
+
+  - title: "Cardiovascular risk"
+    contents:
+      - cvd_risk
+
+  - title: "Liver function"
+    contents:
+      - liver_markers
+      - liver_fat_markers
+
+  - title: "Metabolic syndrome"
+    contents:
+      - metss
+      - metabolic_risk_features
+      - allostatic_load
+
+  - title: "Renal / CKD"
+    contents:
+      - kidney_kfre
+      - renal_markers
+      - ckd_stage
+      - urine_markers
+
+  - title: "Pulmonary"
+    contents:
+      - pulmo_markers
+      - spirometry_markers
+      - bode_index
+
+  - title: "Inflammatory & aging"
+    contents:
+      - inflammatory_markers
+      - inflammatory_age
+      - oxidative_markers
+      - kyn_trp_ratio
+
+  - title: "Hormonal"
+    contents:
+      - hormone_markers
+
+  - title: "Body composition"
+    contents:
+      - obesity_indices
+      - adiposity_sds
+      - adiposity_sds_strat
+      - alm_bmi_index
+      - calc_sds
+
+  - title: "Bone & fracture"
+    contents:
+      - bone_markers
+      - frax_score
+
+  - title: "Frailty & comorbidity"
+    contents:
+      - frailty_index
+      - charlson_index
+      - sarc_f_score
+
+  - title: "Vitamins & nutrients"
+    contents:
+      - vitamin_markers
+      - vitamin_d_status
+      - nutrient_markers
+
+  - title: "Alternate biofluids"
+    contents:
+      - saliva_markers
+      - sweat_markers
+
+  - title: "Neurological"
+    contents:
+      - corrected_calcium
+      - nfl_marker
+
+  - title: "Psychiatric"
     contents:
       - psych_markers
+
+  - title: "Data utilities"
+    contents:
+      - impute_missing
+
+  - title: "Overview"
+    contents:
+      - health_markers

@@ -155,6 +155,24 @@ cap_res[1, c("ARR", "FAI")]
 - Extreme screening is optional; when enabled, choose how to handle flagged values with `extreme_action`.
 - Outputs are numeric ratios; divisions by zero/non-finite are converted to `NA`.
 
+## Verbose diagnostics
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three structured messages on each call: preparing inputs, the column map, and a results summary.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+df_v <- data.frame(
+  total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
+  estradiol = 100, progesterone = 50, free_T3 = 5, free_T4 = 10,
+  aldosterone = 20, renin = 4, insulin = 20, glucagon = 10,
+  GH = 2, IGF1 = 4, prolactin = 12, cortisol_0 = 200, cortisol_30 = 260
+)
+hormone_markers(df_v,
+  col_map = setNames(as.list(names(df_v)), names(df_v)),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 - Keep units consistent across rows (e.g., cortisol nmol/L, aldosterone/renin in matching units) to make ratios meaningful.
 - Use `na_action = "omit"` when you prefer complete-case ratios; keep/ignore if you want row counts preserved.

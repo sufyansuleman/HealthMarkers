@@ -83,10 +83,8 @@ saliva_markers <- function(data,
 
   # HM-CS v2: standardized validation
   required_keys <- c("cort1","cort2","cort3","amylase","glucose")
+  hm_inform("saliva_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "saliva_markers")
-
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> saliva_markers: validating inputs")
-  t0 <- Sys.time()
 
   # Ensure mapped columns exist
   mapped <- unname(unlist(col_map[required_keys], use.names = FALSE))
@@ -121,6 +119,9 @@ saliva_markers <- function(data,
     }
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[required_keys], "saliva_markers"))
+
   # NA policy on required inputs
   if (na_action == "error") {
     has_na <- Reduce(`|`, lapply(mapped, function(cn) is.na(data[[cn]])))
@@ -130,7 +131,9 @@ saliva_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> saliva_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("saliva_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -193,7 +196,7 @@ saliva_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> saliva_markers: computing markers")
+  hm_inform("saliva_markers(): computing markers", level = "debug")
 
   # Helpers
   safe_log <- function(x) {
@@ -234,16 +237,8 @@ saliva_markers <- function(data,
     saliva_glucose    = as.numeric(glu)
   )
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed saliva_markers: %d rows; NA/Inf -> %s; capped=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "saliva_markers"))
 
   out
 }

@@ -49,7 +49,7 @@ allostatic_load <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  hm_inform("allostatic_load(): preparing inputs", level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "allostatic_load(): preparing inputs")
 
   # ---- Validate inputs ----
   if (!is.data.frame(data)) {
@@ -82,10 +82,12 @@ allostatic_load <- function(
     var_map <- c(col_map, var_map)[vars]
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> allostatic_load: validating inputs")
-
   # Confirm required columns exist in data
   req_cols <- unname(unlist(var_map, use.names = FALSE))
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(as.list(var_map), "allostatic_load")
+  )
   missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {
     rlang::abort(
@@ -158,7 +160,7 @@ allostatic_load <- function(
 
   # ---- Compute flags and sum ----
   inclusive <- length(vars) == 1L
-  hm_inform(sprintf("allostatic_load(): computing (rule %s)", if (inclusive) ">=" else ">"), level = "inform")
+  hm_inform(level = "debug", msg = sprintf("allostatic_load(): computing (rule %s)", if (inclusive) ">=" else ">"))
 
   flag_cols <- lapply(vars, function(v) {
     cn <- var_map[[v]]
@@ -178,7 +180,10 @@ allostatic_load <- function(
 
   out <- tibble::tibble(AllostaticLoad = as.integer(rowSums(flag_mat, na.rm = TRUE)))
 
-  hm_inform("allostatic_load(): computed allostatic load", level = "inform")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "allostatic_load")
+  )
 
   if (isTRUE(return_summary)) {
     return(list(

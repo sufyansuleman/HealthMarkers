@@ -112,6 +112,32 @@ a_cap <- corrected_calcium(
 head(a_cap)
 ```
 
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key (`calcium`, `albumin`) resolved to.
+   Example: `corrected_calcium(): column map: calcium -> 'Ca', albumin -> 'Alb'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `corrected_calcium(): results: corrected_calcium 28/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active.
+Reset with `options(healthmarkers.verbose = NULL)` or `options(healthmarkers.verbose = "none")`.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+cc_verbose <- corrected_calcium(
+  data    = sim_small,
+  col_map = col_map,
+  units   = "conventional",
+  verbose = TRUE
+)
+
+options(old_opt)   # restore original setting
+```
+
 ## Outputs
 - corrected_calcium (mg/dL when units = conventional; mmol/L when units = si or auto-inferred SI)
 - Rows drop only with na_action = "omit"; na_action = "error" aborts on missing.
@@ -122,9 +148,21 @@ head(a_cap)
 - Tighten extreme_rules to your lab ranges; use extreme_action = "error" for strict QC.
 - Downstream consumers expecting mg/dL should keep units = "conventional" or convert explicitly.
 
-## Validation ideas
-- If Ca = 9.0 mg/dL and Alb = 3.0 g/dL, corrected Ca should be 9.0 + 0.8*(4 - 3) = 9.8 mg/dL.
-- If Ca = 2.25 mmol/L and Alb = 35 g/L, expect ~2.45 mmol/L after correction (via conversion).
+## Validation
+```{r}
+# Payne formula spot check (conventional): Ca = 9.0, Alb = 3.0 => 9.0 + 0.8*(4-3) = 9.8
+v1 <- corrected_calcium(data.frame(Ca = 9.0, Alb = 3.0), col_map, units = "conventional")
+stopifnot(abs(v1$corrected_calcium - 9.8) < 1e-10)
+
+# SI round-trip: Ca = 2.25 mmol/L, Alb = 35 g/L
+# working: Ca_mg = 2.25*4 = 9.0, Alb_gdl = 35/10 = 3.5
+# corrected_mg = 9.0 + 0.8*(4 - 3.5) = 9.4; corrected_mmol = 9.4/4 = 2.35
+v2 <- corrected_calcium(data.frame(Ca = 2.25, Alb = 35), col_map, units = "si")
+stopifnot(abs(v2$corrected_calcium - 2.35) < 1e-10)
+
+cat("Payne conventional:", v1$corrected_calcium, "mg/dL\n")
+cat("Payne SI round-trip:", v2$corrected_calcium, "mmol/L\n")
+```
 
 ## See also
 - renal_markers() for broader kidney panels.

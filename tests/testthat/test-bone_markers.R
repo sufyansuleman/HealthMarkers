@@ -73,18 +73,20 @@ test_that("missing optional biomarkers yield NA columns", {
   expect_true(all(is.na(out$Osteocalcin)))
 })
 
-test_that("package-level verbosity emits messages", {
-  old <- getOption("healthmarkers.verbose", "none")
-  on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(
-    bone_markers(df_full, col_map = cm_full),
-    "computing bone markers"
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "bone_markers")
+  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "column map")
+  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(
+    bone_markers(df_full, col_map = cm_full, verbose = TRUE)
   )
-  expect_message(
-    bone_markers(df_full, col_map = cm_full),
-    "completed"
-  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action = 'keep' retains rows with missing/non-finite", {

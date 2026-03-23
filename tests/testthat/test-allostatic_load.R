@@ -80,14 +80,24 @@ test_that("zero-row data returns zero-row tibble", {
   expect_named(out, "AllostaticLoad")
 })
 
-test_that("package-level verbosity emits messages", {
-  old <- getOption("healthmarkers.verbose", "none")
-  on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  df <- tibble(A = c(1, 5), B = c(0, 3))
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df  <- tibble(A = c(1, 5), B = c(0, 3))
   thr <- list(A = 2, B = 1)
-  expect_message(allostatic_load(df, thresholds = thr), "computing")
-  expect_message(allostatic_load(df, thresholds = thr), "computed allostatic load")
+  expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "allostatic_load")
+  expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "column map")
+  expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df  <- tibble(A = c(1, 5), B = c(0, 3))
+  thr <- list(A = 2, B = 1)
+  msgs <- testthat::capture_messages(
+    allostatic_load(df, thresholds = thr, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("return_summary returns structured list", {
@@ -99,4 +109,8 @@ test_that("return_summary returns structured list", {
   expect_true(is.list(res$summary))
   expect_true(all(c("rows","biomarkers","total_flags","mean_flags") %in% names(res$summary)))
   expect_equal(res$summary$total_flags, sum(res$data$AllostaticLoad))
+  # A = c(1,5,6), thr = 2, single biomarker -> >= rule; flags: 0,1,1 -> total = 2
+  expect_equal(res$summary$total_flags, 2L)
+  expect_equal(res$summary$biomarkers, 1L)
+  expect_equal(res$summary$rows, 3L)
 })

@@ -52,8 +52,9 @@ spirometry_markers <- function(
                  class = "healthmarkers_spiro_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> spirometry_markers: preparing inputs")
-  else hm_inform("spirometry_markers(): preparing inputs", level = "debug")
+  hm_inform("spirometry_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[req_keys], "spirometry_markers"))
 
   # Coerce numeric for volumes; sanitize
   vol_cols <- c(col_map$fev1, col_map$fvc, col_map$fev1_post, col_map$fvc_post)
@@ -264,8 +265,8 @@ spirometry_markers <- function(
     out <- tibble::as_tibble(res)
   }
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("Completed spirometry_markers: %d rows.", nrow(out)))
-  else hm_inform(sprintf("spirometry_markers(): completed (%d rows)", nrow(out)), level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "spirometry_markers"))
 
   out
 }

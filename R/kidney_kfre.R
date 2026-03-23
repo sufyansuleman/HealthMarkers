@@ -92,8 +92,7 @@ kidney_failure_risk <- function(data,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> kidney_failure_risk: validating inputs")
+  hm_inform("kidney_failure_risk(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Optional package-level validation; keep test-facing messages stable
   req_keys <- c("age", "sex", "eGFR", "UACR")
@@ -128,6 +127,9 @@ kidney_failure_risk <- function(data,
     )
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req_keys], "kidney_failure_risk"))
+
   # Column classes
   if (!is.numeric(data[[col_map$age]]))  rlang::abort("kidney_failure_risk(): 'age' column must be numeric.",  class = "healthmarkers_kfre_error_nonnumeric_age")
   if (!is.numeric(data[[col_map$eGFR]])) rlang::abort("kidney_failure_risk(): 'eGFR' column must be numeric.", class = "healthmarkers_kfre_error_nonnumeric_egfr")
@@ -151,7 +153,7 @@ kidney_failure_risk <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(k) is.na(data[[col_map[[k]]]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> kidney_failure_risk: omitting %d rows with NA in required inputs", sum(!keep)))
+    hm_inform(sprintf("kidney_failure_risk(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -192,7 +194,7 @@ kidney_failure_risk <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> kidney_failure_risk: computing KFRE risks")
+  hm_inform("kidney_failure_risk(): computing KFRE risks", level = "debug")
 
   # Prognostic index and risk
   pi <- 0.220 * log(age) +
@@ -211,15 +213,8 @@ kidney_failure_risk <- function(data,
     KFRE_5yr = KFRE_5yr
   )
 
-  if (isTRUE(verbose)) {
-    n <- nrow(out)
-    bad <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed kidney_failure_risk: %d rows; NA/Inf -> %s; capped=%d; elapsed=%.2fs",
-      n, paste(sprintf("%s=%d", names(bad), bad), collapse = ", "), capped_n, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "kidney_failure_risk"))
 
   return(out)
 }

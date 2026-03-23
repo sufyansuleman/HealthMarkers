@@ -109,12 +109,7 @@ glycemic_markers <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  # HM-CS v2: start message at debug level or console when verbose
-  if (isTRUE(verbose)) {
-    message("glycemic_markers: validating inputs")
-  } else {
-    hm_inform("glycemic_markers(): validating inputs", level = "debug")
-  }
+  hm_inform("glycemic_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Normalize col_map to identity if NULL
   if (is.null(col_map)) {
@@ -137,6 +132,8 @@ glycemic_markers <- function(
   if (length(miss)) {
     stop(sprintf("missing required columns: %s", paste(miss, collapse = ", ")), call. = FALSE)
   }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req_keys], "glycemic_markers"))
 
   # Determine used keys present in data
   all_keys <- c(req_keys, "glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")
@@ -147,7 +144,7 @@ glycemic_markers <- function(
   used_keys <- all_keys[present]
   used_cols <- unname(unlist(col_map[used_keys]))
 
-  if (isTRUE(verbose)) message("-> coercing used columns to numeric")
+  hm_inform("glycemic_markers(): coercing used columns to numeric", level = "debug")
 
   # Coerce used columns to numeric and report NAs introduced
   for (cn in used_cols) {
@@ -252,7 +249,7 @@ glycemic_markers <- function(
     if (!is.null(adiponectin)) adiponectin <- data[[col_map$adiponectin]]
   }
 
-  if (isTRUE(verbose)) message("-> glycemic_markers: computing markers")
+  hm_inform("glycemic_markers(): computing markers", level = "debug")
 
   # helpers for safe math
   lg <- function(x) .gm_log(x)
@@ -322,16 +319,8 @@ glycemic_markers <- function(
   )
 
   # Completion summary
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(!is.finite(x) | is.na(x)), integer(1))
-    message(sprintf(
-      "Completed glycemic_markers: %d rows; NA counts -> %s",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", ")
-    ))
-  } else {
-    hm_inform(sprintf("glycemic_markers(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "glycemic_markers"))
 
   return(out)
 }

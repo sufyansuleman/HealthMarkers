@@ -32,7 +32,6 @@ Use a 30-row slice of the simulated data for the examples. We demonstrate lipid 
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
@@ -69,7 +68,7 @@ The code below runs only if each required package is available.
 ```{r eval=requireNamespace("PooledCohort", quietly = TRUE)}
 ascvd10 <- cvd_risk(sim_small, model = "ASCVD", year = 10)
 stroke10 <- cvd_risk(sim_small, model = "Stroke", year = 10)
-head(bind_rows(ascvd10, stroke10))
+head(dplyr::bind_rows(ascvd10, stroke10))
 ```
 
 ```{r eval=requireNamespace("QRISK3", quietly = TRUE)}
@@ -85,6 +84,35 @@ head(rs_out)
 ## Outputs
 - Each model returns a tibble; `model = "ALL"` row-binds results and substitutes `NA` rows for models that fail validation or lack optional packages.
 - Lipid markers accept `na_action` (keep/omit/error) via `...`; risk calculators rely on their backend behavior.
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call for the lipid marker functions (`cvd_marker_aip`, `cvd_marker_ldl_particle_number`):
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key resolved to.
+   Example: `cvd_marker_aip(): column map: TG -> 'TG', HDL_c -> 'HDL_c'`
+3. **Results summary** — shows how many rows computed successfully (non-NA).
+   Example: `cvd_marker_aip(): results: AIP 28/30`
+
+For the risk calculator wrappers (ASCVD, QRISK3, Stroke), `verbose = TRUE` also emits quality-scan summaries (non-finite, high-NA counts). The `cvd_risk()` dispatcher always emits a dispatch message at the debug level.
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+invisible(cvd_risk(
+  data    = sim_small,
+  model   = "AIP",
+  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+  verbose = TRUE
+))
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Tips
 - Install optional packages: PooledCohort (ASCVD, Stroke), QRISK3, RiskScorescvd. Without them, guarded chunks skip and `model = "ALL"` yields `NA` placeholders.

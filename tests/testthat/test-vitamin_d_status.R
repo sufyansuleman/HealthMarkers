@@ -10,10 +10,20 @@ test_that("mapping validation and missing columns error", {
                class = "healthmarkers_vitd_error_missing_columns")
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- data.frame(VitD = c(12, 35))
-  expect_message(vitamin_d_status(df, cm, verbose = TRUE), "-> vitamin_d_status: preparing inputs")
-  expect_message(vitamin_d_status(df, cm, verbose = TRUE), "-> vitamin_d_status: computing status")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(vitamin_d_status(df, cm, verbose = TRUE), "vitamin_d_status")
+  expect_message(vitamin_d_status(df, cm, verbose = TRUE), "column map")
+  expect_message(vitamin_d_status(df, cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- data.frame(VitD = c(12, 35))
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(vitamin_d_status(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("coercion warning when non-numeric introduces NAs", {

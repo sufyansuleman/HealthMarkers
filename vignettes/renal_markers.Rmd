@@ -139,6 +139,20 @@ renal_markers(
 - All NA outputs: often missing required inputs, unmapped sex/race, or missing cystatin_C when expecting combined eGFR.
 - Extreme screening: tailor `extreme_rules`; use `cap` to mute outliers.
 
+## Verbose diagnostics
+
+Enable verbose output to inspect column mapping, row counts, and result summaries during QC:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+renal_markers(
+  data = tibble(Cr = 0.9, Age = 45, Sex = "male", Race = "white", BUN = 12),
+  col_map = list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Validate units and mappings first; run `summary()` on key columns to catch implausible values.
 - Use `na_action = "omit"` for modeling to avoid NA propagation; `keep` for descriptive review.

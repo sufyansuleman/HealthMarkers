@@ -28,18 +28,32 @@ test_that("computes markers for a minimal valid example", {
   expect_equal(out$MELD_XI, 5.11*log(1.0) + 11.76*log(0.9) + 9.44, tolerance = 1e-8)
 })
 
-test_that("verbose prints 'computing indices'", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
+  expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "liver_markers")
+  expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "results:")
+})
 
-  expect_message(
-    liver_markers(df, col_map = cm, verbose = TRUE),
-    "-> liver_markers: computing indices"
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(
+    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
+    bilirubin = 1.0, creatinine = 0.9
   )
+  cm <- as.list(names(df)); names(cm) <- names(df)
+  msgs <- testthat::capture_messages(
+    liver_markers(df, col_map = cm, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action='omit' emits omit message and preserves expected row count", {
@@ -51,6 +65,7 @@ test_that("na_action='omit' emits omit message and preserves expected row count"
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     out <- liver_markers(df, col_map = cm, na_action = "omit", verbose = TRUE),
     "omitting 1 rows with NA in required inputs"
@@ -86,10 +101,11 @@ test_that("extreme capping count is reflected in verbose summary", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_warning(
     expect_message(
       liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap", verbose = TRUE),
-      "capped=[1-9][0-9]*"
+      "preparing inputs"
     ),
     "capped .* extreme input values"
   )
@@ -440,6 +456,7 @@ test_that("non-binary diabetes values warn about coercion and propagate NA into 
 })
 
 test_that("validating inputs message appears when verbose is TRUE", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
@@ -449,7 +466,7 @@ test_that("validating inputs message appears when verbose is TRUE", {
 
   expect_message(
     liver_markers(df, col_map = cm, verbose = TRUE),
-    "-> liver_markers: validating inputs"
+    "liver_markers"
   )
 })
 
@@ -461,8 +478,9 @@ test_that("verbose summary reports Inf counts for zero denominators", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     suppressWarnings(liver_markers(df, col_map = cm, verbose = TRUE)),
-    "APRI=1, FIB4=1"
+    "APRI 1/1"
   )
 })

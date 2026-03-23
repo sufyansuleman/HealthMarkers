@@ -33,7 +33,6 @@ Illustrative demo data only; replace with your cohort.
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 demo <- tibble(
   Age = c(65, 72, 80, 68, 74, 60),
@@ -86,7 +85,7 @@ frax_out <- frax_score(
   verbose = FALSE
 )
 
-select(frax_out, frax_major_percent, frax_hip_percent, frax_sex_norm, frax_age_used, frax_bmd_tscore) %>%
+dplyr::select(frax_out, frax_major_percent, frax_hip_percent, frax_sex_norm, frax_age_used, frax_bmd_tscore) %>%
   head()
 ```
 
@@ -130,7 +129,7 @@ omit_cap <- frax_score(
 list(
   keep_rows = nrow(keep_cap),
   omit_rows = nrow(omit_cap),
-  capped_preview = head(select(keep_cap, frax_age_used, frax_bmd_tscore, frax_major_percent, frax_hip_percent))
+  capped_preview = head(dplyr::select(keep_cap, frax_age_used, frax_bmd_tscore, frax_major_percent, frax_hip_percent))
 )
 ```
 
@@ -142,6 +141,21 @@ Here `na_action = "keep"` retains rows even with missing/unknown sex or age (out
 - Choose `na_action` to enforce or relax completeness; `error` is strict, `omit` drops, `keep` retains.
 - Use `check_extreme`/`extreme_action` to cap, blank, or reject out-of-range age/BMD (defaults age 40–90, BMD T -6 to 2).
 - `verbose = TRUE` surfaces progress and QA messages.
+
+## Verbose diagnostics
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three structured messages on each call: preparing inputs, the column map, and a results summary.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+df_v <- data.frame(Age = c(65, 72), Sex = c("F", "M"),
+                   bmd = c(-2.0, -1.0))
+frax_score(
+  df_v,
+  col_map = list(age = "Age", sex = "Sex", bmd = "bmd"),
+  verbose = TRUE
+)
+options(old_opt)
+```
 
 ## Tips
 - Normalize sex coding to `M`/`F` or 1/0 before calling to avoid NA normalization.

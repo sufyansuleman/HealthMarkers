@@ -109,6 +109,20 @@ sarc_f_score(
 - Out-of-range values: a warning is emitted even without `check_extreme`; set `check_extreme = TRUE` + `extreme_action = "cap"` or `"NA"` to enforce bounds.
 - All NA scores: usually due to missing items, coercion to NA, or NA introduced by extreme handling with `extreme_action = "NA"`.
 
+## Verbose diagnostics
+
+Enable verbose output to inspect column mapping, row counts, and result summaries during QC:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+sarc_f_score(
+  data.frame(Strength = 1, Walking = 1, Chair = 1, Stairs = 0, Falls = 0),
+  col_map = list(strength="Strength", walking="Walking", chair="Chair", stairs="Stairs", falls="Falls"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to 0–2 when data may be noisy.
 - Choose `na_action = "omit"` when you need complete-case scores for modeling; use `keep`/`warn` for exploratory summaries where partial data is expected.

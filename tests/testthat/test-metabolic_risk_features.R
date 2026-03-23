@@ -173,17 +173,32 @@ test_that("high missingness warning is emitted when proportion exceeds threshold
   )
 })
 
-test_that("verbose prints progress and completion summary", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
     age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 40,
     bp_sys_z = 0, bp_dia_z = 0
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_message(
-    metabolic_risk_features(df, col_map = cm, verbose = TRUE),
-    "-> metabolic_risk_features: validating inputs"
+  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "metabolic_risk_features")
+  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(
+    chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
+    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 40,
+    bp_sys_z = 0, bp_dia_z = 0
   )
+  cm <- as.list(names(df)); names(cm) <- names(df)
+  msgs <- testthat::capture_messages(
+    metabolic_risk_features(df, col_map = cm, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("extreme_action='NA' sets flagged inputs to NA and propagates to outputs", {
@@ -217,6 +232,7 @@ test_that("na_action='omit' drops rows with required NA and announces omission",
     bp_sys_z = c(0, 0), bp_dia_z = c(0, 0)
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     out <- metabolic_risk_features(df, col_map = cm, na_action = "omit", verbose = TRUE),
     "omitting 1 rows with NA in required inputs"

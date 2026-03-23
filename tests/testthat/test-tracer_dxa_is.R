@@ -133,7 +133,7 @@ test_that("vectorized over multiple rows", {
   expect_equal(nrow(out2), 2)
 })
 
-test_that("verbose messages print appropriately", {
+test_that("verbose emits preparing, column map, and results messages", {
   df_full <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,
@@ -141,7 +141,6 @@ test_that("verbose messages print appropriately", {
     rate_palmitate = 1.5, rate_glycerol = 2.0,
     fat_mass = 20, weight = 70, bmi = 24
   )
-  # adipose-only
   col_map_adipose <- list(
     I0             = "I0",
     rate_palmitate = "rate_palmitate",
@@ -151,22 +150,33 @@ test_that("verbose messages print appropriately", {
     HDL_c          = "HDL_c",
     bmi            = "bmi"
   )
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(
-    tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE),
-    "adipose-only indices"
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "tracer_dxa_is")
+  expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "column map")
+  expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df_full <- tibble(
+    G0 = 5, G30 = 7, G120 = 7,
+    I0 = 60, I30 = 65, I120 = 70,
+    TG = 1.5, HDL_c = 1.2, FFA = 0.5,
+    rate_palmitate = 1.5, rate_glycerol = 2.0,
+    fat_mass = 20, weight = 70, bmi = 24
   )
-  # full mode
-  full_map <- c(col_map_adipose,
-    G0 = "G0", G30 = "G30", G120 = "G120",
-    I30 = "I30", I120 = "I120",
-    TG = "TG", FFA = "FFA"
+  col_map_adipose <- list(
+    I0             = "I0",
+    rate_palmitate = "rate_palmitate",
+    rate_glycerol  = "rate_glycerol",
+    fat_mass       = "fat_mass",
+    weight         = "weight",
+    HDL_c          = "HDL_c",
+    bmi            = "bmi"
   )
-  expect_message(
-    tracer_dxa_is(df_full, full_map, verbose = TRUE),
-    "computing indices"
-  )
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action policies: error and omit behave as expected", {

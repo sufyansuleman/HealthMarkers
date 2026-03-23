@@ -34,7 +34,6 @@ These examples run only if the `di` package is installed.
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 has_di <- requireNamespace("di", quietly = TRUE)
 
@@ -72,7 +71,7 @@ if (has_di) {
     verbose = FALSE
   )
 
-  head(select(fi_tbl, di, all_of(cols)))
+  head(dplyr::select(fi_tbl, di, dplyr::all_of(cols)))
 } else {
   message("Install the 'di' package to run the examples.")
 }
@@ -124,7 +123,7 @@ if (has_di) {
   list(
     keep_rows = nrow(fi_keep),
     omit_rows = nrow(fi_omit),
-    capped_example = head(select(fi_keep, di, all_of(cols)))
+    capped_example = head(dplyr::select(fi_keep, di, dplyr::all_of(cols)))
   )
 } else {
   message("Install the 'di' package to run the examples.")
@@ -139,6 +138,39 @@ With `na_action = "keep"`, all rows remain (missing deficits propagate to FI). W
 - Choose `na_action` to control row retention vs. dropping on missing deficits.
 - Use `check_extreme`/`extreme_action` to scan and cap or blank values outside [0,1] when desired.
 - `return = "data"` gives a tibble (`di` + selected deficits [+ age]); `return = "list"` returns the raw `di::di` output.
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit structured messages. This function uses a `cols` vector rather than a named `col_map`, so the **column map** message lists the selected deficit columns directly:
+
+1. **Preparing inputs** — row count, deficit count, and whether `age` was provided.
+2. **Column map** — lists the selected deficit column names.
+   Example: `frailty_index(): column map: d1, d2, d3`
+3. **Results summary** (only when `return = "data"`) — shows how many rows of `di` are non-NA.
+   Example: `frailty_index(): results: di 8/8`
+   For `return = "list"`, the range of the FI vector is reported instead.
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+if (has_di) {
+  old_opt <- options(healthmarkers.verbose = "inform")
+
+  invisible(frailty_index(
+    data    = demo_df,
+    cols    = cols,
+    age     = "age",
+    return  = "data",
+    verbose = TRUE
+  ))
+
+  options(old_opt)
+} else {
+  message("Install the 'di' package to run the examples.")
+}
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Tips
 - Keep deficits close to [0,1]; `rescale = TRUE` can normalize mild deviations, but extreme outliers may still need capping.

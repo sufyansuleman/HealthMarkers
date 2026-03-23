@@ -65,7 +65,6 @@ Compute the glutathione redox ratio (`GSH_GSSG_Ratio`) from reduced (GSH) and ox
 - NA values indicate missing or invalid input, or division by zero.
 
 ## Worked example 1: Basic usage
-*Interpretation:* The third row yields NA because GSH is missing. Ratios are computed as GSH/GSSG for each row.
 
 ```{r}
 library(HealthMarkers)
@@ -80,16 +79,16 @@ oxidative_markers(
 ```
 *Interpretation:* The third row yields NA because GSH is missing. Ratios are computed as GSH/GSSG for each row.
 
-## Worked example 2: Omit missing data and verbose output
+## Worked example 2: Omit missing data
+
 ```{r}
 oxidative_markers(
   data = df,
   col_map = list(GSH = "GSH", GSSG = "GSSG"),
-  na_action = "omit",
-  verbose = TRUE
+  na_action = "omit"
 )
 ```
-*Interpretation:* Only complete rows are returned. Verbose output shows counts of omitted rows.
+*Interpretation:* Only complete rows are returned; the third row (NA GSH) is dropped.
 
 
 
@@ -99,6 +98,18 @@ oxidative_markers(
 - **Non-numeric input:** Non-numeric columns are coerced; check for unexpected NAs after coercion.
 - **High missingness:** If many NAs are present, check your input data and consider using `na_action = "omit"`.
 - **Column mapping errors:** If you get a missing column error, check your `col_map` and input names.
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+oxidative_markers(
+  data = df,
+  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  verbose = TRUE
+)
+options(old_opt)
+```
 
 ## Tips for best results
 - Use `na_action = "omit"` for modeling or summary statistics to avoid NA propagation.

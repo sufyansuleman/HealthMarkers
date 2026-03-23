@@ -100,13 +100,31 @@ test_that("frailty_index NA handling works", {
   )
 })
 
-# 8) verbose messages include start and completion summary
-test_that("frailty_index verbose messages", {
+# 8) verbose messages include preparing, column map, and results
+test_that("frailty_index verbose = TRUE emits preparing and column map messages", {
   skip_if_not_installed("di")
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(d1 = c(1, 0), d2 = c(0, 1))
-  expect_message(
-    frailty_index(df, cols = c("d1", "d2"), verbose = TRUE),
-    "frailty_index: completed",
-    all = FALSE
+  expect_message(frailty_index(df, cols = c("d1", "d2"), verbose = TRUE), "frailty_index")
+  expect_message(frailty_index(df, cols = c("d1", "d2"), verbose = TRUE), "column map")
+})
+
+test_that("frailty_index verbose double-fire guard: each message fires exactly once", {
+  skip_if_not_installed("di")
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- tibble::tibble(d1 = c(1, 0), d2 = c(0, 1))
+  msgs <- testthat::capture_messages(
+    frailty_index(df, cols = c("d1", "d2"), verbose = TRUE)
   )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+})
+
+test_that("frailty_index return='data' verbose emits results summary", {
+  skip_if_not_installed("di")
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- tibble::tibble(d1 = c(1, 0), d2 = c(0, 1))
+  msgs <- testthat::capture_messages(
+    frailty_index(df, cols = c("d1", "d2"), return = "data", verbose = TRUE)
+  )
+  expect_equal(sum(grepl("results:", msgs)), 1L)
 })

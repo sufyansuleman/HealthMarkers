@@ -91,11 +91,11 @@ alm_bmi_index <- function(
   }
 
   # --- verbose / debug --------------------------------------------------------
-  if (isTRUE(verbose)) {
-    rlang::inform("-> alm_bmi_index: preparing inputs")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("alm_bmi_index(): preparing inputs", level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "alm_bmi_index(): preparing inputs")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[req], "alm_bmi_index")
+  )
 
   # --- coerce ALM/BMI numeric; sex as character ------------------------------
   num_cols <- unname(unlist(col_map[c("alm","bmi")]))
@@ -222,11 +222,7 @@ alm_bmi_index <- function(
   }
 
   # --- compute ratio and low-muscle flag -------------------------------------
-  if (isTRUE(verbose)) {
-    rlang::inform("-> alm_bmi_index: computing")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("alm_bmi_index(): computing", level = "debug")
-  }
+  hm_inform(level = "debug", msg = "alm_bmi_index(): computing")
 
   ratio <- d_alm / d_bmi
   ratio[!is.finite(ratio)] <- NA_real_
@@ -252,11 +248,10 @@ alm_bmi_index <- function(
     out <- out_core
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform(sprintf("Completed alm_bmi_index: %d rows.", nrow(out)))
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform(sprintf("alm_bmi_index(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "alm_bmi_index")
+  )
 
   out
 }

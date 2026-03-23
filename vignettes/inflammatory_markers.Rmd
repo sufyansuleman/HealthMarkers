@@ -112,6 +112,18 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 - Extreme scan uses broad defaults for blood counts/CRP/albumin; adjust via `extreme_action` and built-in ranges.
 - Panel selection: `auto` uses eos if `eosinophils` mapping is present; `both` returns the union.
 
+## Verbose diagnostics
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three structured messages on each call: preparing inputs, the column map, and a results summary.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+df_v <- tibble::tibble(neutrophils = 4, lymphocytes = 2, monocytes = 0.5, platelets = 200, CRP = 2.5)
+cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes",
+             monocytes = "monocytes", platelets = "platelets", CRP = "CRP")
+inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE)
+options(old_opt)
+```
+
 ## Tips
 - If your lymphocyte/eosinophil counts can be zero, consider `na_action = "keep"` to avoid dropping rows; zeros still trigger divide-by-zero warnings.
 - Tighten ranges when using capping to match lab references.

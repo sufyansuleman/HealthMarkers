@@ -87,6 +87,18 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 - Extreme defaults: age 18–120, eGFR 1–200, UACR 0.1–10000 mg/g. Adjust via `extreme_rules` if needed.
 - Output: tibble with `KFRE_2yr`, `KFRE_5yr`; row count follows `na_action` and any row filtering you apply.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+kidney_failure_risk(
+  data    = df,
+  col_map = col_map,
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 - Check units before running (e.g., UACR mg/g vs mg/mmol); convert upstream if needed.
 - Use `na_action = "error"` for strict QA; `warn` to surface high missingness while retaining rows.

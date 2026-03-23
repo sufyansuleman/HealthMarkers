@@ -163,15 +163,24 @@ test_that("zero denominators emit a consolidated warning and yield NA in ratios"
   expect_equal(out_zero$U_Na_K_ratio, 60 / 20)  # unaffected (denominator is K, not creatinine)
 })
 
-test_that("verbose = TRUE prints a progress message", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- tibble(
     urine_albumin    = 30,
     urine_creatinine = 2
   )
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(
-    urine_markers(df, verbose = TRUE),
-    "-> urine_markers: computing markers"
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(urine_markers(df, verbose = TRUE), "urine_markers")
+  expect_message(urine_markers(df, verbose = TRUE), "column map")
+  expect_message(urine_markers(df, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- tibble(
+    urine_albumin    = 30,
+    urine_creatinine = 2
   )
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(urine_markers(df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

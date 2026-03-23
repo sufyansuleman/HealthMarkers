@@ -24,6 +24,33 @@ test_that("computes correct SDS for single row", {
   expect_equal(out$waist_SDS, (92 - 80) / 12)
 })
 
+test_that("output columns are named <var>_SDS and returns only SDS columns", {
+  df <- tibble(BMI = c(23, 27), waist = c(80, 92))
+  out <- adiposity_sds(df, ref = ref)
+  expect_named(out, c("BMI_SDS", "waist_SDS"))
+  expect_equal(ncol(out), 2L)
+  expect_equal(nrow(out), 2L)
+})
+
+test_that("SDS formula is (x - mean) / sd for multiple rows", {
+  df <- tibble(BMI = c(19, 23, 31), waist = c(68, 80, 104))
+  out <- adiposity_sds(df, ref = ref)
+  expect_equal(out$BMI_SDS,   (df$BMI   - 23) / 4,  tolerance = 1e-10)
+  expect_equal(out$waist_SDS, (df$waist - 80) / 12, tolerance = 1e-10)
+})
+
+test_that("return_summary = TRUE returns list with data, summary, warnings elements", {
+  df <- tibble(BMI = c(25, NA, 21), waist = c(90, 70, 80))
+  res <- adiposity_sds(df, ref = ref, return_summary = TRUE, na_action = "omit")
+  expect_type(res, "list")
+  expect_named(res, c("data", "summary", "warnings"))
+  expect_s3_class(res$data, "tbl_df")
+  expect_equal(nrow(res$data), 2L)          # 1 row omitted
+  expect_equal(res$summary$omitted_rows, 1L)
+  expect_equal(res$summary$rows_in, 3L)
+  expect_type(res$warnings, "character")
+})
+
 test_that("raw extreme scanning (cap) caps values", {
   df <- tibble(BMI = c(120, 22), waist = c(300, 60))
   out <- NULL
@@ -69,10 +96,18 @@ test_that("SDS extreme handling respects sds_cap and extreme_action", {
   expect_error(adiposity_sds(df, ref = ref, extreme_action = "error", sds_cap = 6), "SDS beyond")
 })
 
-test_that("package-level verbosity emits messages", {
-  old <- getOption("healthmarkers.verbose", "none")
-  on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(BMI = 23, waist = 80)
-  expect_message(adiposity_sds(df, ref = ref), "Completed adiposity_sds:")
+  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "adiposity_sds")
+  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "column map")
+  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(BMI = 23, waist = 80)
+  msgs <- testthat::capture_messages(adiposity_sds(df, ref = ref, verbose = TRUE))
+  expect_equal(sum(grepl("column map",  msgs)), 1L)
+  expect_equal(sum(grepl("results:",    msgs)), 1L)
 })

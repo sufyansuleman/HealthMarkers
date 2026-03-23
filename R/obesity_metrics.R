@@ -104,8 +104,8 @@ obesity_indices <- function(data,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> obesity_indices: validating inputs")
+  hm_inform("obesity_indices(): preparing inputs",
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Capture and quote arguments
   wt_q <- rlang::enquo(weight);  wt_name  <- rlang::quo_name(wt_q)
@@ -117,6 +117,12 @@ obesity_indices <- function(data,
   # Validate data frame and required columns
   .oi_validate_data_and_cols(data, c(wt_name, ht_name, wst_name, hp_name), include_RFM, sx_name)
   .oi_warn_high_missing(data, c(wt_name, ht_name, wst_name, hp_name, if (include_RFM) sx_name else NULL), na_warn_prop)
+  col_map_report <- c(
+    list(weight = wt_name, height = ht_name, waist = wst_name, hip = hp_name),
+    if (!is.null(sx_name)) list(sex = sx_name) else list()
+  )
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map_report, "obesity_indices"))
 
   # NA policy on required inputs
   used_cols <- c(wt_name, ht_name, wst_name, hp_name, if (include_RFM) sx_name else NULL)
@@ -129,11 +135,12 @@ obesity_indices <- function(data,
   } else if (na_action == "omit") {
     if (length(used_cols)) {
       keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-      if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> obesity_indices: omitting %d rows with NA in required inputs", sum(!keep)))
+      hm_inform(sprintf("obesity_indices(): omitting %d rows with NA in required inputs", sum(!keep)),
+                level = if (isTRUE(verbose)) "inform" else "debug")
       data <- data[keep, , drop = FALSE]
     }
   }
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> obesity_indices: computing indices")
+  hm_inform("obesity_indices(): computing indices", level = "debug")
 
   # Unit-normalized base fields
   out <- dplyr::mutate(
@@ -277,23 +284,8 @@ obesity_indices <- function(data,
     rlang::warn(sprintf("obesity_indices(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    # Summarize NA/Inf across new outputs
-    outputs <- c("weight_kg","height_m","BMI","BMI_cat","WHR","waist_to_height_ratio",
-                 "AVI","BAI","ABSI","BRI","CI","waist_to_BMI_ratio","weight_to_height_ratio",
-                 if (adjust_WHR) "WHRadjBMI" else NULL,
-                 if (include_RFM) "RFM" else NULL)
-    na_counts <- vapply(outputs, function(nm) {
-      x <- out[[nm]]
-      if (is.character(x)) sum(is.na(x)) else sum(is.na(x) | !is.finite(x))
-    }, integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-       "Completed obesity_indices: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-       nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-       capped_n, dz_total, elapsed
-     ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "obesity_indices"))
 
   out
 }

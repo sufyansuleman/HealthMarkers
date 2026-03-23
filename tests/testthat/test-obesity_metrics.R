@@ -212,16 +212,28 @@ test_that("include_RFM warns on invalid sex values and sets NA", {
   expect_true(all(is.na(out$RFM)))
 })
 
-# 9) Verbose prints progress and completion summary
-test_that("verbose prints progress and completion summary", {
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-   expect_message(
-     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
-     "-> obesity_indices: validating inputs"
-   )
-   expect_message(
-     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
-     "Completed obesity_indices: .* rows; NA/Inf ->"
-   )
+# 9) Verbose emits preparing, column map, and results messages
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
+    "obesity_indices"
+  )
+  expect_message(
+    obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
+    "column map"
+  )
+  expect_message(
+    obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
+    "results:"
+  )
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(
+    obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

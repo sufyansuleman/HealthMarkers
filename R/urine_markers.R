@@ -81,8 +81,7 @@ urine_markers <- function(data,
     rlang::abort("urine_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_urine_error_data_type")
   }
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> urine_markers: validating inputs")
-  t0 <- Sys.time()
+  hm_inform("urine_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # 1) required columns (urine-only core)
   req <- c("urine_albumin", "urine_creatinine")
@@ -117,6 +116,9 @@ urine_markers <- function(data,
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map_id[req], "urine_markers"))
+
   # 3) High-missingness diagnostics on required inputs (debug level)
   for (cn in req) {
     x <- data[[cn]]
@@ -137,7 +139,9 @@ urine_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> urine_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("urine_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -204,7 +208,7 @@ urine_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> urine_markers: computing markers")
+  hm_inform("urine_markers(): computing markers", level = "debug")
 
   # 6) Safe division helper with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
@@ -282,16 +286,8 @@ urine_markers <- function(data,
     rlang::warn(sprintf("urine_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed urine_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "urine_markers"))
 
   out
 }

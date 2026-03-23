@@ -85,11 +85,9 @@ nfl_marker <- function(
   }
 
   # --- verbose / debug messages ---------------------------------------------
-  if (isTRUE(verbose)) {
-    rlang::inform("-> nfl_marker: preparing inputs")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("nfl_marker(): preparing inputs", level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "nfl_marker(): preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map["nfl"], "nfl_marker"))
 
   # --- coerce to numeric; warn on NA introduction ---------------------------
   cn <- mapped
@@ -172,11 +170,7 @@ nfl_marker <- function(
     }
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform("-> nfl_marker: computing")
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform("nfl_marker(): computing", level = "debug")
-  }
+  hm_inform(level = "debug", msg = "nfl_marker(): computing")
 
   out <- tibble::tibble(nfl_value = d_nfl)
 
@@ -187,11 +181,8 @@ nfl_marker <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform(sprintf("Completed nfl_marker: %d rows.", nrow(out)))
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform(sprintf("nfl_marker(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "nfl_marker"))
 
   out
 }

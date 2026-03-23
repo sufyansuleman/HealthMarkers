@@ -107,6 +107,16 @@ urine_markers(
 - Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
 - All NA outputs: often due to missing required inputs, zero denominators, or aggressive `na_action = "omit"`.
 
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+urine_markers(
+  data = tibble(urine_albumin = 30, urine_creatinine = 2),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Start with `check_extreme = TRUE`, `extreme_action = "warn"` to gauge outliers; switch to `cap` to truncate.
 - Use `na_action = "omit"` when downstream analyses need complete cases; `keep` for exploratory review.

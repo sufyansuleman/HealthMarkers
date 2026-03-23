@@ -117,6 +117,17 @@ vitamin_markers(
 )
 ```
 
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+vitamin_markers(
+  data = df,
+  col_map = cm,
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Troubleshooting and tips
 
 - Incomplete or unnamed `col_map` aborts; ensure every key above is mapped.

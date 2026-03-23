@@ -100,11 +100,18 @@ infer_cols <- function(data,
       I120 = paste0("^(?:I", opt(sep), "120(?:\\b|$)|ins(?:ulin)?", opt(sep), "120(?:\\b|$))"),
 
       # ---- Anthropometry ----
-      weight = paste0("^(?:weight|body", sep, "?weight)(?:\\b|$)"),
-      bmi    = paste0("^(?:BMI|body", sep, "?mass", sep, "?index)(?:\\b|$)"),
-      waist  = paste0("^(?:waist|waist", sep, "?circumference)(?:\\b|$)"),
-      age    = "^(?:age|years?)(?:\\b|$)",
-      sex    = "^(?:sex|gender)(?:\\b|$)",
+      weight    = paste0("^(?:weight|body", sep, "?weight)(?:\\b|$)"),
+      bmi       = paste0("^(?:BMI|body", sep, "?mass", sep, "?index)(?:\\b|$)"),
+      BMI       = paste0("^(?:BMI|body", sep, "?mass", sep, "?index)(?:\\b|$)"),
+      waist     = paste0("^(?:WC|waist|waist", sep, "?circumference)(?:\\b|$)"),
+      WC        = paste0("^(?:WC|waist|waist", sep, "?circumference)(?:\\b|$)"),
+      age       = "^(?:age|years?)(?:\\b|$)",
+      sex       = "^(?:sex|gender)(?:\\b|$)",
+      SBP       = paste0("^(?:SBP|sys(?:tolic)?", sep, "?(?:blood", sep, "?)?pres(?:sure)?)(?:\\b|$)"),
+      DBP       = paste0("^(?:DBP|dia(?:stolic)?", sep, "?(?:blood", sep, "?)?pres(?:sure)?)(?:\\b|$)"),
+      FFA       = paste0("^(?:FFA|NEFA|free", sep, "?fatty", sep, "?acids?)(?:\\b|$)"),
+      fat_mass  = paste0("^(?:fat", sep, "?mass|FM)(?:\\b|$)"),
+      lean_mass = paste0("^(?:lean", sep, "?mass|LM|lean", sep, "?body", sep, "?mass)(?:\\b|$)"),
 
       # ---- Lipids ----
       TG     = "^(?:TG|tri(?:acyl)?glyceri?des?)(?:\\b|$)",
@@ -132,6 +139,8 @@ infer_cols <- function(data,
       creatinine = "^(?:creatinine|creat)(?:\\b|$)",
 
       # ---- Renal / Urine ----
+      eGFR             = paste0("^(?:eGFR|estimated", sep, "?GFR|CKD", sep, "?EPI)(?:\\b|$)"),
+      UACR             = paste0("^(?:UACR|ACR|urine", sep, "?albumin", sep, "?creatinine", sep, "?ratio)(?:\\b|$)"),
       urine_albumin    = paste0("^(?:urine", sep, "?albumin)(?:\\b|$)"),
       urine_creatinine = paste0("^(?:urine", sep, "?creatinine)(?:\\b|$)"),
       plasma_Na        = paste0("^(?:plasma", sep, "?Na|serum", sep, "?Na)(?:\\b|$)"),
@@ -218,7 +227,7 @@ infer_cols <- function(data,
       }
     }
 
-    pat <- patterns[[nm]]
+    pat <- if (nm %in% names(patterns)) patterns[[nm]] else NULL
     if (is.null(pat) || is.na(pat)) {
       msg <- sprintf("HealthMarkers::infer_cols: no pattern defined for '%s'.", nm)
       if (isTRUE(strict)) stop(msg) else { warning(msg, call. = FALSE); add_log(nm, NULL, character(0), "no pattern"); next }
@@ -322,7 +331,7 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
                  class = "healthmarkers_infer_error_patterns_type")
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> hm_infer_cols: inferring column map")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "hm_infer_cols(): inferring column map")
 
   resolved <- list()
   for (key in names(patterns)) {
@@ -352,6 +361,7 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
 
 #' Internal: default exact-name patterns for hm_infer_cols()
 #' Not exported; used by all_health_markers() when col_map is missing.
+#' @keywords internal
 .hm_default_col_patterns_exact <- function() {
   list(
 

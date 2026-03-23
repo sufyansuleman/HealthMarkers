@@ -132,14 +132,24 @@ test_that("pulmo_markers errors on missing required columns", {
   )
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose emits preparing, column map, and results messages", {
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
   expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "pulmo_markers")
-  expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "comput")
+  expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "column map")
+  expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  available <- skip_if_no_rspiro_2()
+  eq <- available[[1]]
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
+  msgs <- testthat::capture_messages(pulmo_markers(df, equation = eq, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action='keep' preserves rows and propagates NA", {

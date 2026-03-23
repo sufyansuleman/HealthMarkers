@@ -36,7 +36,7 @@ library(dplyr)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
-sim_small <- dplyr::slice_head(sim, n = 30) |>
+sim_small <- dplyr::slice_head(sim, n = 30) %>%
   dplyr::select(eGFR, UACR)
 ```
 
@@ -120,6 +120,33 @@ Rows drop only with na_action = "omit" or when na_action = "error" aborts.
 - eGFR 92, UACR 10 -> G1/A1, KDIGO risk Low.
 - eGFR 52, UACR 400 -> G3a/A3, KDIGO risk High.
 - eGFR 22, UACR missing -> G4, Albuminuria NA, KDIGO risk Very High.
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key (`eGFR`, `UACR`) resolved to.
+   Example: `ckd_stage(): column map: eGFR -> 'eGFR', UACR -> 'UACR'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `ckd_stage(): results: ckd_g_stage 30/30, ckd_a_stage 28/30, ckd_stage 28/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- data.frame(eGFR = c(95, 52, 22), UACR = c(10, 400, NA))
+ckd_stage(
+  df_v,
+  col_map = list(eGFR = "eGFR", UACR = "UACR"),
+  verbose = TRUE
+)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## See also
 - kidney_kfre() for KFRE risk.

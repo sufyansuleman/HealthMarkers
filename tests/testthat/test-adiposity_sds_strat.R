@@ -189,17 +189,29 @@ test_that("prefix applied to output columns", {
   expect_named(out, "x_BMI_SDS")
 })
 
-test_that("verbosity prints processing summary via package option", {
-  old <- getOption("healthmarkers.verbose", "none")
-  on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
+test_that("numeric sex coding 1/2 accepted", {
+  df <- tibble(sex = c(1L, 2L, 1L), BMI = c(25, 20, 26), waist = c(95, 70, 80))
+  out <- adiposity_sds_strat(df, col_map = cm, ref = ref_full)
+  # row 1 is male (1), row 2 is female (2)
+  expect_equal(out$BMI_SDS[1], (25 - 23) / 3)
+  expect_equal(out$BMI_SDS[2], (20 - 21) / 3)
+  expect_named(out, c("BMI_SDS", "waist_SDS"))
+})
+
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(sex = "M", BMI = 25, waist = 95)
-  expect_message(
-    adiposity_sds_strat(df, col_map = cm, ref = ref_full),
-    "processing 2 variables"
+  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "adiposity_sds_strat")
+  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "column map")
+  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(sex = "M", BMI = 25, waist = 95)
+  msgs <- testthat::capture_messages(
+    adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE)
   )
-  expect_message(
-    adiposity_sds_strat(df, col_map = cm, ref = ref_full),
-    "Completed adiposity_sds_strat"
-  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

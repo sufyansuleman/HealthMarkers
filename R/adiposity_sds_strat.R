@@ -145,8 +145,12 @@ adiposity_sds_strat <- function(data,
                  class = "healthmarkers_adiposds_error_no_vars")
   }
 
-  hm_inform(sprintf("-> adiposity_sds_strat: processing %d variables for %d rows",
-                    length(vars), nrow(data)), level = "inform")
+  hm_inform(level = "inform", msg = sprintf("adiposity_sds_strat(): preparing inputs (%d vars, %d rows)",
+                                            length(vars), nrow(data)))
+  hm_inform(
+    level = "inform",
+    msg   = hm_col_report(as.list(stats::setNames(unname(unlist(var_map)), names(var_map))), "adiposity_sds_strat")
+  )
 
   # Coerce to numeric (warn on NA introduction)
   for (v in vars) {
@@ -232,6 +236,9 @@ adiposity_sds_strat <- function(data,
   names(out_list) <- paste0(prefix, vars, "_SDS")
   out <- tibble::as_tibble(out_list)
 
-  hm_inform("Completed adiposity_sds_strat", level = "inform")
+  hm_inform(
+    level = "inform",
+    msg   = hm_result_summary(out, "adiposity_sds_strat")
+  )
   out
 }

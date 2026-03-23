@@ -66,13 +66,12 @@ metss <- function(data,
                   extreme_rules = NULL,
                   diagnostics = TRUE) {
 
-  t0 <- Sys.time()
   na_action <- match.arg(na_action)
   na_action_raw <- na_action
   if (na_action %in% c("ignore","warn")) na_action <- "keep"
   extreme_action <- match.arg(extreme_action)
 
-  if (isTRUE(verbose)) rlang::inform("-> metss: validating inputs")
+  hm_inform("metss(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   .metss_validate_data_frame(data)
   .metss_validate_params(params)
@@ -83,6 +82,9 @@ metss <- function(data,
     rlang::abort(paste0("metss(): missing required columns: ", paste(miss, collapse = ", ")),
                  class = "healthmarkers_metss_error_missing_columns")
   }
+
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(as.list(stats::setNames(req, req)), "metss"))
 
   # Coerce numerics and clean non-finite
   num_cols <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose")
@@ -127,8 +129,7 @@ metss <- function(data,
                    class = "healthmarkers_metss_error_missing_values")
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose))
-      rlang::inform(sprintf("-> metss: omitting %d rows with NA in required inputs", sum(!keep)))
+    hm_inform(sprintf("metss(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -198,7 +199,7 @@ metss <- function(data,
   p <- params[[key]]
   .metss_validate_param_entry(p, key)
 
-  if (isTRUE(verbose)) rlang::inform("-> metss: computing score")
+  hm_inform("metss(): computing score", level = "debug")
 
   # MAP
   MAP <- (2 * data$bp_dia + data$bp_sys) / 3
@@ -218,14 +219,8 @@ metss <- function(data,
 
   out <- tibble::tibble(MetSSS = as.numeric(MetSSS))
 
-  if (isTRUE(verbose)) {
-    bad <- sum(is.na(out$MetSSS) | !is.finite(out$MetSSS))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed metss: %d rows; NA/Inf=%d; key=%s; capped=%d; elapsed=%.2fs",
-      nrow(out), bad, key, capped_n, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "metss"))
 
   out
 }

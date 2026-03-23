@@ -98,12 +98,9 @@ hormone_markers <- function(
                  class = "healthmarkers_horm_error_na_warn_prop")
   }
 
-  if (isTRUE(verbose)) {
-    message(sprintf("-> hormone_markers: starting (%d rows, %d mapped inputs)", nrow(data), length(required)))
-    hm_inform("hormone_markers(): coercing inputs to numeric (if needed)", level = "inform")
-  } else {
-    hm_inform("hormone_markers(): starting", level = "debug")
-  }
+  hm_inform("hormone_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[required], "hormone_markers"))
 
   # Coerce to numeric; warn if NAs introduced; sanitize non-finite to NA
   for (cn in used_cols) {
@@ -221,16 +218,9 @@ hormone_markers <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(!is.finite(x) | is.na(x)), integer(1))
-    message(sprintf(
-      "Completed hormone_markers: %d rows; NA counts -> %s",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", ")
-    ))
-  } else {
-    hm_inform("hormone_markers(): completed", level = "debug")
-  }
+  # Completion summary
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "hormone_markers"))
 
   out
 }

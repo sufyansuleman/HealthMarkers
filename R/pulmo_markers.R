@@ -68,8 +68,8 @@ pulmo_markers <- function(data,
 
   na_action <- match.arg(na_action)
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> pulmo_markers[%s]: validating inputs", eq))
-  t0 <- Sys.time()
+  hm_inform(sprintf("pulmo_markers(): preparing inputs [%s]", eq),
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Basic validation and coercion
   .pm_validate_df(data)
@@ -96,7 +96,9 @@ pulmo_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> pulmo_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(sprintf("pulmo_markers(): omitting %d rows with NA in required inputs", sum(!keep)),
+                level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -110,6 +112,10 @@ pulmo_markers <- function(data,
     ))
   }
 
+  col_map_report <- as.list(stats::setNames(req, req))
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map_report, "pulmo_markers"))
+
   # Map sex and ethnicity to rspiro codes (male=1, female=2; GLI: 1-5 ethnic groups)
   sex_code <- .pm_map_sex(data$sex)
   eth_code <- .pm_map_ethnicity(data$ethnicity)
@@ -117,7 +123,8 @@ pulmo_markers <- function(data,
   # Height auto-detection: any height > 3 -> cm
   height_m <- data$height
   if (any(height_m > 3, na.rm = TRUE)) {
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> pulmo_markers: converting height from cm to m")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = "pulmo_markers(): converting height from cm to m")
     height_m <- height_m / 100
   }
   # Basic plausibility on height
@@ -129,12 +136,9 @@ pulmo_markers <- function(data,
   fev1 <- data$fev1
   fvc  <- data$fvc
 
-  if (isTRUE(verbose)) {
-    hm_inform(level = "inform", msg = sprintf("-> pulmo_markers[%s]: sex=%s; eth=%s",
-                          eq,
-                          paste(sort(unique(sex_code)), collapse = ","),
-                          paste(sort(unique(eth_code)), collapse = ",")))
-  }
+  hm_inform(level = "debug", msg = sprintf("pulmo_markers(): sex=%s; eth=%s",
+                        paste(sort(unique(sex_code)), collapse = ","),
+                        paste(sort(unique(eth_code)), collapse = ",")))
 
   # Lookup reference functions from rspiro
   ns <- tryCatch(asNamespace("rspiro"), error = function(e) NULL)
@@ -155,7 +159,7 @@ pulmo_markers <- function(data,
   zscore_fun <- get(f_zscore, envir = ns)
   lln_fun    <- get(f_lln, envir = ns)
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> pulmo_markers: computing markers")
+  hm_inform("pulmo_markers(): computing markers", level = "debug")
 
   # Compute predicted, z-scores, LLN by equation
   if (eq == "GLIgl") {
@@ -210,16 +214,8 @@ pulmo_markers <- function(data,
     fev1_fvc_LLN     = NA_real_
   )
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed pulmo_markers[%s]: %d rows; NA/Inf -> %s; elapsed=%.2fs",
-      eq, nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "pulmo_markers"))
 
   out
 }

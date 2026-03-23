@@ -102,8 +102,13 @@ adipo_is <- function(data,
     )
   }
 
-  # Progress message (hm_inform should gate via options)
-  hm_inform(level = "debug", msg = "adipo_is(): preparing inputs")
+  # Progress message — respect local verbose arg (inform) or fall back to debug
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "adipo_is(): preparing inputs")
+  # Column-resolution report: which data column each key was mapped to
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[req], "adipo_is")
+  )
 
   # Coerce to numeric when needed (warn once per column on NA introduction)
   for (key in req) {
@@ -195,11 +200,15 @@ adipo_is <- function(data,
   }
 
   # Extract and convert units
-  G0  <- as.numeric(data[[col_map$G0]]) * 18
-  I0  <- as.numeric(data[[col_map$I0]]) / 6
-  TG  <- as.numeric(data[[col_map$TG]]) * 88.57
-  HDL <- as.numeric(data[[col_map$HDL_c]]) * 38.67
-  FFA <- as.numeric(data[[col_map$FFA]])
+  # Raw mmol/L values kept separately for formulas that require them (VAI, LAP, McAuley)
+  TG_raw  <- as.numeric(data[[col_map$TG]])      # mmol/L — for VAI, LAP, McAuley
+  HDL_raw <- as.numeric(data[[col_map$HDL_c]])   # mmol/L — for VAI
+
+  G0    <- as.numeric(data[[col_map$G0]]) * 18   # mmol/L -> mg/dL (TyG, Revised_QUICKI)
+  I0    <- as.numeric(data[[col_map$I0]]) / 6    # pmol/L -> mU/L
+  TG    <- TG_raw * 88.57                        # mmol/L -> mg/dL (TyG, TG_HDL_C_inv)
+  HDL   <- HDL_raw * 38.67                       # mmol/L -> mg/dL (TG_HDL_C_inv)
+  FFA   <- as.numeric(data[[col_map$FFA]])
   waist <- as.numeric(data[[col_map$waist]])
   bmi   <- as.numeric(data[[col_map$bmi]])
 
@@ -211,22 +220,23 @@ adipo_is <- function(data,
   # Indices
   Revised_QUICKI <- safe_div(1, safe_log10(I0) + safe_log10(G0) + safe_log10(FFA))
 
+  # VAI: reference constants (1.03, 1.31, 0.81, 1.52) are in mmol/L units (Amato 2010)
   VAI_Men_inv <- -(
     safe_div(waist, (39.68 + 1.88 * bmi)) *
-      safe_div(TG, 1.03) *
-      safe_div(1.31, HDL)
+      safe_div(TG_raw, 1.03) *
+      safe_div(1.31, HDL_raw)
   )
   VAI_Women_inv <- -(
     safe_div(waist, (36.58 + 1.89 * bmi)) *
-      safe_div(TG, 0.81) *
-      safe_div(1.52, HDL)
+      safe_div(TG_raw, 0.81) *
+      safe_div(1.52, HDL_raw)
   )
 
-  TG_HDL_C_inv <- -safe_div(TG, HDL)
-  TyG_inv <- -safe_log(TG * G0 / 2)
-  LAP_Men_inv   <- -((waist - 65) * TG)
-  LAP_Women_inv <- -((waist - 58) * TG)
-  McAuley_index <- exp(2.63 - 0.28 * safe_log(I0) - 0.31 * safe_log(TG))
+  TG_HDL_C_inv  <- -safe_div(TG, HDL)         # ratio: both converted to mg/dL, scale-invariant
+  TyG_inv       <- -safe_log(TG * G0 / 2)     # TG and G0 in mg/dL (Guerrero-Romero 2018)
+  LAP_Men_inv   <- -((waist - 65) * TG_raw)   # TG in mmol/L (Kahn 2005)
+  LAP_Women_inv <- -((waist - 58) * TG_raw)   # TG in mmol/L
+  McAuley_index <- exp(2.63 - 0.28 * safe_log(I0) - 0.31 * safe_log(TG_raw))  # TG in mmol/L (McAuley 2001)
   Adipo_inv <- -(FFA * I0)
   Belfiore_inv_FFA <- -safe_div(2, (I0 * FFA + 1))
 
@@ -249,6 +259,10 @@ adipo_is <- function(data,
     out[] <- lapply(out, function(x) do.call(norm_fun, list(x = x, method = normalize)))
   }
 
-  hm_inform(level = "debug", msg = "adipo_is(): computed adipose indices")
+  # Results summary: non-NA count per output column
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "adipo_is")
+  )
   out
 }

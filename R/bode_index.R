@@ -92,8 +92,11 @@ bode_index <- function(
                  class = "healthmarkers_bode_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> bode_index: preparing inputs")
-  else hm_inform("bode_index(): preparing inputs", level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "bode_index(): preparing inputs")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))], "bode_index")
+  )
 
   # Coercion helper
   coerce_col <- function(cn) {
@@ -209,8 +212,7 @@ bode_index <- function(
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> bode_index: computing score")
-  else hm_inform("bode_index(): computing score", level = "debug")
+  hm_inform(level = "debug", msg = "bode_index(): computing score")
 
   fev1_score <- ifelse(is.na(d_fev1), NA_integer_,
                        ifelse(d_fev1 >= 65, 0L,
@@ -253,8 +255,10 @@ bode_index <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("Completed bode_index: %d rows.", nrow(out)))
-  else hm_inform(sprintf("bode_index(): completed (%d rows)", nrow(out)), level = "debug")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "bode_index")
+  )
 
   out
 }

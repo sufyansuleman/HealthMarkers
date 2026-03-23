@@ -21,10 +21,22 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
-  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "-> kyn_trp_ratio: preparing inputs")
-  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "-> kyn_trp_ratio: computing")
+  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "kyn_trp_ratio")
+  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "column map")
+  expect_message(suppressWarnings(kyn_trp_ratio(df, cm, verbose = TRUE)), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
+  msgs <- testthat::capture_messages(
+    kyn_trp_ratio(df, cm, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {

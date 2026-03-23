@@ -92,10 +92,14 @@ atherogenic_indices <- function(data,
       class = "healthmarkers_atherogenic_indices_error_missing_map"
     )
   }
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> atherogenic_indices: validating inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "atherogenic_indices(): preparing inputs")
 
   # Required columns presence
   req_cols <- unname(unlist(col_map[req], use.names = FALSE))
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[intersect(c(req, opt), names(col_map))], "atherogenic_indices")
+  )
   missing_req <- setdiff(req_cols, names(data))
   if (length(missing_req)) {
     rlang::abort(
@@ -132,16 +136,11 @@ atherogenic_indices <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) {
-      hm_inform(level = "inform",
-                msg = sprintf("-> atherogenic_indices: omitting %d rows with NA in lipid inputs", sum(!keep)))
-    }
     data <- data[keep, , drop = FALSE]
   }
 
   # Early empty
   if (nrow(data) == 0L) {
-    hm_inform("atherogenic_indices(): computed atherogenic indices", level = "inform")
     return(tibble::tibble(AIP = numeric(), CRI_I = numeric(), CRI_II = numeric()))
   }
 
@@ -205,7 +204,7 @@ atherogenic_indices <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> atherogenic_indices: computing indices")
+  hm_inform(level = "debug", msg = "atherogenic_indices(): computing indices")
 
   # Accessor and safe division
   g <- function(key) data[[col_map[[key]]]]
@@ -245,7 +244,10 @@ atherogenic_indices <- function(data,
     }
   }
 
-  hm_inform("atherogenic_indices(): computed atherogenic indices", level = "inform")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "atherogenic_indices")
+  )
 
   out
 }

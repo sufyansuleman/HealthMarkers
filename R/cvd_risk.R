@@ -107,8 +107,11 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
   .require_cols(data, req, fun = "cvd_risk_ascvd")
   if (verbose) {
     qs <- .quality_scan_warn(data, req, .warn = FALSE, na_warn_prop = na_warn_prop)
-    message(sprintf("-> ASCVD inputs ok; non-finite=%d var(s), high-NA=%d, all-NA=%d",
-                    length(qs$nonfinite), length(qs$high_na), length(qs$all_na)))
+    hm_inform(sprintf("cvd_risk_ascvd(): preparing inputs; non-finite=%d var(s), high-NA=%d, all-NA=%d",
+                    length(qs$nonfinite), length(qs$high_na), length(qs$all_na)),
+              level = "inform")
+  } else {
+    hm_inform("cvd_risk_ascvd(): preparing inputs", level = "debug")
   }
   res <- try({
     fn <- if (year == 10) PooledCohort::predict_10yr_ascvd_risk else PooledCohort::predict_30yr_ascvd_risk
@@ -131,7 +134,8 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
     return(tibble::tibble(model = "ASCVD", year = as.integer(year), risk = NA_real_))
   }
   out <- tibble::tibble(model = "ASCVD", year = as.integer(year), risk = as.double(res))
-  if (verbose) message(sprintf("-> ASCVD %dyr: completed (%d row[s])", as.integer(year), nrow(out)))
+  if (verbose) hm_inform(sprintf("cvd_risk_ascvd(): results: %dyr risk, %d row(s)", as.integer(year), nrow(out)),
+                         level = "inform")
   return(out)
 }
 
@@ -161,8 +165,9 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
     patid <- if ("patid" %in% names(data)) "patid" else seq_len(nrow(data))
   }
   if (verbose) {
-    message("-> QRISK3 inputs received")
-    # Cannot reliably pre-validate all QRISK3 inputs without duplicating its spec
+    hm_inform("cvd_risk_qrisk3(): preparing inputs", level = "inform")
+  } else {
+    hm_inform("cvd_risk_qrisk3(): preparing inputs", level = "debug")
   }
   args <- list(
     data = data,
@@ -201,7 +206,8 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
     as.double(res)
   }
   out <- tibble::tibble(model = "QRISK3", year = 10L, risk = as.double(risk_vals))
-  if (verbose) message(sprintf("-> QRISK3: completed (%d row[s])", nrow(out)))
+  if (verbose) hm_inform(sprintf("cvd_risk_qrisk3(): results: %d row(s)", nrow(out)),
+                         level = "inform")
   return(out)
 }
 
@@ -233,8 +239,11 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
   if (verbose) {
     req <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
     qs <- .quality_scan_warn(data, req, .warn = FALSE, na_warn_prop = na_warn_prop)
-    message(sprintf("-> Stroke inputs ok; non-finite=%d, high-NA=%d, all-NA=%d",
-                    length(qs$nonfinite), length(qs$high_na), length(qs$all_na)))
+    hm_inform(sprintf("cvd_risk_stroke(): preparing inputs; non-finite=%d, high-NA=%d, all-NA=%d",
+                    length(qs$nonfinite), length(qs$high_na), length(qs$all_na)),
+              level = "inform")
+  } else {
+    hm_inform("cvd_risk_stroke(): preparing inputs", level = "debug")
   }
   res <- try({
     PooledCohort::predict_10yr_stroke_risk(
@@ -257,7 +266,8 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
     return(tibble::tibble(model = "Stroke", year = 10L, risk = NA_real_))
   }
   out <- tibble::tibble(model = "Stroke", year = 10L, risk = as.double(res))
-  if (verbose) message(sprintf("-> Stroke: completed (%d row[s])", nrow(out)))
+  if (verbose) hm_inform(sprintf("cvd_risk_stroke(): results: %d row(s)", nrow(out)),
+                         level = "inform")
   return(out)
 }
 
@@ -338,7 +348,10 @@ cvd_marker_aip <- function(data,
     )
   }
 
-  hm_inform("cvd_marker_aip(): computing AIP", level = "inform")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = "cvd_marker_aip(): preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req_keys], "cvd_marker_aip"))
 
   tg_col <- col_map$TG
   hdl_col <- col_map$HDL_c
@@ -375,7 +388,8 @@ cvd_marker_aip <- function(data,
   value <- log10(.safe_div(tg, hdl))
   out <- tibble::tibble(model = "AIP", value = value)
 
-  hm_inform("cvd_marker_aip(): completed", level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(tibble::tibble(AIP = value), "cvd_marker_aip"))
   out
 }
 
@@ -421,7 +435,10 @@ cvd_marker_ldl_particle_number <- function(data,
                  class = "healthmarkers_cvd_error_ldlpn_missing_columns")
   }
 
-  hm_inform("cvd_marker_ldl_particle_number(): computing LDL_PN", level = "inform")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = "cvd_marker_ldl_particle_number(): preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(list(ApoB = apob_col), "cvd_marker_ldl_particle_number"))
 
   apob <- data[[apob_col]]
   if (!is.numeric(apob)) {
@@ -442,7 +459,8 @@ cvd_marker_ldl_particle_number <- function(data,
 
   out <- tibble::tibble(model = "LDL_PN", value = apob)
 
-  hm_inform("cvd_marker_ldl_particle_number(): completed", level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(tibble::tibble(LDL_PN = apob), "cvd_marker_ldl_particle_number"))
   out
 }
 
@@ -495,7 +513,6 @@ cvd_risk <- function(data,
       out
     })
     out_all <- dplyr::bind_rows(results)
-    hm_inform(sprintf("cvd_risk: completed ALL (%d row[s])", nrow(out_all)), level = if (isTRUE(verbose)) "inform" else "debug")
     return(out_all)
   }
 
@@ -509,6 +526,5 @@ cvd_risk <- function(data,
     stop("Unknown model: ", model)
   )
 
-  hm_inform("cvd_risk: done", level = if (isTRUE(verbose)) "inform" else "debug")
   out
 }

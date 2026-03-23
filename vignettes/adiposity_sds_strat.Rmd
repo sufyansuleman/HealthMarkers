@@ -37,7 +37,7 @@ sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMar
 sim <- readRDS(sim_path)
 
 # Normalize sex labels to M/F and ensure both sexes appear in the demo slice
-sim_small <- sim |>
+sim_small <- sim %>%
   mutate(sex = case_when(
     sex %in% c("M", "F") ~ sex,
     sex %in% c("male", "Male", "m") ~ "M",
@@ -45,10 +45,35 @@ sim_small <- sim |>
     sex %in% c(1, "1") ~ "M",
     sex %in% c(2, "2") ~ "F",
     TRUE ~ NA_character_
-  )) |>
-  filter(!is.na(sex)) |>
+  )) %>%
+  filter(!is.na(sex)) %>%
   slice_head(n = 200)
 ```
+
+## Quick start (self-contained, always runs)
+
+`adiposity_sds_strat()` returns a tibble of **only the `<var>_SDS` columns** — not the original data. Use `dplyr::bind_cols()` to rejoin.
+
+```{r}
+# Hard-coded reference values (typical population means/SDs)
+ref <- list(
+  M = list(BMI = c(mean = 24.5, sd = 3.8), waist = c(mean = 88, sd = 12)),
+  F = list(BMI = c(mean = 22.1, sd = 4.2), waist = c(mean = 76, sd = 11))
+)
+
+df_demo <- data.frame(
+  sex   = c("M", "F", "M", "F"),
+  BMI   = c(25.2, 21.8, 27.1, 19.5),
+  waist = c(85, 72, 95, 68)
+)
+
+col_map <- list(sex = "sex", vars = list(BMI = "BMI", waist = "waist"))
+
+sds_out <- adiposity_sds_strat(df_demo, col_map = col_map, ref = ref)
+sds_out
+```
+
+Spot-check row 1 (male): BMI_SDS = (25.2 − 24.5) / 3.8 = `r round((25.2-24.5)/3.8, 4)`. Row 2 (female): BMI_SDS = (21.8 − 22.1) / 4.2 = `r round((21.8-22.1)/4.2, 4)`.
 
 ## Column map
 Map sex and each variable to your column names.
@@ -64,7 +89,7 @@ col_map <- list(
 )
 ```
 
-## Walkthrough (build refs, compute SDS)
+## Walkthrough with simulated data (build sex-specific refs)
 
 ```{r, eval=FALSE}
 # Build sex-specific references from the demo slice
@@ -106,8 +131,8 @@ asds_strat <- adiposity_sds_strat(
 )
 
 new_cols <- setdiff(names(asds_strat), names(sim_small))
-asds_strat |>
-  slice_head(n = 5) |>
+asds_strat %>%
+  slice_head(n = 5) %>%
   select(all_of(new_cols))
 ```
 
@@ -147,9 +172,41 @@ demo_omit <- adiposity_sds_strat(
 list(
   keep_rows = nrow(demo_keep),
   omit_rows = nrow(demo_omit),
-  capped_preview = demo_keep |> select(ends_with("_SDS")) |> slice_head(n = 3)
+  capped_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
 )
 ```
+
+## Column prefix
+
+Use `prefix` to namespace output columns when combining multiple calls on the same data frame:
+
+```{r}
+# Same data as quick-start but prefix with "z_"
+sds_prefixed <- adiposity_sds_strat(
+  df_demo, col_map = col_map, ref = ref, prefix = "z_"
+)
+names(sds_prefixed)  # "z_BMI_SDS" "z_waist_SDS"
+```
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each mapped variable resolved to.
+   Example: `adiposity_sds_strat(): column map: BMI -> 'BMI', waist -> 'waist', sex -> 'sex', ...`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `adiposity_sds_strat(): results: BMI_SDS 28/30, waist_SDS 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; `options(healthmarkers.verbose = "inform")` must also be active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+invisible(adiposity_sds_strat(df_demo, col_map = col_map, ref = ref))
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Expectations
 - `col_map$sex` must be present; sex must map to M/F (or 1/2) or the call errors.

@@ -14,6 +14,7 @@
 #'   - "cap"   - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
 #'   - "NA"    - replace out-of-range with NA
 #'   - "error" - abort on any out-of-range value
+#' @param verbose Logical; if TRUE, emits progress messages via `hm_inform()`.
 #'
 #' @return Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 #' @references \insertRef{kdigo2012ckd}{HealthMarkers}
@@ -26,7 +27,8 @@ ckd_stage <- function(
   col_map,
   na_action = c("keep","omit","error"),
   check_extreme = FALSE,
-  extreme_action = c("cap","NA","error")
+  extreme_action = c("cap","NA","error"),
+  verbose = FALSE
 ) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
@@ -53,7 +55,11 @@ ckd_stage <- function(
   # Identify optional present inputs to include in NA/extreme policies
   keys_for_policy <- c("eGFR", if (has_uacr_col) "UACR")
 
-  hm_inform("ckd_stage(): computing stages", level = "inform")
+  hm_inform(level = "debug", msg = "ckd_stage(): computing stages")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(col_map[intersect(c("eGFR","UACR"), names(col_map))], "ckd_stage")
+  )
 
   # Coerce to numeric; warn on NA introduction; non-finite -> NA
   eGFR <- data[[col_map$eGFR]]
@@ -170,6 +176,11 @@ ckd_stage <- function(
     KDIGO_risk = factor(KDIGO, levels = c("Low","Moderate","High","Very High"))
   )
 
-  hm_inform("ckd_stage(): completed", level = "inform")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = "ckd_stage(): completed")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(out, "ckd_stage")
+  )
   out
 }

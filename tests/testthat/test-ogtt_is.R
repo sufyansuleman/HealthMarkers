@@ -101,11 +101,18 @@ test_that("invalid normalize argument errors via ogtt_is arg check", {
   )
 })
 
-test_that("verbose = TRUE prints progress messages (HM-CS verbosity)", {
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(run_ogtt(base_df, verbose = TRUE), "-> ogtt_is: validating and preparing inputs")
-  expect_message(run_ogtt(base_df, verbose = TRUE), "-> computing indices")
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(run_ogtt(base_df, verbose = TRUE), "ogtt_is")
+  expect_message(run_ogtt(base_df, verbose = TRUE), "column map")
+  expect_message(run_ogtt(base_df, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(run_ogtt(base_df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("error if col_map missing required keys", {

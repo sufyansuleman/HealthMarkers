@@ -78,7 +78,7 @@ Units (no automatic conversion):
 \item ALBI uses bilirubin in mumol/L internally (converted as bilirubin (mg/dL) * 17.1).
 }
 
-Formulas (unchanged from prior implementation):
+Formulas
 \itemize{
 \item FLI      = logistic(0.953\emph{ln(TG) + 0.139}BMI + 0.718\emph{ln(GGT) + 0.053}waist - 15.745) * 100
 \item NFS      = -1.675 + 0.037\emph{age + 0.094}BMI + 1.13\emph{diabetes + 0.99}(AST/ALT) - 0.013\emph{platelets - 0.66}albumin

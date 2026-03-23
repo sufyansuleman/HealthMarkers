@@ -105,6 +105,20 @@ pulmo_markers(
 - High missingness: heed `na_warn_prop` warnings; consider `na_action = "omit"` for modeling.
 - All NA outputs: likely missing required fields, zero/negative heights, or failed mapping.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+if (requireNamespace("rspiro", quietly = TRUE)) {
+  old_opt <- options(healthmarkers.verbose = "inform")
+  pulmo_markers(
+    data = df,
+    equation = "GLI",
+    verbose = TRUE
+  )
+  options(old_opt)
+}
+```
+
 ## Tips for best results
 - Validate units before running; store heights in cm or m and volumes in liters.
 - Use `verbose = TRUE` during development/QC to see omissions and NA counts.

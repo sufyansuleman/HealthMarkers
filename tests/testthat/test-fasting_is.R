@@ -84,12 +84,20 @@ test_that("invalid normalize argument errors", {
   )
 })
 
-test_that("verbose = TRUE prints a progress/completion message", {
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
-  expect_message(
-    fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), verbose = TRUE),
-    "Completed fasting_is:",
-    fixed = TRUE,
-    all = FALSE
-  )
+  cm <- list(G0 = "G0", I0 = "I0")
+  expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "fasting_is")
+  expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- tibble::tibble(G0 = 5.5, I0 = 60)
+  cm   <- list(G0 = "G0", I0 = "I0")
+  msgs <- testthat::capture_messages(fasting_is(df, col_map = cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

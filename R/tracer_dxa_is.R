@@ -88,8 +88,8 @@ tracer_dxa_is <- function(data, col_map,
                  class = "healthmarkers_tracer_error_colmap_type")
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: validating inputs")
-  t0 <- Sys.time()
+  if (isTRUE(verbose)) hm_inform("tracer_dxa_is(): preparing inputs", level = "inform")
+  else hm_inform("tracer_dxa_is(): preparing inputs", level = "debug")
 
   adipose_keys <- c("I0", "rate_palmitate", "rate_glycerol", "fat_mass", "weight", "HDL_c", "bmi")
   # Adipose-only when all adipose keys present and not all OGTT keys present
@@ -141,6 +141,8 @@ tracer_dxa_is <- function(data, col_map,
 
   # High-missingness warnings on required inputs
   .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[required_keys], "tracer_dxa_is"))
 
   # NA policy on required inputs
   if (na_action == "error") {
@@ -151,9 +153,9 @@ tracer_dxa_is <- function(data, col_map,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf(
-      "-> tracer_dxa_is: omitting %d rows with NA in required inputs", sum(!keep)
-    ))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("tracer_dxa_is(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -226,7 +228,7 @@ tracer_dxa_is <- function(data, col_map,
   }
 
   if (adipose_only) {
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: adipose-only indices")
+    if (isTRUE(verbose)) hm_inform("tracer_dxa_is(): adipose-only indices", level = "inform")
 
     I0_u <- data[[col_map$I0]] / 6
     Lipo_inv <- -1 * (data[[col_map$rate_glycerol]] * I0_u)
@@ -245,7 +247,7 @@ tracer_dxa_is <- function(data, col_map,
       ATIRI_inv = as.numeric(ATIRI_inv)
     )
   } else {
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> tracer_dxa_is: computing indices")
+    if (isTRUE(verbose)) hm_inform("tracer_dxa_is(): computing indices", level = "inform")
 
     # Unit conversions
     I0_u   <- data[[col_map$I0]]   / 6
@@ -299,16 +301,8 @@ tracer_dxa_is <- function(data, col_map,
     rlang::warn(sprintf("tracer_dxa_is(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed tracer_dxa_is: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "tracer_dxa_is"))
 
   out
 }

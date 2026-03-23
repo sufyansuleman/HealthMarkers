@@ -93,6 +93,18 @@ try(
 - Each marker is computed only when its inputs are present; otherwise `NA` is returned for that marker.
 - Zero/non-finite denominators are set to NA with consolidated warnings; no unit harmonization is applied.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+nutrient_markers(
+  data = df,
+  col_map = NULL,
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 
 - Provide only the inputs you have; missing inputs yield NA for dependent markers.

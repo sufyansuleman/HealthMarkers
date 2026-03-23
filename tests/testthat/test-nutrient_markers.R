@@ -74,13 +74,22 @@ test_that("missing inputs yield NA rather than error", {
   expect_true(is.na(out$Mg_Cr_Ratio))
 })
 
-test_that("verbose printing honors HM-CS verbosity options", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(ferritin = 50, transferrin_sat = 25)
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "-> nutrient_markers: validating inputs")
-  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "-> nutrient_markers: computing markers")
-  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "Completed nutrient_markers:")
+  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "nutrient_markers")
+  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "column map")
+  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(ferritin = 50, transferrin_sat = 25)
+  msgs <- testthat::capture_messages(
+    nutrient_markers(df, col_map = cm_id(df), verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("errors if `data` is not a data.frame", {
@@ -103,8 +112,7 @@ test_that("na_action='omit' drops rows with NA in used inputs", {
     ferritin        = c(100, 90),
     transferrin_sat = c(50, NA_real_)
   )
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     out <- nutrient_markers(df, col_map = cm_id(df), na_action = "omit", verbose = TRUE),
     "omitting 1 rows with NA in used inputs"

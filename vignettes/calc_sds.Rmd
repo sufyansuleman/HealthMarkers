@@ -6,7 +6,6 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
----
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
@@ -37,7 +36,7 @@ library(dplyr)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
-sim_small <- dplyr::slice_head(sim, n = 30) |>
+sim_small <- dplyr::slice_head(sim, n = 30) %>%
   dplyr::select(id, BMI, sbp)
 
 vars <- c("BMI", "sbp")
@@ -149,6 +148,39 @@ Rows drop only when na_strategy = "omit" or when na_strategy = "error" aborts.
 - Manual check: if mean BMI is 25 and sd is 4, BMI 29 should yield (29-25)/4 = 1.0.
 - Confirm that rows with missing BMI are retained vs dropped according to na_strategy.
 - Verify that capping clamps |SDS| at sds_cap symmetrically.
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — lists each variable passed via `vars`.
+   Example: `calc_sds(): column map: BMI -> 'BMI', sbp -> 'sbp'`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per `_sds` output column.
+   Example: `calc_sds(): results: BMI_sds 28/30, sbp_sds 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+ref_v <- data.frame(variable = c("BMI", "sbp"), mean = c(25, 120), sd = c(4, 15))
+df_v  <- data.frame(id = 1:3, BMI = c(24, 29, 30), sbp = c(118, 121, 135))
+calc_sds(
+  data = df_v,
+  vars = c("BMI", "sbp"),
+  ref  = ref_v,
+  id_col = "id",
+  na_strategy = "keep",
+  extreme_strategy = "cap",
+  sds_cap = 6,
+  verbose = TRUE
+)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## See also
 - infer_cols() to infer data types prior to scoring.

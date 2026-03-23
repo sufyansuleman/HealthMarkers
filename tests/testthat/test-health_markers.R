@@ -205,3 +205,32 @@ test_that("metabolic_markers liver + mets runs without errors", {
   # Liver markers likely add something if inputs suffice; otherwise, call still succeeds.
   expect_true(nrow(m_lm) == nrow(df))
 })
+
+test_that("all_health_markers verbose emits preparing, mapping, and summary messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120, BMI = 25)
+  col_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", BMI = "BMI")
+  expect_message(
+    all_health_markers(df_v, col_v, which = "lipid", include_insulin = FALSE, verbose = TRUE),
+    "preparing inputs"
+  )
+  expect_message(
+    all_health_markers(df_v, col_v, which = "lipid", include_insulin = FALSE, verbose = TRUE),
+    "mapping summary"
+  )
+  expect_message(
+    all_health_markers(df_v, col_v, which = "lipid", include_insulin = FALSE, verbose = TRUE),
+    "computed:"
+  )
+})
+
+test_that("all_health_markers verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120, BMI = 25)
+  col_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", BMI = "BMI")
+  msgs <- testthat::capture_messages(
+    all_health_markers(df_v, col_v, which = "lipid", include_insulin = FALSE, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("mapping summary", msgs)), 1L)
+  expect_equal(sum(grepl("computed:",        msgs)), 1L)
+})

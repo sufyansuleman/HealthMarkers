@@ -41,18 +41,32 @@ test_that("computes all nine ratios correctly", {
   expect_equal(out$CAR_slope, (260 - 200) / 30)
 })
 
-test_that("verbose = TRUE prints completion summary", {
-  df <- as.list(rep(1, 17))
-  names(df) <- c(
-    "total_testosterone", "SHBG", "LH", "FSH", "estradiol", "progesterone",
-    "free_T3", "free_T4", "aldosterone", "renin", "insulin", "glucagon",
-    "GH", "IGF1", "prolactin", "cortisol_0", "cortisol_30"
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(
+    total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
+    estradiol = 100, progesterone = 50, free_T3 = 5, free_T4 = 10,
+    aldosterone = 20, renin = 4, insulin = 20, glucagon = 10,
+    GH = 2, IGF1 = 4, prolactin = 12, cortisol_0 = 200, cortisol_30 = 260
   )
-  df <- as_tibble(df)
-  expect_message(
-    hormone_markers(df, col_map = setNames(as.list(names(df)), names(df)), verbose = TRUE, na_action = "keep"),
-    "Completed hormone_markers:"
+  cm <- setNames(as.list(names(df)), names(df))
+  expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "hormone_markers")
+  expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "column map")
+  expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(
+    total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
+    estradiol = 100, progesterone = 50, free_T3 = 5, free_T4 = 10,
+    aldosterone = 20, renin = 4, insulin = 20, glucagon = 10,
+    GH = 2, IGF1 = 4, prolactin = 12, cortisol_0 = 200, cortisol_30 = 260
   )
+  cm <- setNames(as.list(names(df)), names(df))
+  msgs <- testthat::capture_messages(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("handles NA inputs gracefully", {

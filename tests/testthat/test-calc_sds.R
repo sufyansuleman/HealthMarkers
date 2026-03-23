@@ -145,10 +145,31 @@ test_that("Coercion of non-numeric vars warns and introduces NA", {
   expect_true(is.na(res$data$bmi_sds[3]))
 })
 
-test_that("Verbose messages include start and completion", {
+test_that("verbose = TRUE emits starting, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
              warn_thresholds = list(na_prop = 1, extreme_prop = 1)),
-    "calc_sds: completed"
+    "calc_sds"
   )
+  expect_message(
+    calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
+             warn_thresholds = list(na_prop = 1, extreme_prop = 1)),
+    "column map"
+  )
+  expect_message(
+    calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
+             warn_thresholds = list(na_prop = 1, extreme_prop = 1)),
+    "results:"
+  )
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(
+    calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
+             warn_thresholds = list(na_prop = 1, extreme_prop = 1))
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

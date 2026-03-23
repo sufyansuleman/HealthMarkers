@@ -88,6 +88,18 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 - Extreme defaults: Kyn 100–20000 nmol/L, Trp 10–150 µmol/L, ratio 0–200; adjust with `extreme_rules`.
 - Output: one-column tibble `kyn_trp_ratio`; row count follows `na_action` if you omit rows.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+kyn_trp_ratio(
+  data    = df,
+  col_map = col_map,
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 - Re-check units when ratios are very high (>100); Kyn should be nmol/L and Trp µmol/L.
 - Use `extreme_action = "cap"` sparingly and adjust ranges to your cohort.

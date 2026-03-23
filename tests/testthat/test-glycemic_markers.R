@@ -131,12 +131,12 @@ test_that("output is vectorized and contains all expected columns", {
   )
 })
 
-test_that("verbose = TRUE prints a progress message", {
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
-  expect_message(
-    glycemic_markers(df, verbose = TRUE),
-    "-> glycemic_markers: computing"
-  )
+  expect_message(glycemic_markers(df, verbose = TRUE), "glycemic_markers")
+  expect_message(glycemic_markers(df, verbose = TRUE), "column map")
+  expect_message(glycemic_markers(df, verbose = TRUE), "results:")
 })
 
 test_that("glycemic_markers computes expected columns with minimal inputs", {
@@ -202,9 +202,12 @@ test_that("Coercion to numeric warns when NAs introduced", {
   expect_warning(glycemic_markers(df), "coerced to numeric; NAs introduced")
 })
 
-test_that("Verbose prints completion summary", {
-  df <- data.frame(HDL_c = c(1.0, 1.3), TG = c(1.5, 2.0), BMI = c(24, 30))
-  expect_message(glycemic_markers(df, verbose = TRUE), "Completed glycemic_markers:")
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
+  msgs <- testthat::capture_messages(glycemic_markers(df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("glycemic_markers runs and returns key columns", {

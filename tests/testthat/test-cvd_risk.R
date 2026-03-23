@@ -122,6 +122,24 @@ test_that("cvd_marker_aip returns NA value when inputs missing (na_action='keep'
   expect_true(is.na(out$value))
 })
 
+test_that("cvd_marker_aip verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_aip <- tibble::tibble(TG = 150, HDL_c = 50)
+  cm <- list(TG = "TG", HDL_c = "HDL_c")
+  expect_message(cvd_marker_aip(df_aip, col_map = cm, verbose = TRUE), "cvd_marker_aip")
+  expect_message(cvd_marker_aip(df_aip, col_map = cm, verbose = TRUE), "column map")
+  expect_message(cvd_marker_aip(df_aip, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("cvd_marker_aip verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_aip <- tibble::tibble(TG = 150, HDL_c = 50)
+  cm   <- list(TG = "TG", HDL_c = "HDL_c")
+  msgs <- testthat::capture_messages(cvd_marker_aip(df_aip, col_map = cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
+})
+
 # ---- Direct: cvd_marker_ldl_particle_number --------------------------------
 test_that("cvd_marker_ldl_particle_number returns tibble with model=LDL_PN", {
   df_ldl <- tibble::tibble(ApoB = 120)
@@ -134,6 +152,24 @@ test_that("cvd_marker_ldl_particle_number returns tibble with model=LDL_PN", {
 test_that("cvd_marker_ldl_particle_number errors on missing ApoB column", {
   df_ldl <- tibble::tibble(x = 1)
   expect_error(cvd_marker_ldl_particle_number(df_ldl))
+})
+
+test_that("cvd_marker_ldl_particle_number verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_ldl <- tibble::tibble(ApoB = 120)
+  cm <- list(ApoB = "ApoB")
+  expect_message(cvd_marker_ldl_particle_number(df_ldl, col_map = cm, verbose = TRUE), "cvd_marker_ldl_particle_number")
+  expect_message(cvd_marker_ldl_particle_number(df_ldl, col_map = cm, verbose = TRUE), "column map")
+  expect_message(cvd_marker_ldl_particle_number(df_ldl, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("cvd_marker_ldl_particle_number verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_ldl <- tibble::tibble(ApoB = 120)
+  cm   <- list(ApoB = "ApoB")
+  msgs <- testthat::capture_messages(cvd_marker_ldl_particle_number(df_ldl, col_map = cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 # ---- Direct: cvd_risk_ascvd ------------------------------------------------

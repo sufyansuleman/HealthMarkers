@@ -20,13 +20,13 @@ Compute lipid ratios and composite indices (non-HDL-C, remnant-C, TC/HDL, TG/HDL
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
+library(tibble)
 
 sim <- readRDS(system.file("extdata/simulated_hm_data.rds", package = "HealthMarkers"))
 lipids <- sim |>
   dplyr::slice_head(n = 30) |>
-  mutate(glucose = G0) |>
-  select(TC, HDL_c, TG, LDL_c, ApoB, ApoA1, waist, BMI, glucose)
+  dplyr::mutate(glucose = G0) |>
+  dplyr::select(TC, HDL_c, TG, LDL_c, ApoB, ApoA1, waist, BMI, glucose)
 ```
 
 ## Column map
@@ -48,7 +48,7 @@ lm_out <- lipid_markers(
   check_extreme = FALSE,
   verbose = FALSE
 )
-lm_out |> slice_head(n = 5)
+lm_out |> dplyr::slice_head(n = 5)
 ```
 
 ## Missing data & extremes
@@ -87,10 +87,18 @@ lipid_markers(
 )
 ```
 
-## Tips
+## Verbose diagnostics
 
-- Map columns explicitly when dataset names differ (e.g., `col_map = list(TC = "TotalChol", HDL_c = "HDL", TG = "Trig")`).
-- Supply both ApoB and ApoA1 to get `ApoB_ApoA1`; otherwise that column is `NA`.
-- Provide waist and BMI to unlock VAI/LAP; provide glucose and BMI to unlock TyG-BMI.
-- Tighten `extreme_rules` to match assay limits before using `extreme_action = "cap"` or `"error"`.
-- When LDL-C is missing, Friedewald is used; avoid very high TG (>11.3 mmol/L) where the estimate is unreliable.
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+lipid_markers(
+  data    = dplyr::slice_head(lipids, n = 5),
+  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG",
+                 LDL_c = "LDL_c", ApoB = "ApoB", ApoA1 = "ApoA1",
+                 waist = "waist", BMI = "BMI"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
+## Tips

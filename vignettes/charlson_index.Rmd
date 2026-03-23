@@ -6,7 +6,6 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
----
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
@@ -155,6 +154,34 @@ head(a_cap$charlson_index)
 - Set all indicators to 0: expected score 0.
 - Single metastatic_cancer = 1, all else 0: expected score 6.
 - diabetes = 1 and diab_comp = 1: expected diabetes contribution = 2 (max rule).
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each comorbidity key resolved to.
+   Example: `charlson_index(): column map: mi -> 'mi', chf -> 'chf', ...`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `charlson_index(): results: charlson_index 30/30, charlson_index_age 30/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+patient <- tibble::tibble(
+  mi=0, chf=0, pvd=0, stroke=0, dementia=0, copd=0, rheum=0, ulcer=0,
+  mild_liver=0, diabetes=1, diab_comp=1, hemiplegia=0, renal=1,
+  cancer=0, leukemia=0, lymphoma=0, sev_liver=0, metastatic_cancer=0, hiv=0
+)
+cm_v <- as.list(stats::setNames(names(patient), names(patient)))
+charlson_index(patient, col_map = cm_v, verbose = TRUE)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## See also
 - metss and metabolic_risk_features for metabolic burden scoring.

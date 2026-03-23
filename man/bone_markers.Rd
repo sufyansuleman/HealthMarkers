@@ -10,7 +10,8 @@ bone_markers(
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   sds_limit = 6,
-  extreme_action = c("cap", "NA", "error")
+  extreme_action = c("cap", "NA", "error"),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ names contain "sds" (case-insensitive) for absolute values > \code{sds_limit}.}
 \item{sds_limit}{Positive numeric; SDS magnitude limit used when \code{check_extreme} is TRUE.}
 
 \item{extreme_action}{One of "cap", "NA", or "error" for handling extreme SDS-like values.}
+
+\item{verbose}{Logical; if TRUE, emits progress messages via \code{hm_inform()}.}
 }
 \value{
 A tibble with columns: \code{OSTA}, \code{ALMI}, \code{FMI}, \code{BMD_Tscore}, and

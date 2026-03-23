@@ -117,8 +117,7 @@ liver_markers <- function(data,
   if (na_action %in% c("ignore","warn")) na_action <- "keep"
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> liver_markers: validating inputs")
+  hm_inform("liver_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Preserve existing package-level validation if present, but do not fail tests on absence
   if (is.function(get0("validate_inputs", envir = asNamespace("HealthMarkers"), inherits = TRUE))) {
@@ -148,6 +147,9 @@ liver_markers <- function(data,
     )
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[required], "liver_markers"))
+
   used_cols <- unlist(col_map[required], use.names = FALSE)
 
   # HM-CS v3: coerce to numeric for all required inputs except diabetes; warn if NAs introduced
@@ -176,7 +178,7 @@ liver_markers <- function(data,
     }
   } else if (identical(na_action, "omit")) {
     keep <- !Reduce(`|`, lapply(required, function(k) is.na(data[[col_map[[k]]]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> liver_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    hm_inform(sprintf("liver_markers(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   } # "keep" leaves NA as-is
 
@@ -215,7 +217,7 @@ liver_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> liver_markers: computing indices")
+  hm_inform("liver_markers(): computing indices", level = "debug")
 
   # Pull vectors
   BMI        <- data[[col_map$BMI]]
@@ -291,17 +293,8 @@ liver_markers <- function(data,
     MELD_XI = MELD_XI
   )
 
-  if (isTRUE(verbose)) {
-    bad <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed liver_markers: %d rows; NA/Inf -> %s; capped=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(bad), bad), collapse = ", "),
-      capped_n,
-      elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "liver_markers"))
 
   return(out)
 }

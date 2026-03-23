@@ -16,12 +16,12 @@ marker_summary <- function(x, verbose = FALSE) {
     rlang::abort("marker_summary(): `x` must be a data.frame or tibble.",
                  class = "healthmarkers_summary_error_input")
   }
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> marker_summary: summarizing numeric columns")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "marker_summary(): summarizing numeric columns")
 
   num <- vapply(x, is.numeric, logical(1))
   if (!any(num)) {
     out <- tibble::tibble(variable = character(), mean = numeric(), sd = numeric(), iqr = numeric())
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = "Completed marker_summary: 0 variables")
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "marker_summary(): results: 0 variables")
     return(out)
   }
 
@@ -42,7 +42,7 @@ marker_summary <- function(x, verbose = FALSE) {
 
   if (isTRUE(verbose)) {
     all_na <- vapply(x[vars], function(v) all(is.na(v)), logical(1))
-    hm_inform(level = "inform", msg = sprintf("Completed marker_summary: %d variables; all-NA=%d",
+    hm_inform(level = "inform", msg = sprintf("marker_summary(): results: %d variables; all-NA=%d",
                                               length(vars), sum(all_na)))
   }
   out

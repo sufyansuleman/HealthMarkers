@@ -31,3 +31,25 @@ test_that("liver_fat_markers missing handling omit", {
   )
   expect_equal(nrow(res), 1L)
 })
+
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- data.frame(ALT = 30, AST = 20, BMI = 25, sex = 2, diabetes = 1, insulin = 15)
+  cm <- list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex",
+             diabetes = "diabetes", insulin = "insulin")
+  expect_message(liver_fat_markers(df, col_map = cm, verbose = TRUE), "liver_fat_markers")
+  expect_message(liver_fat_markers(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(liver_fat_markers(df, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df <- data.frame(ALT = 30, AST = 20, BMI = 25, sex = 2, diabetes = 1, insulin = 15)
+  cm <- list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex",
+             diabetes = "diabetes", insulin = "insulin")
+  msgs <- testthat::capture_messages(
+    liver_fat_markers(df, col_map = cm, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
+})

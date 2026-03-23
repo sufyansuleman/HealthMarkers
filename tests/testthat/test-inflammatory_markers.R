@@ -19,11 +19,24 @@ test_that("mapping validation errors and messages", {
   )
 })
 
-test_that("verbose messages are emitted", {
-  df <- tibble::tibble(neutrophils = numeric(0), lymphocytes = numeric(0))
-  cm <- list(neutrophils="neutrophils", lymphocytes="lymphocytes")
-  expect_message(inflammatory_markers(df, cm, panel = "classic", verbose = TRUE),
-                 "-> inflammatory_markers: computing indices")
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- tibble::tibble(neutrophils = numeric(0), lymphocytes = numeric(0))
+  cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
+  expect_message(inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE), "inflammatory_markers")
+  expect_message(inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE), "column map")
+  expect_message(inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- tibble::tibble(neutrophils = numeric(0), lymphocytes = numeric(0))
+  cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
+  msgs <- testthat::capture_messages(
+    inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("classic panel computes markers", {

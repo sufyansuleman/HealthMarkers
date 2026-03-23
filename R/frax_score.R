@@ -74,8 +74,9 @@ frax_score <- function(
                  class = "healthmarkers_frax_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> frax_score: preparing inputs")
-  else hm_inform("frax_score(): preparing inputs", level = "debug")
+  hm_inform("frax_score(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req], "frax_score"))
 
   # Build list of used columns that are present in data
   opt_keys <- c("prior_fracture","parent_fracture","steroids","rheumatoid",
@@ -211,8 +212,7 @@ frax_score <- function(
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> frax_score: computing risk")
-  else hm_inform("frax_score(): computing", level = "debug")
+  hm_inform("frax_score(): computing risk", level = "debug")
 
   n <- length(d_age)
   risk_major <- rep(NA_real_, n)
@@ -272,8 +272,9 @@ frax_score <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("Completed frax_score: %d rows.", nrow(out)))
-  else hm_inform(sprintf("frax_score(): completed (%d rows)", nrow(out)), level = "debug")
+  # Completion summary
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "frax_score"))
 
   out
 }

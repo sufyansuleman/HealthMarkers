@@ -168,3 +168,23 @@ test_that("numeric coercion warns when NAs introduced", {
     "coerced to numeric; NAs introduced"
   )
 })
+
+test_that("verbose emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
+  cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
+  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "lipid_markers")
+  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "column map")
+  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
+  cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
+  msgs <- testthat::capture_messages(
+    lipid_markers(df_v, cm_v, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
+})

@@ -36,12 +36,20 @@ test_that("computes pre and post ratios and fixed COPD flag", {
   expect_false(out$copd_flag_fixed[1])
 })
 
-test_that("verbose emits preparing inputs message", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
-  expect_message(
-    spirometry_markers(df, cm, verbose = TRUE),
-    "-> spirometry_markers: preparing inputs"
-  )
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(spirometry_markers(df, cm, verbose = TRUE), "spirometry_markers")
+  expect_message(spirometry_markers(df, cm, verbose = TRUE), "column map")
+  expect_message(spirometry_markers(df, cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- data.frame(FEV1 = 2.0, FVC = 3.0)
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(spirometry_markers(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("NA policies: keep, omit, error, warn", {

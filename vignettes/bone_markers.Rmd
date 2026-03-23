@@ -145,6 +145,38 @@ Rows drop only with na_action = "omit" or when na_action = "error" aborts.
 - ALMI should equal ALM / height^2; FMI equals FM / height^2.
 - BMD_Tscore should drop by ~1 when BMD is one SD below reference.
 
+## Verbose diagnostics
+
+Set `verbose = TRUE` to emit three structured messages per call:
+
+1. **Preparing inputs** — start-of-function signal.
+2. **Column map** — confirms which data column each required key resolved to.
+   Example: `bone_markers(): column map: age -> 'age', weight -> 'weight', height -> 'height', ...`
+3. **Results summary** — shows how many rows computed successfully (non-NA) per output column.
+   Example: `bone_markers(): results: T_score 28/30, Z_score 28/30, PINP 29/30, ...`
+
+`verbose = TRUE` emits at the `"inform"` level; you also need `options(healthmarkers.verbose = "inform")` active:
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- tibble::tibble(
+  age = c(60, 72), weight = c(65, 50), height = c(1.65, 1.58),
+  ALM = c(18.2, 14.7), FM = c(22.0, 20.5),
+  BMD = c(0.95, 0.80), BMD_ref_mean = c(1.00, 1.00), BMD_ref_sd = c(0.12, 0.12)
+)
+cm_v <- list(
+  age = "age", weight = "weight", height = "height",
+  ALM = "ALM", FM = "FM", BMD = "BMD",
+  BMD_ref_mean = "BMD_ref_mean", BMD_ref_sd = "BMD_ref_sd"
+)
+bone_markers(df_v, col_map = cm_v, verbose = TRUE)
+
+options(old_opt)
+```
+
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
 ## See also
 - sarc_f_score() and alm_bmi_index() for sarcopenia-related assessments.
 - frax_score() for fracture risk estimation.

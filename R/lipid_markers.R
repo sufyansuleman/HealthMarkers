@@ -93,7 +93,9 @@ lipid_markers <- function(
   missing_cols <- setdiff(mapped_req, names(data))
   if (length(missing_cols)) rlang::abort(paste("missing required columns:", paste(missing_cols, collapse = ", ")))
 
-  if (isTRUE(verbose)) rlang::inform("-> computing lipid markers")
+  hm_inform("lipid_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req], "lipid_markers"))
 
   # Collect used columns (required + present optional + glucose if present)
   optional <- c("LDL_c","ApoB","ApoA1","waist","BMI")
@@ -273,6 +275,9 @@ lipid_markers <- function(
   } else {
     out <- out_sub
   }
+
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "lipid_markers"))
 
   out
 }

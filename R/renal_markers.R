@@ -76,8 +76,7 @@ renal_markers <- function(data,
                           verbose = FALSE) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> renal_markers: validating inputs")
+  hm_inform("renal_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # 1) Validate mapping and data presence
   required <- c("creatinine", "age", "sex", "race", "BUN")
@@ -105,6 +104,8 @@ renal_markers <- function(data,
 
   # 2) High-missingness warnings on required inputs
   .rm_warn_high_missing(data, col_map[required], na_warn_prop = na_warn_prop)
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[required], "renal_markers"))
 
   # 3) NA policy on required inputs
   used_cols <- unname(unlist(col_map[required], use.names = FALSE))
@@ -116,7 +117,9 @@ renal_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> renal_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("renal_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -151,7 +154,7 @@ renal_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> renal_markers: computing markers")
+  hm_inform("renal_markers(): computing markers", level = "debug")
 
   # 5) Pull and normalize inputs (sex/race mapping)
   Cr   <- data[[col_map$creatinine]] # mg/dL
@@ -253,16 +256,8 @@ renal_markers <- function(data,
     rlang::warn(sprintf("renal_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-       "Completed renal_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-       nrow(out),
-       paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-       capped_n, dz_total, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "renal_markers"))
 
   out
 }

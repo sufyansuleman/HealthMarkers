@@ -155,3 +155,65 @@ test_that("psych_dx_flags errors when dx map is missing", {
 test_that("psych_med_flags errors when med map is missing", {
   expect_error(psych_med_flags(data.frame(x = 1:2), col_map = list()))
 })
+
+# ---- Formula / severity correctness ----------------------------------------
+test_that("phq9_score correct total and severity label", {
+  out <- phq9_score(sample_psych_df)
+  expect_equal(out$PHQ9_total, 11L)
+  expect_equal(as.character(out$PHQ9_severity), "moderate")
+})
+
+test_that("isi_score severity band: total=7 -> none", {
+  out <- isi_score(sample_psych_df)
+  expect_equal(out$ISI_total, 7L)
+  expect_equal(as.character(out$ISI_severity), "none")
+})
+
+test_that("who5_score percent = raw * 4", {
+  out <- who5_score(sample_psych_df)
+  expect_equal(out$WHO5_percent, out$WHO5_raw * 4)
+  expect_false(out$WHO5_low_wellbeing)
+})
+
+test_that("ghq12_score binary scoring correct", {
+  # values: 0,1,2,1,0,2,1,0,1,0,1,0 -> binary (>=2->1): 0,0,1,0,0,1,0,0,0,0,0,0 = 2
+  out <- ghq12_score(sample_psych_df, method = "binary")
+  expect_equal(out$GHQ12_total_binary, 2L)
+  expect_false(out$GHQ12_case_binary)  # 2 < 3 (default cutoff)
+})
+
+test_that("na_action='omit' in phq9_score drops NA rows", {
+  df <- tibble::tibble(
+    phq9_01 = c(1, NA), phq9_02 = 1, phq9_03 = 1, phq9_04 = 1, phq9_05 = 1,
+    phq9_06 = 1, phq9_07 = 1, phq9_08 = 1, phq9_09 = 1
+  )
+  out <- phq9_score(df, na_action = "omit")
+  expect_equal(nrow(out), 1L)
+})
+
+test_that("na_action='error' in phq9_score aborts on NA", {
+  df <- tibble::tibble(
+    phq9_01 = c(1, NA), phq9_02 = 1, phq9_03 = 1, phq9_04 = 1, phq9_05 = 1,
+    phq9_06 = 1, phq9_07 = 1, phq9_08 = 1, phq9_09 = 1
+  )
+  expect_error(phq9_score(df, na_action = "error"))
+})
+
+# ---- Verbose ----------------------------------------------------------------
+test_that("phq9_score verbose emits preparing and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(phq9_score(sample_psych_df, verbose = TRUE), "phq9_score")
+  expect_message(phq9_score(sample_psych_df, verbose = TRUE), "results:")
+})
+
+test_that("psych_markers verbose emits preparing and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    psych_markers(sample_psych_df, which = "phq9", verbose = TRUE),
+    "psych_markers"
+  )
+  expect_message(
+    psych_markers(sample_psych_df, which = "phq9", verbose = TRUE),
+    "results:"
+  )
+})

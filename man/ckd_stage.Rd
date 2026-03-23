@@ -9,7 +9,8 @@ ckd_stage(
   col_map,
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error")
+  extreme_action = c("cap", "NA", "error"),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ ckd_stage(
 \item "NA"    - replace out-of-range with NA
 \item "error" - abort on any out-of-range value
 }}
+
+\item{verbose}{Logical; if TRUE, emits progress messages via \code{hm_inform()}.}
 }
 \value{
 Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.

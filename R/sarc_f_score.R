@@ -94,10 +94,12 @@ sarc_f_score <- function(
   }
 
   if (isTRUE(verbose)) {
-    rlang::inform("-> sarc_f_score: preparing inputs")
-  } else if (exists("hm_inform", mode = "function")) {
+    hm_inform("sarc_f_score(): preparing inputs", level = "inform")
+  } else {
     hm_inform("sarc_f_score(): preparing inputs", level = "debug")
   }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map, "sarc_f_score"))
 
   for (cn in mapped) {
     if (!is.numeric(data[[cn]])) {
@@ -206,9 +208,7 @@ sarc_f_score <- function(
   }
   # ---- end extreme scan block ----
 
-  if (isTRUE(verbose)) {
-    rlang::inform("-> sarc_f_score: computing")
-  }
+  hm_inform("sarc_f_score(): computing markers", level = "debug")
 
   total_score <- d_xs + d_xw + d_xc + d_xt + d_xf
   high_risk   <- ifelse(is.na(total_score), NA, total_score >= 4)
@@ -228,11 +228,8 @@ sarc_f_score <- function(
     out <- out_core
   }
 
-  if (isTRUE(verbose)) {
-    rlang::inform(sprintf("Completed sarc_f_score: %d rows.", nrow(out)))
-  } else if (exists("hm_inform", mode = "function")) {
-    hm_inform(sprintf("sarc_f_score(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "sarc_f_score"))
 
   out
 }

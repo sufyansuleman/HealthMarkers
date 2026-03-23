@@ -14,12 +14,20 @@ make_df_req <- function(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14) {
   tibble(Cr = Cr, Age = Age, Sex = Sex, Race = Race, BUN = BUN)
 }
 
-test_that("verbose prints validating/computing messages (HM-CS verbosity)", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- make_df_req()
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(renal_markers(df, cm_req, verbose = TRUE), "-> renal_markers: validating inputs")
-  expect_message(renal_markers(df, cm_req, verbose = TRUE), "-> renal_markers: computing markers")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(renal_markers(df, cm_req, verbose = TRUE), "renal_markers")
+  expect_message(renal_markers(df, cm_req, verbose = TRUE), "column map")
+  expect_message(renal_markers(df, cm_req, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- make_df_req()
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(renal_markers(df, cm_req, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("error when mapped column not found in data", {

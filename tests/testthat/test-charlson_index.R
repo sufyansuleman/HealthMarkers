@@ -27,10 +27,20 @@ test_that("mapping validation and missing columns error", {
   expect_error(charlson_index(data.frame(x=1), cm), class = "healthmarkers_cci_error_missing_columns")
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
   df <- make_df(list())
-  expect_message(charlson_index(df, cm, verbose = TRUE), "-> charlson_index: preparing inputs")
-  expect_message(charlson_index(df, cm, verbose = TRUE), "-> charlson_index: computing")
+  expect_message(charlson_index(df, cm, verbose = TRUE), "charlson_index")
+  expect_message(charlson_index(df, cm, verbose = TRUE), "column map")
+  expect_message(charlson_index(df, cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- make_df(list())
+  msgs <- testthat::capture_messages(charlson_index(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {

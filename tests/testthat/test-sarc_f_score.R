@@ -15,10 +15,20 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
-  expect_message(sarc_f_score(df, cm, verbose = TRUE), "-> sarc_f_score: preparing inputs")
-  expect_message(sarc_f_score(df, cm, verbose = TRUE), "-> sarc_f_score: computing")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(sarc_f_score(df, cm, verbose = TRUE), "sarc_f_score")
+  expect_message(sarc_f_score(df, cm, verbose = TRUE), "column map")
+  expect_message(sarc_f_score(df, cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(sarc_f_score(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {

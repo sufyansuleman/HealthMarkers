@@ -112,6 +112,24 @@ try(
 - Adds: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`, `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`, `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`, optional `RFM`.
 - Zero denominators yield `NA` with warnings; WHRadjBMI requires variance in WHR and BMI; RFM requires sex coded 0/1.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+obesity_indices(
+  data = df,
+  weight = wt,
+  height = ht,
+  waist = waist,
+  hip = hip,
+  sex = sex,
+  weight_unit = "kg",
+  height_unit = "cm",
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips
 
 - Set weight/height units correctly; waist/hip are assumed cm.

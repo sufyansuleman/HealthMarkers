@@ -71,8 +71,10 @@ kyn_trp_ratio <- function(
                  class = "healthmarkers_ktr_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> kyn_trp_ratio: preparing inputs")
-  else hm_inform("kyn_trp_ratio(): preparing inputs", level = "debug")
+  hm_inform("kyn_trp_ratio(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req], "kyn_trp_ratio"))
 
   # Coerce numeric; warn if NAs introduced; sanitize
   for (cn in mapped) {
@@ -149,8 +151,7 @@ kyn_trp_ratio <- function(
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> kyn_trp_ratio: computing")
-  else hm_inform("kyn_trp_ratio(): computing", level = "debug")
+  hm_inform("kyn_trp_ratio(): computing", level = "debug")
 
   ratio <- d_kyn / d_trp
   ratio[!is.finite(ratio)] <- NA_real_
@@ -170,8 +171,8 @@ kyn_trp_ratio <- function(
     out <- res
   }
 
-  if (isTRUE(verbose)) rlang::inform(sprintf("Completed kyn_trp_ratio: %d rows.", nrow(out)))
-  else hm_inform(sprintf("kyn_trp_ratio(): completed (%d rows)", nrow(out)), level = "debug")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "kyn_trp_ratio"))
 
   out
 }

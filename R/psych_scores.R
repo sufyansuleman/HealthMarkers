@@ -227,6 +227,9 @@ phq9_score <- function(data,
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
+  hm_inform("phq9_score(): preparing inputs",
+            level = if (isTRUE(verbose)) "inform" else "debug")
+
   items <- if (variant == "PHQ9") sprintf("phq9_%02d", 1:9) else sprintf("phq9_%02d", 1:8)
   item_cols <- .hm_resolve_items(data, items, col_map = col_map, where = "items")
 
@@ -241,6 +244,9 @@ phq9_score <- function(data,
     !!paste0(prefix, "_total") := total,
     !!paste0(prefix, "_severity") := factor(severity, levels = c("minimal","mild","moderate","moderately_severe","severe"))
   )
+
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out_cols, "phq9_score"))
 
   .hm_add_cols(data, out_cols, na_action = na_action)
 }
@@ -824,6 +830,9 @@ psych_markers <- function(data,
   impute <- match.arg(impute, c("none","mean"))
   cognitive_method <- match.arg(cognitive_method, c("z_mean","pca1"))
 
+  hm_inform("psych_markers(): preparing inputs",
+            level = if (isTRUE(verbose)) "inform" else "debug")
+
   out <- tibble::as_tibble(data)
 
   if ("phq9" %in% which) out <- phq9_score(out, col_map = col_map$phq9, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, variant = "PHQ9", prefix = "PHQ9")
@@ -846,6 +855,10 @@ psych_markers <- function(data,
   if ("cognitive" %in% which) out <- cognitive_score(out, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
   if ("dx_flags" %in% which)  out <- psych_dx_flags(out, col_map = col_map$dx_flags, na_action = na_action, prefix = "dx")
   if ("med_flags" %in% which) out <- psych_med_flags(out, col_map = col_map$med_flags, na_action = na_action, prefix = "med")
+
+  hm_inform(sprintf("psych_markers(): results: %d rows, %d new columns",
+                    nrow(out), ncol(out) - ncol(data)),
+            level = if (isTRUE(verbose)) "inform" else "debug")
 
   out
 }

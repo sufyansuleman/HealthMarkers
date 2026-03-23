@@ -70,7 +70,7 @@ test_that("saliva_markers is vectorized over multiple rows", {
   expect_equal(out$CAR_AUC[2], 450)
 })
 
-test_that("verbose = TRUE prints progress messages (HM-CS verbosity)", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
@@ -78,10 +78,24 @@ test_that("verbose = TRUE prints progress messages (HM-CS verbosity)", {
     saliva_amylase  = 100,
     saliva_glucose  = 5.0
   )
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(saliva_markers(df, verbose = TRUE), "-> saliva_markers: validating inputs")
-  expect_message(saliva_markers(df, verbose = TRUE), "-> saliva_markers: computing markers")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(saliva_markers(df, verbose = TRUE), "saliva_markers")
+  expect_message(saliva_markers(df, verbose = TRUE), "column map")
+  expect_message(saliva_markers(df, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- tibble(
+    saliva_cort1    = 10,
+    saliva_cort2    = 20,
+    saliva_cort3    = 10,
+    saliva_amylase  = 100,
+    saliva_glucose  = 5.0
+  )
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(saliva_markers(df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action='omit' drops rows with NA in required inputs and returns empty tibble when all omitted", {

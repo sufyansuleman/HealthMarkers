@@ -106,7 +106,7 @@ iAge <- function(data,
   extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) rlang::abort("iAge(): `data` must be a data.frame or tibble.")
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: starting")
+  hm_inform("iAge(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   markers <- c("CRP","IL6","TNFa")
   if (is.null(col_map) || !is.list(col_map)) rlang::abort("iAge(): `col_map` must be a named list.")
@@ -123,6 +123,8 @@ iAge <- function(data,
     rlang::abort(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]))
   }
   used_cols_named <- stats::setNames(unname(used_cols), markers)
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[markers], "iAge"))
 
   # Validate weights
   if (is.null(weights)) rlang::abort("iAge(): `weights` must be a numeric vector.")
@@ -136,7 +138,7 @@ iAge <- function(data,
   if (any(!is.finite(weights))) rlang::abort("iAge(): `weights` must be finite numeric values.")
   if (abs(sum(weights) - 1) > 1e-8) rlang::abort("iAge(): `weights` must sum to 1.")
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: coercing inputs to numeric")
+  hm_inform("iAge(): coercing inputs to numeric", level = "debug")
   for (cn in unname(used_cols)) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
@@ -184,7 +186,7 @@ iAge <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> iAge: computing weighted sum")
+  hm_inform("iAge(): computing weighted sum", level = "debug")
 
   M <- as.matrix(data[, unname(used_cols), drop = FALSE])
   w <- as.numeric(weights)
@@ -202,10 +204,8 @@ iAge <- function(data,
   }
 
   out <- tibble::tibble(iAge = iage)
-  if (isTRUE(verbose)) {
-    na_n <- sum(is.na(out$iAge))
-    hm_inform(level = "inform", msg = sprintf("Completed iAge: %d rows; NA(iAge)=%d", nrow(out), na_n))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "iAge"))
   out
 }
 

@@ -173,7 +173,7 @@
 }
 
 .hm_safe_call <- function(fun, data, col_map, needs_col_map, verbose, tag, extra_args = list()) {
-  if (isTRUE(verbose)) hm_inform(level = "info", msg = paste0("-> ", tag))
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = paste0("health_markers(): calling ", tag))
 
   args <- list(data)
   fn_formals <- tryCatch(formals(fun), error = function(e) NULL)
@@ -259,6 +259,7 @@ all_insulin_indices <- function(
   normalize <- .hm_normalize_choice(normalize, c("none","z","inverse","range","robust"))
   mode <- .hm_normalize_choice(mode, c("both","IS","IR"))
   na_action <- match.arg(na_action)
+  hm_inform("all_insulin_indices(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   common_args <- list(normalize = normalize, na_action = na_action)
 
@@ -331,6 +332,7 @@ metabolic_markers <- function(
   mode <- .hm_normalize_choice(mode, c("both","IS","IR"))
   which <- match.arg(which, several.ok = TRUE)
   na_action <- match.arg(na_action)
+  hm_inform("metabolic_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   out <- data
 
@@ -353,7 +355,7 @@ metabolic_markers <- function(
     if (!inherits(cr, "try-error")) {
       out <- .hm_bind_new_cols(out, cr)
     } else if (isTRUE(verbose)) {
-      hm_inform(level = "debug", msg = "-> cardio skipped (cvd_risk unavailable)")
+      hm_inform(level = "debug", msg = "health_markers(): cardio skipped (cvd_risk unavailable)")
     }
   }
 
@@ -452,6 +454,7 @@ all_health_markers <- function(
   normalize <- .hm_normalize_choice(normalize, c("none","z","inverse","range","robust"))
   mode <- .hm_normalize_choice(mode, c("both","IS","IR"))
   na_action <- match.arg(na_action)
+  hm_inform("all_health_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Auto-infer col_map if not supplied
   if (missing(col_map) || is.null(col_map)) {

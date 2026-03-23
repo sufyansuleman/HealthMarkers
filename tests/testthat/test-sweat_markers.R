@@ -73,7 +73,7 @@ test_that("sweat_markers is vectorized over multiple rows", {
   expect_equal(out$sweat_rate[2], (80 - 79) / 2 / 2)
 })
 
-test_that("verbose = TRUE prints progress messages (HM-CS verbosity)", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -84,10 +84,27 @@ test_that("verbose = TRUE prints progress messages (HM-CS verbosity)", {
     duration          = 1,
     body_surface_area = 1.8
   )
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(sweat_markers(df, verbose = TRUE), "-> sweat_markers: validating inputs")
-  expect_message(sweat_markers(df, verbose = TRUE), "-> sweat_markers: computing markers")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(sweat_markers(df, verbose = TRUE), "sweat_markers")
+  expect_message(sweat_markers(df, verbose = TRUE), "column map")
+  expect_message(sweat_markers(df, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- tibble(
+    sweat_chloride    = 30,
+    sweat_Na          = 50,
+    sweat_K           = 5,
+    sweat_lactate     = 10,
+    weight_before     = 70,
+    weight_after      = 69.5,
+    duration          = 1,
+    body_surface_area = 1.8
+  )
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(sweat_markers(df, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("na_action policies: error and omit behave as expected", {

@@ -99,11 +99,9 @@ fasting_is <- function(
     rlang::abort("`extreme_limit` must be a single positive numeric.", class = "healthmarkers_fi_error_extremlimit")
   }
 
-  if (isTRUE(verbose)) {
-    hm_inform("-> fasting_is: validating and preparing inputs", level = "inform")
-  } else {
-    hm_inform("fasting_is(): preparing inputs", level = "debug")
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "fasting_is(): preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[req_keys], "fasting_is"))
 
   # Coerce to numeric; warn if NAs introduced; non-finite -> NA
   for (nm in req_keys) {
@@ -133,12 +131,12 @@ fasting_is <- function(
     G0 <- G0[keep]; I0 <- I0[keep]
   }
 
-  if (isTRUE(verbose)) hm_inform("-> converting units (mmol/L->mg/dL; pmol/L->muU/mL)", level = "inform")
+  hm_inform("fasting_is(): converting units (mmol/L->mg/dL; pmol/L->muU/mL)", level = "debug")
 
   G0_mg <- G0 * 18
   I0_u  <- I0 / 6
 
-  if (isTRUE(verbose)) hm_inform("-> computing indices", level = "inform")
+  hm_inform("fasting_is(): computing indices", level = "debug")
 
   lg <- function(x) {
     y <- x
@@ -219,12 +217,9 @@ fasting_is <- function(
     out[] <- lapply(out, normalize_vec, method = normalize)
   }
 
-  # Completion message (test expects "Completed fasting_is:")
-  if (isTRUE(verbose)) {
-    message(sprintf("Completed fasting_is: %d rows.", nrow(out)))
-  } else {
-    hm_inform(sprintf("fasting_is(): completed (%d rows)", nrow(out)), level = "debug")
-  }
+  # Completion summary
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(out, "fasting_is"))
 
   out
 }

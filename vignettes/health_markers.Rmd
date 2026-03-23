@@ -37,7 +37,6 @@ Use the packaged simulated dataset for runnable examples. Swap `sim_small` with 
 
 ```{r}
 library(HealthMarkers)
-library(dplyr)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim <- readRDS(sim_path)
@@ -85,7 +84,7 @@ mm <- metabolic_markers(
 )
 
 mm_new <- setdiff(names(mm), names(sim_small))
-head(select(mm, all_of(mm_new)))
+head(dplyr::select(mm, dplyr::all_of(mm_new)))
 ```
 
 Interpretation: outputs include lipid ratios, TyG-based metrics, and liver-derived markers. Rows are retained because `na_action = "keep"` propagates missing inputs to `NA` outputs.
@@ -106,7 +105,7 @@ hm <- all_health_markers(
 )
 
 hm_new <- setdiff(names(hm), names(sim_small))
-head(select(hm, all_of(hm_new)))
+head(dplyr::select(hm, dplyr::all_of(hm_new)))
 ```
 
 Verbose mode reports inferred/user mappings and which groups were computed or skipped. Skipped groups leave the input untouched.
@@ -137,7 +136,7 @@ ins <- all_health_markers(
 )
 
 ins_new <- setdiff(names(ins), names(sim_small))
-head(select(ins, all_of(ins_new)))
+head(dplyr::select(ins, dplyr::all_of(ins_new)))
 ```
 
 The verbose summary will note which insulin sub-panels ran (fasting) and which were skipped due to missing OGTT/adipose/tracer inputs.
@@ -179,6 +178,22 @@ list(
 - `normalize` and `mode` affect insulin outputs; they are ignored by groups that do not use them.
 - `all_health_markers()` infers columns when `col_map` is missing/NULL; inference fails if required keys cannot be found.
 - Verbose mode summarizes mappings plus computed/skipped groups so you can audit the run.
+
+## Verbose diagnostics
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three structured messages on each call: preparing inputs, a column mapping summary, and a group execution summary.
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+df_v <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120, BMI = 25)
+col_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", BMI = "BMI")
+all_health_markers(
+  df_v, col_v,
+  which = c("lipid"),
+  include_insulin = FALSE,
+  verbose = TRUE
+)
+options(old_opt)
+```
 
 ## Tips
 - Start narrow: pick a few groups with `metabolic_markers(which = ...)` before running the full registry.

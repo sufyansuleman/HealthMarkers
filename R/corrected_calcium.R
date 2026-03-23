@@ -85,7 +85,11 @@ corrected_calcium <- function(
     )
   }
 
-  if (isTRUE(verbose)) message("-> corrected_calcium: preparing inputs")
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "corrected_calcium(): preparing inputs")
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_col_report(list(calcium = ca_col, albumin = alb_col), "corrected_calcium")
+  )
 
   ## --- Coercion to numeric --------------------------------------------------
   coerce_num <- function(x, nm) {
@@ -226,7 +230,7 @@ corrected_calcium <- function(
   # SI or auto-SI => mmol/L
   corr_out <- if (units == "si" || (units == "auto" && si_inferred)) corr_mgdl / 4.0 else corr_mgdl
 
-  if (isTRUE(verbose)) message("-> corrected_calcium: computing result")
+  hm_inform(level = "debug", msg = "corrected_calcium(): computing result")
 
   result <- tibble::tibble(corrected_calcium = corr_out)
 
@@ -236,9 +240,13 @@ corrected_calcium <- function(
     result <- padded
   }
 
-  if (isTRUE(verbose)) {
-    message(sprintf("Completed corrected_calcium: %d rows.", nrow(result)))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = sprintf("corrected_calcium(): completed %d rows.", nrow(result)))
+
+  hm_inform(
+    level = if (isTRUE(verbose)) "inform" else "debug",
+    msg   = hm_result_summary(result, "corrected_calcium")
+  )
 
   return(result)
 }

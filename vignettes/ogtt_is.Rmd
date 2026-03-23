@@ -116,6 +116,25 @@ ogtt_is(
 - Extreme handling: only applied when `check_extreme = TRUE`, and only after computing indices.
 - All NA outputs: usually missing required inputs, zero/negative values passed to logs, or NA produced by normalization after NA inputs.
 
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+ogtt_is(
+  data = df,
+  col_map = list(
+    G0 = "G0", I0 = "I0",
+    G30 = "G30", I30 = "I30",
+    G120 = "G120", I120 = "I120",
+    weight = "weight", bmi = "bmi",
+    age = "age", sex = "sex"
+  ),
+  normalize = "none",
+  verbose = TRUE
+)
+options(old_opt)
+```
+
 ## Tips for best results
 - Keep `normalize = "none"` for clinical interpretation; use "z" or "robust" only when scaling is needed for modeling.
 - Use `na_action = "omit"` for modeling-ready datasets; `keep` for exploratory review.

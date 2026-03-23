@@ -72,7 +72,6 @@ vitamin_markers <- function(data,
                             verbose = FALSE) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
-  t0 <- Sys.time()
 
   if (!is.data.frame(data)) {
     rlang::abort("vitamin_markers(): `data` must be a data.frame or tibble.",
@@ -92,8 +91,7 @@ vitamin_markers <- function(data,
 
   # HM-CS v2: standardized validation
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "vitamin_markers")
-
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> vitamin_markers: validating inputs")
+  hm_inform("vitamin_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Ensure mapped columns exist
   req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
@@ -130,6 +128,9 @@ vitamin_markers <- function(data,
     }
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_col_report(col_map[required_keys], "vitamin_markers"))
+
   # NA policy
   used_cols <- req_cols
   if (na_action == "error") {
@@ -140,7 +141,9 @@ vitamin_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (isTRUE(verbose)) hm_inform(level = "inform", msg = sprintf("-> vitamin_markers: omitting %d rows with NA in required inputs", sum(!keep)))
+    if (sum(!keep) > 0L)
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = sprintf("vitamin_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
     data <- data[keep, , drop = FALSE]
   }
 
@@ -219,7 +222,7 @@ vitamin_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) hm_inform(level = "inform", msg = "-> vitamin_markers: computing markers")
+  hm_inform("vitamin_markers(): computing markers", level = "debug")
 
   # Safe division with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
@@ -270,16 +273,8 @@ vitamin_markers <- function(data,
     rlang::warn(sprintf("vitamin_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x) | !is.finite(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    hm_inform(level = "inform", msg = sprintf(
-      "Completed vitamin_markers: %d rows; NA/Inf -> %s; capped=%d; denom_zero=%d; elapsed=%.2fs",
-      nrow(out),
-      paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "),
-      capped_n, dz_total, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(out, "vitamin_markers"))
 
   out
 }

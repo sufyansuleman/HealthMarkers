@@ -96,3 +96,39 @@ hm_bind_cols_quiet <- function(...) {
     .name_repair = ~ vctrs::vec_as_names(., repair = "unique", quiet = TRUE)
   )
 }
+
+#' Format a column-map resolution line for verbose output
+#'
+#' Produces a single string like:
+#' "fn(): column map: G0 -> 'col_a', I0 -> 'col_b', ..."
+#'
+#' @param col_map Named list of key -> column-name mappings (only the keys
+#'   actually used by the function need to be supplied).
+#' @param fn Optional function name prefixed to the message.
+#' @keywords internal
+hm_col_report <- function(col_map, fn = NULL) {
+  nms   <- names(col_map)
+  parts <- vapply(nms, function(k) paste0(k, " -> '", col_map[[k]], "'"), character(1))
+  msg   <- paste(parts, collapse = ", ")
+  if (!is.null(fn)) msg <- paste0(fn, "(): column map: ", msg)
+  msg
+}
+
+#' Summarise a result tibble: count non-NA rows per output column
+#'
+#' Produces a single string like:
+#' "fn(): results: col_a 28/30, col_b 30/30, col_c 25/30"
+#'
+#' @param result A tibble / data.frame returned by a HealthMarkers function.
+#' @param fn Optional function name prefixed to the message.
+#' @keywords internal
+hm_result_summary <- function(result, fn = NULL) {
+  n     <- nrow(result)
+  parts <- vapply(names(result), function(cn) {
+    ok <- sum(!is.na(result[[cn]]))
+    paste0(cn, " ", ok, "/", n)
+  }, character(1))
+  msg <- paste(parts, collapse = ", ")
+  if (!is.null(fn)) msg <- paste0(fn, "(): results: ", msg)
+  msg
+}

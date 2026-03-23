@@ -80,8 +80,7 @@ metabolic_risk_features <- function(
   if (na_action %in% c("ignore","warn")) na_action <- "keep"
   extreme_action <- match.arg(extreme_action)
 
-  t0 <- Sys.time()
-  if (isTRUE(verbose)) rlang::inform("-> metabolic_risk_features: validating inputs")
+  hm_inform("metabolic_risk_features(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   .mrf_validate_args(data, col_map, na_warn_prop, extreme_rules)
 
@@ -113,6 +112,9 @@ metabolic_risk_features <- function(
     )
   }
 
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_col_report(col_map[required_cols], "metabolic_risk_features"))
+
   # HM-CS v2: numeric coercion for required inputs; warn if NAs introduced; set non-finite to NA
   for (cn in mapped_cols) {
     if (!is.numeric(data[[cn]])) {
@@ -139,7 +141,7 @@ metabolic_risk_features <- function(
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(required_cols, function(k) is.na(data[[col_map[[k]]]])))
-    if (isTRUE(verbose)) rlang::inform(sprintf("-> metabolic_risk_features: omitting %d rows with NA in required inputs", sum(!keep)))
+    hm_inform(sprintf("metabolic_risk_features(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -171,7 +173,7 @@ metabolic_risk_features <- function(
     }
   }
 
-  if (isTRUE(verbose)) rlang::inform("-> metabolic_risk_features: computing flags")
+  hm_inform("metabolic_risk_features(): computing flags", level = "debug")
 
   # Shorthand for mapped columns
   CT  <- data[[col_map$chol_total]]
@@ -217,14 +219,8 @@ metabolic_risk_features <- function(
     )
   )
 
-  if (isTRUE(verbose)) {
-    na_counts <- vapply(out, function(x) sum(is.na(x)), integer(1))
-    elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
-    rlang::inform(sprintf(
-      "Completed metabolic_risk_features: %d rows; NA -> %s; capped=%d; elapsed=%.2fs",
-      nrow(out), paste(sprintf("%s=%d", names(na_counts), na_counts), collapse = ", "), capped_n, elapsed
-    ))
-  }
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg = hm_result_summary(tibble::as_tibble(out), "metabolic_risk_features"))
 
   return(tibble::as_tibble(out))
 }

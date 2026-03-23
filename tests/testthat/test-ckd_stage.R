@@ -7,6 +7,33 @@ test_that("ckd_stage classifies G and A stages", {
   expect_equal(as.character(res$Albuminuria_stage), c("A1","A2","A2","A3","A2"))
 })
 
+test_that("eGFR boundary values map to correct G stages", {
+  df <- data.frame(
+    eGFR = c(90, 89, 60, 59, 45, 44, 30, 29, 15, 14),
+    UACR = rep(10, 10)
+  )
+  res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
+  expect_equal(
+    as.character(res$CKD_stage),
+    c("G1","G2","G2","G3a","G3a","G3b","G3b","G4","G4","G5")
+  )
+})
+
+test_that("UACR boundary values map to correct A stages", {
+  df <- data.frame(eGFR = rep(65, 4), UACR = c(0, 29, 30, 300))
+  res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
+  expect_equal(as.character(res$Albuminuria_stage), c("A1","A1","A2","A3"))
+})
+
+test_that("eGFR-only (no UACR) returns NA albuminuria and KDIGO assuming A1", {
+  df <- data.frame(eGFR = c(95, 50, 12))
+  res <- ckd_stage(df, col_map = list(eGFR = "eGFR"))
+  expect_equal(as.character(res$CKD_stage), c("G1","G3a","G5"))
+  expect_true(all(is.na(res$Albuminuria_stage)))
+  # G1 + A1 (assumed) -> Low; G3a + A1 -> Moderate; G4/G5 -> Very High
+  expect_equal(as.character(res$KDIGO_risk), c("Low","Moderate","Very High"))
+})
+
 test_that("ckd_stage default keep retains rows; omit drops any NA in mapped inputs", {
   df <- data.frame(eGFR = c(NA, 80), UACR = c(10, NA))
   res_keep <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
@@ -22,4 +49,44 @@ test_that("ckd_stage na_action = error aborts on missing mapped inputs", {
     ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"), na_action = "error"),
     "missing/non-finite values"
   )
+})
+
+test_that("extreme scan: cap, NA, error on eGFR/UACR", {
+  df <- data.frame(eGFR = c(250, 60), UACR = c(10, 6000))
+  res_cap <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
+                       check_extreme = TRUE, extreme_action = "cap")
+  # eGFR 250 capped at 200 -> still G1; UACR 6000 capped at 5000 -> A3
+  expect_equal(as.character(res_cap$CKD_stage[1]), "G1")
+  expect_equal(as.character(res_cap$Albuminuria_stage[2]), "A3")
+
+  res_na <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
+                      check_extreme = TRUE, extreme_action = "NA")
+  expect_true(is.na(res_na$CKD_stage[1]))
+  expect_true(is.na(res_na$Albuminuria_stage[2]))
+
+  expect_error(
+    ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
+              check_extreme = TRUE, extreme_action = "error"),
+    class = "healthmarkers_ckd_error_extreme"
+  )
+})
+
+test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df  <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
+  cm2 <- list(eGFR = "eGFR", UACR = "UACR")
+  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "ckd_stage")
+  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "column map")
+  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard: each message fires exactly once", {
+  withr::local_options(healthmarkers.verbose = "inform")
+  df   <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
+  cm2  <- list(eGFR = "eGFR", UACR = "UACR")
+  msgs <- testthat::capture_messages(
+    ckd_stage(df, col_map = cm2, verbose = TRUE)
+  )
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

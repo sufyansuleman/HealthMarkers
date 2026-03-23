@@ -21,18 +21,20 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits progress messages", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- data.frame(NfL = c(12, 35))
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(nfl_marker(df, cm, verbose = TRUE), "nfl_marker")
+  expect_message(nfl_marker(df, cm, verbose = TRUE), "column map")
+  expect_message(nfl_marker(df, cm, verbose = TRUE), "results:")
+})
 
-  expect_message(
-    nfl_marker(df, cm, verbose = TRUE),
-    "-> nfl_marker: preparing inputs"
-  )
-
-  expect_message(
-    nfl_marker(df, cm, verbose = TRUE),
-    "-> nfl_marker: computing"
-  )
+test_that("verbose double-fire guard", {
+  df <- data.frame(NfL = c(12, 35))
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(nfl_marker(df, cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("numeric coercion warning when non-numeric introduces NAs", {

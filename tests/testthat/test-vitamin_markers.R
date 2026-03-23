@@ -78,16 +78,22 @@ test_that("na_action='omit' with all rows dropped returns empty tibble with expe
   ) %in% names(out)))
 })
 
-test_that("verbose prints validating, computing, and completion summary with counters", {
+test_that("verbose emits preparing, column map, and results messages", {
   df <- make_full_df(1)
   cm <- cm_id(df)
-  old <- getOption("healthmarkers.verbose"); on.exit(options(healthmarkers.verbose = old), add = TRUE)
-  options(healthmarkers.verbose = "inform")
-  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "-> vitamin_markers: validating inputs")
-  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "-> vitamin_markers: computing markers")
-  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "Completed vitamin_markers:")
-  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "capped=")
-  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "denom_zero=")
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "vitamin_markers")
+  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(vitamin_markers(df, col_map = cm, verbose = TRUE), "results:")
+})
+
+test_that("verbose double-fire guard", {
+  df <- make_full_df(1)
+  cm <- cm_id(df)
+  withr::local_options(healthmarkers.verbose = "inform")
+  msgs <- testthat::capture_messages(vitamin_markers(df, col_map = cm, verbose = TRUE))
+  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
 test_that("extreme detection: ignore=no warning (unchanged), warn warns (unchanged), cap warns (changed)", {
