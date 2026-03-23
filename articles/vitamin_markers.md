@@ -1,0 +1,174 @@
+# Vitamin Markers
+
+## Scope
+
+[`vitamin_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/vitamin_markers.md)
+builds composite vitamin/endocrine ratios and z-scores (VitD_Z,
+B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R,
+Retinol_Z, Toco_Lip_R, Mg_Zn_R, Cu_Zn_R) and passes through PIVKA_II,
+VitC, Homocysteine, MMA. It validates mappings, enforces missing-data
+policy, can scan/cap extremes, and uses safe division to avoid inf/NaN.
+
+## When to use this
+
+- Create harmonized nutrient/endocrine summaries for cohorts or
+  dashboards.
+- QC pipelines where missingness/extremes should be handled uniformly
+  across many analytes.
+- Downstream modeling that expects standardized ratios/z-scores rather
+  than raw labs.
+
+## Required inputs and mapping
+
+All keys are required; no defaults. `col_map` must name every key to its
+column:
+
+- VitD, VitD_ref_mean, VitD_ref_sd
+- B12, Folate
+- Ferritin, TSat
+- Cortisol, DHEAS
+- Testosterone, Estradiol
+- TSH, free_T4
+- Retinol, Retinol_ref_mean, Retinol_ref_sd
+- Tocopherol, Total_lipids
+- PIVKA_II, VitC, Homocysteine, MMA
+- Magnesium, Zinc, Copper
+
+Columns must exist and be coercible to numeric. Non-finite values become
+`NA`; coercion that introduces NAs warns.
+
+## Options that change behavior
+
+- `na_action = c("keep","omit","error")` (default “keep”): policy for
+  missing required inputs. `omit` drops rows; `error` aborts.
+- `na_warn_prop = 0.2`: if debug-level verbose is enabled, flags columns
+  with \>=20% missing.
+- `check_extreme = FALSE`: enable plausible-range scanning (broad
+  defaults per analyte).
+- `extreme_action = c("warn","cap","error","ignore")` (default “warn”):
+  what to do with out-of-bounds values. `cap` truncates into range and
+  warns; `error` aborts.
+- `extreme_rules = NULL`: override bounds keyed by required keys or by
+  column names.
+- `verbose = FALSE`: progress summaries via
+  [`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md).
+
+## How inputs are validated and cleaned
+
+- [`hm_validate_inputs()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_validate_inputs.md)
+  ensures `data` is a data frame and all keys are mapped; missing maps
+  abort with scoped errors.
+- Each mapped column is coerced to numeric; any NA introduced is warned;
+  non-finite is set to NA.
+- NA policy is applied across all required columns; with `omit` the
+  output shrinks to rows fully observed on required inputs.
+- Extreme scanning (if enabled) uses key- or column-based bounds;
+  depending on `extreme_action`, outliers are warned, capped, aborted,
+  or ignored.
+- Safe division sets zero denominators to NA and emits a consolidated
+  warning listing affected ratios.
+
+## Outputs
+
+Tibble with: - Ratios/z-scores: VitD_Z, B12_Fol_Ratio, Ferr_TSat_R,
+Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R, Retinol_Z, Toco_Lip_R, Mg_Zn_R,
+Cu_Zn_R - Pass-through: PIVKA_II, VitC, Homocysteine, MMA
+
+Output row count matches input unless `na_action = "omit"` removed rows.
+
+## Examples
+
+Basic run
+
+``` r
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble::tibble(
+  VitD = c(50, 30), VitD_ref_mean = c(40, 40), VitD_ref_sd = c(5, 5),
+  B12 = c(300, 280), Folate = c(15, 12),
+  Ferritin = c(100, 80), TSat = c(0.25, 0.22),
+  Cortisol = c(200, 180), DHEAS = c(100, 90),
+  Testosterone = c(12, 10), Estradiol = c(120, 110),
+  TSH = c(2, 2.5), free_T4 = c(14, 13),
+  Retinol = c(0.8, 0.7), Retinol_ref_mean = c(0.9, 0.9), Retinol_ref_sd = c(0.2, 0.2),
+  Tocopherol = c(30, 28), Total_lipids = c(3, 2.8),
+  PIVKA_II = c(5, 6), VitC = c(60, 55), Homocysteine = c(10, 11), MMA = c(0.3, 0.35),
+  Magnesium = c(0.8, 0.78), Zinc = c(15, 14), Copper = c(15, 14)
+)
+
+cm <- as.list(names(df)); names(cm) <- names(df)
+
+vitamin_markers(
+  data = df,
+  col_map = cm,
+  na_action = "keep"
+)
+#> # A tibble: 2 × 14
+#>   VitD_Z B12_Fol_Ratio Ferr_TSat_R Cort_DHEA_R T_E2_Ratio TSH_fT4_R Retinol_Z
+#>    <dbl>         <dbl>       <dbl>       <dbl>      <dbl>     <dbl>     <dbl>
+#> 1      2          20          400            2     0.1        0.143      -0.5
+#> 2     -2          23.3        364.           2     0.0909     0.192      -1  
+#> # ℹ 7 more variables: Toco_Lip_R <dbl>, PIVKA_II <dbl>, VitC <dbl>,
+#> #   Homocysteine <dbl>, MMA <dbl>, Mg_Zn_R <dbl>, Cu_Zn_R <dbl>
+```
+
+Scan and cap extremes
+
+``` r
+df2 <- df
+# Force a few implausible values
+df2$TSat[2] <- 2.0
+df2$Zinc[1] <- 2000
+
+vitamin_markers(
+  data = df2,
+  col_map = cm,
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  na_action = "omit",
+  verbose = TRUE
+)
+#> # A tibble: 2 × 14
+#>   VitD_Z B12_Fol_Ratio Ferr_TSat_R Cort_DHEA_R T_E2_Ratio TSH_fT4_R Retinol_Z
+#>    <dbl>         <dbl>       <dbl>       <dbl>      <dbl>     <dbl>     <dbl>
+#> 1      2          20           400           2     0.1        0.143      -0.5
+#> 2     -2          23.3          80           2     0.0909     0.192      -1  
+#> # ℹ 7 more variables: Toco_Lip_R <dbl>, PIVKA_II <dbl>, VitC <dbl>,
+#> #   Homocysteine <dbl>, MMA <dbl>, Mg_Zn_R <dbl>, Cu_Zn_R <dbl>
+```
+
+## Verbose diagnostics
+
+``` r
+old_opt <- options(healthmarkers.verbose = "inform")
+vitamin_markers(
+  data = df,
+  col_map = cm,
+  verbose = TRUE
+)
+#> vitamin_markers(): preparing inputs
+#> vitamin_markers(): column map: VitD -> 'VitD', VitD_ref_mean -> 'VitD_ref_mean', VitD_ref_sd -> 'VitD_ref_sd', B12 -> 'B12', Folate -> 'Folate', Ferritin -> 'Ferritin', TSat -> 'TSat', Cortisol -> 'Cortisol', DHEAS -> 'DHEAS', Testosterone -> 'Testosterone', Estradiol -> 'Estradiol', TSH -> 'TSH', free_T4 -> 'free_T4', Retinol -> 'Retinol', Retinol_ref_mean -> 'Retinol_ref_mean', Retinol_ref_sd -> 'Retinol_ref_sd', Tocopherol -> 'Tocopherol', Total_lipids -> 'Total_lipids', PIVKA_II -> 'PIVKA_II', VitC -> 'VitC', Homocysteine -> 'Homocysteine', MMA -> 'MMA', Magnesium -> 'Magnesium', Zinc -> 'Zinc', Copper -> 'Copper'
+#> vitamin_markers(): results: VitD_Z 2/2, B12_Fol_Ratio 2/2, Ferr_TSat_R 2/2, Cort_DHEA_R 2/2, T_E2_Ratio 2/2, TSH_fT4_R 2/2, Retinol_Z 2/2, Toco_Lip_R 2/2, PIVKA_II 2/2, VitC 2/2, Homocysteine 2/2, MMA 2/2, Mg_Zn_R 2/2, Cu_Zn_R 2/2
+#> # A tibble: 2 × 14
+#>   VitD_Z B12_Fol_Ratio Ferr_TSat_R Cort_DHEA_R T_E2_Ratio TSH_fT4_R Retinol_Z
+#>    <dbl>         <dbl>       <dbl>       <dbl>      <dbl>     <dbl>     <dbl>
+#> 1      2          20          400            2     0.1        0.143      -0.5
+#> 2     -2          23.3        364.           2     0.0909     0.192      -1  
+#> # ℹ 7 more variables: Toco_Lip_R <dbl>, PIVKA_II <dbl>, VitC <dbl>,
+#> #   Homocysteine <dbl>, MMA <dbl>, Mg_Zn_R <dbl>, Cu_Zn_R <dbl>
+options(old_opt)
+```
+
+## Troubleshooting and tips
+
+- Incomplete or unnamed `col_map` aborts; ensure every key above is
+  mapped.
+- If denominators are zero (e.g., TSat = 0), expect a warning and NA
+  ratios; address upstream if this is unexpected.
+- Align units across inputs; no unit conversion is performed before
+  ratios/z-scores.
+- Narrow `extreme_rules` to your lab ranges to catch or cap
+  assay-specific outliers.
+- Use `na_action = "omit"` when downstream models cannot handle
+  propagated NAs.

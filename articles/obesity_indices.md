@@ -1,0 +1,180 @@
+# Obesity Indices
+
+## Scope
+
+Compute anthropometric adiposity/shape indices (BMI + category,
+WHR/WHtR, AVI, BAI, ABSI, BRI, Conicity Index, waist/BMI and
+weight/height ratios, optional WHRadjBMI and RFM) with unit conversion,
+NA/extreme handling, and safe-division guards.
+
+## When to use
+
+- You have weight/height/waist/hip (and optionally sex) and want a
+  comprehensive set of body composition proxies in one call.
+- You need built-in unit conversion (kg/lb, cm/m), NA policy controls,
+  and optional extreme-value scanning/capping.
+- You want optional BMI-adjusted WHR and Relative Fat Mass when sex
+  coding is available.
+
+## Inputs
+
+- `data`: data frame/tibble with numeric columns for weight, height,
+  waist, hip; `sex` needed only if `include_RFM = TRUE` (coded 0=male,
+  1=female).
+- Column arguments are unquoted: `weight`, `height`, `waist`, `hip`,
+  optional `sex`.
+- Units: weight kg (or lb if `weight_unit = "lb"`), height m (or cm if
+  `height_unit = "cm"`), waist/hip cm.
+- `weight_unit` / `height_unit`: convert to kg/m internally.
+- `adjust_WHR`: add BMI-adjusted WHR residuals.
+- `include_RFM`: compute Relative Fat Mass (requires `sex`).
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows missing
+  required inputs; `error` aborts when required inputs contain NA.
+- `na_warn_prop`: threshold for high-missingness debug messages (default
+  0.2).
+- `check_extreme`: set TRUE to scan weight_kg/height_m/waist/hip;
+  `extreme_action` (`warn`/`cap`/`error`/`ignore`) controls handling.
+  Defaults: weight_kg 20–400; height_m 1.2–2.5; waist 30–200 cm; hip
+  30–200 cm.
+- `verbose`: optional progress and summary logging.
+
+## Quick start
+
+``` r
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble::tibble(
+  wt    = c(70, 80),   # kg
+  ht    = c(175, 165), # cm
+  waist = c(80, 90),   # cm
+  hip   = c(100, 95),  # cm
+  sex   = c(0, 1)
+)
+
+obesity_indices(
+  data = df,
+  weight = wt,
+  height = ht,
+  waist = waist,
+  hip = hip,
+  sex = sex,
+  weight_unit = "kg",
+  height_unit = "cm",
+  adjust_WHR = TRUE,
+  include_RFM = TRUE,
+  na_action = "keep",
+  check_extreme = FALSE,
+  verbose = FALSE
+)
+#> # A tibble: 2 × 20
+#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
+#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
+#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
+#> # ℹ 10 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
+#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
+#> #   CI <dbl>, WHRadjBMI <dbl>, RFM <dbl>
+```
+
+## Extreme scan and cap
+
+``` r
+obesity_indices(
+  data = df,
+  weight = wt,
+  height = ht,
+  waist = waist,
+  hip = hip,
+  sex = sex,
+  weight_unit = "kg",
+  height_unit = "cm",
+  adjust_WHR = FALSE,
+  include_RFM = TRUE,
+  na_action = "omit",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+#> # A tibble: 2 × 19
+#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
+#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
+#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
+#> # ℹ 9 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
+#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
+#> #   CI <dbl>, RFM <dbl>
+```
+
+## Missing-data policy
+
+``` r
+try(
+  obesity_indices(
+    data = df,
+    weight = wt,
+    height = ht,
+    waist = waist,
+    hip = hip,
+    na_action = "error"
+  )
+)
+#> # A tibble: 2 × 18
+#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
+#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
+#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
+#> # ℹ 8 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
+#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
+#> #   CI <dbl>
+```
+
+## Outputs and expectations
+
+- Adds: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`,
+  `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`,
+  `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`,
+  optional `RFM`.
+- Zero denominators yield `NA` with warnings; WHRadjBMI requires
+  variance in WHR and BMI; RFM requires sex coded 0/1.
+
+## Verbose diagnostics
+
+``` r
+old_opt <- options(healthmarkers.verbose = "inform")
+obesity_indices(
+  data = df,
+  weight = wt,
+  height = ht,
+  waist = waist,
+  hip = hip,
+  sex = sex,
+  weight_unit = "kg",
+  height_unit = "cm",
+  verbose = TRUE
+)
+#> obesity_indices(): preparing inputs
+#> obesity_indices(): column map: weight -> 'wt', height -> 'ht', waist -> 'waist', hip -> 'hip', sex -> 'sex'
+#> obesity_indices(): results: wt 2/2, ht 2/2, waist 2/2, hip 2/2, sex 2/2, weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2
+#> # A tibble: 2 × 18
+#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
+#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
+#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
+#> # ℹ 8 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
+#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
+#> #   CI <dbl>
+options(old_opt)
+```
+
+## Tips
+
+- Set weight/height units correctly; waist/hip are assumed cm.
+- Enable `include_RFM = TRUE` only with valid sex coding; leave FALSE
+  otherwise.
+- WHRadjBMI needs variation in WHR and BMI; otherwise it returns `NA`
+  with a warning.
+- Tighten `extreme_rules` to your cohort before using
+  `extreme_action = "cap"` or `"error"`.
+- Use `na_action = "omit"` for row-complete outputs; keep during QA to
+  see missingness.

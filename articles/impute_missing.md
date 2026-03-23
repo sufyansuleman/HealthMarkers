@@ -1,0 +1,195 @@
+# Imputing missing values
+
+## Scope
+
+Three imputation helpers for preparing data before marker calculations:
+
+- [`impute_missing()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_missing.md)
+  — fast deterministic imputation (mean, median, zero, or a constant).
+  Operates column by column over all numeric columns with at least one
+  `NA`.
+- [`impute_mice()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_mice.md)
+  — multiple imputation via
+  [`mice::mice()`](https://amices.org/mice/reference/mice.html).
+  Requires the **mice** package.
+- [`impute_missforest()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_missforest.md)
+  — random-forest imputation via
+  [`missForest::missForest()`](https://rdrr.io/pkg/missForest/man/missForest.html).
+  Requires the **missForest** package. Falls back to mean imputation if
+  the forest fails.
+
+All three: (1) leave non-numeric columns untouched, (2) respect an
+optional `cols` argument to limit the columns imputed, (3) warn on
+high-missingness columns, and (4) emit structured progress messages when
+`verbose = TRUE`.
+
+## Load packages and demo data
+
+``` r
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble::tibble(
+  glucose  = c(5.2, NA, 6.0, 5.8, NA),
+  insulin  = c(60,  80, NA,  90, 110),
+  age      = c(45,  52, 38,  60,  NA),
+  sex      = c("M", "F", "M", "F", "M")   # non-numeric; never touched
+)
+```
+
+## `impute_missing()` — deterministic methods
+
+``` r
+out_mean <- impute_missing(df, method = "mean")
+out_mean
+#> # A tibble: 5 × 4
+#>   glucose insulin   age sex  
+#>     <dbl>   <dbl> <dbl> <chr>
+#> 1    5.2       60  45   M    
+#> 2    5.67      80  52   F    
+#> 3    6         85  38   M    
+#> 4    5.8       90  60   F    
+#> 5    5.67     110  48.8 M
+```
+
+Replace NAs column-by-column with the column mean. `sex` is untouched.
+
+### Other methods
+
+``` r
+# Median
+out_med <- suppressWarnings(impute_missing(df, method = "median"))
+# Zero
+out_zero <- suppressWarnings(impute_missing(df, method = "zero", cols = "glucose"))
+# Constant
+out_const <- suppressWarnings(impute_missing(df, method = "constant", constant = -1))
+
+list(
+  median_glucose  = out_med$glucose,
+  zero_glucose    = out_zero$glucose,
+  const_glucose   = out_const$glucose
+)
+#> $median_glucose
+#> [1] 5.2 5.8 6.0 5.8 5.8
+#> 
+#> $zero_glucose
+#> [1] 5.2 0.0 6.0 5.8 0.0
+#> 
+#> $const_glucose
+#> [1]  5.2 -1.0  6.0  5.8 -1.0
+```
+
+### Target specific columns
+
+``` r
+# Only impute insulin; leave glucose NA
+out_sel <- suppressWarnings(impute_missing(df, method = "mean", cols = "insulin"))
+list(glucose = out_sel$glucose, insulin = out_sel$insulin)
+#> $glucose
+#> [1] 5.2  NA 6.0 5.8  NA
+#> 
+#> $insulin
+#> [1]  60  80  85  90 110
+```
+
+## `impute_mice()` — multiple imputation
+
+Requires at least two numeric columns with missing values. Returns one
+completed dataset from `m` imputations.
+
+``` r
+if (requireNamespace("mice", quietly = TRUE)) {
+  out_mice <- suppressWarnings(impute_mice(df, m = 5))
+  print(out_mice)
+} else {
+  message("mice package not installed; skipping example.")
+}
+#> # A tibble: 5 × 4
+#>   glucose insulin   age sex  
+#>     <dbl>   <dbl> <dbl> <chr>
+#> 1     5.2      60    45 M    
+#> 2    NA        80    52 F    
+#> 3     6        80    38 M    
+#> 4     5.8      90    60 F    
+#> 5    NA       110    45 M
+```
+
+## `impute_missforest()` — random forest imputation
+
+``` r
+if (requireNamespace("missForest", quietly = TRUE)) {
+  out_rf <- suppressWarnings(impute_missforest(df, ntree = 50))
+  print(out_rf)
+} else {
+  message("missForest package not installed; skipping example.")
+}
+#> # A tibble: 5 × 4
+#>   glucose insulin   age sex  
+#>     <dbl>   <dbl> <dbl> <chr>
+#> 1    5.2       60  45   M    
+#> 2    5.67      80  52   F    
+#> 3    6         85  38   M    
+#> 4    5.8       90  60   F    
+#> 5    5.67     110  48.8 M
+```
+
+If missForest errors (e.g., too few unique values), a mean-imputation
+fallback is applied automatically.
+
+## Handling high-missingness columns
+
+All three functions warn when a numeric column has missing values above
+`na_warn_prop` (default 0.2 = 20 %). The warning carries class
+`healthmarkers_impute_warn_high_missing`.
+
+``` r
+df_hi <- tibble::tibble(x = c(1, NA, NA, NA), y = c(2, NA, 4, 5))
+suppressWarnings(
+  tryCatch(
+    impute_missing(df_hi, method = "mean", verbose = FALSE),
+    warning = function(w) { message("High-missingness warning: ", conditionMessage(w)); NULL }
+  )
+)
+#> NULL
+```
+
+## Verbose diagnostics
+
+Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface
+structured messages for each call: preparing inputs and a results
+summary.
+
+``` r
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- tibble::tibble(a = c(1, NA, 3), b = c(4, 5, NA), c = c(NA, 2, 2))
+suppressWarnings(impute_missing(df_v, method = "mean", verbose = TRUE))
+#> impute_missing(): preparing inputs (3 rows, 3 column(s), method='mean')
+#> impute_missing(): results: imputed 3 values across 3 columns [a=1, b=1, c=1]
+#> # A tibble: 3 × 3
+#>       a     b     c
+#>   <dbl> <dbl> <dbl>
+#> 1     1   4       2
+#> 2     2   5       2
+#> 3     3   4.5     2
+
+options(old_opt)
+```
+
+The results message reports how many values were imputed per column:
+`impute_missing(): results: imputed N values across M columns [col1=n1, col2=n2, ...]`
+
+## Tips
+
+- Run imputation **before** calling marker functions when data-level NA
+  handling is insufficient (e.g., when you need a complete matrix for
+  PCA or multivariate ML upstream).
+- Prefer `impute_missing(method = "median")` for skewed biomarker
+  distributions.
+- [`impute_mice()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_mice.md)
+  and
+  [`impute_missforest()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_missforest.md)
+  provide MAR-robust estimates at the cost of speed; use them for final
+  analysis datasets, not exploratory runs.
+- Non-numeric columns (factors, characters) are always passed through
+  unchanged.
