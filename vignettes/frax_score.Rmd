@@ -85,8 +85,7 @@ frax_out <- frax_score(
   verbose = FALSE
 )
 
-dplyr::select(frax_out, frax_major_percent, frax_hip_percent, frax_sex_norm, frax_age_used, frax_bmd_tscore) %>%
-  head()
+head(dplyr::select(frax_out, frax_major_percent, frax_hip_percent, frax_sex_norm, frax_age_used, frax_bmd_tscore))
 ```
 
 Interpretation: `frax_major_percent` and `frax_hip_percent` are placeholder probabilities (not clinical). `frax_sex_norm` shows normalized sex; `frax_age_used` and `frax_bmd_tscore` reflect any capping/blanking applied by extreme checks.
