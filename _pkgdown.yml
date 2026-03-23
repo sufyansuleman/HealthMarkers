@@ -3,6 +3,13 @@ url: https://sufyansuleman.github.io/HealthMarkers/
 template:
   bootstrap: 5
 
+home:
+  links:
+  - text: Function reference
+    href: reference/index.html
+  - text: All articles & vignettes
+    href: articles/index.html
+
 navbar:
   structure:
     left: [reference, articles]
