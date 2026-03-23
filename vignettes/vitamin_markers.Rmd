@@ -77,7 +77,7 @@ Basic run
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   VitD = c(50, 30), VitD_ref_mean = c(40, 40), VitD_ref_sd = c(5, 5),
   B12 = c(300, 280), Folate = c(15, 12),
   Ferritin = c(100, 80), TSat = c(0.25, 0.22),

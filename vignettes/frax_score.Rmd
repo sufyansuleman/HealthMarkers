@@ -34,7 +34,7 @@ Illustrative demo data only; replace with your cohort.
 ```{r}
 library(HealthMarkers)
 
-demo <- tibble(
+demo <- tibble::tibble(
   Age = c(65, 72, 80, 68, 74, 60),
   Sex = c("F", "M", "F", "F", "M", "F"),
   prior_fx   = c(1, 0, 1, 0, 0, 0),

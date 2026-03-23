@@ -64,7 +64,7 @@ Compute OGTT-based insulin sensitivity indices (Matsuda, Cederholm, Gutt, Stumvo
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   G0 = 5.5, I0 = 60,
   G30 = 7.8, I30 = 90,
   G120 = 6.2, I120 = 50,

@@ -70,7 +70,7 @@ Compute the glutathione redox ratio (`GSH_GSSG_Ratio`) from reduced (GSH) and ox
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(GSH = c(5, 3, NA), GSSG = c(1, 0.5, 2))
+df <- tibble::tibble(GSH = c(5, 3, NA), GSSG = c(1, 0.5, 2))
 oxidative_markers(
   data = df,
   col_map = list(GSH = "GSH", GSSG = "GSSG"),

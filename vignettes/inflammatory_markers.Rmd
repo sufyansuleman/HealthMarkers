@@ -26,7 +26,7 @@ Synthetic counts to run both panels.
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   neutrophils = c(4, 2, 3.5),
   lymphocytes = c(2, 1.0, 1.5),
   monocytes = c(0.5, 0.3, 0.4),

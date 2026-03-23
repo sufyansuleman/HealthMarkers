@@ -21,7 +21,7 @@ Compute the kynurenine/tryptophan ratio (KTR), a marker of IDO activity and immu
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   Kyn_nM = c(1800, 2500, 3200),
   Trp_uM = c(50, 42, 12)
 )

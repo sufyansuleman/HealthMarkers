@@ -21,7 +21,7 @@ knitr::opts_knit$set(purl = FALSE)
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   age  = c(65, 72, 80),
   sex  = c(1, 2, 1),
   eGFR = c(45, 22, 10),

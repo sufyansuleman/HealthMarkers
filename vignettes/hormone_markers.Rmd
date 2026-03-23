@@ -33,7 +33,7 @@ Use a small synthetic tibble (covers all required inputs) so the chunk runs anyw
 library(HealthMarkers)
 library(tibble)
 
-horm_demo <- tibble(
+horm_demo <- tibble::tibble(
   tt = c(5.0, 7.0, 4.5, 6.2),
   shbg = c(30, 40, 28, 35),
   lh = c(6, 7, 5, 6),

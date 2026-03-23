@@ -41,7 +41,7 @@ Create pediatric-friendly binary risk flags (dyslipidemia, insulin resistance, h
 library(HealthMarkers)
 library(tibble)
 
-peds <- tibble(
+peds <- tibble::tibble(
   chol_total = c(5.4, 4.8),
   chol_ldl   = c(3.6, 2.9),
   chol_hdl   = c(0.9, 1.2),

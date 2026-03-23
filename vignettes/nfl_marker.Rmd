@@ -21,7 +21,7 @@ Incorporate a neurofilament light chain (NfL) concentration measurement into the
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   NfL = c(8.5, 14.2, 22.1, NA, 35.0)
 )
 ```
@@ -51,7 +51,7 @@ out
 `na_action = "keep"` preserves rows with `NA` outputs; `omit` drops rows with missing required inputs; `error` aborts if any required input is missing; `warn` keeps rows but emits a warning.
 
 ```{r}
-df_na <- tibble(NfL = c(8.5, NA, 22.1))
+df_na <- tibble::tibble(NfL = c(8.5, NA, 22.1))
 
 keep_out <- nfl_marker(df_na, cm, na_action = "keep")
 omit_out <- nfl_marker(df_na, cm, na_action = "omit")
@@ -64,7 +64,7 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 `extreme_action` controls the response: `"warn"` emits a warning without altering values, `"cap"` clips to the range boundary, `"NA"` blanks flagged values, `"error"` aborts.
 
 ```{r, warning=TRUE}
-df_ext <- tibble(NfL = c(8.5, -5, 22.1))  # negative value is out of range
+df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is out of range
 
 nfl_marker(
   data = df_ext,
@@ -78,7 +78,7 @@ Custom range override:
 
 ```{r}
 nfl_marker(
-  data = tibble(NfL = c(8.5, 5000, 22.1)),
+  data = tibble::tibble(NfL = c(8.5, 5000, 22.1)),
   col_map = cm,
   check_extreme = TRUE,
   extreme_action = "cap",
@@ -91,7 +91,7 @@ Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three s
 
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
-nfl_marker(tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
+nfl_marker(tibble::tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
 options(old_opt)
 ```
 

@@ -46,7 +46,7 @@ Compute anthropometric adiposity/shape indices (BMI + category, WHR/WHtR, AVI, B
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   wt    = c(70, 80),   # kg
   ht    = c(175, 165), # cm
   waist = c(80, 90),   # cm

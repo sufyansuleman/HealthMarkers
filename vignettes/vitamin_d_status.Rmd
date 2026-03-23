@@ -60,7 +60,7 @@ Quick categorization
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(VitD = c(12, 25, 36, NA))
+df <- tibble::tibble(VitD = c(12, 25, 36, NA))
 
 vitamin_d_status(
   data = df,
@@ -72,7 +72,7 @@ vitamin_d_status(
 Screen and cap extremes
 
 ```{r}
-df2 <- tibble(d = c(15, 280, 8, 65, NA))  # 280 is extreme by default (0-250)
+df2 <- tibble::tibble(d = c(15, 280, 8, 65, NA))  # 280 is extreme by default (0-250)
 
 vitamin_d_status(
   data = df2,
@@ -88,7 +88,7 @@ vitamin_d_status(
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
 vitamin_d_status(
-  data = tibble(VitD = c(15, 32)),
+  data = tibble::tibble(VitD = c(15, 32)),
   col_map = list(vitamin_d = "VitD"),
   verbose = TRUE
 )

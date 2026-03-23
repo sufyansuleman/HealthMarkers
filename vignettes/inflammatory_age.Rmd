@@ -21,7 +21,7 @@ Synthetic data with one missing value to show NA handling.
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   CRP  = c(1.2, 3.5, NA),  # mg/L
   IL6  = c(2.0, 4.1, 1.5), # pg/mL
   TNFa = c(1.0, 1.8, 0.9)  # pg/mL
@@ -106,7 +106,7 @@ Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three s
 
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
-df_v <- tibble(CRP = 1.2, IL6 = 2.0, TNFa = 1.0)
+df_v <- tibble::tibble(CRP = 1.2, IL6 = 2.0, TNFa = 1.0)
 iAge(df_v, col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"), verbose = TRUE)
 options(old_opt)
 ```

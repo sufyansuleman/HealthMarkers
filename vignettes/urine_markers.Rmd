@@ -61,7 +61,7 @@ Compute urine-only renal and tubular markers: UACR, KDIGO albuminuria stage (A1â
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   urine_albumin = c(25, 450, NA),      # mg/L
   urine_creatinine = c(1.0, 0.8, 0.5), # mg/dL
   urine_protein = c(120, NA, 90),      # mg/L
@@ -80,7 +80,7 @@ urine_markers(
 
 ## Worked example 2: Cap extremes, drop incomplete
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   urine_albumin = c(20, 120000),    # extreme albumin
   urine_creatinine = c(1.2, 0.005), # very low creatinine
   urine_protein = c(80, 90000),
@@ -111,7 +111,7 @@ urine_markers(
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
 urine_markers(
-  data = tibble(urine_albumin = 30, urine_creatinine = 2),
+  data = tibble::tibble(urine_albumin = 30, urine_creatinine = 2),
   verbose = TRUE
 )
 options(old_opt)

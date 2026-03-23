@@ -41,7 +41,7 @@ Compute liver-related indices (FLI, NFS, APRI, FIB-4, BARD, ALBI, MELD-XI) with 
 library(HealthMarkers)
 library(tibble)
 
-liver <- tibble(
+liver <- tibble::tibble(
   BMI           = c(24, 30, 33),
   waist         = c(80, 100, 110),
   triglycerides = c(150, 260, 90),   # mg/dL

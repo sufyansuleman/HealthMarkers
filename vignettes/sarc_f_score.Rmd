@@ -58,7 +58,7 @@ Compute the 5-item SARC-F sarcopenia screening score (Strength, Assistance in wa
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   Strength = c(0, 1, 2, NA),
   Walking  = c(0, 0, 2, 1),
   Chair    = c(0, 1, 2, 1),
@@ -83,7 +83,7 @@ sarc_f_score(
 
 ## Worked example 2: Detect and cap miscoded values
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   str = c(0, 3, -1),
   walk = c(1, 2, 1),
   chair = c(0, 2, 1),

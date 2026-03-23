@@ -42,7 +42,7 @@ Compute nutrient-related ratios/products (FerritinTS, AGR, Omega3Index, Mg_Cr_Ra
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   ferritin = c(50, 100), transferrin_sat = c(30, 50),
   albumin = c(45, 40), total_protein = c(70, 75),
   EPA = c(2.0, 2.5), DHA = c(4.0, 4.5),

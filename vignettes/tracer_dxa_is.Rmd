@@ -78,7 +78,7 @@ Compute tracer/DXA-based insulin sensitivity indices: LIRI_inv, Lipo_inv, ATIRI_
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   I0 = c(60, 80, NA),              # pmol/L
   rate_glycerol = c(150, 180, 160), # micromol/min
   rate_palmitate = c(120, 140, 130),
@@ -107,7 +107,7 @@ tracer_dxa_is(
 
 ## Worked example 2: Full mode, cap extremes, drop incomplete
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   G0 = c(5.0, 6.2, 7.5), G30 = c(8.1, 9.5, 10.2), G120 = c(6.7, 8.8, 9.1),
   I0 = c(55, 90, 5100),   I30 = c(220, 260, 5200), I120 = c(150, 200, 5300),
   TG = c(1.1, 1.8, 55), HDL_c = c(1.3, 0.9, 11), FFA = c(0.5, 0.7, 6),
@@ -147,7 +147,7 @@ tracer_dxa_is(
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
 tracer_dxa_is(
-  data = tibble(
+  data = tibble::tibble(
     I0             = 60,
     rate_glycerol  = 150,
     rate_palmitate = 120,

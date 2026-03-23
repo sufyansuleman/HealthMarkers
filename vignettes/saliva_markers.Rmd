@@ -68,7 +68,7 @@ Compute saliva-based stress and glycemic markers: safe-log waking cortisol, cort
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   saliva_cort1 = c(12.5, 9.0, NA),
   saliva_cort2 = c(18.0, 11.0, 7.5),
   saliva_cort3 = c(16.2, 10.5, 6.8),
@@ -93,7 +93,7 @@ saliva_markers(
 
 ## Worked example 2: Custom times, cap extremes, drop incomplete
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   c1 = c(14, 0, 2200),    # zero and extreme cortisol
   c2 = c(19, 12, 2100),
   c3 = c(17, 11, 2050),

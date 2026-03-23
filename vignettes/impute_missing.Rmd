@@ -27,7 +27,7 @@ All three: (1) leave non-numeric columns untouched, (2) respect an optional `col
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   glucose  = c(5.2, NA, 6.0, 5.8, NA),
   insulin  = c(60,  80, NA,  90, 110),
   age      = c(45,  52, 38,  60,  NA),
@@ -100,7 +100,7 @@ If missForest errors (e.g., too few unique values), a mean-imputation fallback i
 All three functions warn when a numeric column has missing values above `na_warn_prop` (default 0.2 = 20 %). The warning carries class `healthmarkers_impute_warn_high_missing`.
 
 ```{r, warning=TRUE}
-df_hi <- tibble(x = c(1, NA, NA, NA), y = c(2, NA, 4, 5))
+df_hi <- tibble::tibble(x = c(1, NA, NA, NA), y = c(2, NA, 4, 5))
 suppressWarnings(
   tryCatch(
     impute_missing(df_hi, method = "mean", verbose = FALSE),
@@ -116,7 +116,7 @@ Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface structu
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
 
-df_v <- tibble(a = c(1, NA, 3), b = c(4, 5, NA), c = c(NA, 2, 2))
+df_v <- tibble::tibble(a = c(1, NA, 3), b = c(4, 5, NA), c = c(NA, 2, 2))
 suppressWarnings(impute_missing(df_v, method = "mean", verbose = TRUE))
 
 options(old_opt)

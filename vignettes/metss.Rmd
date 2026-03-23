@@ -42,7 +42,7 @@ Compute the Metabolic Syndrome Severity Score (MetSSS) using sex- and race-speci
 library(HealthMarkers)
 library(tibble)
 
-mets <- tibble(
+mets <- tibble::tibble(
   waist = c(95, 108),
   bp_sys = c(120, 138),
   bp_dia = c(80, 86),

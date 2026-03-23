@@ -59,7 +59,7 @@ Compute sweat chloride, sodium/potassium ratio, sweat lactate, and sweat rate (L
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   sweat_chloride = c(45, 60, NA),
   sweat_Na = c(55, 70, 60),
   sweat_K = c(5, 4, 0),
@@ -90,7 +90,7 @@ sweat_markers(
 
 ## Worked example 2: Cap extremes, drop incomplete
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   cl = c(180, 250),       # extreme chloride
   na = c(60, 10),
   k = c(4, 0.5),
@@ -133,7 +133,7 @@ sweat_markers(
 ```{r, message=TRUE}
 old_opt <- options(healthmarkers.verbose = "inform")
 sweat_markers(
-  data = tibble(
+  data = tibble::tibble(
     sweat_chloride    = 45,
     sweat_Na          = 55,
     sweat_K           = 5,

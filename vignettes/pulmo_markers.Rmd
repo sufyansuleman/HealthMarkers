@@ -59,7 +59,7 @@ Values are numeric; NA where inputs are missing/invalid or division-by-zero occu
 library(HealthMarkers)
 library(tibble)
 
-df <- tibble(
+df <- tibble::tibble(
   age = c(45, 62, 30),
   sex = c("male", "female", "female"),
   height = c(178, 162, 1.70),  # mixed cm/m accepted (auto-detect)
@@ -79,7 +79,7 @@ pulmo_markers(
 
 ## Worked example 2: GLIgl, drop incomplete rows
 ```{r}
-df2 <- tibble(
+df2 <- tibble::tibble(
   age = c(45, 62, 30),
   sex = c(1, 2, 2),
   height = c(178, NA, 170),
