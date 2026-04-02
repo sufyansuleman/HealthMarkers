@@ -22,7 +22,7 @@
 #'
 #' @param data A data.frame or tibble containing your liver and anthropometry data.
 #' @param col_map Named list mapping these keys -> column names in `data`:
-#'   - `BMI` (kg/m^2), `waist` (cm), `triglycerides` (mg/dL), `GGT` (U/L),
+#'   - `BMI` (kg/m^2), `waist` (cm), `TG` (mg/dL), `GGT` (U/L),
 #'   - `age` (years), `AST` (U/L), `ALT` (U/L), `platelets` (10^9/L),
 #'   - `albumin` (g/L), `diabetes` (0/1 or logical),
 #'   - `bilirubin` (mg/dL), `creatinine` (mg/dL).
@@ -56,7 +56,7 @@
 #' df <- tibble(
 #'   BMI           = 24,
 #'   waist         = 80,
-#'   triglycerides = 150, # mg/dL
+#'   TG = 150, # mg/dL
 #'   GGT           = 30,
 #'   age           = 45,
 #'   AST           = 25,
@@ -93,10 +93,10 @@
 #' @export
 liver_markers <- function(data,
                           col_map = list(
-                            BMI           = "BMI",
-                            waist         = "waist",
-                            triglycerides = "triglycerides",
-                            GGT           = "GGT",
+                            BMI   = "BMI",
+                            waist = "waist",
+                            TG    = "TG",
+                            GGT   = "GGT",
                             age           = "age",
                             AST           = "AST",
                             ALT           = "ALT",
@@ -112,22 +112,17 @@ liver_markers <- function(data,
                           check_extreme = FALSE,
                           extreme_action = c("warn","cap","error","ignore","NA"),
                           extreme_rules = NULL) {
-  na_action <- match.arg(na_action)
-  na_action_raw <- na_action
-  if (na_action %in% c("ignore","warn")) na_action <- "keep"
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   hm_inform("liver_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  # Preserve existing package-level validation if present, but do not fail tests on absence
-  if (is.function(get0("validate_inputs", envir = asNamespace("HealthMarkers"), inherits = TRUE))) {
-    try(validate_inputs(data, col_map, fun_name = "liver_markers"), silent = TRUE)
-  }
-
   # Additional robust validation
   .lm_validate_args(data, col_map, na_warn_prop, extreme_rules)
 
-  required <- c("BMI","waist","triglycerides","GGT","age","AST","ALT",
+  required <- c("BMI","waist","TG","GGT","age","AST","ALT",
                 "platelets","albumin","diabetes","bilirubin","creatinine")
 
   # Ensure required keys in col_map
@@ -222,7 +217,7 @@ liver_markers <- function(data,
   # Pull vectors
   BMI        <- data[[col_map$BMI]]
   waist      <- data[[col_map$waist]]
-  TG         <- data[[col_map$triglycerides]]
+  TG         <- data[[col_map$TG]]
   GGT        <- data[[col_map$GGT]]
   age        <- data[[col_map$age]]
   AST        <- data[[col_map$AST]]
@@ -246,7 +241,7 @@ liver_markers <- function(data,
   )
   .lm_warn_zero_denoms(denom_info)
   .lm_warn_nonpositive_for_log(list(
-    triglycerides = TG,
+    TG = TG,
     GGT = GGT,
     bilirubin = bilirubin,
     creatinine = creatinine
@@ -335,7 +330,7 @@ liver_markers <- function(data,
   list(
     BMI           = c(10, 70),
     waist         = c(40, 200),
-    triglycerides = c(10, 1500),   # mg/dL
+    TG            = c(10, 1500),   # mg/dL
     GGT           = c(1, 2000),    # U/L
     age           = c(18, 120),
     AST           = c(1, 5000),

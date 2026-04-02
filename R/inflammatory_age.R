@@ -30,9 +30,9 @@
 #' @param weights Named numeric vector of weights for each marker (must sum to 1).
 #'   Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).
 #' @param verbose Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.
-#' @param na_action One of c("omit","keep","error","ignore","warn") controlling how missing inputs affect iAge:
-#'   - "omit": ignore NAs in the weighted sum (default; preserves previous behavior).
-#'   - "keep": return NA for rows where any required marker is NA.
+#' @param na_action One of c("keep","omit","error","ignore","warn") controlling how missing inputs affect iAge:
+#'   - "keep": return NA for rows where any required marker is NA (default; consistent with other functions).
+#'   - "omit": ignore NAs in the weighted sum (treat missing markers as 0).
 #'   - "error": abort if any required marker contains NA.
 #'   - "ignore": alias of "omit".
 #'   - "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
@@ -96,7 +96,7 @@ iAge <- function(data,
                  col_map,
                  weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
                  verbose = FALSE,
-                 na_action = c("omit", "keep", "error", "ignore", "warn"),
+                 na_action = c("keep", "omit", "error", "ignore", "warn"),
                  na_warn_prop = 0.2,
                  check_extreme = FALSE,
                  extreme_action = c("warn","cap","error","ignore","NA"),

@@ -35,6 +35,9 @@ mdq_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{MDQ_symptom_count}, \code{MDQ_clustering}, \code{MDQ_impairment}, \code{MDQ_positive_screen}. Input columns are not included.
+}
 \description{
 Mood Disorder Questionnaire scoring
 }

@@ -4,7 +4,7 @@ library(HealthMarkers)
 
 test_that("computes markers for a minimal valid example", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -31,7 +31,7 @@ test_that("computes markers for a minimal valid example", {
 test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -44,7 +44,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 test_that("verbose double-fire guard", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -58,7 +58,7 @@ test_that("verbose double-fire guard", {
 
 test_that("na_action='omit' emits omit message and preserves expected row count", {
   df <- tibble(
-    BMI = c(24, 24), waist = c(80, 80), triglycerides = c(150, 150), GGT = c(30, 30),
+    BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20),
     platelets = c(250, NA_real_), albumin = c(45, 45),
     diabetes = c(FALSE, FALSE), bilirubin = c(1.0, 1.0), creatinine = c(0.9, 0.9)
@@ -80,7 +80,7 @@ test_that("custom column mapping works with renamed inputs", {
     bilix = 1.0, creatx = 0.8
   )
   cm <- list(
-    BMI = "BMIx", waist = "waistx", triglycerides = "TGx", GGT = "GGTx",
+    BMI = "BMIx", waist = "waistx", TG = "TGx", GGT = "GGTx",
     age = "agex", AST = "ASTx", ALT = "ALTx", platelets = "ptx",
     albumin = "albuminx", diabetes = "diabx", bilirubin = "bilix", creatinine = "creatx"
   )
@@ -94,7 +94,7 @@ test_that("custom column mapping works with renamed inputs", {
 test_that("extreme capping count is reflected in verbose summary", {
   df <- tibble(
     BMI = 24, waist = 80,
-    triglycerides = 5000,  # extreme -> cap
+    TG = 5000,  # extreme -> cap
     GGT = 30, age = 30, AST = 25, ALT = 20,
     platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
@@ -114,7 +114,7 @@ test_that("extreme capping count is reflected in verbose summary", {
 test_that("extreme_action='NA' sets flagged inputs to NA affecting outputs (e.g., FLI)", {
   df <- tibble(
     BMI = 24, waist = 80,
-    triglycerides = -5,   # out-of-range -> NA
+    TG = -5,   # out-of-range -> NA
     GGT = 30, age = 30, AST = 25, ALT = 20,
     platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
@@ -127,13 +127,13 @@ test_that("extreme_action='NA' sets flagged inputs to NA affecting outputs (e.g.
 
 test_that("numeric coercion warns when NAs introduced", {
   df <- tibble(
-    BMI = c(24, 24), waist = c(80, 80), triglycerides = c("150","oops"), GGT = c(30, 30),
+    BMI = c(24, 24), waist = c(80, 80), TG = c("150","oops"), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20),
     platelets = c(250, 250), albumin = c("45","46"),
     diabetes = c(FALSE, FALSE), bilirubin = c(1.0, 1.0), creatinine = c(0.9, 0.9)
   )
   cm <- list(
-    BMI="BMI", waist="waist", triglycerides="triglycerides", GGT="GGT", age="age",
+    BMI="BMI", waist="waist", TG="TG", GGT="GGT", age="age",
     AST="AST", ALT="ALT", platelets="platelets", albumin="albumin",
     diabetes="diabetes", bilirubin="bilirubin", creatinine="creatinine"
   )
@@ -146,7 +146,7 @@ test_that("numeric coercion warns when NAs introduced", {
 
 test_that("diabetes logical values compute BARD correctly without warnings", {
   df <- tibble(
-    BMI = 30, waist = 90, triglycerides = 150, GGT = 30, age = 50,
+    BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = TRUE,
     bilirubin = 1.0, creatinine = 1.0
   )
@@ -161,7 +161,7 @@ test_that("diabetes logical values compute BARD correctly without warnings", {
 
 test_that("vectorized diabetes logical values contribute per-row", {
   df <- tibble(
-    BMI = c(24, 24), waist = c(80, 80), triglycerides = c(150, 150),
+    BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150),
     GGT = c(30, 30), age = c(30, 30),
     AST = c(20, 20), ALT = c(40, 40), # AST/ALT=0.5 -> 0 points for ratio, BMI<28 -> 0
     platelets = c(250, 250), albumin = c(45, 45),
@@ -178,7 +178,7 @@ test_that("liver_markers returns all seven markers and correct values", {
   df <- tibble(
     BMI           = 24,
     waist         = 80,
-    triglycerides = 150, # mg/dL
+    TG = 150, # mg/dL
     GGT           = 30,
     age           = 30,
     AST           = 25,
@@ -225,13 +225,13 @@ test_that("liver_markers returns all seven markers and correct values", {
 
 test_that("errors if mapped columns are missing in data", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE
     # bilirubin and creatinine missing
   )
   expect_error(
     liver_markers(df, col_map = list(
-      BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT",
+      BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT",
       age = "age", AST = "AST", ALT = "ALT", platelets = "platelets",
       albumin = "albumin", diabetes = "diabetes",
       bilirubin = "bilirubin", creatinine = "creatinine"
@@ -242,12 +242,12 @@ test_that("errors if mapped columns are missing in data", {
 
 test_that("errors if required col_map entries are missing", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.8
   )
   cm <- list(
-    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT",
+    BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT",
     age = "age", AST = "AST", ALT = "ALT", platelets = "platelets",
     albumin = "albumin", diabetes = "diabetes"
     # bilirubin/creatinine keys missing
@@ -260,7 +260,7 @@ test_that("errors if required col_map entries are missing", {
 
 test_that("na_action='error' aborts when required inputs contain NA", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = NA_real_, creatinine = 0.9
   )
@@ -273,7 +273,7 @@ test_that("na_action='error' aborts when required inputs contain NA", {
 
 test_that("na_action='omit' drops rows with NA", {
   df <- tibble(
-    BMI = c(24, 24), waist = c(80, 80), triglycerides = c(150, 150), GGT = c(30, 30),
+    BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20), platelets = c(250, NA_real_),
     albumin = c(45, 45), diabetes = c(FALSE, FALSE), bilirubin = c(1.0, 1.0), creatinine = c(0.9, 0.9)
   )
@@ -284,7 +284,7 @@ test_that("na_action='omit' drops rows with NA", {
 
 test_that("na_action='keep' propagates NA to outputs", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = NA_real_, creatinine = 0.9
   )
@@ -298,7 +298,7 @@ test_that("check_extreme='cap' caps out-of-range values and warns", {
   df <- tibble(
     BMI = 80,              # cap to 70
     waist = 300,           # cap to 200
-    triglycerides = 5000,  # cap to 1500
+    TG = 5000,  # cap to 1500
     GGT = 5000,            # cap to 2000
     age = 150,             # cap to 120
     AST = 6000,            # cap to 5000
@@ -320,7 +320,7 @@ test_that("check_extreme='cap' caps out-of-range values and warns", {
 
 test_that("check_extreme='error' aborts on out-of-range", {
   df <- tibble(
-    BMI = 80, waist = 300, triglycerides = 5000, GGT = 5000, age = 150,
+    BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
     bilirubin = 0.05, creatinine = 50
   )
@@ -334,7 +334,7 @@ test_that("check_extreme='error' aborts on out-of-range", {
 test_that("extreme_action='warn' emits detection warning without capping", {
   # Avoid unrelated log() warnings by keeping positives where not needed
   df <- tibble(
-    BMI = 5, waist = 30, triglycerides = 2, GGT = 1,  # GGT>0 to avoid log warning
+    BMI = 5, waist = 30, TG = 2, GGT = 1,  # GGT>0 to avoid log warning
     age = 10, AST = 1, ALT = 1,                       # keep >0 to avoid extra transforms
     platelets = 5, albumin = 5, diabetes = FALSE,
     bilirubin = 0.05, creatinine = 0.1
@@ -349,7 +349,7 @@ test_that("extreme_action='warn' emits detection warning without capping", {
 
 test_that("extreme_action='ignore' does not warn on extremes", {
   df <- tibble(
-    BMI = 80, waist = 300, triglycerides = 5000, GGT = 5000, age = 150,
+    BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
     bilirubin = 0.05, creatinine = 50
   )
@@ -363,7 +363,7 @@ test_that("extreme_action='ignore' does not warn on extremes", {
 
 test_that("invalid extreme_rules aborts with informative error", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -379,25 +379,25 @@ test_that("invalid extreme_rules aborts with informative error", {
 test_that("denominator and transform warnings fire (isolated tests)", {
   # Zero platelets -> denominator warning for APRI/FIB4
   df1 <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 0, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
   cm1 <- as.list(names(df1)); names(cm1) <- names(df1)
   expect_warning(liver_markers(df1, col_map = cm1), "zero denominators detected")
 
-  # Non-positive for log: triglycerides
+  # Non-positive for log: TG
   df2 <- tibble(
-    BMI = 24, waist = 80, triglycerides = 0, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 0, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
   cm2 <- as.list(names(df2)); names(cm2) <- names(df2)
-  expect_warning(liver_markers(df2, col_map = cm2), "triglycerides.*log\\(\\) undefined")
+  expect_warning(liver_markers(df2, col_map = cm2), "TG.*log\\(\\) undefined")
 
   # ALT negative -> target only the sqrt() warning; muffle other warnings
   df3 <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = -1, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -422,7 +422,7 @@ test_that("denominator and transform warnings fire (isolated tests)", {
 
 test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
   df <- tibble(
-    BMI = 30, waist = 90, triglycerides = 150, GGT = 30, age = 50,
+    BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = "1",
     bilirubin = 1.0, creatinine = 1.0
   )
@@ -437,7 +437,7 @@ test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
 
 test_that("non-binary diabetes values warn about coercion and propagate NA into BARD", {
   df <- tibble(
-    BMI = 30, waist = 90, triglycerides = 150, GGT = 30, age = 50,
+    BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = "yes",
     bilirubin = 1.0, creatinine = 1.0
   )
@@ -458,7 +458,7 @@ test_that("non-binary diabetes values warn about coercion and propagate NA into 
 test_that("validating inputs message appears when verbose is TRUE", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
@@ -472,7 +472,7 @@ test_that("validating inputs message appears when verbose is TRUE", {
 
 test_that("verbose summary reports Inf counts for zero denominators", {
   df <- tibble(
-    BMI = 24, waist = 80, triglycerides = 150, GGT = 30, age = 30,
+    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 0, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )

@@ -79,6 +79,8 @@ normalize_vec <- function(
   n <- length(x)
   out <- rep(NA_real_, n)
 
+  if (all(is.na(x))) return(out)
+
   if (method == "z") {
     m <- mean(x, na.rm = na_rm)
     s <- stats::sd(x, na.rm = na_rm)
@@ -152,6 +154,3 @@ normalize_vec <- function(
   # Fallback (should not reach)
   return(x)
 }
-
-# Silence R CMD check for tidy-eval placeholder
-utils::globalVariables(":=")

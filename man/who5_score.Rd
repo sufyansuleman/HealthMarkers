@@ -32,6 +32,9 @@ who5_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{WHO5_raw}, \code{WHO5_percent}, \code{WHO5_low_wellbeing}. Input columns are not included.
+}
 \description{
 WHO-5 scoring
 }

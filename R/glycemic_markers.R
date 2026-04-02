@@ -58,6 +58,14 @@
 #'   - SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index
 #'
 #' @details
+#' Optional marker detection:
+#' When `col_map = NULL` (default), an identity map for all 10 keys is built
+#' automatically. The seven optional keys (glucose, HbA1c, C_peptide, G0, I0,
+#' leptin, adiponectin) are computed only when the corresponding column exists
+#' in `data`. When `verbose = TRUE`, any optional markers whose columns are
+#' absent are listed in an informational message so the caller knows which
+#' derived metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+#'
 #' Notes on HOMA_CP:
 #' - This function retains the package's existing operational formula:
 #'   HOMA_CP = (G0 (mmol/L) * (C_peptide (pmol/L) / 6)) / 22.5
@@ -125,8 +133,13 @@ glycemic_markers <- function(
     stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
   }
 
-  # Pre-check required columns to match expected error message
+  # Fill in identity mappings for required keys not supplied by the user
   req_keys <- c("HDL_c", "TG", "BMI")
+  for (k in req_keys) {
+    if (is.null(col_map[[k]])) col_map[[k]] <- k
+  }
+
+  # Pre-check required columns to match expected error message
   req_cols <- unname(unlist(col_map[req_keys]))
   miss <- setdiff(req_cols, names(data))
   if (length(miss)) {
@@ -142,6 +155,18 @@ glycemic_markers <- function(
     !is.null(nm) && nm %in% names(data)
   }, logical(1))
   used_keys <- all_keys[present]
+
+  # Notify user about omitted optional markers when verbose
+  opt_keys <- c("glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")
+  omitted_opt <- setdiff(opt_keys, used_keys)
+  if (length(omitted_opt) > 0L && isTRUE(verbose)) {
+    hm_inform(
+      sprintf("glycemic_markers(): optional markers not computed (columns absent): %s",
+              paste(omitted_opt, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
   used_cols <- unname(unlist(col_map[used_keys]))
 
   hm_inform("glycemic_markers(): coercing used columns to numeric", level = "debug")

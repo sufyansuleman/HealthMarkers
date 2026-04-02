@@ -3,14 +3,6 @@
 
 # ---- internal helpers ------------------------------------------------------
 
-# Small runtime gate for optional packages in Suggests
-.need_pkg <- function(pkg) {
-  ok <- suppressMessages(suppressWarnings(requireNamespace(pkg, quietly = TRUE)))
-  if (!ok) {
-    rlang::abort(sprintf("Package '%s' is required for this feature. Install it first.", pkg))
-  }
-}
-
 # length-stable safe division (avoids Inf/NaN on zero denominators)
 .safe_div <- function(num, den) {
   out <- num / den
@@ -188,7 +180,7 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
     diabetes2 = "diabetes2",
     weight = "weight",
     height = "height",
-    ethiniciy = if ("ethiniciy" %in% names(data)) "ethiniciy" else NULL,
+    ethiniciy = if ("ethnicity" %in% names(data)) "ethnicity" else if ("ethiniciy" %in% names(data)) "ethiniciy" else NULL,
     heart_attack_relative = "heart_attack_relative",
     cholesterol_HDL_ratio = "cholesterol_HDL_ratio",
     systolic_blood_pressure = "systolic_blood_pressure",
@@ -327,18 +319,8 @@ cvd_marker_aip <- function(data,
     rlang::abort("cvd_marker_aip(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_aip_data_type")
   }
-  if (!is.list(col_map) || is.null(names(col_map))) {
-    rlang::abort("cvd_marker_aip(): `col_map` must be a named list.",
-                 class = "healthmarkers_cvd_error_aip_colmap_type")
-  }
+  hm_validate_inputs(data, col_map, required_keys = c("TG", "HDL_c"), fn = "cvd_marker_aip")
   req_keys <- c("TG","HDL_c")
-  miss_keys <- setdiff(req_keys, names(col_map))
-  if (length(miss_keys)) {
-    rlang::abort(
-      paste0("cvd_marker_aip(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-      class = "healthmarkers_cvd_error_aip_missing_map"
-    )
-  }
   req_cols <- unname(unlist(col_map[req_keys], use.names = FALSE))
   miss_cols <- setdiff(req_cols, names(data))
   if (length(miss_cols)) {
@@ -421,14 +403,7 @@ cvd_marker_ldl_particle_number <- function(data,
     rlang::abort("cvd_marker_ldl_particle_number(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_ldlpn_data_type")
   }
-  if (!is.list(col_map) || is.null(names(col_map))) {
-    rlang::abort("cvd_marker_ldl_particle_number(): `col_map` must be a named list.",
-                 class = "healthmarkers_cvd_error_ldlpn_colmap_type")
-  }
-  if (is.null(col_map$ApoB) || !nzchar(col_map$ApoB)) {
-    rlang::abort("cvd_marker_ldl_particle_number(): missing col_map entry for ApoB.",
-                 class = "healthmarkers_cvd_error_ldlpn_missing_map")
-  }
+  hm_validate_inputs(data, col_map, required_keys = c("ApoB"), fn = "cvd_marker_ldl_particle_number")
   apob_col <- col_map$ApoB
   if (!(apob_col %in% names(data))) {
     rlang::abort(sprintf("cvd_marker_ldl_particle_number(): missing required column in data: %s", apob_col),

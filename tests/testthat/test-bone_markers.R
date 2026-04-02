@@ -32,7 +32,7 @@ test_that("bone_markers errors if required col_map entries missing", {
   bad_map <- cm_full[-1]
   expect_error(
     bone_markers(df_full, col_map = bad_map),
-    "missing col_map entries"
+    "missing entries"
   )
 })
 

@@ -170,8 +170,27 @@ test_that("all_health_markers aggregates selected stable groups", {
   expect_true(all(c("CKD_stage","Albuminuria_stage","KDIGO_risk") %in% names(out)))
 })
 
-test_that("metabolic_markers subset works and pre-fills triglycerides", {
-  # Supply minimal inputs; aggregator should copy TG -> triglycerides for liver
+test_that("all_health_markers infers only required keys for subset groups", {
+  df <- data.frame(
+    eGFR = c(95, 50),
+    UACR = c(10, 200)
+  )
+
+  out <- all_health_markers(
+    df,
+    col_map = NULL,
+    which = c("ckd_stage"),
+    include_insulin = FALSE,
+    verbose = FALSE,
+    na_action = "keep"
+  )
+
+  expect_true(all(c("CKD_stage", "Albuminuria_stage", "KDIGO_risk") %in% names(out)))
+  expect_equal(nrow(out), nrow(df))
+})
+
+test_that("metabolic_markers subset works with liver group", {
+  # Supply minimal inputs; liver_markers now accepts TG key directly (no triglycerides alias needed)
   df <- data.frame(
     TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
     ALT = 30, AST = 20, BMI = 25, GGT = 35, waist = 90,
@@ -181,8 +200,8 @@ test_that("metabolic_markers subset works and pre-fills triglycerides", {
 
   out <- metabolic_markers(df, col_map, which = c("lipid","liver"), verbose = FALSE, na_action = "keep")
 
-  # 1) triglycerides should be present due to TG prefill helper
-  expect_true("triglycerides" %in% names(out))
+  # 1) TG should still be present in the output (was in the input)
+  expect_true("TG" %in% names(out))
 
   # 2) Some derived markers should have been added (e.g., lipid ratios or liver indices)
   expect_true(ncol(out) > ncol(df))
@@ -233,4 +252,18 @@ test_that("all_health_markers verbose double-fire guard", {
   )
   expect_equal(sum(grepl("mapping summary", msgs)), 1L)
   expect_equal(sum(grepl("computed:",        msgs)), 1L)
+})
+
+test_that("all_health_markers verbose reports missing optional package", {
+  if (requireNamespace("QRISK3", quietly = TRUE)) skip("QRISK3 installed; skip missing-package path test")
+  withr::local_options(healthmarkers.verbose = "inform")
+
+  df <- data.frame(age = 55)
+  msgs <- testthat::capture_messages(
+    all_health_markers(df, col_map = list(age = "age", sex = "age"), which = "cvd_qrisk3",
+                       include_insulin = FALSE, verbose = TRUE, na_action = "keep")
+  )
+
+  expect_true(any(grepl("missing package: QRISK3", msgs)))
+  expect_true(any(grepl("skipped/failed", msgs)))
 })

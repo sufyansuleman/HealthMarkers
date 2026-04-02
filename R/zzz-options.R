@@ -1,5 +1,8 @@
 # Package verbosity option + flexible logger
+# Canonical definitions of hm_get_verbosity() and hm_inform() for the package.
+# All other files must NOT redefine these functions.
 
+#' @keywords internal
 hm_get_verbosity <- function() {
   lv <- getOption("healthmarkers.verbose", default = "none")
   if (isTRUE(lv)) return("inform")
@@ -9,8 +12,8 @@ hm_get_verbosity <- function() {
   if (lv %in% c("none","inform","debug")) lv else "none"
 }
 
-# Accepts hm_inform(level = "inform", msg = "text") OR hm_inform("text", level = "inform")
-hm_inform <- function(level = c("inform","info","debug"), msg = NULL) {
+#' @keywords internal
+hm_inform <- function(level = c("inform","info","debug"), msg = NULL, verbose = NULL) {
   # Support hm_inform("message", level="inform")
   if (is.null(msg) && !missing(level) && is.character(level) && length(level) == 1L &&
       !(tolower(level) %in% c("inform","info","debug"))) {
@@ -20,12 +23,14 @@ hm_inform <- function(level = c("inform","info","debug"), msg = NULL) {
   level <- tolower(if (length(level)) level[[1]] else "inform")
   if (level == "info") level <- "inform"
 
-  allowed <- switch(hm_get_verbosity(),
-    none = character(0),
-    inform = "inform",
-    debug = c("inform","debug"),
-    character(0)
+  # "inform"-level messages always emit (the caller already chose level = "inform"
+  # only when verbose = TRUE).  "debug"-level messages are gated by the global
+  # option so they only appear when the user opts into debug logging.
+  emit <- switch(level,
+    inform = TRUE,
+    debug  = hm_get_verbosity() %in% c("debug"),
+    FALSE
   )
-  if (level %in% allowed && !is.null(msg) && nzchar(msg)) message(msg)
+  if (emit && !is.null(msg) && nzchar(msg)) message(msg)
   invisible(NULL)
 }

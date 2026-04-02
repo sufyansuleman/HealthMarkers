@@ -72,26 +72,10 @@ atherogenic_indices <- function(data,
                  class = "healthmarkers_atherogenic_indices_error_normalize")
   }
 
-  if (!is.data.frame(data)) {
-    rlang::abort("atherogenic_indices(): `data` must be a data.frame or tibble.",
-                 class = "healthmarkers_atherogenic_indices_error_data_type")
-  }
-  if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("atherogenic_indices(): `col_map` must be a named list of required keys -> column names.",
-                 class = "healthmarkers_atherogenic_indices_error_colmap_type")
-  }
-
   req <- c("TG", "HDL_c")
   opt <- c("TC", "LDL_c")
 
-  # Explicit required key presence in col_map (replace hm_validate_inputs)
-  missing_keys <- setdiff(req, names(col_map))
-  if (length(missing_keys)) {
-    rlang::abort(
-      paste0("atherogenic_indices(): missing col_map entries for: ", paste(missing_keys, collapse = ", ")),
-      class = "healthmarkers_atherogenic_indices_error_missing_map"
-    )
-  }
+  hm_validate_inputs(data, col_map, required_keys = req, fn = "atherogenic_indices")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "atherogenic_indices(): preparing inputs")
 
   # Required columns presence

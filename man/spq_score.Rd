@@ -32,6 +32,9 @@ spq_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only (total and optional subscales). Input columns are not included.
+}
 \description{
 Schizotypal Personality Questionnaire (key-driven)
 }

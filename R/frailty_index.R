@@ -33,10 +33,13 @@
 #' @param bins Integer; number of age bins for FI-by-age plots. Default 7.
 #' @param visible Logical; if TRUE and age is provided, di will draw a plot (via
 #'   plot.di()). Default FALSE.
-#' @param na_action One of:
-#'   - Legacy: "ignore","warn","error"
-#'   - HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
-#'   Default "ignore".
+#' @param na_action One of `c("keep","omit","error","warn","ignore")`. Controls
+#'   handling of missing values in selected deficit columns. `"keep"` (and its
+#'   backward-compatible alias `"ignore"`) passes NAs through to di::di.
+#'   `"warn"` emits a warning and then keeps NAs (alias for `"keep"` with a
+#'   missingness warning). `"omit"` drops rows with any NA in selected deficits
+#'   before computing. `"error"` stops if any NA is detected.
+#'   Default `"ignore"` (retained for backward compatibility; equivalent to `"keep"`).
 #' @param na_warn_prop Proportion in \eqn{[0,1]} above which a high-missingness warning
 #'   is emitted (per column) when na_action = "warn". Default 0.2.
 #' @param check_extreme NULL/TRUE/FALSE gate for out-of-range scan:
@@ -134,10 +137,10 @@ frailty_index <- function(data,
   if (!is.null(rescale.custom)) .assert_character(rescale.custom, "rescale.custom")
   if (!is.null(rescale.avoid))  .assert_character(rescale.avoid,  "rescale.avoid")
 
-  # HM-CS v2: debug-only notice when aliases are used
+  # Backward-compatible na_action aliases ('ignore'/'warn' behave like 'keep')
   if (na_action %in% c("keep","omit") || identical(extreme_action, "NA")) {
     hm_inform(
-      sprintf("frailty_index(): HM-CS v2 aliases active (na_action=%s%s)",
+      sprintf("frailty_index(): na_action=%s%s",
               na_action, if (identical(extreme_action, "NA")) ", extreme_action=NA" else ""),
       level = "debug"
     )
@@ -255,7 +258,7 @@ frailty_index <- function(data,
     if (verbose) {
       di_vec <- tryCatch(di_res$di, error = function(e) NULL)
       if (is.numeric(di_vec)) {
-        rng <- range(di_vec, na.rm = TRUE)
+        rng <- if (any(is.finite(di_vec))) range(di_vec, na.rm = TRUE) else c(NA_real_, NA_real_)
         hm_inform(sprintf("frailty_index(): results: di range [%.3f, %.3f] (%d rows, %d deficits)",
                           ifelse(is.finite(rng[1]), rng[1], NA_real_),
                           ifelse(is.finite(rng[2]), rng[2], NA_real_),
@@ -325,7 +328,13 @@ plot_frailty_age <- function(data,
 
 .need_pkg_di <- function() {
   ok <- suppressMessages(suppressWarnings(requireNamespace("di", quietly = TRUE)))
-  if (!ok) stop("Please install the 'di' package to use frailty_index().")
+  if (!ok) {
+    rlang::abort(
+      "Package 'di' is required for this feature. Install it first.",
+      class = "healthmarkers_missing_package",
+      package = "di"
+    )
+  }
   invisible(TRUE)
 }
 

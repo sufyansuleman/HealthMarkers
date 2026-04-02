@@ -50,12 +50,13 @@ see di::di documentation for syntax.}
 \item{visible}{Logical; if TRUE and age is provided, di will draw a plot (via
 plot.di()). Default FALSE.}
 
-\item{na_action}{One of:
-\itemize{
-\item Legacy: "ignore","warn","error"
-\item HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
-Default "ignore".
-}}
+\item{na_action}{One of \code{c("keep","omit","error","warn","ignore")}. Controls
+handling of missing values in selected deficit columns. \code{"keep"} (and its
+backward-compatible alias \code{"ignore"}) passes NAs through to di::di.
+\code{"warn"} emits a warning and then keeps NAs (alias for \code{"keep"} with a
+missingness warning). \code{"omit"} drops rows with any NA in selected deficits
+before computing. \code{"error"} stops if any NA is detected.
+Default \code{"ignore"} (retained for backward compatibility; equivalent to \code{"keep"}).}
 
 \item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
 is emitted (per column) when na_action = "warn". Default 0.2.}

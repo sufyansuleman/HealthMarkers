@@ -73,9 +73,20 @@ test_that("metss errors when params key for sex-race is missing", {
     sex     = 2,
     race    = "NHW"
   )
+  # Provide custom params with only NHW_M (no NHW_F) to trigger the missing-key error
+  custom_params_m_only <- list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist     = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG        = c(mean = 1.50, sd = 0.60, coef = 0.701),
+      HDL       = c(mean = 1.10, sd = 0.30, coef = -0.663),
+      glucose   = c(mean = 5.30, sd = 0.60, coef = 0.658),
+      MAP       = c(mean = 97.0, sd = 11.0, coef = 0.466)
+    )
+  )
   expect_error(
-    metss(df_f),
-    "params does not contain a key 'NHW_F'"
+    metss(df_f, params = custom_params_m_only),
+    "params missing keys for: NHW_F"
   )
 })
 

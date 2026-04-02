@@ -133,7 +133,10 @@ nutrient_markers <- function(
   } else {
     extra <- setdiff(names(col_map), keys)
     if (length(extra)) {
-      rlang::warn(sprintf("nutrient_markers(): ignoring unrecognized keys in col_map: %s", paste(extra, collapse = ", ")))
+      rlang::warn(
+        sprintf("nutrient_markers(): ignoring unrecognized keys in col_map: %s", paste(extra, collapse = ", ")),
+        class = "healthmarkers_nutrient_warn_unrecognized_keys"
+      )
       col_map[extra] <- NULL
     }
   }

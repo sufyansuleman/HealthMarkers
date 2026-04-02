@@ -44,6 +44,15 @@ exceed user-specified high-risk thresholds (strict > when multiple biomarkers;
 inclusive >= when only one biomarker). Aligned with HM-CS v3: structured
 validation, diagnostic control, verbose reporting, and optional summary output.
 }
+\details{
+\strong{API pattern note:} Unlike most HealthMarkers functions which follow the
+standard \verb{(data, col_map, ...)} signature, \code{allostatic_load()} uses
+\verb{(data, thresholds, col_map = NULL, ...)} because \code{thresholds} is a
+domain-specific required argument that cannot be inferred from column names
+alone. As a result, this function is not directly dispatchable through the
+standard \code{all_health_markers()} registry; a custom wrapper that supplies
+\code{thresholds} explicitly would be required.
+}
 \examples{
 df <- tibble::tibble(
   SBP = c(118, 142, 130),

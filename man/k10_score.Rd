@@ -29,6 +29,9 @@ k10_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{K10_total}. Input columns are not included.
+}
 \description{
 K10 scoring
 }

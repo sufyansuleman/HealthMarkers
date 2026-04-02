@@ -1,0 +1,128 @@
+---
+title: "Liver Fat Surrogates: HSI and NAFLD-LFS"
+output: rmarkdown::html_vignette
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(HealthMarkers)
+```
+
+## Overview
+
+`liver_fat_markers()` computes two non-invasive surrogate indexes for hepatic steatosis:
+
+- **HSI** (Hepatic Steatosis Index): `8 × (ALT/AST) + BMI + 2 (female) + 2 (diabetes)`
+- **NAFLD-LFS** (NAFLD Liver Fat Score): requires metabolic syndrome status and fasting insulin
+
+Both indexes are returned as a tibble with columns `HSI` and `NAFLD_LFS`.
+
+## Minimal example (HSI only)
+
+Only `ALT`, `AST`, and `BMI` are strictly required. Without sex/diabetes the female and diabetes
+terms default to 0.
+
+```{r minimal}
+df <- data.frame(ALT = c(30, 45, 60), AST = c(20, 30, 25), BMI = c(24, 28, 33))
+
+liver_fat_markers(
+  df,
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI")
+)
+```
+
+## With optional inputs
+
+Providing `sex`, `diabetes`, and `insulin` enables the full NAFLD-LFS formula.
+
+```{r full}
+df2 <- data.frame(
+  ALT      = c(30, 45, 60),
+  AST      = c(20, 30, 25),
+  BMI      = c(24, 28, 33),
+  sex      = c("female", "male", "female"),
+  diabetes = c(FALSE, TRUE, FALSE),
+  insulin  = c(10, 22, 15)
+)
+
+liver_fat_markers(
+  df2,
+  col_map = list(
+    ALT      = "ALT",
+    AST      = "AST",
+    BMI      = "BMI",
+    sex      = "sex",
+    diabetes = "diabetes",
+    insulin  = "insulin"
+  )
+)
+```
+
+## MetS derivation
+
+When `MetS` is not available directly, the function derives it via NCEP-ATP III criteria if
+`waist`, `TG`, `HDL_c`, a blood pressure column, and `glucose` are provided.
+
+```{r mets}
+df3 <- data.frame(
+  ALT = 55, AST = 30, BMI = 31,
+  sex = "female", diabetes = FALSE, insulin = 18,
+  waist = 92, TG = 1.9, HDL_c = 1.1, bp_sys = 135, glucose = 6.0
+)
+
+liver_fat_markers(
+  df3,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI",
+    sex = "sex", diabetes = "diabetes", insulin = "insulin",
+    waist = "waist", TG = "TG", HDL_c = "HDL_c",
+    bp_sys = "bp_sys", glucose = "glucose"
+  )
+)
+```
+
+## Missing-value handling
+
+Use `na_action` to control how rows with missing required values are treated.
+
+```{r na}
+df_na <- data.frame(ALT = c(30, NA, 50), AST = c(20, 25, 30), BMI = c(25, 28, 31))
+
+# omit: return only complete rows
+liver_fat_markers(
+  df_na,
+  col_map  = list(ALT = "ALT", AST = "AST", BMI = "BMI"),
+  na_action = "omit"
+)
+
+# keep: return all rows, NA for incomplete ones
+liver_fat_markers(
+  df_na,
+  col_map  = list(ALT = "ALT", AST = "AST", BMI = "BMI"),
+  na_action = "keep"
+)
+```
+
+## Verbose diagnostics
+
+Enable step-by-step messages to trace exactly which columns are mapped and how many rows
+were computed successfully.
+
+```{r verbose, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+
+df_v <- data.frame(ALT = c(30, 45), AST = c(20, 30), BMI = c(24, 28),
+                   sex = c("male", "female"), diabetes = c(FALSE, TRUE),
+                   insulin = c(10, 22))
+
+liver_fat_markers(
+  df_v,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI",
+    sex = "sex", diabetes = "diabetes", insulin = "insulin"
+  ),
+  verbose = TRUE
+)
+
+options(old_opt)
+```

@@ -38,6 +38,9 @@ asrs_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{ASRS_total}, \code{ASRS_partA_count}, \code{ASRS_partA_positive}. Input columns are not included.
+}
 \description{
 Adult ADHD Self-Report Scale scoring
 }

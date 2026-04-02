@@ -32,6 +32,9 @@ phq9_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{PHQ9_total} and \code{PHQ9_severity} (factor). Input columns are not included.
+}
 \description{
 PHQ-9 / PHQ-8 scoring
 }

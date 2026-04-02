@@ -8,7 +8,7 @@ fasting_is(
   data,
   col_map,
   normalize = c("none", "z", "inverse", "range", "robust"),
-  na_action = c("keep", "omit", "error"),
+  na_action = c("keep", "omit", "error", "warn"),
   check_extreme = FALSE,
   extreme_limit = 1000,
   extreme_action = c("cap", "NA", "error"),
@@ -31,6 +31,7 @@ fasting_is(
 \item "keep"  (retain all rows; indices become NA where inputs missing/non-finite)
 \item "omit"  (drop rows with any missing/non-finite required inputs)
 \item "error" (abort if any required input is missing/non-finite)
+\item "warn"  (emit a warning for rows with missing inputs, then keep them)
 }}
 
 \item{check_extreme}{Logical; if TRUE, scan computed indices for large magnitudes.}

@@ -32,6 +32,9 @@ k6_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{K6_total} and \code{K6_case}. Input columns are not included.
+}
 \description{
 K6 scoring
 }

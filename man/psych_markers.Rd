@@ -39,6 +39,9 @@ psych_markers(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of computed score columns from all requested modules, bound together. No input columns are included in the output.
+}
 \description{
 Psychometric markers dispatcher
 }

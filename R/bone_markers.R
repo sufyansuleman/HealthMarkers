@@ -57,22 +57,10 @@ bone_markers <- function(
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
 
-  # Validate mapping object
-  if (!is.list(col_map) || is.null(names(col_map))) {
-    rlang::abort("bone_markers(): `col_map` must be a named list mapping keys to column names.",
-                 class = "healthmarkers_bone_error_colmap_type")
-  }
   required <- c("age", "weight", "height", "ALM", "FM", "BMD", "BMD_ref_mean", "BMD_ref_sd")
   optional <- c("TBS", "HSA", "PINP", "CTX", "BSAP", "Osteocalcin")
 
-  # Required keys present in col_map
-  missing_map <- setdiff(required, names(col_map))
-  if (length(missing_map)) {
-    rlang::abort(
-      paste0("bone_markers(): missing col_map entries for: ", paste(missing_map, collapse = ", ")),
-      class = "healthmarkers_bone_error_colmap_missing"
-    )
-  }
+  hm_validate_inputs(data, col_map, required_keys = required, fn = "bone_markers")
 
   # Required columns exist in data
   req_cols <- unname(unlist(col_map[required], use.names = FALSE))

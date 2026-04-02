@@ -15,7 +15,7 @@ test_that("frailty_index errors without di installed", {
   withr::with_libpaths(new = empty_lib, action = "replace", {
     expect_error(
       frailty_index(tibble::tibble(a = 1, b = 0)),
-      "Please install the 'di' package"
+      "Package 'di' is required"
     )
   })
 })
@@ -49,7 +49,7 @@ test_that("plot_frailty_age errors without di installed", {
   withr::with_libpaths(new = empty_lib, action = "replace", {
     expect_error(
       plot_frailty_age(tibble::tibble(a = 1, b = 0), age = NULL),
-      "Please install the 'di' package"
+      "Package 'di' is required"
     )
   })
 })

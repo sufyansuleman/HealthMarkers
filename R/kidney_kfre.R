@@ -96,29 +96,13 @@ kidney_failure_risk <- function(data,
 
   # Optional package-level validation; keep test-facing messages stable
   req_keys <- c("age", "sex", "eGFR", "UACR")
-  if (is.function(get0("hm_validate_inputs", envir = asNamespace("HealthMarkers"), inherits = TRUE))) {
-    try(hm_validate_inputs(data = data, col_map = col_map, required_keys = req_keys, fn = "kidney_failure_risk"), silent = TRUE)
-  }
+  hm_validate_inputs(data, col_map, required_keys = req_keys, fn = "kidney_failure_risk")
 
   .kfre_validate_args(data, col_map, na_warn_prop, extreme_rules)
 
-  # Check mapping presence and data columns
+  # Check data columns
   req <- req_keys
-  missing_map_keys <- setdiff(req, names(col_map))
-  if (length(missing_map_keys)) {
-    rlang::abort(
-      message = paste0("kidney_failure_risk(): you must supply col_map entries for: ", paste(missing_map_keys, collapse = ", ")),
-      class = "healthmarkers_kfre_error_missing_map"
-    )
-  }
-  mapped_cols <- unlist(col_map[req], use.names = FALSE)
-  if (any(!nzchar(mapped_cols))) {
-    bad <- req[!nzchar(mapped_cols)]
-    rlang::abort(
-      message = paste0("kidney_failure_risk(): you must supply col_map entries for: ", paste(bad, collapse = ", ")),
-      class = "healthmarkers_kfre_error_missing_map"
-    )
-  }
+  mapped_cols <- unlist(col_map[req_keys], use.names = FALSE)
   missing_cols <- setdiff(mapped_cols, names(data))
   if (length(missing_cols)) {
     rlang::abort(
@@ -134,9 +118,17 @@ kidney_failure_risk <- function(data,
   if (!is.numeric(data[[col_map$age]]))  rlang::abort("kidney_failure_risk(): 'age' column must be numeric.",  class = "healthmarkers_kfre_error_nonnumeric_age")
   if (!is.numeric(data[[col_map$eGFR]])) rlang::abort("kidney_failure_risk(): 'eGFR' column must be numeric.", class = "healthmarkers_kfre_error_nonnumeric_egfr")
   if (!is.numeric(data[[col_map$UACR]])) rlang::abort("kidney_failure_risk(): 'UACR' column must be numeric.", class = "healthmarkers_kfre_error_nonnumeric_uacr")
-  if (!is.numeric(data[[col_map$sex]]) && !is.integer(data[[col_map$sex]])) {
-    rlang::abort("kidney_failure_risk(): 'sex' column must be coded numeric (1=male, 2=female).", class = "healthmarkers_kfre_error_nonnumeric_sex")
+  # Normalize sex: accepts M/F/male/female/1/2/0 -> 1=male, 2=female
+  sex_orig <- data[[col_map$sex]]
+  sex_norm <- .hm_normalize_sex(sex_orig, to = "12", fn = "kidney_failure_risk")
+  unrecognized <- !is.na(sex_orig) & is.na(sex_norm)
+  if (any(unrecognized)) {
+    rlang::abort(
+      "kidney_failure_risk(): 'sex' must be coded as 1=male or 2=female (or M/F/male/female); unrecognized value(s) found.",
+      class = "healthmarkers_kfre_error_invalid_sex"
+    )
   }
+  data[[col_map$sex]] <- sex_norm
 
   # Missingness policy
   .kfre_warn_high_missing(
@@ -163,10 +155,7 @@ kidney_failure_risk <- function(data,
   eGFR <- data[[col_map$eGFR]]
   UACR <- data[[col_map$UACR]]
 
-  # Sex coding and validation
-  if (any(!(sex %in% c(1, 2)) & !is.na(sex))) {
-    rlang::abort("kidney_failure_risk(): 'sex' must be coded as 1=male or 2=female.", class = "healthmarkers_kfre_error_sex_codes")
-  }
+  # Sex coding (already normalized to 1/2 above)
   male <- ifelse(sex == 1, 1L, 0L)
 
   # Optional extreme scanning/capping

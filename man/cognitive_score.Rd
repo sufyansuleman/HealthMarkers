@@ -29,6 +29,9 @@ cognitive_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \verb{\{prefix\}_z_mean} or \verb{\{prefix\}_pca1}. Input columns are not included.
+}
 \description{
 Cognitive composite (z-mean or PCA1)
 }

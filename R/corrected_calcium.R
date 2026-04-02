@@ -37,8 +37,9 @@ corrected_calcium <- function(
   verbose = FALSE
 ) {
   units         <- match.arg(units)
-  na_action_raw <- match.arg(na_action)
-  na_action_eff <- if (na_action_raw %in% c("ignore", "warn")) "keep" else na_action_raw
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   ## --- Basic validation -----------------------------------------------------

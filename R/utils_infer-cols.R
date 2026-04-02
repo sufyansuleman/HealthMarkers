@@ -100,6 +100,7 @@ infer_cols <- function(data,
       I120 = paste0("^(?:I", opt(sep), "120(?:\\b|$)|ins(?:ulin)?", opt(sep), "120(?:\\b|$))"),
 
       # ---- Anthropometry ----
+      height    = paste0("^(?:height|Height|height_m|body_height|stature|ht_cm)(?:\\b|$)"),
       weight    = paste0("^(?:weight|body", sep, "?weight)(?:\\b|$)"),
       bmi       = paste0("^(?:BMI|body", sep, "?mass", sep, "?index)(?:\\b|$)"),
       BMI       = paste0("^(?:BMI|body", sep, "?mass", sep, "?index)(?:\\b|$)"),
@@ -112,6 +113,7 @@ infer_cols <- function(data,
       FFA       = paste0("^(?:FFA|NEFA|free", sep, "?fatty", sep, "?acids?)(?:\\b|$)"),
       fat_mass  = paste0("^(?:fat", sep, "?mass|FM)(?:\\b|$)"),
       lean_mass = paste0("^(?:lean", sep, "?mass|LM|lean", sep, "?body", sep, "?mass)(?:\\b|$)"),
+      ALM       = paste0("^(?:ALM|alm|ALM_kg|appendicular", sep, "?lean", sep, "?mass)(?:\\b|$)"),
 
       # ---- Lipids ----
       TG     = "^(?:TG|tri(?:acyl)?glyceri?des?)(?:\\b|$)",
@@ -138,6 +140,11 @@ infer_cols <- function(data,
       bilirubin  = "^(?:bilirubin|bili)(?:\\b|$)",
       creatinine = "^(?:creatinine|creat)(?:\\b|$)",
 
+      # ---- Electrolytes & minerals ----
+      calcium   = paste0("^(?:calcium|ca|Ca|ca_mgdl)(?:\\b|$)"),
+      phosphate = paste0("^(?:phosphate|phos)(?:\\b|$)"),
+      magnesium = paste0("^(?:magnesium|Mg|mg)(?:\\b|$)"),
+
       # ---- Renal / Urine ----
       eGFR             = paste0("^(?:eGFR|estimated", sep, "?GFR|CKD", sep, "?EPI)(?:\\b|$)"),
       UACR             = paste0("^(?:UACR|ACR|urine", sep, "?albumin", sep, "?creatinine", sep, "?ratio)(?:\\b|$)"),
@@ -156,6 +163,14 @@ infer_cols <- function(data,
       weight_after     = paste0("^(?:weight", sep, "?after)(?:\\b|$)"),
       duration         = paste0("^(?:duration|time", sep, "?h)(?:\\b|$)"),
       body_surface_area = paste0("^(?:body", sep, "?surface", sep, "?area|BSA)(?:\\b|$)"),
+
+      # ---- Tracer / metabolic flux ----
+      rate_glycerol  = paste0("^(?:rate", sep, "?glycerol|glycerol", sep, "?fm)(?:\\b|$)"),
+      rate_palmitate = paste0("^(?:rate", sep, "?palmitate|palmitate", sep, "?fm)(?:\\b|$)"),
+
+      # ---- Tryptophan-kynurenine pathway ----
+      tryptophan  = paste0("^(?:tryptophan|Trp", sep, "?uM|tryptophan", sep, "?umolL)(?:\\b|$)"),
+      kynurenine  = paste0("^(?:kynurenine|Kyn", sep, "?nM|kynurenine", sep, "?nmolL)(?:\\b|$)"),
 
       # ---- Saliva ----
       saliva_cort1   = paste0("^(?:saliva", sep, "?cort1|cortisol", sep, "?wake)(?:\\b|$)"),

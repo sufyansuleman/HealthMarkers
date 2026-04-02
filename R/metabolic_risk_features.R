@@ -75,9 +75,9 @@ metabolic_risk_features <- function(
   extreme_rules = NULL,
   verbose = FALSE
 ) {
-  na_action <- match.arg(na_action)
-  na_action_raw <- na_action
-  if (na_action %in% c("ignore","warn")) na_action <- "keep"
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   hm_inform("metabolic_risk_features(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")

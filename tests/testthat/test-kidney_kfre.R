@@ -50,7 +50,7 @@ test_that("kidney_failure_risk errors if required col_map entries are missing", 
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR")
   expect_error(
     kidney_failure_risk(data = df, col_map = cm),
-    "you must supply col_map entries for: UACR"
+    "UACR"
   )
 })
 

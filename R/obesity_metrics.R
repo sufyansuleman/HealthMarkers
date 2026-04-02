@@ -35,12 +35,13 @@
 #' @param extreme_rules Optional named list of c(min,max) for c("weight_kg","height_m","waist","hip"). NULL uses defaults.
 #' @param verbose Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.
 #'
-#' @return A tibble with original columns plus new indices:
-#' * weight_kg, height_m, BMI, BMI_cat,
-#' * WHR, WHRadjBMI (optional), waist_to_height_ratio,
+#' @return A tibble with only the computed indices (slim output):
+#' * weight_kg, height_m (unit-normalised intermediates),
+#' * BMI, BMI_cat,
+#' * WHR, WHRadjBMI (if `adjust_WHR = TRUE`),
+#' * waist_to_height_ratio, waist_to_BMI_ratio, weight_to_height_ratio,
 #' * AVI, BAI, ABSI, BRI, CI,
-#' * waist_to_BMI_ratio, weight_to_height_ratio,
-#' * RFM (optional).
+#' * RFM (if `include_RFM = TRUE`).
 #'
 #' @importFrom dplyr mutate case_when
 #' @importFrom rlang enquo quo_name quo_is_null abort warn inform
@@ -264,13 +265,18 @@ obesity_indices <- function(data,
 
   # Relative Fat Mass
   if (isTRUE(include_RFM)) {
-    # Validate sex values
-    bad_sex <- sum(is.finite(sex_vec) & !(sex_vec %in% c(0, 1)), na.rm = TRUE)
-    if (bad_sex > 0) {
-      rlang::warn(sprintf("obesity_indices(): 'sex' contains %d values not in {0,1}; RFM set to NA for those rows.", bad_sex))
+    # Sex for RFM is expected as 0=male, 1=female; use directly without normalization
+    sex_01 <- suppressWarnings(as.numeric(out[[sx_name]]))
+    invalid_sex <- !is.na(sex_01) & !(sex_01 %in% c(0, 1))
+    if (any(invalid_sex)) {
+      rlang::warn(
+        sprintf("obesity_indices(): 'sex' contains %d values not in {0,1}; RFM set to NA for those rows. Encode sex as 0=male, 1=female.", sum(invalid_sex)),
+        class = "healthmarkers_obesity_warn_invalid_sex_rfm"
+      )
+      sex_01[invalid_sex] <- NA_real_
     }
     denom_rfm <- wst
-    RFM <- 64 - 20 * safe_div(out$height_m, denom_rfm, "RFM") + 12 * ifelse(sex_vec %in% c(0,1), sex_vec, NA_real_)
+    RFM <- 64 - 20 * safe_div(out$height_m, denom_rfm, "RFM") + 12 * sex_01
     out$RFM <- as.numeric(RFM)
   }
 
@@ -284,10 +290,21 @@ obesity_indices <- function(data,
     rlang::warn(sprintf("obesity_indices(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "obesity_indices"))
+  # Slim output: return only computed index columns
+  index_cols <- c(
+    "weight_kg", "height_m", "BMI", "BMI_cat",
+    "WHR",
+    if (isTRUE(adjust_WHR)) "WHRadjBMI",
+    "waist_to_height_ratio", "waist_to_BMI_ratio", "weight_to_height_ratio",
+    "AVI", "BAI", "ABSI", "BRI", "CI",
+    if (isTRUE(include_RFM)) "RFM"
+  )
+  slim <- out[, intersect(index_cols, names(out)), drop = FALSE]
 
-  out
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+            msg   = hm_result_summary(slim, "obesity_indices"))
+
+  slim
 }
 
 # ---- internal helpers ---------------------------------------------------------
@@ -316,9 +333,10 @@ obesity_indices <- function(data,
       rlang::abort("obesity_indices(): 'sex' must be provided to compute RFM",
                    class = "healthmarkers_obesity_error_missing_sex")
     }
-    if (!is.numeric(data[[sx_name]])) {
-      rlang::abort("obesity_indices(): 'sex' must be numeric coded 0 (male) or 1 (female).",
-                   class = "healthmarkers_obesity_error_sex_type")
+    # Accept character sex (M/F/male/female/1/2/0); normalize to 0=male, 1=female for RFM
+    if (!is.numeric(data[[sx_name]]) ||
+        any(is.finite(data[[sx_name]]) & !(data[[sx_name]] %in% c(0, 1)))) {
+      data[[sx_name]] <- .hm_normalize_sex(data[[sx_name]], to = "01", fn = "obesity_indices")
     }
   }
   invisible(TRUE)

@@ -1,5 +1,14 @@
 # HM-CS v2 compatible tests for inflammatory_markers()
 
+test_that("default na_action is 'keep' (not 'error')", {
+  df <- tibble::tibble(neutrophils = c(4, NA), lymphocytes = c(2, 1))
+  cm <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
+  # Without supplying na_action, rows with NA inputs should propagate NA, not abort
+  out <- inflammatory_markers(df, cm, panel = "classic")
+  expect_equal(nrow(out), 2L)
+  expect_true(is.na(out$NLR[2]))
+})
+
 test_that("mapping validation errors and messages", {
   df <- tibble::tibble(neutrophils = numeric())
   expect_error(inflammatory_markers("x", list()), "data.frame or tibble")

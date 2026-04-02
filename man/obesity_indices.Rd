@@ -57,13 +57,14 @@ obesity_indices(
 \item{verbose}{Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.}
 }
 \value{
-A tibble with original columns plus new indices:
+A tibble with only the computed indices (slim output):
 \itemize{
-\item weight_kg, height_m, BMI, BMI_cat,
-\item WHR, WHRadjBMI (optional), waist_to_height_ratio,
+\item weight_kg, height_m (unit-normalised intermediates),
+\item BMI, BMI_cat,
+\item WHR, WHRadjBMI (if \code{adjust_WHR = TRUE}),
+\item waist_to_height_ratio, waist_to_BMI_ratio, weight_to_height_ratio,
 \item AVI, BAI, ABSI, BRI, CI,
-\item waist_to_BMI_ratio, weight_to_height_ratio,
-\item RFM (optional).
+\item RFM (if \code{include_RFM = TRUE}).
 }
 }
 \description{

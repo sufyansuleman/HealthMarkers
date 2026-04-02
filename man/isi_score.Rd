@@ -29,6 +29,9 @@ isi_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{ISI_total} and \code{ISI_severity} (factor). Input columns are not included.
+}
 \description{
 Insomnia Severity Index (ISI) scoring
 }

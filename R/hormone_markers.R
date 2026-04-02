@@ -56,10 +56,50 @@ hormone_markers <- function(
   na_action <- if (na_action_raw == "keep") "ignore" else na_action_raw
   extreme_action <- match.arg(extreme_action)
 
-  required <- c(
-    "total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
-    "free_T3","free_T4","aldosterone","renin","insulin","glucagon",
-    "GH","IGF1","prolactin","cortisol_0","cortisol_30"
+  # Per-ratio input dependencies
+  ratio_defs <- list(
+    FAI       = c("total_testosterone", "SHBG"),
+    LH_FSH    = c("LH", "FSH"),
+    E2_P      = c("estradiol", "progesterone"),
+    E2_T      = c("estradiol", "total_testosterone"),
+    T3_T4     = c("free_T3", "free_T4"),
+    TSH_fT4   = c("TSH", "free_T4"),
+    ARR       = c("aldosterone", "renin"),
+    Ins_Glu   = c("insulin", "glucagon"),
+    GH_IGF1   = c("GH", "IGF1"),
+    PRL_T     = c("prolactin", "total_testosterone"),
+    CAR_slope = c("cortisol_0", "cortisol_30")
+  )
+
+  # Inference rules: derive a missing key from available mapped keys.
+  # Each entry: list(target_key  = name to inject into col_map,
+  #                   needs       = mapped keys required,
+  #                   compute     = function(data, col_map) -> vector,
+  #                   label       = short description for messaging)
+  infer_rules <- list(
+    list(
+      target  = "free_T3",
+      needs   = c("TSH", "free_T4"),
+      compute = function(d, cm) {
+        # Jostel/Midgley estimate: fT3 ~ fT4 * 0.33 * TSH^(-0.20)
+        # doi:10.1530/eje-10-0825
+        fT4 <- d[[cm[["free_T4"]]]]
+        tsh <- d[[cm[["TSH"]]]]
+        ifelse(is.finite(tsh) & tsh > 0 & is.finite(fT4),
+               fT4 * 0.33 * tsh^(-0.20), NA_real_)
+      },
+      label   = "free_T3 estimated from TSH + free_T4 (Jostel/Midgley)"
+    ),
+    list(
+      target  = "GH",
+      needs   = c("IGF1"),
+      compute = function(d, cm) {
+        # Rough equivalence: median GH ~ IGF1 / 22.5 (nmol-based scale)
+        # Use only as a last resort; flag as estimated
+        d[[cm[["IGF1"]]]] / 22.5
+      },
+      label   = "GH estimated from IGF1 (IGF1 / 22.5, approximate)"
+    )
   )
 
   # Validate inputs (HM-CS v3)
@@ -69,29 +109,49 @@ hormone_markers <- function(
   if (is.null(col_map) || !is.list(col_map)) {
     rlang::abort("hormone_markers(): `col_map` must be a named list.", class = "healthmarkers_horm_error_colmap_type")
   }
-  # Ensure all required keys exist in col_map
-  missing_keys <- setdiff(required, names(col_map))
-  if (length(missing_keys)) {
-    # Keep message to satisfy tests
-    rlang::abort(paste0("missing required columns: ", paste(missing_keys, collapse = ", ")),
-                 class = "healthmarkers_horm_error_missing_map")
+
+  # --- Inference pass: derive missing keys from available mapped data --------
+  inferred_keys <- character(0)
+  for (rule in infer_rules) {
+    if (rule$target %in% names(col_map)) next          # already explicitly mapped
+    if (!all(rule$needs %in% names(col_map))) next      # prerequisites not available
+    tmp_col <- paste0(".hm_inferred_", rule$target)
+    data[[tmp_col]] <- rule$compute(data, col_map)
+    col_map[[rule$target]] <- tmp_col
+    inferred_keys <- c(inferred_keys, rule$target)
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg   = sprintf("hormone_markers(): inferred '%s' \u2014 %s", rule$target, rule$label))
   }
-  # Ensure each mapping is a single non-empty character string
-  bad_keys <- vapply(required, function(k) {
+  # --------------------------------------------------------------------------
+
+  # Determine which ratios can be computed from the supplied col_map
+  avail_ratios <- vapply(ratio_defs, function(keys) all(keys %in% names(col_map)), logical(1))
+  skipped_ratios <- names(ratio_defs)[!avail_ratios]
+  if (length(skipped_ratios) > 0L)
+    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+              msg = sprintf("hormone_markers(): skipping %d ratio(s) with unmapped inputs: %s",
+                            length(skipped_ratios), paste(skipped_ratios, collapse = ", ")))
+  if (!any(avail_ratios))
+    rlang::abort("hormone_markers(): no computable ratios; supply at least one pair of mapped inputs.",
+                 class = "healthmarkers_horm_error_no_ratios")
+
+  used_keys <- unique(unlist(ratio_defs[avail_ratios], use.names = FALSE))
+
+  # Ensure each used mapping is a single non-empty character string
+  bad_keys <- vapply(used_keys, function(k) {
     v <- col_map[[k]]
     !is.character(v) || length(v) != 1L || !nzchar(v)
   }, logical(1))
-  if (any(bad_keys)) {
-    rlang::abort(paste0("missing required columns: ", paste(required[bad_keys], collapse = ", ")),
+  if (any(bad_keys))
+    rlang::abort(paste0("missing required columns: ", paste(used_keys[bad_keys], collapse = ", ")),
                  class = "healthmarkers_horm_error_bad_map_values")
-  }
+
   # Mapped columns must exist in data
-  used_cols <- unname(vapply(required, function(k) col_map[[k]], character(1)))
+  used_cols <- unname(vapply(used_keys, function(k) col_map[[k]], character(1)))
   missing_cols <- setdiff(used_cols, names(data))
-  if (length(missing_cols)) {
+  if (length(missing_cols))
     rlang::abort(paste0("missing required columns: ", paste(missing_cols, collapse = ", ")),
                  class = "healthmarkers_horm_error_missing_columns")
-  }
   # na_warn_prop sanity
   if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
     rlang::abort("hormone_markers(): `na_warn_prop` must be a single number in [0,1].",
@@ -100,7 +160,7 @@ hormone_markers <- function(
 
   hm_inform("hormone_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[required], "hormone_markers"))
+            msg = hm_col_report(col_map[used_keys], "hormone_markers"))
 
   # Coerce to numeric; warn if NAs introduced; sanitize non-finite to NA
   for (cn in used_cols) {
@@ -169,53 +229,32 @@ hormone_markers <- function(
     }
   }
 
-  # Extract vectors
+  # Extract only the vectors actually needed
   v <- function(k) data[[col_map[[k]]]]
-  Ttot <- v("total_testosterone"); SHBG <- v("SHBG")
-  LH <- v("LH"); FSH <- v("FSH")
-  E2 <- v("estradiol"); P4 <- v("progesterone")
-  T3 <- v("free_T3"); T4 <- v("free_T4")
-  Aldo <- v("aldosterone"); Renin <- v("renin")
-  Ins <- v("insulin"); Glu <- v("glucagon")
-  GH <- v("GH"); IGF1 <- v("IGF1")
-  PRL <- v("prolactin")
-  Cort0 <- v("cortisol_0"); Cort30 <- v("cortisol_30")
 
-  sdiv <- function(a,b) { z <- a / b; z[!is.finite(z)] <- NA_real_; z }
+  sdiv <- function(a, b) { z <- a / b; z[!is.finite(z)] <- NA_real_; z }
 
-  # Compute ratios
-  FAI       <- sdiv(Ttot, SHBG) * 100
-  LH_FSH    <- sdiv(LH, FSH)
-  E2_P      <- sdiv(E2, P4)
-  T3_T4     <- sdiv(T3, T4)
-  ARR       <- sdiv(Aldo, Renin)
-  Ins_Glu   <- sdiv(Ins, Glu)
-  GH_IGF1   <- sdiv(GH, IGF1)
-  PRL_T     <- sdiv(PRL, Ttot)
-  CAR_slope <- sdiv(Cort30 - Cort0, 30)
+  # Compute only the available ratios
+  out_list <- list()
+  if (avail_ratios["FAI"])       out_list$FAI       <- sdiv(v("total_testosterone"), v("SHBG")) * 100
+  if (avail_ratios["LH_FSH"])    out_list$LH_FSH    <- sdiv(v("LH"), v("FSH"))
+  if (avail_ratios["E2_P"])      out_list$E2_P      <- sdiv(v("estradiol"), v("progesterone"))
+  if (avail_ratios["E2_T"])      out_list$E2_T      <- sdiv(v("estradiol"), v("total_testosterone"))
+  if (avail_ratios["T3_T4"])     out_list$T3_T4     <- sdiv(v("free_T3"), v("free_T4"))
+  if (avail_ratios["TSH_fT4"])   out_list$TSH_fT4   <- sdiv(v("TSH"), v("free_T4"))
+  if (avail_ratios["ARR"])       out_list$ARR       <- sdiv(v("aldosterone"), v("renin"))
+  if (avail_ratios["Ins_Glu"])   out_list$Ins_Glu   <- sdiv(v("insulin"), v("glucagon"))
+  if (avail_ratios["GH_IGF1"])   out_list$GH_IGF1   <- sdiv(v("GH"), v("IGF1"))
+  if (avail_ratios["PRL_T"])     out_list$PRL_T     <- sdiv(v("prolactin"), v("total_testosterone"))
+  if (avail_ratios["CAR_slope"]) out_list$CAR_slope <- sdiv(v("cortisol_30") - v("cortisol_0"), 30)
 
-  out <- tibble::tibble(
-    FAI = FAI,
-    LH_FSH = LH_FSH,
-    E2_P = E2_P,
-    T3_T4 = T3_T4,
-    ARR = ARR,
-    Ins_Glu = Ins_Glu,
-    GH_IGF1 = GH_IGF1,
-    PRL_T = PRL_T,
-    CAR_slope = CAR_slope
-  )
-
-  # Preserve row count when na_action != 'omit'
-  if (na_action_raw != "omit") {
-    res <- tibble::tibble(
-      FAI = rep(NA_real_, nrow(data)),
-      LH_FSH = NA_real_, E2_P = NA_real_, T3_T4 = NA_real_, ARR = NA_real_,
-      Ins_Glu = NA_real_, GH_IGF1 = NA_real_, PRL_T = NA_real_, CAR_slope = NA_real_
-    )
-    res <- res[rep(1, nrow(data)), , drop = FALSE]
-    for (nm in names(out)) res[[nm]] <- out[[nm]]
-    out <- res
+  # Tag inferred columns so downstream callers know
+  out <- tibble::as_tibble(out_list)
+  if (length(inferred_keys) > 0L) {
+    inferred_ratios <- names(ratio_defs)[vapply(ratio_defs, function(keys) any(keys %in% inferred_keys), logical(1))]
+    inferred_ratios <- intersect(inferred_ratios, names(out))
+    attr(out, "inferred_inputs") <- inferred_keys
+    attr(out, "inferred_ratios") <- inferred_ratios
   }
 
   # Completion summary
@@ -247,6 +286,7 @@ hormone_markers <- function(
     FSH = c(0, 200),
     estradiol = c(0, 10000),
     progesterone = c(0, 1000),
+    TSH = c(0, 100),
     free_T3 = c(0, 20),
     free_T4 = c(0, 50),
     aldosterone = c(0, 1000),

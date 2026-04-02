@@ -35,6 +35,9 @@ ghq12_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{GHQ12_total_likert} (likert method) or \code{GHQ12_total_binary} and \code{GHQ12_case_binary} (binary method). Input columns are not included.
+}
 \description{
 GHQ-12 scoring (Likert or binary)
 }

@@ -77,11 +77,6 @@ vitamin_markers <- function(data,
     rlang::abort("vitamin_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitamin_error_data_type")
   }
-  if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("vitamin_markers(): `col_map` must be a named list of required keys -> column names.",
-                 class = "healthmarkers_vitamin_error_colmap_type")
-  }
-
   required_keys <- c(
     "VitD","VitD_ref_mean","VitD_ref_sd","B12","Folate","Ferritin","TSat",
     "Cortisol","DHEAS","Testosterone","Estradiol","TSH","free_T4",

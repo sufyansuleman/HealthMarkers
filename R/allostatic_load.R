@@ -18,6 +18,14 @@
 #' @param verbose logical; print progress messages via hm_inform() (also gated by options(healthmarkers.verbose)).
 #'
 #' @return tibble with AllostaticLoad or list when return_summary = TRUE.
+#' @details
+#' **API pattern note:** Unlike most HealthMarkers functions which follow the
+#' standard `(data, col_map, ...)` signature, `allostatic_load()` uses
+#' `(data, thresholds, col_map = NULL, ...)` because `thresholds` is a
+#' domain-specific required argument that cannot be inferred from column names
+#' alone. As a result, this function is not directly dispatchable through the
+#' standard `all_health_markers()` registry; a custom wrapper that supplies
+#' `thresholds` explicitly would be required.
 #' @seealso \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
 #'
 #' @references \insertRef{mcewen1993allostatic}{HealthMarkers}; \insertRef{seeman1997price}{HealthMarkers}; \insertRef{juster2010allostatic}{HealthMarkers}; \insertRef{wiley2021modeling}{HealthMarkers}

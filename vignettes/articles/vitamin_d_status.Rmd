@@ -1,0 +1,99 @@
+---
+title: "Vitamin D Status"
+output: rmarkdown::html_vignette
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+
+`vitamin_d_status()` classifies serum 25(OH)D (assumed ng/mL) into Deficient (<20), Insufficient (20-29), or Sufficient (>=30). It validates mappings, enforces your missing-data policy, and can scan/cap implausible values.
+
+## When to use this
+
+- Standardize vitamin D categorization for dashboards, cohorts, or QC summaries.
+- Guard ETL steps: abort or omit rows with missing/implausible 25(OH)D before downstream models.
+- Spot potential unit mix-ups: nmol/L inputs often appear ~2.5x higher than ng/mL.
+
+## Required inputs and mapping
+
+- `data`: data frame/tibble containing a 25(OH)D column.
+- `col_map`: named list mapping either `vitd` or `vitamin_d` to the column name. The column must exist and be coercible to numeric; coercion that introduces NAs emits a warning.
+
+## Options that change behavior
+
+- `na_action = c("keep","omit","error","ignore","warn")` (default "keep"): policy for missing 25(OH)D. `warn`/`ignore` behave like keep; `omit` drops those rows; `error` aborts.
+- `check_extreme = FALSE`: turn on plausible-range screening.
+- `extreme_action = c("warn","cap","error","ignore","NA")` (default "warn"): response to values outside bounds.
+- `extreme_rules = NULL`: override default bounds for vitamin D (defaults to 0 to 250 ng/mL).
+- `verbose = FALSE`: emit progress messages.
+
+## How missingness and extremes are handled
+
+- Missing 25(OH)D follows `na_action`; `omit` shrinks the output; `error` aborts.
+- Non-numeric inputs are coerced to numeric; any NAs introduced trigger a warning.
+- With `check_extreme = TRUE`, values outside the bounds are handled per `extreme_action`: warn only, cap into range, abort, ignore, or blank to NA.
+- Negative values and very high medians (suggesting nmol/L) warn when extreme scanning is off.
+
+## Outputs
+
+- Tibble with ordered factor `vitamin_d_status` (Deficient < Insufficient < Sufficient).
+- Rows drop only when `na_action = "omit"`; otherwise the output aligns with input row count.
+
+## Examples
+
+Quick categorization
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+df <- tibble::tibble(VitD = c(12, 25, 36, NA))
+
+vitamin_d_status(
+  data = df,
+  col_map = list(vitd = "VitD"),
+  na_action = "keep"
+)
+```
+
+Screen and cap extremes
+
+```{r}
+df2 <- tibble::tibble(d = c(15, 280, 8, 65, NA))  # 280 is extreme by default (0-250)
+
+vitamin_d_status(
+  data = df2,
+  col_map = list(vitd = "d"),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  verbose = TRUE
+)
+```
+
+## Verbose diagnostics
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+vitamin_d_status(
+  data = tibble::tibble(VitD = c(15, 32)),
+  col_map = list(vitamin_d = "VitD"),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
+## Troubleshooting and tips
+
+- If medians are ~150-250 without obvious outliers, verify units (nmol/L should be divided by 2.5 to get ng/mL).
+- Set `na_action = "omit"` when downstream steps cannot handle NA statuses.
+- Tighten `extreme_rules` to your assay range, or leave `check_extreme = FALSE` when values are already QCed.
+- Keep `col_map` named; missing or empty mappings abort with classed errors you can assert in tests.

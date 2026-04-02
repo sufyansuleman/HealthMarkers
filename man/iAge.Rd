@@ -9,7 +9,7 @@ iAge(
   col_map,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
   verbose = FALSE,
-  na_action = c("omit", "keep", "error", "ignore", "warn"),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),
@@ -31,10 +31,10 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 
 \item{verbose}{Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.}
 
-\item{na_action}{One of c("omit","keep","error","ignore","warn") controlling how missing inputs affect iAge:
+\item{na_action}{One of c("keep","omit","error","ignore","warn") controlling how missing inputs affect iAge:
 \itemize{
-\item "omit": ignore NAs in the weighted sum (default; preserves previous behavior).
-\item "keep": return NA for rows where any required marker is NA.
+\item "keep": return NA for rows where any required marker is NA (default; consistent with other functions).
+\item "omit": ignore NAs in the weighted sum (treat missing markers as 0).
 \item "error": abort if any required marker contains NA.
 \item "ignore": alias of "omit".
 \item "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).

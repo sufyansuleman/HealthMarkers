@@ -11,8 +11,9 @@
 .hm_bind_new_cols <- function(df, addon) {
   if (is.null(addon) || NROW(addon) == 0) return(df)
   if (NROW(addon) != NROW(df)) {
-    rlang::warn("Addon has different number of rows; skipping bind.",
-                class = "healthmarkers_health_markers_warn_bind_rows")
+    hm_inform(level = "debug",
+              msg   = sprintf("Addon has different number of rows (%d vs %d); skipping bind.",
+                              NROW(addon), NROW(df)))
     return(df)
   }
   keep <- setdiff(names(addon), names(df))
@@ -129,14 +130,56 @@
   reg
 }
 
+# Required key helper for group-specific inference
+# Returns a character vector of keys we should attempt to infer for the
+# requested groups. Groups not listed here either do not require col_map or
+# have uncertain inputs, so we avoid over-constraining inference.
+.hm_group_required_keys <- function(which_vec, include_insulin = TRUE) {
+  key_map <- list(
+    insulin_fasting    = c("G0", "I0"),
+    insulin_ogtt       = c("G0", "I0", "G30", "I30", "G120", "I120"),
+    insulin_adipose    = c("BMI", "waist", "TG", "HDL_c"),
+    insulin_tracer_dxa = c("fat_mass", "rate_palmitate", "rate_glycerol"),
+
+    adiposity_sds_strat = c("BMI", "age", "sex"),
+    alm_bmi             = c("ALM", "BMI", "age", "sex"),
+
+    lipid                  = c("TG", "HDL_c", "LDL_c", "TC"),
+    atherogenic_indices    = c("TG", "HDL_c", "LDL_c", "TC"),
+    atherogenic            = c("TG", "HDL_c", "LDL_c", "TC"),
+    cvd_aip                = c("TG", "HDL_c"),
+    cvd_ldl_particles      = c("ApoB"),
+
+    liver_fat = c("ALT", "AST", "BMI", "sex"),
+
+    metabolic_risk = c("waist", "bp_sys", "bp_dia", "glucose", "TG", "HDL_c", "sex", "race"),
+
+    spirometry = c("fev1", "fvc", "height", "age", "sex"),
+    bode       = c("fev1", "fvc", "height", "age", "sex", "BMI"),
+    pulmo      = c("fev1", "fvc", "age", "sex"),
+
+    renal        = c("eGFR", "UACR"),
+    kidney_kfre  = c("age", "sex", "eGFR", "UACR"),
+    ckd_stage    = c("eGFR", "UACR"),
+
+    vitamin_d_status = c("vitamin_d", "vitD", "VitD"),
+    calcium_corrected = c("calcium", "albumin"),
+    kyn_trp           = c("kynurenine", "tryptophan")
+  )
+
+  # Insulin panel is computed up-front when include_insulin = TRUE
+  insulin_keys <- if (isTRUE(include_insulin)) {
+    unlist(key_map[c("insulin_fasting", "insulin_ogtt", "insulin_adipose", "insulin_tracer_dxa")], use.names = FALSE)
+  } else character(0)
+
+  req <- c(insulin_keys, unlist(key_map[intersect(names(key_map), which_vec)], use.names = FALSE))
+  unique(req)
+}
+
 # Prepare data for specific groups (small convenience fixes)
 .hm_prepare_for_group <- function(data, grp) {
   out <- data
-  if (identical(grp, "liver")) {
-    if (!("triglycerides" %in% names(out)) && "TG" %in% names(out)) {
-      out$triglycerides <- out$TG
-    }
-  }
+
   if (identical(grp, "mets")) {
     if (!("bp_sys" %in% names(out)) && "sbp" %in% names(out)) out$bp_sys <- out$sbp
     if (!("bp_dia" %in% names(out)) && "dbp" %in% names(out)) out$bp_dia <- out$dbp
@@ -204,13 +247,25 @@
   }
 
   call_fun <- function() do.call(fun, c(args, extra_args))
-  if (isTRUE(verbose)) {
-    tryCatch(call_fun(), error = function(e) {
-      hm_inform(level = "debug", msg = sprintf("'%s' failed: %s", tag, conditionMessage(e)))
+  handle_error <- function(e) {
+    msg <- conditionMessage(e)
+    hm_inform(level = "debug", msg = sprintf("'%s' failed: %s", tag, msg))
+    pkg <- if (!is.null(e$package)) {
+      e$package
+    } else if (grepl("Package '([A-Za-z0-9._]+)' is required", msg)) {
+      sub(".*Package '([A-Za-z0-9._]+)' is required.*", "\\1", msg)
+    } else if (grepl("package (.+) is required", msg, ignore.case = TRUE)) {
+      sub(".*package ([A-Za-z0-9._]+) is required.*", "\\1", msg)
+    } else {
       NULL
-    })
+    }
+    structure(list(), hm_error = msg, hm_error_class = class(e)[1], hm_missing_pkg = pkg)
+  }
+
+  if (isTRUE(verbose)) {
+    tryCatch(call_fun(), error = handle_error)
   } else {
-    tryCatch(suppressWarnings(call_fun()), error = function(e) NULL)
+    tryCatch(suppressWarnings(call_fun()), error = handle_error)
   }
 }
 
@@ -341,13 +396,13 @@ metabolic_markers <- function(
       all_insulin_indices, out, col_map, TRUE, verbose, "insulin_panel",
       list(normalize = normalize, mode = mode, verbose = verbose, na_action = na_action)
     )
-    if (!is.null(add)) out <- .hm_bind_new_cols(out, add)
+    if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("adiposity_sds" %in% which) {
     add <- .hm_safe_call(get0("adiposity_sds", mode = "function"), out, col_map, FALSE, verbose, "adiposity_sds",
                          list(verbose = verbose, na_action = na_action))
-    if (!is.null(add)) out <- .hm_bind_new_cols(out, add)
+    if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("cardio" %in% which) {
@@ -362,31 +417,28 @@ metabolic_markers <- function(
   if ("lipid" %in% which) {
     add <- .hm_safe_call(lipid_markers, out, col_map, FALSE, verbose, "lipid",
                          list(verbose = verbose, na_action = na_action))
-    if (!is.null(add)) out <- .hm_bind_new_cols(out, add)
+    if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("liver" %in% which) {
     out2 <- .hm_prepare_for_group(out, "liver")
-    if ("triglycerides" %in% names(out2) && !("triglycerides" %in% names(out))) {
-      out$triglycerides <- out2$triglycerides
-    }
     add <- .hm_safe_call(liver_markers, out2, col_map, FALSE, verbose, "liver",
                          list(verbose = verbose, na_action = na_action))
-    if (!is.null(add)) out <- .hm_bind_new_cols(out, add)
+    if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("glycemic" %in% which) {
     add <- .hm_safe_call(glycemic_markers, out, col_map, FALSE, verbose, "glycemic",
                          list(verbose = verbose, na_action = na_action))
-    if (!is.null(add)) out <- .hm_bind_new_cols(out, add)
+    if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("mets" %in% which) {
     out_m <- .hm_prepare_for_group(out, "mets")
     mets_add <- .hm_safe_call(metss, out_m, col_map, FALSE, verbose, "mets",
                               list(verbose = verbose, na_warn_prop = 0, na_action = na_action))
-    if (is.null(mets_add)) mets_add <- .hm_mets_fallback(out_m)
-    if (!is.null(mets_add)) out <- .hm_bind_new_cols(out, mets_add)
+    if (!is.data.frame(mets_add)) mets_add <- .hm_mets_fallback(out_m)
+    if (is.data.frame(mets_add)) out <- .hm_bind_new_cols(out, mets_add)
   }
 
   out
@@ -456,17 +508,59 @@ all_health_markers <- function(
   na_action <- match.arg(na_action)
   hm_inform("all_health_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
+  reg <- .hm_marker_registry(verbose = isTRUE(verbose))
+  reg_names <- names(reg)
+
+  if (identical(which, "all")) {
+    # Exclude alias entries that duplicate another group's function call
+    which_vec <- setdiff(reg_names, c("atherogenic_indices", "cvd_risk"))
+  } else {
+    unknown <- setdiff(which, reg_names)
+    if (length(unknown)) {
+      rlang::abort(
+        paste0("Unknown marker group(s): ", paste(unknown, collapse = ", ")),
+        class = "healthmarkers_health_markers_error_unknown_group"
+      )
+    }
+    which_vec <- which
+  }
+
   # Auto-infer col_map if not supplied
   if (missing(col_map) || is.null(col_map)) {
     patterns <- .hm_default_col_patterns_exact()
+    req_keys <- .hm_group_required_keys(which_vec, include_insulin = include_insulin)
+    required <- intersect(names(patterns), req_keys)
 
-    required <- c("TG","HDL_c","LDL_c","TC","BMI","age","sex")
-
-    col_map <- hm_infer_cols(
-      data,
-      patterns      = patterns,
-      required_keys = intersect(names(patterns), required),
-      verbose       = isTRUE(verbose)
+    col_map <- tryCatch(
+      hm_infer_cols(
+        data,
+        patterns      = patterns,
+        required_keys = required,
+        verbose       = isTRUE(verbose)
+      ),
+      error = function(e) {
+        hm_inform(level = "debug", msg = sprintf("hm_infer_cols fallback to infer_cols(): %s", conditionMessage(e)))
+        if (!length(required)) rlang::abort(e)
+        spec <- stats::setNames(vector("list", length(required)), required)
+        fallback <- infer_cols(
+          data,
+          map       = spec,
+          patterns  = NULL,
+          prefer    = NULL,
+          strategy  = "prefer",
+          strict    = FALSE,
+          verbose   = isTRUE(verbose),
+          return    = "map"
+        )
+        missing_required <- required[vapply(fallback[required], function(x) is.null(x) || is.na(x), logical(1))]
+        if (length(missing_required)) {
+          rlang::abort(
+            sprintf("all_health_markers(): could not infer required columns for: %s", paste(missing_required, collapse = ", ")),
+            class = "healthmarkers_health_markers_error_infer"
+          )
+        }
+        fallback
+      }
     )
   }
 
@@ -487,23 +581,6 @@ all_health_markers <- function(
     )
   }
 
-  reg <- .hm_marker_registry(verbose = isTRUE(verbose))
-  reg_names <- names(reg)
-
-  if (identical(which, "all")) {
-    # Exclude alias entries that duplicate another group's function call
-    which_vec <- setdiff(reg_names, c("atherogenic_indices", "cvd_risk"))
-  } else {
-    unknown <- setdiff(which, reg_names)
-    if (length(unknown)) {
-      rlang::abort(
-        paste0("Unknown marker group(s): ", paste(unknown, collapse = ", ")),
-        class = "healthmarkers_health_markers_error_unknown_group"
-      )
-    }
-    which_vec <- which
-  }
-
   out <- data
   group_status <- list()
 
@@ -517,32 +594,26 @@ all_health_markers <- function(
         na_action = na_action
       )
     )
-    if (!is.null(ins)) {
-      out <- .hm_bind_new_cols(out, ins)
-      group_status[["insulin_panel"]] <- "ok"
-    } else {
-      group_status[["insulin_panel"]] <- "skipped_or_failed"
-    }
+    status <- list(state = if (is.data.frame(ins)) "ok" else "skipped_or_failed",
+                   message = attr(ins, "hm_error", exact = TRUE),
+                   missing_pkg = attr(ins, "hm_missing_pkg", exact = TRUE))
+    if (is.data.frame(ins)) out <- .hm_bind_new_cols(out, ins)
+    group_status[["insulin_panel"]] <- status
   }
 
   for (grp in which_vec) {
     if (isTRUE(include_insulin) && startsWith(grp, "insulin_")) {
-      group_status[[grp]] <- "skipped (covered by insulin_panel)"
+      group_status[[grp]] <- list(state = "skipped", message = "covered by insulin_panel", missing_pkg = NULL)
       next
     }
 
     entry <- reg[[grp]]
     if (is.null(entry)) {
-      group_status[[grp]] <- "skipped (not in registry)"
+      group_status[[grp]] <- list(state = "skipped", message = "not in registry", missing_pkg = NULL)
       next
     }
 
     data2 <- .hm_prepare_for_group(out, grp)
-    if (identical(grp, "liver") &&
-        "triglycerides" %in% names(data2) &&
-        !("triglycerides" %in% names(out))) {
-      out$triglycerides <- data2$triglycerides
-    }
     addon <- .hm_safe_call(
       entry$fun, data2, col_map, entry$needs_col_map, verbose, grp,
       extra_args = list(
@@ -551,28 +622,31 @@ all_health_markers <- function(
         normalize = normalize
       )
     )
-    if (!is.null(addon)) {
-      out <- .hm_bind_new_cols(out, addon)
-      group_status[[grp]] <- "ok"
-    } else {
-      group_status[[grp]] <- "skipped_or_failed"
-    }
+    status <- list(state = if (is.data.frame(addon)) "ok" else "skipped_or_failed",
+                   message = attr(addon, "hm_error", exact = TRUE),
+                   missing_pkg = attr(addon, "hm_missing_pkg", exact = TRUE))
+    if (is.data.frame(addon)) out <- .hm_bind_new_cols(out, addon)
+    group_status[[grp]] <- status
   }
 
   if (isTRUE(verbose) && length(group_status)) {
-    ok    <- names(group_status)[group_status == "ok"]
-    other <- names(group_status)[group_status != "ok"]
+    ok <- names(group_status)[vapply(group_status, function(x) identical(x$state, "ok"), logical(1))]
+    other <- names(group_status)[vapply(group_status, function(x) !identical(x$state, "ok"), logical(1))]
 
     parts <- character()
     if (length(ok)) {
       parts <- c(parts, sprintf("computed: %s", paste(ok, collapse = ", ")))
     }
     if (length(other)) {
-      detail <- paste(
-        sprintf("%s (%s)", other, unlist(group_status[other])),
-        collapse = "; "
-      )
-      parts <- c(parts, sprintf("skipped/failed: %s", detail))
+      detail <- vapply(other, function(nm) {
+        st <- group_status[[nm]]
+        extras <- c(
+          if (!is.null(st$missing_pkg)) sprintf("missing package: %s", st$missing_pkg) else NULL,
+          if (!is.null(st$message)) sprintf("error: %s", st$message) else NULL
+        )
+        if (length(extras)) sprintf("%s (%s)", nm, paste(extras, collapse = "; ")) else nm
+      }, character(1))
+      parts <- c(parts, sprintf("skipped/failed: %s", paste(detail, collapse = "; ")))
     }
 
     if (length(parts)) {

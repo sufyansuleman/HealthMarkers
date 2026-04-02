@@ -6,9 +6,9 @@
 \usage{
 liver_markers(
   data,
-  col_map = list(BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT =
-    "GGT", age = "age", AST = "AST", ALT = "ALT", platelets = "platelets", albumin =
-    "albumin", diabetes = "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
+  col_map = list(BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT", age = "age", AST =
+    "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes =
+    "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
@@ -22,7 +22,7 @@ liver_markers(
 
 \item{col_map}{Named list mapping these keys -> column names in \code{data}:
 \itemize{
-\item \code{BMI} (kg/m^2), \code{waist} (cm), \code{triglycerides} (mg/dL), \code{GGT} (U/L),
+\item \code{BMI} (kg/m^2), \code{waist} (cm), \code{TG} (mg/dL), \code{GGT} (U/L),
 \item \code{age} (years), \code{AST} (U/L), \code{ALT} (U/L), \code{platelets} (10^9/L),
 \item \code{albumin} (g/L), \code{diabetes} (0/1 or logical),
 \item \code{bilirubin} (mg/dL), \code{creatinine} (mg/dL).
@@ -94,7 +94,7 @@ library(tibble)
 df <- tibble(
   BMI           = 24,
   waist         = 80,
-  triglycerides = 150, # mg/dL
+  TG = 150, # mg/dL
   GGT           = 30,
   age           = 45,
   AST           = 25,

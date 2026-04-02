@@ -20,6 +20,9 @@ psych_med_flags(
 
 \item{na_action}{How to handle rows with missing items: \code{keep}, \code{omit}, or \code{error}.}
 }
+\value{
+A tibble of flag columns only: \code{med_any_psych}, \code{med_count}. Input columns are not included.
+}
 \description{
 Psychiatric medication flags aggregator
 }

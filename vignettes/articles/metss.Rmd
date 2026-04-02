@@ -1,0 +1,164 @@
+---
+title: "MetSS"
+output: rmarkdown::html_vignette
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+
+Compute the Metabolic Syndrome Severity Score (MetSSS) using sex- and race-specific coefficients, with configurable NA/extreme handling and plausibility diagnostics.
+
+## When to use
+
+- You have waist, blood pressure, fasting lipids/glucose, sex, and race and want a continuous MetS severity score.
+- You need built-in NA policies, high-missingness warnings, and optional extreme-value scanning/capping.
+- You are okay with a single parameter key (race/sex) applied to all rows—matching the original implementation.
+
+## Inputs
+
+- `data`: data.frame/tibble with `waist` (cm), `bp_sys`/`bp_dia` (mmHg), `TG`/`HDL_c`/`glucose` (mmol/L), `sex` (1=male, 2=female), `race` in {NHW, NHB, HW, HA} or accepted synonyms.
+- `params`: named list keyed by `RACE_SEX` (e.g., `NHW_M`), each with `intercept` and component vectors (`waist`, `TG`, `HDL`, `glucose`, `MAP`) containing `mean`, `sd`, `coef`.
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows missing required inputs; `error` aborts; `ignore`/`warn` act like keep (`warn` also adds high-missingness warnings via `na_warn_prop`).
+- `check_extreme`: set TRUE to scan inputs; `extreme_action` (`warn`/`cap`/`error`/`ignore`/`NA`) controls handling. Defaults (cm, mmHg, mmol/L): waist 40–200; bp_sys 60–300; bp_dia 30–200; TG 0–20; HDL_c 0–5; glucose 0–40. Override with `extreme_rules`.
+- `diagnostics`: if TRUE (default), warns on implausible ranges and invalid sex/race encodings.
+- `verbose`: log progress and summary.
+
+## Quick start
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+mets <- tibble::tibble(
+  waist = c(95, 108),
+  bp_sys = c(120, 138),
+  bp_dia = c(80, 86),
+  TG = c(1.5, 2.1),
+  HDL_c = c(1.2, 0.9),
+  glucose = c(5.5, 6.2),
+  sex = c(1, 1),
+  race = c("NHW", "NHW")
+)
+
+metss(
+  data = mets,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  na_action = "keep"
+)
+```
+
+## Screen extremes and cap
+
+```{r}
+extreme <- mets
+extreme$TG[2] <- 25       # high TG
+extreme$bp_sys[1] <- 400  # out of range
+
+metss(
+  data = extreme,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  na_action = "warn",
+  check_extreme = TRUE,
+  extreme_action = "cap",
+  diagnostics = TRUE,
+  verbose = TRUE
+)
+```
+
+## Missing data policy
+
+```{r}
+missing <- mets
+missing$HDL_c[1] <- NA
+
+metss(
+  data = missing,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  na_action = "omit"
+)
+
+metss(
+  data = missing,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  na_action = "warn"
+)
+```
+
+## Outputs and expectations
+
+- Returns a tibble with `MetSSS` using a single race/sex key derived from the first row (warns if multiple keys present).
+- `na_action = "omit"` drops rows missing required inputs; otherwise missing inputs propagate `NA` into `MetSSS`.
+- Extreme handling can cap/NA/warn/error; diagnostics run independently and can still warn after capping.
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+metss(
+  data = mets,
+  params = list(
+    NHW_M = list(
+      intercept = -2.344,
+      waist   = c(mean = 94.0, sd = 12.4, coef = 0.846),
+      TG      = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
+      HDL     = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
+      glucose = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
+      MAP     = c(mean = 97,   sd = 11,   coef = 0.466)
+    )
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
+## Tips
+
+- Confirm sex encoded as 1/2 and race matches a `params` key; only the first-row key is used.
+- Keep units consistent (waist cm, BP mmHg, lipids/glucose mmol/L); no unit conversion occurs here.
+- Tighten `extreme_rules` to your cohort before using `extreme_action = "cap"` or `"error"`.
+- Leave `diagnostics = TRUE` during QA to catch implausible ranges; silence only if needed for tests.

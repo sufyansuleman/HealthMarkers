@@ -57,31 +57,15 @@ liver_fat_markers <- function(data,
                               extreme_action = c("warn", "cap", "error", "ignore", "NA"),
                               extreme_rules = NULL,
                               verbose = FALSE) {
-  na_action_raw <- match.arg(na_action)
-  na_action_eff <- if (na_action_raw %in% c("ignore", "warn"))
-    "keep"
-  else
-    na_action_raw
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
   
   # Validate required mapping and data
-  if (!is.data.frame(data))
-    rlang::abort("liver_fat_markers(): `data` must be a data.frame or tibble.")
   req <- c("ALT", "AST", "BMI")
-  missing_keys <- setdiff(req, names(col_map))
-  if (length(missing_keys))
-    rlang::abort(paste(
-      "liver_fat_markers(): missing required columns:",
-      paste(missing_keys, collapse = ", ")
-    ))
+  hm_validate_inputs(data, col_map, required_keys = req, fn = "liver_fat_markers")
   mapped_req <- unname(unlist(col_map[req]))
-  if (any(!nzchar(mapped_req))) {
-    bad <- req[!nzchar(mapped_req)]
-    rlang::abort(paste(
-      "liver_fat_markers(): missing required columns:",
-      paste(bad, collapse = ", ")
-    ))
-  }
   miss <- setdiff(mapped_req, names(data))
   if (length(miss))
     rlang::abort(paste(

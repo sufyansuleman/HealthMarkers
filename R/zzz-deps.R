@@ -6,12 +6,16 @@
 )
 
 # Require exactly one package (runtime gate)
+# Emits a typed condition so .hm_safe_call()'s handle_error can read e$package
+# without needing regex on the message string.
 .need_pkg <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    rlang::abort(sprintf(
-      "Package '%s' is required for this feature. Install it first.",
-      pkg
-    ))
+  ok <- suppressMessages(suppressWarnings(requireNamespace(pkg, quietly = TRUE)))
+  if (!ok) {
+    rlang::abort(
+      sprintf("Package '%s' is required for this feature. Install it first.", pkg),
+      class = "healthmarkers_missing_package",
+      package = pkg
+    )
   }
 }
 

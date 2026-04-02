@@ -39,8 +39,9 @@ sarc_f_score <- function(
   extreme_action = c("warn","cap","error","ignore","NA"),
   extreme_rules = NULL
 ) {
-  na_action_raw <- match.arg(na_action)
-  na_action_eff <- if (na_action_raw %in% c("ignore","warn")) "keep" else na_action_raw
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) {

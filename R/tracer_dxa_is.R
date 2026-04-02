@@ -83,11 +83,6 @@ tracer_dxa_is <- function(data, col_map,
     rlang::abort("tracer_dxa_is(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_tracer_error_data_type")
   }
-  if (!is.list(col_map) || is.null(names(col_map)) || any(names(col_map) == "")) {
-    rlang::abort("tracer_dxa_is(): `col_map` must be a named list mapping keys to column names.",
-                 class = "healthmarkers_tracer_error_colmap_type")
-  }
-
   if (isTRUE(verbose)) hm_inform("tracer_dxa_is(): preparing inputs", level = "inform")
   else hm_inform("tracer_dxa_is(): preparing inputs", level = "debug")
 
@@ -100,15 +95,6 @@ tracer_dxa_is <- function(data, col_map,
 
   required_keys <- if (adipose_only) adipose_keys else full_keys
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "tracer_dxa_is")
-
-  # Validate col_map has required keys
-  missing_map <- setdiff(required_keys, names(col_map))
-  if (length(missing_map)) {
-    rlang::abort(
-      paste0("tracer_dxa_is(): missing `col_map` entries for: ", paste(missing_map, collapse = ", ")),
-      class = "healthmarkers_tracer_error_missing_map"
-    )
-  }
 
   # Validate data contains the mapped columns
   mapped_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))

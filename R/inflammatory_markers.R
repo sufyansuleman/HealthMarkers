@@ -21,7 +21,9 @@
 #' @param col_map named list mapping keys to column names in `data`.
 #'   Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR.
 #' @param panel one of c("auto","classic","eos","both"). "auto" uses presence of eosinophils key.
-#' @param na_action one of c("error","omit","keep")
+#' @param na_action one of c("keep","omit","error"). Default "keep" propagates NA
+#'   in outputs where inputs are missing. "omit" drops rows with any NA in required
+#'   inputs. "error" aborts if required inputs contain NA.
 #' @param check_extreme logical; if TRUE, handle extremes per `extreme_action`
 #' @param extreme_action one of c("warn","cap","error","ignore","NA")
 #' @param verbose logical; if TRUE, prints progress messages via hm_inform
@@ -55,7 +57,7 @@
 #' @export
 inflammatory_markers <- function(data, col_map,
                                  panel = c("auto","classic","eos","both"),
-                                 na_action = c("error","omit","keep"),
+                                 na_action = c("keep","omit","error"),
                                  check_extreme = FALSE,
                                  extreme_action = c("warn","cap","error","ignore","NA"),
                                  verbose = FALSE) {

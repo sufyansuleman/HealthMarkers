@@ -154,7 +154,8 @@ ogtt_is <- function(data,
   wt   <- data[[col_map$weight]]
   bmi  <- data[[col_map$bmi]]
   age  <- data[[col_map$age]]
-  sex  <- data[[col_map$sex]]
+  # Normalize sex to 1=male, 0=female for formula use
+  sex  <- .hm_normalize_sex(data[[col_map$sex]], to = "10", fn = "ogtt_is")
 
   hm_inform("ogtt_is(): computing indices", level = "debug")
 

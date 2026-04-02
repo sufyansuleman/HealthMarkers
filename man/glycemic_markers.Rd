@@ -94,6 +94,14 @@ Quality controls and options:
 \item Verbose mode prints step-by-step progress and a completion summary.
 }
 
+Optional marker detection:
+When \code{col_map = NULL} (default), an identity map for all 10 keys is built
+automatically. The seven optional keys (glucose, HbA1c, C_peptide, G0, I0,
+leptin, adiponectin) are computed only when the corresponding column exists
+in \code{data}. When \code{verbose = TRUE}, any optional markers whose columns are
+absent are listed in an informational message so the caller knows which
+derived metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+
 Notes on HOMA_CP:
 \itemize{
 \item This function retains the package's existing operational formula:

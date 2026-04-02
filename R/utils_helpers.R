@@ -1,24 +1,49 @@
 # HM-CS v2 utilities
+# Note: hm_inform() and hm_get_verbosity() are defined in zzz-options.R (canonical).
 
-#' Emit package messages honoring options(healthmarkers.verbose)
-#' @param level "inform" or "debug"
-#' @param msg character(1)
-#' @keywords internal
-hm_inform <- function(level = c("inform", "debug"), msg) {
-  level <- match.arg(level)
-  vopt <- getOption("healthmarkers.verbose", default = "none")
-  if (isTRUE(vopt)) vopt <- "inform"
-  if (identical(vopt, FALSE) || is.null(vopt)) vopt <- "none"
-
-  emit <- switch(
-    vopt,
-    "debug"  = TRUE,
-    "inform" = identical(level, "inform"),
-    "none"   = FALSE,
-    default  = FALSE
+# Canonical sex normalizer ----------------------------------------------------
+# Maps any sex encoding to a consistent output:
+#   "MF"  -> "M" or "F"
+#   "12"  -> 1L (male) or 2L (female)   [ogtt_is, metss, kidney_failure_risk]
+#   "10"  -> 1L (male) or 0L (female)   [renal_markers, cvd_risk]
+#   "01"  -> 0L (male) or 1L (female)   [obesity_indices RFM]
+#
+# Accepted inputs (case-insensitive):
+#   Male   : "m", "male", "1"
+#   Female : "f", "female", "2", "0"
+#   (Convention: when "0" or "2" are mixed, "1" always = male per package default)
+#
+# @keywords internal
+.hm_normalize_sex <- function(x, to = c("MF", "12", "10", "01"), fn = NULL) {
+  to <- match.arg(to)
+  s  <- trimws(tolower(as.character(x)))
+  mf <- ifelse(s %in% c("m", "male", "1"),          "M",
+        ifelse(s %in% c("f", "female", "2", "0"),   "F", NA_character_))
+  bad <- sum(is.na(mf) & !is.na(x) & nchar(trimws(as.character(x))) > 0)
+  if (bad > 0L && !is.null(fn))
+    hm_inform(level = "debug",
+              msg   = sprintf("%s(): 'sex' has %d unrecognized value(s); treated as NA.", fn, bad))
+  switch(to,
+    "MF" = mf,
+    "12" = ifelse(mf == "M", 1L, ifelse(mf == "F", 2L, NA_integer_)),
+    "10" = ifelse(mf == "M", 1L, ifelse(mf == "F", 0L, NA_integer_)),
+    "01" = ifelse(mf == "M", 0L, ifelse(mf == "F", 1L, NA_integer_))
   )
-  if (emit) rlang::inform(as.character(msg))
-  invisible(NULL)
+}
+
+#' Normalise na_action aliases to canonical values
+#'
+#' Converts the backward-compat aliases "ignore" and "warn" to "keep" so that
+#' the rest of each function only needs to handle c("keep","omit","error").
+#' Returns a list with:
+#'   - na_action_eff: the canonical value ("keep", "omit", or "error")
+#'   - na_action_raw: the original matched value (for warn-diagnostic checks)
+#'
+#' @param na_action character(1) already matched via match.arg()
+#' @keywords internal
+.hm_normalize_na_action <- function(na_action) {
+  na_action_eff <- if (na_action %in% c("ignore", "warn")) "keep" else na_action
+  list(na_action_raw = na_action, na_action_eff = na_action_eff)
 }
 
 #' HM-CS v2 input validation hook

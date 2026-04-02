@@ -40,8 +40,9 @@ frax_score <- function(
     country <- as.character(country)[1L]
   }
 
-  na_action_raw <- match.arg(na_action)
-  na_action_eff <- if (na_action_raw %in% c("ignore","warn")) "keep" else na_action_raw
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   # Validate inputs
@@ -160,12 +161,14 @@ frax_score <- function(
   # Domain warnings (suppress during extreme scan)
   if (!isTRUE(check_extreme)) {
     if (any(is.finite(d_age) & (d_age < 40 | d_age > 90))) {
-      rlang::warn("frax_score(): age outside typical FRAX range (40-90 years) detected.",
-                  class = "healthmarkers_frax_warn_age_range")
+      rlang::warn(
+        "frax_score(): age outside typical FRAX range (40-90 years) detected.",
+        class = "healthmarkers_frax_warn_age_range"
+      )
     }
     if (!is.null(d_bmd) && any(is.finite(d_bmd) & (d_bmd < -6 | d_bmd > 2))) {
-      rlang::warn("frax_score(): BMD T-scores outside plausible range (-6 to +2) detected.",
-                  class = "healthmarkers_frax_warn_bmd_range")
+      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
+                msg   = "frax_score(): BMD T-scores outside plausible range (-6 to +2) detected.")
     }
   }
 

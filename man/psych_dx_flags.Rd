@@ -20,6 +20,9 @@ psych_dx_flags(
 
 \item{na_action}{How to handle rows with missing items: \code{keep}, \code{omit}, or \code{error}.}
 }
+\value{
+A tibble of flag columns only: \code{dx_any_psych}, \code{dx_internalizing}, \code{dx_externalizing}, \code{dx_psychotic}, \code{dx_count}. Input columns are not included.
+}
 \description{
 Psychiatric diagnosis flags aggregator
 }

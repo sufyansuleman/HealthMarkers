@@ -138,6 +138,12 @@ cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "keep")
 cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "omit")
 ```
 
+> **`na_action` aliases:** `"ignore"` is a backward-compatible alias for `"keep"` (same
+> behavior; retained so older code continues to work). `"warn"` is also an alias for
+> `"keep"` that additionally emits a missingness warning. If you are reading another
+> function's help page and see `"ignore"` listed first in the choices, it behaves
+> identically to `"keep"`.
+
 If you want to impute before computing markers:
 
 ```{r, eval = FALSE}
@@ -161,6 +167,27 @@ sweat <- sweat_markers(sim_small, check_extreme = TRUE, extreme_action = "warn")
 sweat_new <- setdiff(names(sweat), names(sim_small))
 head(dplyr::select(sweat, dplyr::all_of(sweat_new)))
 ```
+
+## Verbose mode: skipped optional markers
+
+When a function supports optional inputs (columns that extend outputs when present),
+set `verbose = TRUE` to see which optional markers were not computed because their
+columns were absent from the data. This helps you distinguish "column not found"
+from "marker intentionally absent".
+
+```{r}
+# Provide only required columns; optional columns are absent
+glyc_min <- sim_small[, c("HDL_c", "TG", "BMI")]
+
+# verbose = TRUE lists which optional markers were skipped
+glyc_out <- glycemic_markers(glyc_min, verbose = TRUE)
+```
+
+The informational message lists all optional keys (glucose, HbA1c, C_peptide, G0,
+I0, leptin, adiponectin) that had no matching column, so the caller knows which
+derived metrics (e.g., prediabetes flag, HOMA_CP, LAR) will be `NA` in the output.
+Once you add those columns to your data, the message disappears and the metrics
+are computed automatically.
 
 ## Common functions
 ### Cardio-metabolic 
@@ -209,4 +236,7 @@ out_path
 ## Next steps
 - Explore focused vignettes for insulin sensitivity, cardio-renal panels, and frailty.
 - See individual help pages (e.g., `?fasting_is`, `?cvd_risk`, `?frailty_index`) for detailed arguments and references.
+
+> **All 46 domain vignettes** are available on the package website — only 12 core vignettes are bundled with the CRAN package.  
+> Browse the full collection at <https://sufyansuleman.github.io/HealthMarkers/articles/>
 

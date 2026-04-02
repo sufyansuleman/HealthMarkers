@@ -11,9 +11,20 @@ df <- tibble(
 )
 col_map <- list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
 
-# 1) Default weights: should compute equal-weight sum (omit NAs by default)
-test_that("iAge computes correct weighted sum with default weights", {
-  out <- suppressWarnings(iAge(df, col_map = col_map))
+# 1) Default na_action='keep': NAs propagate to output
+test_that("iAge default na_action='keep' propagates NA", {
+  out <- iAge(df, col_map = col_map)
+  # Row 2: IL6 is NA -> iAge should be NA
+  expect_true(is.na(out$iAge[2]))
+  # Row 3: CRP is NA -> iAge should be NA
+  expect_true(is.na(out$iAge[3]))
+  # Row 1: all present -> numeric
+  expect_equal(out$iAge[1], 0.33 * 1.0 + 0.33 * 5.0 + 0.34 * 1.5)
+})
+
+# 1b) With na_action='omit': NAs treated as 0
+test_that("iAge computes correct weighted sum with na_action='omit'", {
+  out <- suppressWarnings(iAge(df, col_map = col_map, na_action = "omit"))
   expected <- rowSums(cbind(
     0.33 * df$CRP,
     0.33 * df$IL6,
@@ -27,7 +38,7 @@ test_that("iAge computes correct weighted sum with default weights", {
 # 2) Custom weights
 test_that("iAge respects custom weights and sums to correct values", {
   w <- c(CRP = 0.5, IL6 = 0.3, TNFa = 0.2)
-  out2 <- suppressWarnings(iAge(df, col_map = col_map, weights = w))
+  out2 <- suppressWarnings(iAge(df, col_map = col_map, weights = w, na_action = "omit"))
   expected2 <- rowSums(cbind(
     0.5 * df$CRP,
     0.3 * df$IL6,
@@ -39,7 +50,7 @@ test_that("iAge respects custom weights and sums to correct values", {
 # 3) NA handling: if all markers NA for a row, sum gives 0 (omit)
 test_that("iAge NA handling gives zero for all-NA row with na_action='omit'", {
   df_na <- tibble(CRP = NA_real_, IL6 = NA_real_, TNFa = NA_real_)
-  out3 <- suppressWarnings(iAge(df_na, col_map = col_map))
+  out3 <- suppressWarnings(iAge(df_na, col_map = col_map, na_action = "omit"))
   expect_equal(out3$iAge, 0)
 })
 

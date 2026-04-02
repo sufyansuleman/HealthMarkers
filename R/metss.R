@@ -8,8 +8,8 @@
 #' race-specific standardized components and coefficients (factor-loading style).
 #'
 #' Behavior note:
-#'  - Parameters are selected using ONLY the first row's (race, sex) key
-#'    (for backward compatibility). A warning is issued if multiple keys present.
+#'  - Parameters are selected per-row based on each row's (race, sex) key.
+#'  - All unique keys present in the data must have a matching entry in `params`.
 #'
 #' Required columns (no unit conversion performed):
 #'  - waist (cm), bp_sys (mmHg), bp_dia (mmHg)
@@ -52,10 +52,50 @@ metss <- function(data,
                     NHW_M = list(
                       intercept = -2.344,
                       waist     = c(mean = 94.0, sd = 12.4, coef = 0.846),
-                      TG        = c(mean = 1.5,  sd = 0.6,  coef = 0.701),
-                      HDL       = c(mean = 1.1,  sd = 0.3,  coef = -0.663),
-                      glucose   = c(mean = 5.3,  sd = 0.6,  coef = 0.658),
-                      MAP       = c(mean = 97,   sd = 11,   coef = 0.466)
+                      TG        = c(mean = 1.50, sd = 0.60, coef = 0.701),
+                      HDL       = c(mean = 1.10, sd = 0.30, coef = -0.663),
+                      glucose   = c(mean = 5.30, sd = 0.60, coef = 0.658),
+                      MAP       = c(mean = 97.0, sd = 11.0, coef = 0.466)
+                    ),
+                    NHW_F = list(
+                      intercept = -2.381,
+                      waist     = c(mean = 89.7, sd = 14.8, coef = 0.817),
+                      TG        = c(mean = 1.28, sd = 0.91, coef = 0.679),
+                      HDL       = c(mean = 1.50, sd = 0.40, coef = -0.727),
+                      glucose   = c(mean = 5.08, sd = 0.52, coef = 0.622),
+                      MAP       = c(mean = 91.0, sd = 11.0, coef = 0.557)
+                    ),
+                    NHB_M = list(
+                      intercept = -2.399,
+                      waist     = c(mean = 92.8, sd = 13.1, coef = 0.830),
+                      TG        = c(mean = 1.18, sd = 0.75, coef = 0.551),
+                      HDL       = c(mean = 1.27, sd = 0.37, coef = -0.598),
+                      glucose   = c(mean = 5.55, sd = 0.85, coef = 0.702),
+                      MAP       = c(mean = 98.0, sd = 13.0, coef = 0.564)
+                    ),
+                    NHB_F = list(
+                      intercept = -2.395,
+                      waist     = c(mean = 96.4, sd = 16.4, coef = 0.858),
+                      TG        = c(mean = 1.14, sd = 0.70, coef = 0.570),
+                      HDL       = c(mean = 1.36, sd = 0.39, coef = -0.634),
+                      glucose   = c(mean = 5.42, sd = 0.84, coef = 0.687),
+                      MAP       = c(mean = 95.0, sd = 13.0, coef = 0.577)
+                    ),
+                    HW_M = list(
+                      intercept = -2.377,
+                      waist     = c(mean = 98.5, sd = 11.5, coef = 0.864),
+                      TG        = c(mean = 1.95, sd = 1.19, coef = 0.724),
+                      HDL       = c(mean = 1.13, sd = 0.30, coef = -0.620),
+                      glucose   = c(mean = 5.67, sd = 0.90, coef = 0.624),
+                      MAP       = c(mean = 97.0, sd = 11.0, coef = 0.448)
+                    ),
+                    HW_F = list(
+                      intercept = -2.388,
+                      waist     = c(mean = 97.9, sd = 14.2, coef = 0.858),
+                      TG        = c(mean = 1.66, sd = 1.06, coef = 0.715),
+                      HDL       = c(mean = 1.29, sd = 0.35, coef = -0.657),
+                      glucose   = c(mean = 5.53, sd = 0.87, coef = 0.644),
+                      MAP       = c(mean = 91.0, sd = 11.0, coef = 0.512)
                     )
                   ),
                   verbose = FALSE,
@@ -66,9 +106,9 @@ metss <- function(data,
                   extreme_rules = NULL,
                   diagnostics = TRUE) {
 
-  na_action <- match.arg(na_action)
-  na_action_raw <- na_action
-  if (na_action %in% c("ignore","warn")) na_action <- "keep"
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
   hm_inform("metss(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
@@ -180,42 +220,48 @@ metss <- function(data,
     }
   }
 
-  # Key derivation
+  # Per-row key derivation
   key_vec <- .metss_key_from_data(data)
-  if (length(unique(key_vec)) > 1L) {
-    rlang::warn(sprintf(
-      "metss(): multiple sex/race keys detected (%s); using '%s' for all rows (first row).",
-      paste(unique(key_vec), collapse = ", "), key_vec[1]
-    ))
-  }
-  key <- key_vec[1]
-  if (!key %in% names(params)) {
+  unique_keys <- unique(key_vec[!is.na(key_vec)])
+  missing_keys <- setdiff(unique_keys, names(params))
+  if (length(missing_keys)) {
     rlang::abort(
-      sprintf("metss(): params does not contain a key '%s'. Available: %s",
-              key, paste(names(params), collapse = ", ")),
+      sprintf("metss(): params missing keys for: %s. Available: %s",
+              paste(missing_keys, collapse = ", "),
+              paste(names(params), collapse = ", ")),
       class = "healthmarkers_metss_error_missing_param_key"
     )
   }
-  p <- params[[key]]
-  .metss_validate_param_entry(p, key)
-
+  if (length(unique_keys) > 1L) {
+    rlang::warn(
+      sprintf("metss(): multiple sex/race keys detected (%s); computing per-row using matched params.",
+              paste(unique_keys, collapse = ", ")),
+      class = "healthmarkers_metss_warn_multiple_keys"
+    )
+  }
   hm_inform("metss(): computing score", level = "debug")
 
-  # MAP
   MAP <- (2 * data$bp_dia + data$bp_sys) / 3
+  MetSSS <- rep(NA_real_, nrow(data))
 
-  z_waist <- (data$waist   - p$waist["mean"])   / p$waist["sd"]
-  z_TG    <- (data$TG      - p$TG["mean"])      / p$TG["sd"]
-  z_HDL   <- (data$HDL_c   - p$HDL["mean"])     / p$HDL["sd"]
-  z_glu   <- (data$glucose - p$glucose["mean"]) / p$glucose["sd"]
-  z_MAP   <- (MAP          - p$MAP["mean"])     / p$MAP["sd"]
+  for (k in unique_keys) {
+    idx <- which(key_vec == k)
+    p <- params[[k]]
+    .metss_validate_param_entry(p, k)
 
-  MetSSS <- p$intercept +
-    p$waist["coef"]   * z_waist +
-    p$TG["coef"]      * z_TG +
-    p$HDL["coef"]     * z_HDL +
-    p$glucose["coef"] * z_glu +
-    p$MAP["coef"]     * z_MAP
+    z_waist <- (data$waist[idx]   - p$waist["mean"])   / p$waist["sd"]
+    z_TG    <- (data$TG[idx]      - p$TG["mean"])      / p$TG["sd"]
+    z_HDL   <- (data$HDL_c[idx]   - p$HDL["mean"])     / p$HDL["sd"]
+    z_glu   <- (data$glucose[idx] - p$glucose["mean"]) / p$glucose["sd"]
+    z_MAP   <- (MAP[idx]          - p$MAP["mean"])     / p$MAP["sd"]
+
+    MetSSS[idx] <- p$intercept +
+      p$waist["coef"]   * z_waist +
+      p$TG["coef"]      * z_TG +
+      p$HDL["coef"]     * z_HDL +
+      p$glucose["coef"] * z_glu +
+      p$MAP["coef"]     * z_MAP
+  }
 
   out <- tibble::tibble(MetSSS = as.numeric(MetSSS))
 
@@ -267,8 +313,7 @@ metss <- function(data,
                  ifelse(race_raw %in% c("NHB","BLACK"), "NHB",
                    ifelse(race_raw %in% c("HW","HISPANIC","H/L"), "HW",
                      ifelse(race_raw %in% c("HA","ASIAN"), "HA", race_raw))))
-  sex_norm <- ifelse(data$sex == 1, "M",
-                ifelse(data$sex == 2, "F", NA_character_))
+  sex_norm <- .hm_normalize_sex(data$sex, to = "MF")
   paste0(race_norm, "_", sex_norm)
 }
 .metss_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
@@ -291,8 +336,8 @@ metss <- function(data,
   bad_sex <- sum(is.finite(df$sex) & !(df$sex %in% c(1,2)))
   if (bad_sex > 0) rlang::warn(sprintf("metss(): 'sex' has %d values not in {1,2}.", bad_sex))
   race_raw <- toupper(as.character(df$race))
-  bad_race <- sum(!(race_raw %in% c("NHW","NHB","HW","HA","WHITE","BLACK","HISPANIC","H/L","ASIAN")))
-  if (bad_race > 0) rlang::warn(sprintf("metss(): 'race' has %d unrecognized values.", bad_race))
+  bad_race <- sum(!(race_raw %in% c("NHW","NHB","HW","HA","WHITE","BLACK","HISPANIC","H/L","ASIAN","OTHER")))
+  if (bad_race > 0) hm_inform(level = "debug", msg = sprintf("metss(): 'race' has %d unrecognized values.", bad_race))
   invisible(TRUE)
 }
 .chk_nonneg <- function(x,label){

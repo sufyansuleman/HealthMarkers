@@ -16,6 +16,7 @@
 #'   - "keep"  (retain all rows; indices become NA where inputs missing/non-finite)
 #'   - "omit"  (drop rows with any missing/non-finite required inputs)
 #'   - "error" (abort if any required input is missing/non-finite)
+#'   - "warn"  (emit a warning for rows with missing inputs, then keep them)
 #' @param check_extreme Logical; if TRUE, scan computed indices for large magnitudes.
 #' @param extreme_limit Positive numeric threshold used when check_extreme = TRUE.
 #' @param extreme_action One of: "cap","NA","error".
@@ -48,7 +49,7 @@ fasting_is <- function(
   data,
   col_map,
   normalize = c("none","z","inverse","range","robust"),
-  na_action = c("keep","omit","error"),
+  na_action = c("keep","omit","error","warn"),
   check_extreme = FALSE,
   extreme_limit = 1e3,
   extreme_action = c("cap","NA","error"),
@@ -126,6 +127,10 @@ fasting_is <- function(
   if (na_action == "error" && any(rows_with_na)) {
     rlang::abort("fasting_is(): missing/non-finite inputs with na_action='error'.",
                  class = "healthmarkers_fi_error_missing")
+  } else if (na_action == "warn" && any(rows_with_na)) {
+    rlang::warn(sprintf("fasting_is(): %d row(s) have missing G0 or I0; results will be NA for those rows.",
+                        sum(rows_with_na)),
+                class = "healthmarkers_fi_warn_na")
   } else if (na_action == "omit" && any(rows_with_na)) {
     keep <- !rows_with_na
     G0 <- G0[keep]; I0 <- I0[keep]

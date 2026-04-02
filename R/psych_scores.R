@@ -98,7 +98,7 @@ NULL
 
 .hm_add_cols <- function(data, new_cols_df, na_action = c("keep","omit","error")) {
   na_action <- .hm_match(na_action, c("keep","omit","error"))
-  out <- dplyr::bind_cols(tibble::as_tibble(data), tibble::as_tibble(new_cols_df))
+  out <- tibble::as_tibble(new_cols_df)
   if (na_action == "omit") out <- out[stats::complete.cases(new_cols_df), , drop = FALSE]
   out
 }
@@ -209,6 +209,7 @@ NULL
 #' @param prefix Prefix for output column names.
 #' @param verbose Logical flag for verbose messaging (reserved).
 #' @references \insertRef{kroenke2001phq9}{HealthMarkers}
+#' @return A tibble of score columns only: `PHQ9_total` and `PHQ9_severity` (factor). Input columns are not included.
 #' @examples
 #' df <- data.frame(phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1,
 #'                  phq9_05 = 0, phq9_06 = 1, phq9_07 = 2, phq9_08 = 1,
@@ -256,6 +257,7 @@ phq9_score <- function(data,
 #' GAD-7 scoring
 #' @inheritParams phq9_score
 #' @references \insertRef{spitzer2006gad7}{HealthMarkers}; \insertRef{plummer2016gad7}{HealthMarkers}
+#' @return A tibble of score columns only: `GAD7_total` and `GAD7_severity` (factor). Input columns are not included.
 #' @examples
 #' df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
 #'                  gad7_05 = 0, gad7_06 = 1, gad7_07 = 2)
@@ -295,6 +297,7 @@ gad7_score <- function(data,
 #' @inheritParams phq9_score
 #' @param cutoff Threshold for the K6 case flag.
 #' @references \insertRef{prochaska2012k6}{HealthMarkers}
+#' @return A tibble of score columns only: `K6_total` and `K6_case`. Input columns are not included.
 #' @examples
 #' df <- data.frame(k6_01 = 0, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 0, k6_06 = 1)
 #' k6_score(df)
@@ -325,6 +328,7 @@ k6_score <- function(data, col_map = list(),
 
 #' K10 scoring
 #' @inheritParams phq9_score
+#' @return A tibble of score columns only: `K10_total`. Input columns are not included.
 #' @examples
 #' df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
 #'                  k10_06 = 1, k10_07 = 2, k10_08 = 1, k10_09 = 0, k10_10 = 1)
@@ -356,6 +360,7 @@ k10_score <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param method Scoring method: `likert` (0-3 per item) or `binary` (0/1 per item).
 #' @param case_cutoff_binary Cut-off for case status when using binary scoring.
+#' @return A tibble of score columns only: `GHQ12_total_likert` (likert method) or `GHQ12_total_binary` and `GHQ12_case_binary` (binary method). Input columns are not included.
 #' @examples
 #' df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
 #'                  ghq12_05 = 0, ghq12_06 = 1, ghq12_07 = 0, ghq12_08 = 1,
@@ -405,6 +410,7 @@ ghq12_score <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param low_cutoff_percent Percentage threshold for low well-being flag.
 #' @references \insertRef{topp2015who5}{HealthMarkers}
+#' @return A tibble of score columns only: `WHO5_raw`, `WHO5_percent`, `WHO5_low_wellbeing`. Input columns are not included.
 #' @examples
 #' df <- data.frame(who5_01 = 0, who5_02 = 1, who5_03 = 2, who5_04 = 3, who5_05 = 4)
 #' who5_score(df)
@@ -442,6 +448,7 @@ who5_score <- function(data, col_map = list(),
 #' Insomnia Severity Index (ISI) scoring
 #' @inheritParams phq9_score
 #' @references \insertRef{bastien2001isi}{HealthMarkers}
+#' @return A tibble of score columns only: `ISI_total` and `ISI_severity` (factor). Input columns are not included.
 #' @examples
 #' df <- data.frame(isi_01 = 0, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 2)
 #' isi_score(df)
@@ -480,6 +487,7 @@ isi_score <- function(data, col_map = list(),
 #' @param require_clustering Require clustering item == 1 to be positive.
 #' @param require_impairment Require impairment item == 1 to be positive.
 #' @references \insertRef{hirschfeld2000mdq}{HealthMarkers}
+#' @return A tibble of score columns only: `MDQ_symptom_count`, `MDQ_clustering`, `MDQ_impairment`, `MDQ_positive_screen`. Input columns are not included.
 #' @examples
 #' df <- data.frame(matrix(0, nrow = 1, ncol = 13))
 #' names(df) <- sprintf("mdq_%02d", 1:13)
@@ -538,6 +546,7 @@ mdq_score <- function(data, col_map = list(),
 #' @param partA_thresholds Numeric thresholds applied to Part A items.
 #' @param partA_cutoff Count threshold for Part A positivity.
 #' @references \insertRef{adler2006asrs}{HealthMarkers}; \insertRef{kessler2007asrs}{HealthMarkers}
+#' @return A tibble of score columns only: `ASRS_total`, `ASRS_partA_count`, `ASRS_partA_positive`. Input columns are not included.
 #' @examples
 #' df <- data.frame(matrix(2, nrow = 1, ncol = 18))
 #' names(df) <- sprintf("asrs_%02d", 1:18)
@@ -585,6 +594,7 @@ asrs_score <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param key List with `items`, `min_val`, `max_val`, optional `reverse` and `subscales`.
 #' @references \insertRef{patton1995bis}{HealthMarkers}
+#' @return A tibble of score columns only (total and optional subscales). Input columns are not included.
 #' @examples
 #' bis_key <- list(items = sprintf("bis_%02d", 1:5), min_val = 1, max_val = 4)
 #' df <- data.frame(bis_01 = 1, bis_02 = 2, bis_03 = 3, bis_04 = 4, bis_05 = 2)
@@ -611,13 +621,14 @@ bis_score <- function(data,
     impute = impute
   )
 
-  dplyr::bind_cols(tibble::as_tibble(data), scores)
+  .hm_add_cols(data, scores, na_action = na_action)
 }
 
 #' Schizotypal Personality Questionnaire (key-driven)
 #' @inheritParams phq9_score
 #' @param key List with `items`, `min_val`, `max_val`, optional `reverse` and `subscales`.
 #' @references \insertRef{raine1991spq}{HealthMarkers}
+#' @return A tibble of score columns only (total and optional subscales). Input columns are not included.
 #' @examples
 #' spq_key <- list(items = sprintf("spq_%02d", 1:5), min_val = 0, max_val = 1)
 #' df <- data.frame(spq_01 = 0, spq_02 = 1, spq_03 = 0, spq_04 = 1, spq_05 = 0)
@@ -644,7 +655,7 @@ spq_score <- function(data,
     impute = impute
   )
 
-  dplyr::bind_cols(tibble::as_tibble(data), scores)
+  .hm_add_cols(data, scores, na_action = na_action)
 }
 
 # Cognitive composite ---------------------------------------------------------
@@ -653,6 +664,7 @@ spq_score <- function(data,
 #' @inheritParams phq9_score
 #' @param method Aggregation method: `z_mean` (average of z-scores) or `pca1` (first PC).
 #' @param col_map Named list with `tasks` mapping task IDs to column names (>= 2 tasks required).
+#' @return A tibble of score columns only: `{prefix}_z_mean` or `{prefix}_pca1`. Input columns are not included.
 #' @examples
 #' df <- data.frame(task_a = c(1, 2), task_b = c(2, 3), task_c = c(3, 4))
 #' cm <- list(tasks = list(
@@ -711,6 +723,7 @@ cognitive_score <- function(data,
 #' @inheritParams phq9_score
 #' @param col_map Named list `dx` mapping condition ids (e.g., mdd, bipolar) to columns of boolean/numeric flags.
 #' @param prefix Prefix for output flag columns.
+#' @return A tibble of flag columns only: `dx_any_psych`, `dx_internalizing`, `dx_externalizing`, `dx_psychotic`, `dx_count`. Input columns are not included.
 #' @examples
 #' df <- data.frame(dx_mdd = c(1, 0), dx_bipolar = c(0, 1))
 #' psych_dx_flags(df, col_map = list(dx = list(mdd = "dx_mdd", bipolar = "dx_bipolar")))
@@ -758,6 +771,7 @@ psych_dx_flags <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param col_map Named list `med` mapping medication classes (e.g., ssri, snri) to columns of boolean/numeric flags.
 #' @param prefix Prefix for output flag columns.
+#' @return A tibble of flag columns only: `med_any_psych`, `med_count`. Input columns are not included.
 #' @examples
 #' df <- data.frame(med_ssri = c(1, 0), med_antipsychotic = c(0, 1))
 #' cm <- list(med = list(
@@ -806,6 +820,7 @@ psych_med_flags <- function(data, col_map = list(),
 #' @param spq_key SPQ key list passed to `spq_score` when requested.
 #' @param cognitive_method Method passed to `cognitive_score` ("z_mean" or "pca1").
 #' @param col_map Nested list of mappings per instrument (e.g., col_map$phq9, col_map$bis, col_map$dx_flags, ...).
+#' @return A tibble of computed score columns from all requested modules, bound together. No input columns are included in the output.
 #' @examples
 #' df <- data.frame(
 #'   phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1, phq9_05 = 0,
@@ -833,31 +848,34 @@ psych_markers <- function(data,
   hm_inform("psych_markers(): preparing inputs",
             level = if (isTRUE(verbose)) "inform" else "debug")
 
-  out <- tibble::as_tibble(data)
+  base <- tibble::as_tibble(data)
+  parts <- list()
 
-  if ("phq9" %in% which) out <- phq9_score(out, col_map = col_map$phq9, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, variant = "PHQ9", prefix = "PHQ9")
-  if ("gad7" %in% which) out <- gad7_score(out, col_map = col_map$gad7, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "GAD7")
-  if ("k6" %in% which)   out <- k6_score(out, col_map = col_map$k6, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K6")
-  if ("k10" %in% which)  out <- k10_score(out, col_map = col_map$k10, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K10")
+  if ("phq9" %in% which) parts$phq9 <- phq9_score(base, col_map = col_map$phq9, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, variant = "PHQ9", prefix = "PHQ9")
+  if ("gad7" %in% which) parts$gad7 <- gad7_score(base, col_map = col_map$gad7, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "GAD7")
+  if ("k6"   %in% which) parts$k6   <- k6_score(base,   col_map = col_map$k6,   na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K6")
+  if ("k10"  %in% which) parts$k10  <- k10_score(base,  col_map = col_map$k10,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K10")
 
-  if ("ghq12_likert" %in% which) out <- ghq12_score(out, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "likert", prefix = "GHQ12")
-  if ("ghq12_binary" %in% which) out <- ghq12_score(out, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "binary", prefix = "GHQ12")
+  if ("ghq12_likert" %in% which) parts$ghq12_likert <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "likert", prefix = "GHQ12")
+  if ("ghq12_binary" %in% which) parts$ghq12_binary <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "binary", prefix = "GHQ12")
 
-  if ("who5" %in% which) out <- who5_score(out, col_map = col_map$who5, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "WHO5")
-  if ("isi" %in% which)  out <- isi_score(out, col_map = col_map$isi, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ISI")
+  if ("who5" %in% which) parts$who5 <- who5_score(base, col_map = col_map$who5, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "WHO5")
+  if ("isi"  %in% which) parts$isi  <- isi_score(base,  col_map = col_map$isi,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ISI")
 
-  if ("mdq" %in% which)  out <- mdq_score(out, col_map = col_map$mdq, na_action = na_action, missing_prop_max = missing_prop_max, prefix = "MDQ")
-  if ("asrs" %in% which) out <- asrs_score(out, col_map = col_map$asrs, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ASRS")
+  if ("mdq"  %in% which) parts$mdq  <- mdq_score(base,  col_map = col_map$mdq,  na_action = na_action, missing_prop_max = missing_prop_max, prefix = "MDQ")
+  if ("asrs" %in% which) parts$asrs <- asrs_score(base, col_map = col_map$asrs, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ASRS")
 
-  if ("bis" %in% which)  out <- bis_score(out, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS")
-  if ("spq" %in% which)  out <- spq_score(out, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ")
+  if ("bis" %in% which) parts$bis <- bis_score(base, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS")
+  if ("spq" %in% which) parts$spq <- spq_score(base, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ")
 
-  if ("cognitive" %in% which) out <- cognitive_score(out, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
-  if ("dx_flags" %in% which)  out <- psych_dx_flags(out, col_map = col_map$dx_flags, na_action = na_action, prefix = "dx")
-  if ("med_flags" %in% which) out <- psych_med_flags(out, col_map = col_map$med_flags, na_action = na_action, prefix = "med")
+  if ("cognitive" %in% which) parts$cognitive <- cognitive_score(base, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
+  if ("dx_flags"  %in% which) parts$dx_flags  <- psych_dx_flags(base,  col_map = col_map$dx_flags,  na_action = na_action, prefix = "dx")
+  if ("med_flags" %in% which) parts$med_flags <- psych_med_flags(base, col_map = col_map$med_flags, na_action = na_action, prefix = "med")
+
+  out <- if (length(parts)) do.call(dplyr::bind_cols, parts) else tibble::tibble(.rows = nrow(base))
 
   hm_inform(sprintf("psych_markers(): results: %d rows, %d new columns",
-                    nrow(out), ncol(out) - ncol(data)),
+                    nrow(out), ncol(out)),
             level = if (isTRUE(verbose)) "inform" else "debug")
 
   out

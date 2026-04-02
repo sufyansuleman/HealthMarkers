@@ -30,7 +30,7 @@ Compute liver-related indices (FLI, NFS, APRI, FIB-4, BARD, ALBI, MELD-XI) with 
 ## Inputs
 
 - `data`: data.frame/tibble with required inputs.
-- `col_map`: named list mapping required keys to columns (units assumed, no conversion): BMI (kg/m^2), waist (cm), triglycerides (mg/dL), GGT (U/L), age (years), AST (U/L), ALT (U/L), platelets (10^9/L), albumin (g/L), diabetes (0/1 or logical), bilirubin (mg/dL), creatinine (mg/dL).
+- `col_map`: named list mapping required keys to columns (units assumed, no conversion): BMI (kg/m^2), waist (cm), TG (mg/dL), GGT (U/L), age (years), AST (U/L), ALT (U/L), platelets (10^9/L), albumin (g/L), diabetes (0/1 or logical), bilirubin (mg/dL), creatinine (mg/dL).
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows missing required inputs; `error` aborts; `ignore` treated as keep; `warn` keeps but issues high-missingness warnings via `na_warn_prop`.
 - `check_extreme`: set TRUE to scan inputs with `extreme_action` (`warn`, `cap`, `error`, `ignore`, `NA`) using default bounds unless `extreme_rules` overrides them. Defaults: BMI 10-70; waist 40-200 cm; TG 10-1500 mg/dL; GGT 1-2000 U/L; age 18-120; AST/ALT 1-5000; platelets 10-1000 (10^9/L); albumin 15-60 g/L; bilirubin 0.1-40 mg/dL; creatinine 0.2-20 mg/dL.
 - Numeric coercion: mapped columns (except `diabetes`) are coerced to numeric; non-finite values become NA before policies. `diabetes` is coerced to integer 0/1 with a warning if values are outside {0,1,TRUE,FALSE}.
@@ -59,7 +59,7 @@ liver <- tibble::tibble(
 liver_markers(
   data = liver,
   col_map = list(
-    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    BMI = "BMI", waist = "waist", TG = "triglycerides", GGT = "GGT", age = "age",
     AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
     bilirubin = "bilirubin", creatinine = "creatinine"
   ),
@@ -85,7 +85,7 @@ old_opt <- options(healthmarkers.verbose = "inform")
 liver_markers(
   data = liver,
   col_map = list(
-    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    BMI = "BMI", waist = "waist", TG = "triglycerides", GGT = "GGT", age = "age",
     AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
     bilirubin = "bilirubin", creatinine = "creatinine"
   ),

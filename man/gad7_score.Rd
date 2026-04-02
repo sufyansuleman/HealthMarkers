@@ -29,6 +29,9 @@ gad7_score(
 
 \item{verbose}{Logical flag for verbose messaging (reserved).}
 }
+\value{
+A tibble of score columns only: \code{GAD7_total} and \code{GAD7_severity} (factor). Input columns are not included.
+}
 \description{
 GAD-7 scoring
 }

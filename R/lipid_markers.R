@@ -74,22 +74,14 @@ lipid_markers <- function(
   extreme_rules = NULL,
   verbose = FALSE
 ) {
-  na_action_raw <- match.arg(na_action)
-  na_action_eff <- if (na_action_raw %in% c("ignore","warn")) "keep" else na_action_raw
+  .na <- .hm_normalize_na_action(match.arg(na_action))
+  na_action_raw <- .na$na_action_raw
+  na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
-  # Basic validation
-  if (!is.data.frame(data)) rlang::abort("lipid_markers(): `data` must be a data.frame or tibble.")
-  if (is.null(col_map) || !is.list(col_map)) rlang::abort("lipid_markers(): `col_map` must be a named list.")
-
   req <- c("TC","HDL_c","TG")
-  missing_keys <- setdiff(req, names(col_map))
-  if (length(missing_keys)) rlang::abort(paste("missing required columns:", paste(missing_keys, collapse = ", ")))
+  hm_validate_inputs(data, col_map, required_keys = req, fn = "lipid_markers")
   mapped_req <- unname(unlist(col_map[req]))
-  if (any(!nzchar(mapped_req))) {
-    bad <- req[!nzchar(mapped_req)]
-    rlang::abort(paste("missing required columns:", paste(bad, collapse = ", ")))
-  }
   missing_cols <- setdiff(mapped_req, names(data))
   if (length(missing_cols)) rlang::abort(paste("missing required columns:", paste(missing_cols, collapse = ", ")))
 
