@@ -1,7 +1,6 @@
 # 
 
-title: “Hormone marker ratios” output: rmarkdown::html_vignette
-vignette: \> % % % —
+title: “Hormone marker ratios” output: rmarkdown::html_vignette —
 
 ## Scope
 
@@ -116,13 +115,13 @@ hm_out <- hormone_markers(
 )
 
 hm_out
-#> # A tibble: 4 × 9
-#>     FAI LH_FSH  E2_P T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
-#>   <dbl>  <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
-#> 1  16.7  0.75   60   0.281  12.5   0.188 0.00667  2         6   
-#> 2  17.5  0.778  46.7 0.32   12     0.286 0.00562  1.71      5.67
-#> 3  16.1  0.714  61.1 0.253  12.7   0.24  0.00588  2.44      6   
-#> 4  17.7  0.75   54   0.288  14.4   0.218 0.00667  1.45      6.33
+#> # A tibble: 4 × 10
+#>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
+#>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
+#> 1  16.7  0.75   60    24   0.281  12.5   0.188 0.00667  2         6   
+#> 2  17.5  0.778  46.7  20   0.32   12     0.286 0.00562  1.71      5.67
+#> 3  16.1  0.714  61.1  24.4 0.253  12.7   0.24  0.00588  2.44      6   
+#> 4  17.7  0.75   54    21.8 0.288  14.4   0.218 0.00667  1.45      6.33
 ```
 
 ## Missing data and row handling
@@ -212,13 +211,14 @@ hormone_markers(df_v,
   col_map = setNames(as.list(names(df_v)), names(df_v)),
   verbose = TRUE
 )
+#> hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4
 #> hormone_markers(): preparing inputs
 #> hormone_markers(): column map: total_testosterone -> 'total_testosterone', SHBG -> 'SHBG', LH -> 'LH', FSH -> 'FSH', estradiol -> 'estradiol', progesterone -> 'progesterone', free_T3 -> 'free_T3', free_T4 -> 'free_T4', aldosterone -> 'aldosterone', renin -> 'renin', insulin -> 'insulin', glucagon -> 'glucagon', GH -> 'GH', IGF1 -> 'IGF1', prolactin -> 'prolactin', cortisol_0 -> 'cortisol_0', cortisol_30 -> 'cortisol_30'
-#> hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1
-#> # A tibble: 1 × 9
-#>     FAI LH_FSH  E2_P T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
-#>   <dbl>  <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
-#> 1   500      2     2   0.5     5       2     0.5   1.2         2
+#> hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, E2_T 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1
+#> # A tibble: 1 × 10
+#>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
+#>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
+#> 1   500      2     2    10   0.5     5       2     0.5   1.2         2
 options(old_opt)
 ```
 

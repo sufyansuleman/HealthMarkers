@@ -59,6 +59,8 @@ df <- tibble::tibble(
 if (requireNamespace("PooledCohort", quietly = TRUE)) {
   cvd_risk_ascvd(df, year = 10, verbose = TRUE)
 }
+#> cvd_risk_ascvd(): preparing inputs; non-finite=1 var(s), high-NA=1, all-NA=1
+#> cvd_risk_ascvd(): results: 10yr risk, 1 row(s)
 #> # A tibble: 1 × 3
 #>   model  year   risk
 #>   <chr> <int>  <dbl>

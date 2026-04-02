@@ -134,6 +134,14 @@ Quality controls and options:
 
 - Verbose mode prints step-by-step progress and a completion summary.
 
+Optional marker detection: When `col_map = NULL` (default), an identity
+map for all 10 keys is built automatically. The seven optional keys
+(glucose, HbA1c, C_peptide, G0, I0, leptin, adiponectin) are computed
+only when the corresponding column exists in `data`. When
+`verbose = TRUE`, any optional markers whose columns are absent are
+listed in an informational message so the caller knows which derived
+metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+
 Notes on HOMA_CP:
 
 - This function retains the package's existing operational formula:
@@ -203,6 +211,9 @@ glycemic_markers(df,
   check_extreme = TRUE, extreme_action = "cap",
   verbose = TRUE
 )
+#> glycemic_markers(): preparing inputs
+#> glycemic_markers(): column map: HDL_c -> 'HDL_c', TG -> 'TG', BMI -> 'BMI'
+#> glycemic_markers(): results: SPISE 2/2, METS_IR 1/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>

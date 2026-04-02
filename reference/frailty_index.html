@@ -23,7 +23,7 @@ Optionally returns a tidy tibble instead of the original list.
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,10 @@ Optionally returns a tidy tibble instead of the original list.
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -127,10 +130,13 @@ plot.di()). Default FALSE.</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>One of:</p><ul><li><p>Legacy: "ignore","warn","error"</p></li>
-<li><p>HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
-Default "ignore".</p></li>
-</ul></dd>
+<dd><p>One of <code>c("keep","omit","error","warn","ignore")</code>. Controls
+handling of missing values in selected deficit columns. <code>"keep"</code> (and its
+backward-compatible alias <code>"ignore"</code>) passes NAs through to di::di.
+<code>"warn"</code> emits a warning and then keeps NAs (alias for <code>"keep"</code> with a
+missingness warning). <code>"omit"</code> drops rows with any NA in selected deficits
+before computing. <code>"error"</code> stops if any NA is detected.
+Default <code>"ignore"</code> (retained for backward compatibility; equivalent to <code>"keep"</code>).</p></dd>
 
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
@@ -227,6 +233,12 @@ Cesari M, Gambassi G, van Kan GA, Vellas B (2014).
 <span class="r-in"><span>  <span class="va">tb</span>  <span class="op">&lt;-</span> <span class="fu">frailty_index</span><span class="op">(</span><span class="va">df</span>, cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"d1"</span>,<span class="st">"d2"</span>,<span class="st">"d3"</span><span class="op">)</span>, age <span class="op">=</span> <span class="st">"age"</span>,</span></span>
 <span class="r-in"><span>                       return <span class="op">=</span> <span class="st">"data"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): preparing inputs (3 rows, 2 deficits, age provided)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): column map: d1, d2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): results: di range [0.000, 1.000] (3 rows, 2 deficits)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): preparing inputs (3 rows, 3 deficits, age provided)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): column map: d1, d2, d3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): results: di 3/3</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -235,7 +247,7 @@ Cesari M, Gambassi G, van Kan GA, Vellas B (2014).
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

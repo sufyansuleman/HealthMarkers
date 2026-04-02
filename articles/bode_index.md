@@ -86,12 +86,12 @@ head(select(bode_out, all_of(new_cols)))
 #> # A tibble: 6 × 6
 #>   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score
 #>        <int>    <dbl>      <int>      <int>      <int>     <int>
-#> 1          0     91.8          0          0          0         0
-#> 2          0     99.6          0          0          0         0
-#> 3          1     94.7          0          0          1         0
-#> 4          3    114.           0          0          3         0
-#> 5          0     79.7          0          0          0         0
-#> 6          0     91.3          0          0          0         0
+#> 1          1     80.9          0          0          1         0
+#> 2          3    103.           0          0          3         0
+#> 3          2    114.           0          0          2         0
+#> 4          0     88.0          0          0          0         0
+#> 5          1    104.           0          0          1         0
+#> 6          1    113.           0          0          1         0
 ```
 
 ## Arguments that matter
@@ -137,11 +137,11 @@ list(
 #> # A tibble: 6 × 5
 #>   bode_index fev1_score walk_score mmrc_score bmi_score
 #>        <int>      <int>      <int>      <int>     <int>
-#> 1          0          0          0          0         0
+#> 1          1          0          0          1         0
 #> 2         NA          0          0         NA         0
-#> 3          1          0          0          1         0
-#> 4          3          0          0          3         0
-#> 5          0          0          0          0         0
+#> 3          2          0          0          2         0
+#> 4          0          0          0          0         0
+#> 5          1          0          0          1         0
 #> 6         NA          0          0         NA         0
 ```
 
@@ -170,12 +170,12 @@ head(select(a_screen, bode_index, fev1_score, walk_score, mmrc_score, bmi_score)
 #> # A tibble: 6 × 5
 #>   bode_index fev1_score walk_score mmrc_score bmi_score
 #>        <int>      <int>      <int>      <int>     <int>
-#> 1          0          0          0          0         0
-#> 2          0          0          0          0         0
-#> 3          1          0          0          1         0
-#> 4          3          0          0          3         0
-#> 5          3          0          3          0         0
-#> 6          0          0          0          0         0
+#> 1          1          0          0          1         0
+#> 2          3          0          0          3         0
+#> 3          2          0          0          2         0
+#> 4          0          0          0          0         0
+#> 5          4          0          3          1         0
+#> 6          1          0          0          1         0
 ```
 
 ## Outputs

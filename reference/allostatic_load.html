@@ -13,7 +13,7 @@ validation, diagnostic control, verbose reporting, and optional summary output."
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +23,10 @@ validation, diagnostic control, verbose reporting, and optional summary output."
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -104,6 +107,16 @@ validation, diagnostic control, verbose reporting, and optional summary output.<
     <p>tibble with AllostaticLoad or list when return_summary = TRUE.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><strong>API pattern note:</strong> Unlike most HealthMarkers functions which follow the
+standard <code>(data, col_map, ...)</code> signature, <code>allostatic_load()</code> uses
+<code>(data, thresholds, col_map = NULL, ...)</code> because <code>thresholds</code> is a
+domain-specific required argument that cannot be inferred from column names
+alone. As a result, this function is not directly dispatchable through the
+standard <code><a href="all_health_markers.html">all_health_markers()</a></code> registry; a custom wrapper that supplies
+<code>thresholds</code> explicitly would be required.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>McEwen BS, Stellar E (1993).
 “Stress and the Individual: Mechanisms Leading to Disease.”
@@ -163,7 +176,7 @@ validation, diagnostic control, verbose reporting, and optional summary output.<
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

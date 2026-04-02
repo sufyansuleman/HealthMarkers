@@ -32,6 +32,11 @@ psych_med_flags(
 
   How to handle rows with missing items: `keep`, `omit`, or `error`.
 
+## Value
+
+A tibble of flag columns only: `med_any_psych`, `med_count`. Input
+columns are not included.
+
 ## Examples
 
 ``` r
@@ -41,9 +46,9 @@ cm <- list(med = list(
   antipsychotic = "med_antipsychotic"
 ))
 psych_med_flags(df, col_map = cm)
-#> # A tibble: 2 × 4
-#>   med_ssri med_antipsychotic med_any_psych med_count
-#>      <dbl>             <dbl> <lgl>             <dbl>
-#> 1        1                 0 TRUE                  1
-#> 2        0                 1 TRUE                  1
+#> # A tibble: 2 × 2
+#>   med_any_psych med_count
+#>   <lgl>             <dbl>
+#> 1 TRUE                  1
+#> 2 TRUE                  1
 ```

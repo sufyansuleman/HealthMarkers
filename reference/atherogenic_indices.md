@@ -77,9 +77,8 @@ Behavior:
   (0, 10000). Note: All indices are unitless ratios; units cancel in
   computations.
 
-- Emits progress via
-  [`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md)
-  when `verbose = TRUE` or when package option enables logs.
+- Emits progress via `hm_inform()` when `verbose = TRUE` or when package
+  option enables logs.
 
 ## References
 

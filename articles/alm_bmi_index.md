@@ -73,9 +73,9 @@ alm_out %>%
 #>   alm_bmi_ratio low_muscle_mass
 #>           <dbl> <lgl>          
 #> 1         0.929 FALSE          
-#> 2         0.938 FALSE          
-#> 3         1.14  FALSE          
-#> 4         0.995 FALSE          
+#> 2         0.964 FALSE          
+#> 3         1.16  FALSE          
+#> 4         0.941 FALSE          
 #> 5         1.00  FALSE
 ```
 
@@ -127,7 +127,7 @@ list(
 #>   alm_bmi_ratio low_muscle_mass
 #>           <dbl> <lgl>          
 #> 1         0.929 FALSE          
-#> 2         0.938 FALSE          
+#> 2         0.964 FALSE          
 #> 3        NA     NA
 ```
 

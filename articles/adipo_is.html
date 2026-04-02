@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -50,7 +54,7 @@
       <h1>Adipose insulin sensitivity indices</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/adipo_is.Rmd" class="external-link"><code>vignettes/adipo_is.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/adipo_is.Rmd" class="external-link"><code>vignettes/articles/adipo_is.Rmd</code></a></small>
       <div class="d-none name"><code>adipo_is.Rmd</code></div>
     </div>
 
@@ -143,11 +147,11 @@ rows with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
 <span><span class="co">#&gt;   Revised_QUICKI McAuley_index Adipo_inv Belfiore_inv_FFA TyG_inv</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.340          6.10     -<span style="color: #BB0000;">9.65</span>           -<span style="color: #BB0000;">0.188</span>   -<span style="color: #BB0000;">8.26</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0.398          5.53     -<span style="color: #BB0000;">3.14</span>           -<span style="color: #BB0000;">0.484</span>   -<span style="color: #BB0000;">9.05</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.335          6.00    -<span style="color: #BB0000;">10.3</span>            -<span style="color: #BB0000;">0.177</span>   -<span style="color: #BB0000;">8.55</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.377          6.41     -<span style="color: #BB0000;">5.10</span>           -<span style="color: #BB0000;">0.328</span>   -<span style="color: #BB0000;">8.75</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.318          5.41    -<span style="color: #BB0000;">12.8</span>            -<span style="color: #BB0000;">0.145</span>   -<span style="color: #BB0000;">8.97</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.342          6.50     -<span style="color: #BB0000;">8.96</span>           -<span style="color: #BB0000;">0.201</span>   -<span style="color: #BB0000;">8.39</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0.354          4.97     -<span style="color: #BB0000;">7.18</span>           -<span style="color: #BB0000;">0.245</span>   -<span style="color: #BB0000;">9.13</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.352          6.12     -<span style="color: #BB0000;">7.81</span>           -<span style="color: #BB0000;">0.227</span>   -<span style="color: #BB0000;">8.42</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.360          6.62     -<span style="color: #BB0000;">5.90</span>           -<span style="color: #BB0000;">0.290</span>   -<span style="color: #BB0000;">9.07</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.340          5.52     -<span style="color: #BB0000;">9.22</span>           -<span style="color: #BB0000;">0.196</span>   -<span style="color: #BB0000;">8.95</span></span></span>
 <span></span>
 <span><span class="co"># Group 2 — sex-specific and ratio indices</span></span>
 <span><span class="va">ais</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -156,11 +160,11 @@ rows with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
 <span><span class="co">#&gt;   TG_HDL_C_inv VAI_Men_inv VAI_Women_inv LAP_Men_inv LAP_Women_inv</span></span>
 <span><span class="co">#&gt;          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        -<span style="color: #BB0000;">2.45</span>      -<span style="color: #BB0000;">1.36</span>          -<span style="color: #BB0000;">2.08</span>       -<span style="color: #BB0000;">19.5</span>         -<span style="color: #BB0000;">26.3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        -<span style="color: #BB0000;">4.26</span>      -<span style="color: #BB0000;">2.22</span>          -<span style="color: #BB0000;">3.35</span>       -<span style="color: #BB0000;">70.5</span>         -<span style="color: #BB0000;">83.5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        -<span style="color: #BB0000;">1.83</span>      -<span style="color: #BB0000;">0.953</span>         -<span style="color: #BB0000;">1.45</span>       -<span style="color: #BB0000;">33.2</span>         -<span style="color: #BB0000;">41.8</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        -<span style="color: #BB0000;">3.65</span>      -<span style="color: #BB0000;">2.46</span>          -<span style="color: #BB0000;">3.74</span>       -<span style="color: #BB0000;">80.5</span>         -<span style="color: #BB0000;">91.8</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        -<span style="color: #BB0000;">2.32</span>      -<span style="color: #BB0000;">1.14</span>          -<span style="color: #BB0000;">1.74</span>       -<span style="color: #BB0000;">25.2</span>         -<span style="color: #BB0000;">36.5</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        -<span style="color: #BB0000;">1.59</span>      -<span style="color: #BB0000;">0.689</span>         -<span style="color: #BB0000;">1.05</span>       -<span style="color: #BB0000;">11.9</span>         -<span style="color: #BB0000;">19.3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        -<span style="color: #BB0000;">3.42</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.17</span>       -<span style="color: #BB0000;">71.3</span>         -<span style="color: #BB0000;">87.0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        -<span style="color: #BB0000;">2.18</span>      -<span style="color: #BB0000;">1.28</span>          -<span style="color: #BB0000;">1.95</span>       -<span style="color: #BB0000;">40.1</span>         -<span style="color: #BB0000;">48.2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        -<span style="color: #BB0000;">4.67</span>      -<span style="color: #BB0000;">2.67</span>          -<span style="color: #BB0000;">4.04</span>       -<span style="color: #BB0000;">92.4</span>        -<span style="color: #BB0000;">106.</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        -<span style="color: #BB0000;">3.25</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.16</span>       -<span style="color: #BB0000;">79.2</span>         -<span style="color: #BB0000;">92.1</span></span></span></code></pre></div>
 <p>Values ending in <code>_inv</code> are inverted so <strong>more
 negative = worse adipose IR</strong>. Both sex variants (VAI_Men/Women,
 LAP_Men/Women) are always returned; pick the appropriate column per
@@ -222,9 +226,9 @@ subject based on biological sex:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
 <span><span class="co">#&gt;   VAI_Men_inv VAI_Women_inv TG_HDL_C_inv TyG_inv LAP_Men_inv LAP_Women_inv</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       -<span style="color: #BB0000;">1.36</span>         -<span style="color: #BB0000;">2.08</span>        -<span style="color: #BB0000;">2.45</span>   -<span style="color: #BB0000;">8.26</span>       -<span style="color: #BB0000;">19.5</span>         -<span style="color: #BB0000;">26.3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       -<span style="color: #BB0000;">2.22</span>         -<span style="color: #BB0000;">3.35</span>        -<span style="color: #BB0000;">4.26</span>   <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">70.5</span>         -<span style="color: #BB0000;">83.5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.4</span>         -<span style="color: #BB0000;">23.4</span>        -<span style="color: #BB0000;">29.5</span>   -<span style="color: #BB0000;">11.3</span>       -<span style="color: #BB0000;">536.</span>         -<span style="color: #BB0000;">676.</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">0.689</span>         -<span style="color: #BB0000;">1.05</span>        -<span style="color: #BB0000;">1.59</span>   -<span style="color: #BB0000;">8.39</span>       -<span style="color: #BB0000;">11.9</span>         -<span style="color: #BB0000;">19.3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.17</span>        -<span style="color: #BB0000;">3.42</span>   <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">71.3</span>         -<span style="color: #BB0000;">87.0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     -<span style="color: #BB0000;">22.0</span>          -<span style="color: #BB0000;">33.5</span>        -<span style="color: #BB0000;">37.4</span>   -<span style="color: #BB0000;">11.3</span>       -<span style="color: #BB0000;">688.</span>         -<span style="color: #BB0000;">828.</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: Adipo_inv &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -258,12 +262,12 @@ conversion):</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   Revised_QUICKI TyG_inv TG_HDL_C_inv</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.340   -<span style="color: #BB0000;">8.26</span>        -<span style="color: #BB0000;">2.45</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>           -<span style="color: #BB0000;">4.26</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.335  -<span style="color: #BB0000;">11.0</span>        -<span style="color: #BB0000;">22.2</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.377   -<span style="color: #BB0000;">8.75</span>        -<span style="color: #BB0000;">3.65</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.318   -<span style="color: #BB0000;">8.97</span>        -<span style="color: #BB0000;">2.32</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          0.339   -<span style="color: #BB0000;">9.24</span>        -<span style="color: #BB0000;">3.64</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.342   -<span style="color: #BB0000;">8.39</span>        -<span style="color: #BB0000;">1.59</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>           -<span style="color: #BB0000;">3.42</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.352  -<span style="color: #BB0000;">11.0</span>        -<span style="color: #BB0000;">28.1</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.360   -<span style="color: #BB0000;">9.07</span>        -<span style="color: #BB0000;">4.67</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.340   -<span style="color: #BB0000;">8.95</span>        -<span style="color: #BB0000;">3.25</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          0.321   -<span style="color: #BB0000;">8.37</span>        -<span style="color: #BB0000;">1.55</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="normalise-outputs">Normalise outputs<a class="anchor" aria-label="anchor" href="#normalise-outputs"></a>
@@ -284,11 +288,11 @@ before modelling or dimension reduction:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
 <span><span class="co">#&gt;   Revised_QUICKI McAuley_index TyG_inv Adipo_inv</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         -<span style="color: #BB0000;">0.584</span>         0.573   2.17     -<span style="color: #BB0000;">0.842</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          2.03         -<span style="color: #BB0000;">0.460</span>  -<span style="color: #BB0000;">0.569</span>     1.54 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         -<span style="color: #BB0000;">0.818</span>         0.398   1.18     -<span style="color: #BB0000;">1.09</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          1.06          1.15    0.460     0.820</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         -<span style="color: #BB0000;">1.58</span>         -<span style="color: #BB0000;">0.686</span>  -<span style="color: #BB0000;">0.275</span>    -<span style="color: #BB0000;">1.99</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       -<span style="color: #BB0000;">0.342</span>           0.711  1.53     -<span style="color: #BB0000;">0.285</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        0.003<span style="text-decoration: underline;">67</span>        -<span style="color: #BB0000;">1.01</span>  -<span style="color: #BB0000;">0.583</span>     0.191 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       -<span style="color: #BB0000;">0.040</span><span style="color: #BB0000; text-decoration: underline;">7</span>          0.284  1.44      0.021<span style="text-decoration: underline;">9</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        0.186           0.843 -<span style="color: #BB0000;">0.412</span>     0.530 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       -<span style="color: #BB0000;">0.389</span>          -<span style="color: #BB0000;">0.392</span> -<span style="color: #BB0000;">0.053</span><span style="color: #BB0000; text-decoration: underline;">7</span>   -<span style="color: #BB0000;">0.354</span></span></span></code></pre></div>
 <p>Available options: <code>"none"</code> (default — raw scale),
 <code>"z"</code> (mean 0 / SD 1), <code>"range"</code> (0–1 min–max),
 <code>"robust"</code> (median / IQR), <code>"inverse"</code> (1/x).</p>
@@ -418,7 +422,7 @@ metrics.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

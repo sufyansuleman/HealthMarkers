@@ -65,6 +65,11 @@ psych_markers(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of computed score columns from all requested modules, bound
+together. No input columns are included in the output.
+
 ## Examples
 
 ``` r
@@ -75,12 +80,8 @@ df <- data.frame(
   gad7_06 = 1, gad7_07 = 2
 )
 psych_markers(df, which = c("phq9", "gad7"))
-#> # A tibble: 1 × 20
-#>   phq9_01 phq9_02 phq9_03 phq9_04 phq9_05 phq9_06 phq9_07 phq9_08 phq9_09
-#>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-#> 1       0       1       2       1       0       1       2       1       0
-#> # ℹ 11 more variables: gad7_01 <dbl>, gad7_02 <dbl>, gad7_03 <dbl>,
-#> #   gad7_04 <dbl>, gad7_05 <dbl>, gad7_06 <dbl>, gad7_07 <dbl>,
-#> #   PHQ9_total <dbl>, PHQ9_severity <fct>, GAD7_total <dbl>,
-#> #   GAD7_severity <fct>
+#> # A tibble: 1 × 4
+#>   PHQ9_total PHQ9_severity GAD7_total GAD7_severity
+#>        <dbl> <fct>              <dbl> <fct>        
+#> 1          8 mild                   7 mild         
 ```

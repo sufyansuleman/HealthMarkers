@@ -49,6 +49,11 @@ gad7_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `GAD7_total` and `GAD7_severity`
+(factor). Input columns are not included.
+
 ## References
 
 Spitzer RL, Kroenke K, Williams JBW, Löwe B (2006). “A Brief Measure for
@@ -67,9 +72,8 @@ Diagnostic Meta-Analysis.” *General Hospital Psychiatry*, **39**, 24–31.
 df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
                  gad7_05 = 0, gad7_06 = 1, gad7_07 = 2)
 gad7_score(df)
-#> # A tibble: 1 × 9
-#>   gad7_01 gad7_02 gad7_03 gad7_04 gad7_05 gad7_06 gad7_07 GAD7_total
-#>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>      <dbl>
-#> 1       0       1       2       1       0       1       2          7
-#> # ℹ 1 more variable: GAD7_severity <fct>
+#> # A tibble: 1 × 2
+#>   GAD7_total GAD7_severity
+#>        <dbl> <fct>        
+#> 1          7 mild         
 ```

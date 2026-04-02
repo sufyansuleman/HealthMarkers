@@ -12,7 +12,7 @@ fasting_is(
   data,
   col_map,
   normalize = c("none", "z", "inverse", "range", "robust"),
-  na_action = c("keep", "omit", "error"),
+  na_action = c("keep", "omit", "error", "warn"),
   check_extreme = FALSE,
   extreme_limit = 1000,
   extreme_action = c("cap", "NA", "error"),
@@ -48,6 +48,8 @@ fasting_is(
   - "omit" (drop rows with any missing/non-finite required inputs)
 
   - "error" (abort if any required input is missing/non-finite)
+
+  - "warn" (emit a warning for rows with missing inputs, then keep them)
 
 - check_extreme:
 

@@ -16,7 +16,7 @@ inflammatory_markers(
   data,
   col_map,
   panel = c("auto", "classic", "eos", "both"),
-  na_action = c("error", "omit", "keep"),
+  na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),
   verbose = FALSE
@@ -42,7 +42,9 @@ inflammatory_markers(
 
 - na_action:
 
-  one of c("error","omit","keep")
+  one of c("keep","omit","error"). Default "keep" propagates NA in
+  outputs where inputs are missing. "omit" drops rows with any NA in
+  required inputs. "error" aborts if required inputs contain NA.
 
 - check_extreme:
 
@@ -151,7 +153,10 @@ inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
 # Eosinophil panel
 inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
                      check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
+#> inflammatory_markers(): preparing inputs
+#> inflammatory_markers(): column map: neutrophils -> 'neutrophils', lymphocytes -> 'lymphocytes', monocytes -> 'monocytes', platelets -> 'platelets', CRP -> 'CRP'
 #> Warning: inflammatory_markers(): capped out-of-range extreme input values.
+#> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, NER 2/2, SII 2/2, SIRI 2/2, PIV 2/2, CLR 2/2, CAR 2/2, PCR 2/2, mGPS 2/2, ESR 2/2
 #> # A tibble: 2 × 12
 #>     NLR   PLR   LMR   NER   SII  SIRI   PIV   CLR    CAR   PCR  mGPS   ESR
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl> <dbl> <int> <dbl>

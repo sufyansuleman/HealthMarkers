@@ -67,14 +67,13 @@ obesity_indices(
   check_extreme = FALSE,
   verbose = FALSE
 )
-#> # A tibble: 2 × 20
-#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
-#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
-#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
-#> # ℹ 10 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
-#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
-#> #   CI <dbl>, WHRadjBMI <dbl>, RFM <dbl>
+#> # A tibble: 2 × 15
+#>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio
+#>       <dbl>    <dbl> <dbl> <chr>         <dbl>     <dbl>                 <dbl>
+#> 1        70     1.75  22.9 Normal weight 0.8           0                  45.7
+#> 2        80     1.65  29.4 Overweight    0.947         0                  54.5
+#> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
+#> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 ```
 
 ## Extreme scan and cap
@@ -96,14 +95,13 @@ obesity_indices(
   extreme_action = "cap",
   verbose = TRUE
 )
-#> # A tibble: 2 × 19
-#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
-#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
-#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
-#> # ℹ 9 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
-#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
-#> #   CI <dbl>, RFM <dbl>
+#> # A tibble: 2 × 14
+#>   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio
+#>       <dbl>    <dbl> <dbl> <chr>         <dbl>                 <dbl>
+#> 1        70     1.75  22.9 Normal weight 0.8                    45.7
+#> 2        80     1.65  29.4 Overweight    0.947                  54.5
+#> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
+#> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 ```
 
 ## Missing-data policy
@@ -119,14 +117,13 @@ try(
     na_action = "error"
   )
 )
-#> # A tibble: 2 × 18
-#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
-#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
-#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
-#> # ℹ 8 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
-#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
-#> #   CI <dbl>
+#> # A tibble: 2 × 13
+#>   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio
+#>       <dbl>    <dbl> <dbl> <chr>         <dbl>                 <dbl>
+#> 1        70     1.75  22.9 Normal weight 0.8                    45.7
+#> 2        80     1.65  29.4 Overweight    0.947                  54.5
+#> # ℹ 7 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
+#> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>
 ```
 
 ## Outputs and expectations
@@ -155,15 +152,14 @@ obesity_indices(
 )
 #> obesity_indices(): preparing inputs
 #> obesity_indices(): column map: weight -> 'wt', height -> 'ht', waist -> 'waist', hip -> 'hip', sex -> 'sex'
-#> obesity_indices(): results: wt 2/2, ht 2/2, waist 2/2, hip 2/2, sex 2/2, weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2
-#> # A tibble: 2 × 18
-#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
-#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
-#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
-#> # ℹ 8 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
-#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
-#> #   CI <dbl>
+#> obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2
+#> # A tibble: 2 × 13
+#>   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio
+#>       <dbl>    <dbl> <dbl> <chr>         <dbl>                 <dbl>
+#> 1        70     1.75  22.9 Normal weight 0.8                    45.7
+#> 2        80     1.65  29.4 Overweight    0.947                  54.5
+#> # ℹ 7 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
+#> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>
 options(old_opt)
 ```
 

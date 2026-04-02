@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -160,12 +164,12 @@ as long as they hold the right values.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 10</span></span></span>
 <span><span class="co">#&gt;   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">19.5</span>     2.05       -<span style="color: #BB0000;">78.6</span>  70.8  0.134        0.001<span style="text-decoration: underline;">13</span>         -<span style="color: #BB0000;">0.215</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">13.4</span>     2.98       -<span style="color: #BB0000;">61.6</span>  55.5  0.138        0.001<span style="text-decoration: underline;">44</span>         -<span style="color: #BB0000;">0.130</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.8</span>     2.54       -<span style="color: #BB0000;">65.9</span>  59.3  0.137        0.001<span style="text-decoration: underline;">35</span>         -<span style="color: #BB0000;">0.167</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">9.25</span>    4.32       -<span style="color: #BB0000;">36.5</span>  32.8  0.149        0.002<span style="text-decoration: underline;">44</span>         -<span style="color: #BB0000;">0.104</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">17.0</span>     2.35       -<span style="color: #BB0000;">83.1</span>  74.8  0.133        0.001<span style="text-decoration: underline;">07</span>         -<span style="color: #BB0000;">0.155</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">14.4</span>     2.77       -<span style="color: #BB0000;">67.3</span>  60.6  0.137        0.001<span style="text-decoration: underline;">32</span>         -<span style="color: #BB0000;">0.138</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">14.0</span>     2.86       -<span style="color: #BB0000;">58.1</span>  52.3  0.139        0.001<span style="text-decoration: underline;">53</span>        -<span style="color: #BB0000;">0.149</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">16.0</span>     2.49       -<span style="color: #BB0000;">66.6</span>  60.0  0.137        0.001<span style="text-decoration: underline;">33</span>        -<span style="color: #BB0000;">0.172</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.7</span>     2.55       -<span style="color: #BB0000;">61.6</span>  55.5  0.138        0.001<span style="text-decoration: underline;">44</span>        -<span style="color: #BB0000;">0.178</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">6.75</span>    5.93       -<span style="color: #BB0000;">30.5</span>  27.4  0.153        0.002<span style="text-decoration: underline;">91</span>        -<span style="color: #BB0000;">0.066</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">13.6</span>     2.94       -<span style="color: #BB0000;">56.9</span>  51.2  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.145</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">17.0</span>     2.36       -<span style="color: #BB0000;">82.7</span>  74.4  0.133        0.001<span style="text-decoration: underline;">07</span>        -<span style="color: #BB0000;">0.155</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: Isi_basal &lt;dbl&gt;, Bennett &lt;dbl&gt;, HOMA_IR_rev_inv &lt;dbl&gt;</span></span></span></code></pre></div>
 <p>The preview shows only the newly computed indices. <code>_inv</code>
 columns are inverted so larger negatives indicate greater insulin
@@ -255,12 +259,12 @@ slice.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 10</span></span></span>
 <span><span class="co">#&gt;   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">19.5</span>     2.05       -<span style="color: #BB0000;">78.6</span>  70.8  0.134        0.001<span style="text-decoration: underline;">13</span>         -<span style="color: #BB0000;">0.215</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">13.4</span>     2.98        <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>               <span style="color: #BB0000;">NA</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.8</span>     2.54       -<span style="color: #BB0000;">65.9</span>  59.3  0.137        0.001<span style="text-decoration: underline;">35</span>         -<span style="color: #BB0000;">0.167</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">9.25</span>    4.32       -<span style="color: #BB0000;">36.5</span>  32.8  0.149        0.002<span style="text-decoration: underline;">44</span>         -<span style="color: #BB0000;">0.104</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">17.0</span>     2.35       -<span style="color: #BB0000;">83.1</span>  74.8  0.133        0.001<span style="text-decoration: underline;">07</span>         -<span style="color: #BB0000;">0.155</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">14.4</span>     2.77       -<span style="color: #BB0000;">67.3</span>  60.6  0.137        0.001<span style="text-decoration: underline;">32</span>         -<span style="color: #BB0000;">0.138</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">14.0</span>     2.86       -<span style="color: #BB0000;">58.1</span>  52.3  0.139        0.001<span style="text-decoration: underline;">53</span>        -<span style="color: #BB0000;">0.149</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">16.0</span>     2.49        <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.7</span>     2.55       -<span style="color: #BB0000;">61.6</span>  55.5  0.138        0.001<span style="text-decoration: underline;">44</span>        -<span style="color: #BB0000;">0.178</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">6.75</span>    5.93       -<span style="color: #BB0000;">30.5</span>  27.4  0.153        0.002<span style="text-decoration: underline;">91</span>        -<span style="color: #BB0000;">0.066</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">13.6</span>     2.94       -<span style="color: #BB0000;">56.9</span>  51.2  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.145</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">17.0</span>     2.36       -<span style="color: #BB0000;">82.7</span>  74.4  0.133        0.001<span style="text-decoration: underline;">07</span>        -<span style="color: #BB0000;">0.155</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: Isi_basal &lt;dbl&gt;, Bennett &lt;dbl&gt;, HOMA_IR_rev_inv &lt;dbl&gt;</span></span></span></code></pre></div>
 <p>Here <code>na_action = "keep"</code> preserves all six rows (with
 NA-derived outputs), while <code>na_action = "omit"</code> drops the row
@@ -352,7 +356,7 @@ diagnostics.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

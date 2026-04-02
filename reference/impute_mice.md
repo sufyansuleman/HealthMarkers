@@ -69,6 +69,8 @@ if (requireNamespace("mice", quietly = TRUE)) {
   df <- tibble::tibble(a = c(1, NA, 3), b = c(2, 4, NA), c = 5)
   impute_mice(df, m = 2, verbose = TRUE)
 }
+#> impute_mice(): preparing inputs (3 rows, 2 columns)
+#> impute_mice(): results: imputed 2 values across 2 columns.
 #> # A tibble: 3 × 3
 #>       a     b     c
 #>   <dbl> <dbl> <dbl>

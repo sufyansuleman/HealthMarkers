@@ -22,8 +22,8 @@ standardising, and summarising clinical and research biomarkers from
 routine laboratory and phenotypic data. It provides over 50 specialist
 functions covering insulin sensitivity indices, cardiovascular risk
 scores, inflammatory aging clocks, frailty indices, psychiatric rating
-scales, alternate-biofluid panels, and much more — all accessible
-through a unified dispatcher,
+scales, alternate-biofluid panels, and much more. All accessible through
+a unified dispatcher,
 [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md).
 
 > **Full documentation, function reference, and vignettes** are
@@ -63,6 +63,10 @@ install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
                    "RiskScorescvd", "di", "mice", "missForest"))
 ```
 
+When optional packages are absent, their dependent groups are skipped
+safely; running with `verbose = TRUE` shows which groups were computed
+and which were skipped (and why) in the summary message.
+
 ------------------------------------------------------------------------
 
 ## Package overview
@@ -92,7 +96,7 @@ install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
 
 ## How to use HealthMarkers
 
-### Path 1 — `all_health_markers()`: the dispatcher
+### all_health_markers()\`: the dispatcher
 
 **Use this when** you want to compute many marker groups in one call and
 receive everything back as a single wide tibble appended to your
@@ -142,7 +146,7 @@ adiposity_sds       adiposity_sds_strat obesity_metrics     alm_bmi
 Pass `which = "all"` to run every group (groups requiring unavailable
 optional packages will be silently skipped).
 
-### Path 2 — individual functions: targeted computation
+### Individual functions: targeted computation
 
 **Use this when** you need fine-grained control, are working with
 specialist data (e.g. OGTT time-series, DXA outputs, spirometry), or
@@ -286,16 +290,22 @@ standardised questionnaires.
 # Score one or many scales from item columns
 # Supported: PHQ-9, GAD-7, K6, K10, GHQ-12, WHO-5, ISI, MDQ,
 #            ASRS, BIS-11, SPQ, cognitive composite
+#
+# col_map is a nested list keyed by instrument name.
+# Internal item keys use zero-padded names (phq9_01 ... phq9_09).
 psych_markers(
   data,
-  col_map = list(phq1="Q1", phq2="Q2", ..., gad1="G1", ...),
+  col_map = list(
+    phq9 = list(items = list(phq9_01 = "Q1", phq9_02 = "Q2", ...)),
+    gad7 = list(items = list(gad7_01 = "G1", gad7_02 = "G2", ...))
+  ),
   which   = c("phq9", "gad7", "k10")  # choose scales to score
 )
 
-# Also available as individual functions:
-phq9_score(data, col_map = list(...))
-gad7_score(data, col_map = list(...))
-k10_score(data,  col_map = list(...))
+# If your columns are already named phq9_01 ... phq9_09 etc., no col_map needed:
+phq9_score(data)
+gad7_score(data)
+k10_score(data)
 ```
 
 ### Body composition and anthropometric SDS
@@ -360,7 +370,7 @@ testing; nephrology urine panels.
 ``` r
 saliva_markers(data, col_map = list(cortisol_wake="C_wake",
                                      cortisol_30="C_30min"))
-sweat_markers(data,  col_map = list(sweat_cl="Cl_mmol"))
+sweat_markers(data,  col_map = list(sweat_chloride="Cl_mmol"))
 urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
 ```
 
@@ -429,7 +439,8 @@ results <- all_health_markers(data = labs, which = c("lipid","liver"),
 Enable globally for an entire session:
 
 ``` r
-options(healthmarkers.verbose = TRUE)
+# levels: "none" (default), "inform" (progress only), "debug" (all internal steps)
+options(healthmarkers.verbose = "inform")
 ```
 
 ------------------------------------------------------------------------
@@ -449,29 +460,37 @@ vignettes, and a searchable article index:
 
 ## Vignettes
 
-Each domain has a dedicated vignette with worked examples and clinical
-interpretation. Browse them online or from within R:
+There are **46 vignettes** covering every marker domain. The 12 core
+vignettes below are bundled with the package; the remaining 34 are
+available exclusively on the package website (they are not built by CRAN
+to keep installation fast).
+
+**Bundled with the package** — accessible via
+[`browseVignettes()`](https://rdrr.io/r/utils/browseVignettes.html) or
+[`vignette()`](https://rdrr.io/r/utils/vignette.html):
 
 ``` r
-# Browse all 46 vignettes
 browseVignettes("HealthMarkers")
 
-# Open specific ones
-vignette("getting-started",    package = "HealthMarkers")
-vignette("fasting_is",         package = "HealthMarkers")
-vignette("cvd_risk",           package = "HealthMarkers")
-vignette("kidney_kfre",        package = "HealthMarkers")
-vignette("frailty_index",      package = "HealthMarkers")
-vignette("inflammatory_age",   package = "HealthMarkers")
-vignette("psych_markers",      package = "HealthMarkers")
-vignette("frax_score",         package = "HealthMarkers")
-vignette("liver_fat_markers",  package = "HealthMarkers")
-vignette("nfl_marker",         package = "HealthMarkers")
-vignette("impute_missing",     package = "HealthMarkers")
+vignette("getting-started",     package = "HealthMarkers")
+vignette("fasting_is",          package = "HealthMarkers")
+vignette("ogtt_is",             package = "HealthMarkers")
+vignette("glycemic_markers",    package = "HealthMarkers")
+vignette("lipid_markers",       package = "HealthMarkers")
+vignette("cvd_risk",            package = "HealthMarkers")
+vignette("liver_markers",       package = "HealthMarkers")
+vignette("frailty_index",       package = "HealthMarkers")
+vignette("inflammatory_markers",package = "HealthMarkers")
+vignette("obesity_indices",     package = "HealthMarkers")
+vignette("impute_missing",      package = "HealthMarkers")
+vignette("health_markers",      package = "HealthMarkers")
 ```
 
-All 46 vignettes are also rendered and searchable at
-<https://sufyansuleman.github.io/HealthMarkers/articles/>.
+**All 46 vignettes** (including adipo_is, tracer_dxa_is,
+allostatic_load, bone_markers, psych_markers, and 29 more) are rendered
+and searchable on the package website:
+
+> <https://sufyansuleman.github.io/HealthMarkers/articles/>
 
 ------------------------------------------------------------------------
 

@@ -50,8 +50,7 @@ Columns must exist and be coercible to numeric. Non-finite values become
   warns; `error` aborts.
 - `extreme_rules = NULL`: override bounds keyed by required keys or by
   column names.
-- `verbose = FALSE`: progress summaries via
-  [`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md).
+- `verbose = FALSE`: progress summaries via `hm_inform()`.
 
 ## How inputs are validated and cleaned
 

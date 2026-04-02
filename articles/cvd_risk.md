@@ -65,25 +65,25 @@ list(
 )
 #> $aip_head
 #> # A tibble: 6 × 2
-#>   model    value
-#>   <chr>    <dbl>
-#> 1 AIP    0.0300 
-#> 2 AIP    0.270  
-#> 3 AIP   -0.0985 
-#> 4 AIP    0.202  
-#> 5 AIP    0.00520
-#> 6 AIP    0.201  
+#>   model   value
+#>   <chr>   <dbl>
+#> 1 AIP   -0.159 
+#> 2 AIP    0.175 
+#> 3 AIP   -0.0214
+#> 4 AIP    0.310 
+#> 5 AIP    0.152 
+#> 6 AIP   -0.169 
 #> 
 #> $ldlpn_head
 #> # A tibble: 6 × 2
 #>   model  value
 #>   <chr>  <dbl>
-#> 1 LDL_PN 0.783
-#> 2 LDL_PN 1.10 
-#> 3 LDL_PN 0.956
-#> 4 LDL_PN 1.08 
-#> 5 LDL_PN 0.776
-#> 6 LDL_PN 0.685
+#> 1 LDL_PN 0.696
+#> 2 LDL_PN 0.687
+#> 3 LDL_PN 0.690
+#> 4 LDL_PN 0.909
+#> 5 LDL_PN 0.896
+#> 6 LDL_PN 0.970
 ```
 
 ## Optional risk calculators
@@ -104,31 +104,26 @@ head(dplyr::bind_rows(ascvd10, stroke10))
 ``` r
 qrisk10 <- cvd_risk(sim_small, model = "QRISK3")
 head(qrisk10)
-#> # A tibble: 6 × 3
+#> # A tibble: 1 × 3
 #>   model   year  risk
 #>   <chr>  <int> <dbl>
-#> 1 QRISK3    10 28.8 
-#> 2 QRISK3    10  4.06
-#> 3 QRISK3    10 34.1 
-#> 4 QRISK3    10 34.2 
-#> 5 QRISK3    10 12.6 
-#> 6 QRISK3    10 15.2
+#> 1 QRISK3    10    NA
 ```
 
 ``` r
 rs_out <- cvd_risk(sim_small, model = "RiskScorescvd")
 head(rs_out)
-#> # A tibble: 6 × 239
+#> # A tibble: 6 × 296
 #> # Rowwise: 
 #>      id   age sex   patid gender race  ethnicity smoker bp_treated diabetes
 #>   <int> <dbl> <chr> <int>  <int> <fct> <chr>      <int>      <int>    <int>
-#> 1     1  70.3 M         1      0 white white          1          0        0
-#> 2     2  35.4 M         2      0 white white          0          0        0
-#> 3     3  70.1 M         3      0 white white          0          0        0
-#> 4     4  67.8 M         4      0 white white          1          0        0
-#> 5     5  63.4 M         5      0 white white          0          0        0
-#> 6     6  56.6 M         6      0 white black          0          1        0
-#> # ℹ 229 more variables: atrial_fibrillation <int>, atypical_antipsy <int>,
+#> 1     1  73.1 F         1      1 white black          0          1        0
+#> 2     2  57.4 F         2      1 white white          1          0        0
+#> 3     3  52.5 F         3      1 white black          0          1        0
+#> 4     4  46.1 M         4      0 white black          0          0        0
+#> 5     5  40.0 F         5      1 white white          0          0        0
+#> 6     6  52.5 F         6      1 black white          1          0        0
+#> # ℹ 286 more variables: atrial_fibrillation <int>, atypical_antipsy <int>,
 #> #   regular_steroid_tablets <int>, erectile_disfunction <int>, migraine <int>,
 #> #   rheumatoid_arthritis <int>, chronic_kidney_disease <int>,
 #> #   severe_mental_illness <int>, systemic_lupus_erythematosis <int>,

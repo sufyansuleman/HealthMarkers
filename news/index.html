@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,7 +17,10 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -44,6 +47,10 @@
 <code><a href="../reference/pulmo_markers.html">pulmo_markers()</a></code>: fixed column-inference logic for spirometry z-score inputs.</li>
 <li>All marker functions: standardised verbose progress messages to emit at the <code>"debug"</code> level when <code>verbose = FALSE</code>, so that <code>getOption("healthmarkers.verbose")</code> controls visibility consistently across every function.</li>
 <li>Computing-phase messages are now unconditionally emitted at <code>"debug"</code> level (independent of the per-call <code>verbose</code> argument) in <code><a href="../reference/bone_markers.html">bone_markers()</a></code>, <code><a href="../reference/ckd_stage.html">ckd_stage()</a></code>, and <code><a href="../reference/corrected_calcium.html">corrected_calcium()</a></code>.</li>
+<li>
+<code><a href="../reference/all_health_markers.html">all_health_markers()</a></code>: column inference is now keyed to the requested groups, falls back to regex-based <code><a href="../reference/infer_cols.html">infer_cols()</a></code> when exact matches fail, and reports per-group status (including missing optional packages) in verbose summaries.</li>
+<li>Cardiovascular risk wrappers: <code><a href="../reference/cvd_risk_qrisk3.html">cvd_risk_qrisk3()</a></code> now prefers the correctly named <code>ethnicity</code> column (typo tolerated for backward compatibility), and optional dependency errors now report the missing package name consistently.</li>
+<li>Shared validation: lipid marker helpers now route through <code><a href="../reference/hm_validate_inputs.html">hm_validate_inputs()</a></code> so duplicate/empty mappings are caught uniformly.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="internal-0-1-1">Internal<a class="anchor" aria-label="anchor" href="#internal-0-1-1"></a></h3>
@@ -55,7 +62,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

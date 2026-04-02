@@ -49,6 +49,11 @@ isi_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `ISI_total` and `ISI_severity` (factor).
+Input columns are not included.
+
 ## References
 
 Bastien CH, Vallières A, Morin CM (2001). “Validation of the Insomnia
@@ -62,8 +67,8 @@ Medicine*, **2**(4), 297–307.
 ``` r
 df <- data.frame(isi_01 = 0, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 2)
 isi_score(df)
-#> # A tibble: 1 × 9
-#>   isi_01 isi_02 isi_03 isi_04 isi_05 isi_06 isi_07 ISI_total ISI_severity
-#>    <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>     <dbl> <fct>       
-#> 1      0      1      2      1      0      1      2         7 none        
+#> # A tibble: 1 × 2
+#>   ISI_total ISI_severity
+#>       <dbl> <fct>       
+#> 1         7 none        
 ```

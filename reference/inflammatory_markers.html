@@ -17,7 +17,7 @@ both:    union of classic and eos panels
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,7 +27,10 @@ both:    union of classic and eos panels
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -53,7 +56,7 @@ both:    union of classic and eos panels
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">col_map</span>,</span>
 <span>  panel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"classic"</span>, <span class="st">"eos"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"error"</span>, <span class="st">"omit"</span>, <span class="st">"keep"</span><span class="op">)</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -78,7 +81,9 @@ Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinop
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>one of c("error","omit","keep")</p></dd>
+<dd><p>one of c("keep","omit","error"). Default "keep" propagates NA
+in outputs where inputs are missing. "omit" drops rows with any NA in required
+inputs. "error" aborts if required inputs contain NA.</p></dd>
 
 
 <dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
@@ -178,7 +183,10 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 <span class="r-in"><span><span class="co"># Eosinophil panel</span></span></span>
 <span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span>, panel <span class="op">=</span> <span class="st">"eos"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>,</span></span>
 <span class="r-in"><span>                     check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): preparing inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): column map: neutrophils -&gt; 'neutrophils', lymphocytes -&gt; 'lymphocytes', monocytes -&gt; 'monocytes', platelets -&gt; 'platelets', CRP -&gt; 'CRP'</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>inflammatory_markers(): capped out-of-range extreme input values.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, NER 2/2, SII 2/2, SIRI 2/2, PIV 2/2, CLR 2/2, CAR 2/2, PCR 2/2, mGPS 2/2, ESR 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 12</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     NLR   PLR   LMR   NER   SII  SIRI   PIV   CLR    CAR   PCR  mGPS   ESR</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
@@ -192,7 +200,7 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -87,11 +87,11 @@ asds %>% slice_head(n = 5) %>% select(all_of(new_cols))
 #> # A tibble: 5 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1 -0.971     -0.845     -0.523
-#> 2  1.64       0.632     -0.187
-#> 3  0.339     -0.293      1.64 
-#> 4  0.0267     1.63       0.120
-#> 5 -0.379     -1.22       0.180
+#> 1  0.294     -1.46      -0.523
+#> 2 -0.597      0.105     -0.187
+#> 3 -0.0777     0.297      1.64 
+#> 4  1.48       1.30       0.120
+#> 5 -0.0968     0.930      0.180
 ```
 
 Interpretation: each `<var>_SDS` is `(x - mean)/sd`; values near 0 are
@@ -145,9 +145,9 @@ list(
 #> # A tibble: 3 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1  -0.971    -0.845     -0.523
-#> 2   1.64      0.632     -5    
-#> 3  NA        -0.293      1.64
+#> 1   0.294    -1.46      -0.523
+#> 2  -0.597     0.105     -5    
+#> 3  NA         0.297      1.64
 ```
 
 ## Diagnostics summary with `return_summary`
@@ -192,12 +192,12 @@ head(res$data)     # SDS tibble
 #> # A tibble: 6 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1 -0.971     -0.845     -0.523
-#> 2  1.64       0.632     -5    
-#> 3  0.0267     1.63       0.120
-#> 4 -0.379      5          0.180
-#> 5  1.35      -1.10       1.80 
-#> 6 -0.518      0.700      0.518
+#> 1  0.294     -1.46      -0.523
+#> 2 -0.597      0.105     -5    
+#> 3  1.48       1.30       0.120
+#> 4 -0.0968     5          0.180
+#> 5  1.26       0.339      1.80 
+#> 6  1.34      -1.30       0.518
 res$warnings       # any diagnostic messages collected
 #> [1] "adiposity_sds(): 'BMI' missingness 12.5%"                            
 #> [2] "adiposity_sds(): adjusted 2 raw extreme values (cap)."               

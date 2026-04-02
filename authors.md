@@ -2,8 +2,8 @@
 
 ## Authors
 
-- **Sufyan Suleman**. Author, maintainer.
-  [](https://orcid.org/0000-0001-6612-6915)
+- **[Sufyan Suleman](https://orcid.org/0000-0001-6612-6915)**. Author,
+  maintainer. [](https://orcid.org/0000-0001-6612-6915)
 
 ## Citation
 

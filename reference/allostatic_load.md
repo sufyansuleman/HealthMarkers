@@ -68,6 +68,18 @@ allostatic_load(
 
 tibble with AllostaticLoad or list when return_summary = TRUE.
 
+## Details
+
+**API pattern note:** Unlike most HealthMarkers functions which follow
+the standard `(data, col_map, ...)` signature, `allostatic_load()` uses
+`(data, thresholds, col_map = NULL, ...)` because `thresholds` is a
+domain-specific required argument that cannot be inferred from column
+names alone. As a result, this function is not directly dispatchable
+through the standard
+[`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md)
+registry; a custom wrapper that supplies `thresholds` explicitly would
+be required.
+
 ## References
 
 McEwen BS, Stellar E (1993). “Stress and the Individual: Mechanisms

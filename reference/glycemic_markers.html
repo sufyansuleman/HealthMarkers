@@ -27,7 +27,7 @@ TyG_index (Triglyceride-Glucose Index)
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +37,10 @@ TyG_index (Triglyceride-Glucose Index)
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -148,7 +151,14 @@ Only variables present in <code>data</code> are checked.</p></li>
 <li><p>Logs and divisions are computed safely (non-positive arguments yield NA).</p></li>
 <li><p>Optional detection/handling of extreme input values via <code>check_extreme</code> and <code>extreme_action</code>.</p></li>
 <li><p>Verbose mode prints step-by-step progress and a completion summary.</p></li>
-</ul><p>Notes on HOMA_CP:</p><ul><li><p>This function retains the package's existing operational formula:
+</ul><p>Optional marker detection:
+When <code>col_map = NULL</code> (default), an identity map for all 10 keys is built
+automatically. The seven optional keys (glucose, HbA1c, C_peptide, G0, I0,
+leptin, adiponectin) are computed only when the corresponding column exists
+in <code>data</code>. When <code>verbose = TRUE</code>, any optional markers whose columns are
+absent are listed in an informational message so the caller knows which
+derived metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.</p>
+<p>Notes on HOMA_CP:</p><ul><li><p>This function retains the package's existing operational formula:
 HOMA_CP = (G0 (mmol/L) * (C_peptide (pmol/L) / 6)) / 22.5
 which mirrors HOMA-IR's structure using a 6 pmol/muU scaling used for insulin.
 Users should verify unit conventions for their datasets; alternative C-peptide
@@ -220,6 +230,9 @@ Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 <span class="r-in"><span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> glycemic_markers(): preparing inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> glycemic_markers(): column map: HDL_c -&gt; 'HDL_c', TG -&gt; 'TG', BMI -&gt; 'BMI'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> glycemic_markers(): results: SPISE 2/2, METS_IR 1/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
@@ -232,7 +245,7 @@ Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

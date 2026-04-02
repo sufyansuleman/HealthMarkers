@@ -14,7 +14,7 @@ iAge(
   col_map,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
   verbose = FALSE,
-  na_action = c("omit", "keep", "error", "ignore", "warn"),
+  na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),
@@ -51,13 +51,13 @@ iAge(
 
 - na_action:
 
-  One of c("omit","keep","error","ignore","warn") controlling how
+  One of c("keep","omit","error","ignore","warn") controlling how
   missing inputs affect iAge:
 
-  - "omit": ignore NAs in the weighted sum (default; preserves previous
-    behavior).
+  - "keep": return NA for rows where any required marker is NA (default;
+    consistent with other functions).
 
-  - "keep": return NA for rows where any required marker is NA.
+  - "omit": ignore NAs in the weighted sum (treat missing markers as 0).
 
   - "error": abort if any required marker contains NA.
 
@@ -166,9 +166,9 @@ iAge(
 #> # A tibble: 3 × 1
 #>    iAge
 #>   <dbl>
-#> 1 1.40 
-#> 2 3.12 
-#> 3 0.801
+#> 1  1.40
+#> 2  3.12
+#> 3 NA   
 
 # Keep NA if any marker missing in a row
 iAge(
@@ -189,10 +189,13 @@ iAge(
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
   check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
 )
+#> iAge(): preparing inputs
+#> iAge(): column map: CRP -> 'CRP', IL6 -> 'IL6', TNFa -> 'TNFa'
+#> iAge(): results: iAge 2/3
 #> # A tibble: 3 × 1
 #>    iAge
 #>   <dbl>
-#> 1 1.40 
-#> 2 3.12 
-#> 3 0.801
+#> 1  1.40
+#> 2  3.12
+#> 3 NA   
 ```

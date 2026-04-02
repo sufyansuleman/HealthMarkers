@@ -54,6 +54,11 @@ phq9_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `PHQ9_total` and `PHQ9_severity`
+(factor). Input columns are not included.
+
 ## References
 
 Kroenke K, Spitzer RL, Williams JBW (2001). “The PHQ-9: Validity of a
@@ -69,9 +74,8 @@ df <- data.frame(phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1,
                  phq9_05 = 0, phq9_06 = 1, phq9_07 = 2, phq9_08 = 1,
                  phq9_09 = 0)
 phq9_score(df)
-#> # A tibble: 1 × 11
-#>   phq9_01 phq9_02 phq9_03 phq9_04 phq9_05 phq9_06 phq9_07 phq9_08 phq9_09
-#>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-#> 1       0       1       2       1       0       1       2       1       0
-#> # ℹ 2 more variables: PHQ9_total <dbl>, PHQ9_severity <fct>
+#> # A tibble: 1 × 2
+#>   PHQ9_total PHQ9_severity
+#>        <dbl> <fct>        
+#> 1          8 mild         
 ```

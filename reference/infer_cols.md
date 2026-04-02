@@ -9,9 +9,8 @@ and can be written to disk.
 Exact-name matching helper used by
 [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md)
 and related wrappers. It picks the first matching candidate for each
-key, logs decisions via
-[`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md)
-when `verbose = TRUE`, and errors if required keys cannot be resolved.
+key, logs decisions via `hm_inform()` when `verbose = TRUE`, and errors
+if required keys cannot be resolved.
 
 ## Usage
 

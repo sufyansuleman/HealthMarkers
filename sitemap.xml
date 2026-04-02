@@ -76,6 +76,7 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_scorescvd.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_stroke.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_default_col_patterns_exact.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_normalize_na_action.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/fasting_is.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/frailty_index.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/frax_score.html</loc></url>
@@ -86,7 +87,6 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/healthmarkers-rdpack-import.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_bind_cols_quiet.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.html</loc></url>
-<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_result_summary.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_validate_inputs.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hormone_markers.html</loc></url>
@@ -105,7 +105,6 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/lipid_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/liver_fat_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/liver_markers.html</loc></url>
-<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/make_marker_function.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/marker_summary.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/mdq_score.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/metabolic_markers.html</loc></url>

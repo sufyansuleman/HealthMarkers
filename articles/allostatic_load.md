@@ -68,10 +68,10 @@ al %>% slice_head(n = 5)
 #>   AllostaticLoad
 #>            <int>
 #> 1              2
-#> 2              2
-#> 3              1
-#> 4              2
-#> 5              2
+#> 2              3
+#> 3              3
+#> 4              1
+#> 5              1
 ```
 
 Interpretation: `AllostaticLoad` is the count of biomarkers above
@@ -127,8 +127,8 @@ list(
 #>   AllostaticLoad
 #>            <int>
 #> 1              2
-#> 2              2
-#> 3              0
+#> 2              3
+#> 3              2
 ```
 
 ## Diagnostics summary with `return_summary`

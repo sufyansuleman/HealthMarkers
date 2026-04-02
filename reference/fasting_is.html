@@ -13,7 +13,7 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +23,10 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL)."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -50,7 +53,7 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).</p>
 <span>  <span class="va">data</span>,</span>
 <span>  <span class="va">col_map</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"z"</span>, <span class="st">"inverse"</span>, <span class="st">"range"</span>, <span class="st">"robust"</span><span class="op">)</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
 <span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  extreme_limit <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cap"</span>, <span class="st">"NA"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
@@ -80,6 +83,7 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).</p>
 <dd><p>One of:</p><ul><li><p>"keep"  (retain all rows; indices become NA where inputs missing/non-finite)</p></li>
 <li><p>"omit"  (drop rows with any missing/non-finite required inputs)</p></li>
 <li><p>"error" (abort if any required input is missing/non-finite)</p></li>
+<li><p>"warn"  (emit a warning for rows with missing inputs, then keep them)</p></li>
 </ul></dd>
 
 
@@ -190,7 +194,7 @@ Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T,
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -99,9 +99,9 @@ col_map <- list(
   prolactin = "Prl", cortisol_0 = "Cort0", cortisol_30 = "Cort30"
 )
 hormone_markers(df, col_map = col_map)
-#> # A tibble: 2 × 9
-#>     FAI LH_FSH  E2_P T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
-#>   <dbl>  <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
-#> 1  37.5   1.25   200   0.3    20    7.5  0.00667 0.667      6.67
-#> 2  34.3   1.2    200   0.3    15    7.78 0.00625 1          6.67
+#> # A tibble: 2 × 10
+#>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
+#>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>
+#> 1  37.5   1.25   200  6.67   0.3    20    7.5  0.00667 0.667      6.67
+#> 2  34.3   1.2    200 10      0.3    15    7.78 0.00625 1          6.67
 ```

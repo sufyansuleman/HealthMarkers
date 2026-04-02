@@ -64,12 +64,12 @@ head(ckd_out)
 #> # A tibble: 6 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     
-#> 1 G2        A2                Moderate  
+#> 1 G1        A2                Moderate  
 #> 2 G2        A1                Low       
-#> 3 G1        A2                Moderate  
-#> 4 G1        A2                Moderate  
-#> 5 G2        A2                Moderate  
-#> 6 G1        A2                Moderate
+#> 3 G2        A2                Moderate  
+#> 4 G3a       A1                Moderate  
+#> 5 G1        A1                Low       
+#> 6 G2        A2                Moderate
 ```
 
 ## Arguments that matter
@@ -114,12 +114,12 @@ list(
 #> # A tibble: 6 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     
-#> 1 G2        A2                Moderate  
+#> 1 G1        A2                Moderate  
 #> 2 G2        A1                Low       
 #> 3 NA        A2                NA        
-#> 4 G1        A2                Moderate  
-#> 5 G2        A2                Moderate  
-#> 6 G1        A2                Moderate
+#> 4 G3a       A1                Moderate  
+#> 5 G1        A1                Low       
+#> 6 G2        A2                Moderate
 ```
 
 ## Extreme-value screening (optional)
@@ -145,7 +145,7 @@ head(select(a_cap, Albuminuria_stage, KDIGO_risk))
 #> 1 A2                Moderate  
 #> 2 A1                Low       
 #> 3 A2                NA        
-#> 4 A2                Moderate  
+#> 4 A1                Moderate  
 #> 5 A3                Moderate  
 #> 6 A2                Moderate
 ```

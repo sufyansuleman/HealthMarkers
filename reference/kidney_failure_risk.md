@@ -180,6 +180,9 @@ kidney_failure_risk(
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
   check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
 )
+#> kidney_failure_risk(): preparing inputs
+#> kidney_failure_risk(): column map: age -> 'age', sex -> 'sex', eGFR -> 'eGFR', UACR -> 'UACR'
+#> kidney_failure_risk(): results: KFRE_2yr 2/2, KFRE_5yr 2/2
 #> # A tibble: 2 × 2
 #>   KFRE_2yr KFRE_5yr
 #>      <dbl>    <dbl>

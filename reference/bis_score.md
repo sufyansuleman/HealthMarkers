@@ -55,6 +55,11 @@ bis_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only (total and optional subscales). Input
+columns are not included.
+
 ## References
 
 Patton JH, Stanford MS, Barratt ES (1995). “Factor Structure of the
@@ -69,8 +74,8 @@ Barratt Impulsiveness Scale.” *Journal of Clinical Psychology*,
 bis_key <- list(items = sprintf("bis_%02d", 1:5), min_val = 1, max_val = 4)
 df <- data.frame(bis_01 = 1, bis_02 = 2, bis_03 = 3, bis_04 = 4, bis_05 = 2)
 bis_score(df, key = bis_key)
-#> # A tibble: 1 × 6
-#>   bis_01 bis_02 bis_03 bis_04 bis_05 BIS_total
-#>    <dbl>  <dbl>  <dbl>  <dbl>  <dbl>     <dbl>
-#> 1      1      2      3      4      2        12
+#> # A tibble: 1 × 1
+#>   BIS_total
+#>       <dbl>
+#> 1        12
 ```

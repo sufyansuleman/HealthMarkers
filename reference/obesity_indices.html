@@ -29,7 +29,7 @@ Conicity Index (CI)
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,7 +39,10 @@ Conicity Index (CI)
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -157,11 +160,12 @@ Conicity Index (CI)
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with original columns plus new indices:</p><ul><li><p>weight_kg, height_m, BMI, BMI_cat,</p></li>
-<li><p>WHR, WHRadjBMI (optional), waist_to_height_ratio,</p></li>
+    <p>A tibble with only the computed indices (slim output):</p><ul><li><p>weight_kg, height_m (unit-normalised intermediates),</p></li>
+<li><p>BMI, BMI_cat,</p></li>
+<li><p>WHR, WHRadjBMI (if <code>adjust_WHR = TRUE</code>),</p></li>
+<li><p>waist_to_height_ratio, waist_to_BMI_ratio, weight_to_height_ratio,</p></li>
 <li><p>AVI, BAI, ABSI, BRI, CI,</p></li>
-<li><p>waist_to_BMI_ratio, weight_to_height_ratio,</p></li>
-<li><p>RFM (optional).</p></li>
+<li><p>RFM (if <code>include_RFM = TRUE</code>).</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -266,14 +270,16 @@ Maessen MF, Eijsvogels TM, Verheggen RJ, others (2014).
 <span class="r-in"><span>  include_RFM  <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  verbose      <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 20</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>    80   165    90    95     1        80     1.65  29.4 Overweight    0.947</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 10 more variables: waist_to_height_ratio &lt;dbl&gt;, waist_to_BMI_ratio &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   weight_to_height_ratio &lt;dbl&gt;, AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   CI &lt;dbl&gt;, WHRadjBMI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> obesity_indices(): preparing inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> obesity_indices(): column map: weight -&gt; 'wt', height -&gt; 'ht', waist -&gt; 'waist', hip -&gt; 'hip', sex -&gt; 'sex'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, WHRadjBMI 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2, RFM 2/2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 15</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        70     1.75  22.9 Normal weight 0.8           0                  45.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        80     1.65  29.4 Overweight    0.947         0                  54.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: waist_to_BMI_ratio &lt;dbl&gt;, weight_to_height_ratio &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -281,7 +287,7 @@ Maessen MF, Eijsvogels TM, Verheggen RJ, others (2014).
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

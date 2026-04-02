@@ -59,6 +59,12 @@ ghq12_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `GHQ12_total_likert` (likert method) or
+`GHQ12_total_binary` and `GHQ12_case_binary` (binary method). Input
+columns are not included.
+
 ## Examples
 
 ``` r
@@ -66,10 +72,8 @@ df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
                  ghq12_05 = 0, ghq12_06 = 1, ghq12_07 = 0, ghq12_08 = 1,
                  ghq12_09 = 2, ghq12_10 = 1, ghq12_11 = 0, ghq12_12 = 1)
 ghq12_score(df, method = "likert")
-#> # A tibble: 1 × 13
-#>   ghq12_01 ghq12_02 ghq12_03 ghq12_04 ghq12_05 ghq12_06 ghq12_07 ghq12_08
-#>      <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>
-#> 1        0        1        2        1        0        1        0        1
-#> # ℹ 5 more variables: ghq12_09 <dbl>, ghq12_10 <dbl>, ghq12_11 <dbl>,
-#> #   ghq12_12 <dbl>, GHQ12_total_likert <dbl>
+#> # A tibble: 1 × 1
+#>   GHQ12_total_likert
+#>                <dbl>
+#> 1                 10
 ```

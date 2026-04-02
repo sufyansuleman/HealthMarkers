@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -174,12 +178,12 @@ are fixed.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">#&gt;   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  8.30      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  4.18      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  6.35      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  5.96      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  7.14      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  4.53      <span style="color: #BB0000;">NA</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  6.54    175.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.39</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.04    163.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  6.74    342.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.42</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  4.13  -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">870.</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.07</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  6.25    271.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.95</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.34    347.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.37</span></span></code></pre></div>
 <p>Interpretation: SPISE and METS_IR summarize insulin
 sensitivity/resistance; TyG_index rises with higher TG/glucose; HOMA_CP
 approximates insulin resistance via C-peptide and glucose; LAR and ASI
@@ -254,14 +258,14 @@ warn/cap/NA/error using default broad ranges; override via
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $capped_preview</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   SPISE  METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  8.30    -<span style="color: #BB0000;">591.</span>           1    12.2  1.25 0.133       8.35</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  4.18 -<span style="color: #BB0000; text-decoration: underline;">222</span><span style="color: #BB0000;">583.</span>          <span style="color: #BB0000;">NA</span>    20.7  1.71 0.077<span style="text-decoration: underline;">8</span>      9.13</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.64     248.           0    25.9  2.5  0.05       11.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  5.96    <span style="text-decoration: underline;">5</span>710.           1    17.2  1.22 0.112       8.92</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  7.14     153.           1    16.9  0.9  0.133       8.95</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  4.53     278.           0    14.4  1.86 0.1         9.16</span></span></code></pre></div>
+<span><span class="co">#&gt;   SPISE METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  6.54    179.           1    12.2  1.25 0.133       8.45</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.04    173.          <span style="color: #BB0000;">NA</span>    20.7  1.71 0.077<span style="text-decoration: underline;">8</span>      9.31</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.82    504.           0    25.9  2.5  0.05       11.6 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  4.13  -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">886.</span>           1    17.2  1.22 0.112       9.10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  6.25    284.           1    16.9  0.9  0.133       9.09</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.34    332.           0    14.4  1.86 0.1         8.25</span></span></code></pre></div>
 <p><code>na_action = "keep"</code> preserves all rows (missing inputs
 flow to <code>NA</code> outputs); <code>na_action = "omit"</code> drops
 rows with missing/invalid used inputs.
@@ -301,6 +305,7 @@ a results summary.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; glycemic_markers(): preparing inputs</span></span>
 <span><span class="co">#&gt; glycemic_markers(): column map: HDL_c -&gt; 'HDL_c', TG -&gt; 'TG', BMI -&gt; 'BMI'</span></span>
+<span><span class="co">#&gt; glycemic_markers(): optional markers not computed (columns absent): HbA1c, C_peptide, G0, I0, leptin, adiponectin</span></span>
 <span><span class="co">#&gt; glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index</span></span>
@@ -333,7 +338,7 @@ marker definitions.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

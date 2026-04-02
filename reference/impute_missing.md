@@ -88,8 +88,10 @@ impute_missing(df, method = "mean")
 #> 2     2     2 b    
 #> 3     3     2 c    
 impute_missing(df, method = "median", verbose = TRUE)
+#> impute_missing(): preparing inputs (3 rows, 2 column(s), method='median')
 #> Warning: impute_missing(): column 'a' has high missingness (33.3%).
 #> Warning: impute_missing(): column 'b' has high missingness (66.7%).
+#> impute_missing(): results: imputed 3 values across 2 columns [a=1, b=2]
 #> # A tibble: 3 × 3
 #>       a     b c    
 #>   <dbl> <dbl> <chr>

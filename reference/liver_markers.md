@@ -21,9 +21,9 @@ Given routine labs and anthropometry, computes:
 ``` r
 liver_markers(
   data,
-  col_map = list(BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT =
-    "GGT", age = "age", AST = "AST", ALT = "ALT", platelets = "platelets", albumin =
-    "albumin", diabetes = "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
+  col_map = list(BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT", age = "age", AST =
+    "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes =
+    "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
@@ -43,7 +43,7 @@ liver_markers(
 
   Named list mapping these keys -\> column names in `data`:
 
-  - `BMI` (kg/m^2), `waist` (cm), `triglycerides` (mg/dL), `GGT` (U/L),
+  - `BMI` (kg/m^2), `waist` (cm), `TG` (mg/dL), `GGT` (U/L),
 
   - `age` (years), `AST` (U/L), `ALT` (U/L), `platelets` (10^9/L),
 
@@ -182,7 +182,7 @@ library(tibble)
 df <- tibble(
   BMI           = 24,
   waist         = 80,
-  triglycerides = 150, # mg/dL
+  TG = 150, # mg/dL
   GGT           = 30,
   age           = 45,
   AST           = 25,
@@ -194,6 +194,9 @@ df <- tibble(
   creatinine    = 0.9  # mg/dL
 )
 liver_markers(df, verbose = TRUE)
+#> liver_markers(): preparing inputs
+#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'TG', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
+#> liver_markers(): results: FLI 1/1, NFS 1/1, APRI 1/1, FIB4 1/1, BARD 1/1, ALBI 1/1, MELD_XI 1/1
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
@@ -207,6 +210,9 @@ liver_markers(
   extreme_action = "cap",
   verbose = TRUE
 )
+#> liver_markers(): preparing inputs
+#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'TG', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
+#> liver_markers(): results: FLI 1/1, NFS 1/1, APRI 1/1, FIB4 1/1, BARD 1/1, ALBI 1/1, MELD_XI 1/1
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>

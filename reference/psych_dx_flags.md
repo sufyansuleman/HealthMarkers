@@ -32,15 +32,20 @@ psych_dx_flags(
 
   How to handle rows with missing items: `keep`, `omit`, or `error`.
 
+## Value
+
+A tibble of flag columns only: `dx_any_psych`, `dx_internalizing`,
+`dx_externalizing`, `dx_psychotic`, `dx_count`. Input columns are not
+included.
+
 ## Examples
 
 ``` r
 df <- data.frame(dx_mdd = c(1, 0), dx_bipolar = c(0, 1))
 psych_dx_flags(df, col_map = list(dx = list(mdd = "dx_mdd", bipolar = "dx_bipolar")))
-#> # A tibble: 2 × 7
-#>   dx_mdd dx_bipolar dx_any_psych dx_internalizing dx_externalizing dx_psychotic
-#>    <dbl>      <dbl> <lgl>        <lgl>            <lgl>            <lgl>       
-#> 1      1          0 TRUE         TRUE             NA               NA          
-#> 2      0          1 TRUE         NA               NA               NA          
-#> # ℹ 1 more variable: dx_count <dbl>
+#> # A tibble: 2 × 5
+#>   dx_any_psych dx_internalizing dx_externalizing dx_psychotic dx_count
+#>   <lgl>        <lgl>            <lgl>            <lgl>           <dbl>
+#> 1 TRUE         TRUE             NA               NA                  1
+#> 2 TRUE         NA               NA               NA                  1
 ```

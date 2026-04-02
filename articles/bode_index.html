@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -50,7 +54,7 @@
       <h1>BODE Index</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/bode_index.Rmd" class="external-link"><code>vignettes/bode_index.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/bode_index.Rmd" class="external-link"><code>vignettes/articles/bode_index.Rmd</code></a></small>
       <div class="d-none name"><code>bode_index.Rmd</code></div>
     </div>
 
@@ -147,12 +151,12 @@ scores.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0     91.8          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0     99.6          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          1     94.7          0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          3    114.           0          0          3         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0     79.7          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          0     91.3          0          0          0         0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1     80.9          0          0          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          3    103.           0          0          3         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2    114.           0          0          2         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0     88.0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          1    104.           0          0          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          1    113.           0          0          1         0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -205,11 +209,11 @@ keep/warn/ignore; rows drop with omit; error aborts.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_score walk_score mmrc_score bmi_score</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1          0          0          1         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         <span style="color: #BB0000;">NA</span>          0          0         <span style="color: #BB0000;">NA</span>         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          1          0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          3          0          0          3         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2          0          0          2         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          1          0          0          1         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         <span style="color: #BB0000;">NA</span>          0          0         <span style="color: #BB0000;">NA</span>         0</span></span></code></pre></div>
 </div>
 </div>
@@ -238,12 +242,12 @@ extremes.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_score walk_score mmrc_score bmi_score</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          1          0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          3          0          0          3         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          3          0          3          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          0          0          0          0         0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1          0          0          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          3          0          0          3         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2          0          0          2         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          4          0          3          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          1          0          0          1         0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -347,7 +351,7 @@ active:</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

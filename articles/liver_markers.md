@@ -19,10 +19,9 @@ MELD-XI) with configurable handling for missing data and extreme values.
 
 - `data`: data.frame/tibble with required inputs.
 - `col_map`: named list mapping required keys to columns (units assumed,
-  no conversion): BMI (kg/m^2), waist (cm), triglycerides (mg/dL), GGT
-  (U/L), age (years), AST (U/L), ALT (U/L), platelets (10^9/L), albumin
-  (g/L), diabetes (0/1 or logical), bilirubin (mg/dL), creatinine
-  (mg/dL).
+  no conversion): BMI (kg/m^2), waist (cm), TG (mg/dL), GGT (U/L), age
+  (years), AST (U/L), ALT (U/L), platelets (10^9/L), albumin (g/L),
+  diabetes (0/1 or logical), bilirubin (mg/dL), creatinine (mg/dL).
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows missing
   required inputs; `error` aborts; `ignore` treated as keep; `warn`
   keeps but issues high-missingness warnings via `na_warn_prop`.
@@ -61,7 +60,7 @@ liver <- tibble::tibble(
 liver_markers(
   data = liver,
   col_map = list(
-    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    BMI = "BMI", waist = "waist", TG = "triglycerides", GGT = "GGT", age = "age",
     AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
     bilirubin = "bilirubin", creatinine = "creatinine"
   ),
@@ -102,14 +101,14 @@ old_opt <- options(healthmarkers.verbose = "inform")
 liver_markers(
   data = liver,
   col_map = list(
-    BMI = "BMI", waist = "waist", triglycerides = "triglycerides", GGT = "GGT", age = "age",
+    BMI = "BMI", waist = "waist", TG = "triglycerides", GGT = "GGT", age = "age",
     AST = "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes = "diabetes",
     bilirubin = "bilirubin", creatinine = "creatinine"
   ),
   verbose = TRUE
 )
 #> liver_markers(): preparing inputs
-#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', triglycerides -> 'triglycerides', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
+#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'triglycerides', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
 #> liver_markers(): results: FLI 3/3, NFS 3/3, APRI 3/3, FIB4 3/3, BARD 3/3, ALBI 3/3, MELD_XI 3/3
 #> # A tibble: 3 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI

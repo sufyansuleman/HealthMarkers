@@ -119,6 +119,9 @@ adiposity_sds_strat(
   col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
   ref = ref
 )
+#> adiposity_sds_strat(): preparing inputs (2 vars, 3 rows)
+#> adiposity_sds_strat(): column map: BMI -> 'BMI', waist -> 'waist'
+#> adiposity_sds_strat(): results: BMI_SDS 3/3, waist_SDS 3/3
 #> # A tibble: 3 × 2
 #>   BMI_SDS waist_SDS
 #>     <dbl>     <dbl>

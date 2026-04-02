@@ -28,6 +28,20 @@
   [`ckd_stage()`](https://sufyansuleman.github.io/HealthMarkers/reference/ckd_stage.md),
   and
   [`corrected_calcium()`](https://sufyansuleman.github.io/HealthMarkers/reference/corrected_calcium.md).
+- [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md):
+  column inference is now keyed to the requested groups, falls back to
+  regex-based
+  [`infer_cols()`](https://sufyansuleman.github.io/HealthMarkers/reference/infer_cols.md)
+  when exact matches fail, and reports per-group status (including
+  missing optional packages) in verbose summaries.
+- Cardiovascular risk wrappers:
+  [`cvd_risk_qrisk3()`](https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_qrisk3.md)
+  now prefers the correctly named `ethnicity` column (typo tolerated for
+  backward compatibility), and optional dependency errors now report the
+  missing package name consistently.
+- Shared validation: lipid marker helpers now route through
+  [`hm_validate_inputs()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_validate_inputs.md)
+  so duplicate/empty mappings are caught uniformly.
 
 ### Internal
 

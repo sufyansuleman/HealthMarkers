@@ -191,6 +191,9 @@ ogtt_is(
   normalize = "none",
   verbose = TRUE
 )
+#> ogtt_is(): preparing inputs
+#> ogtt_is(): column map: G0 -> 'G0', I0 -> 'I0', G30 -> 'G30', I30 -> 'I30', G120 -> 'G120', I120 -> 'I120', weight -> 'weight', bmi -> 'bmi', age -> 'age', sex -> 'sex'
+#> ogtt_is(): results: Isi_120 1/1, Cederholm_index 1/1, Gutt_index 1/1, Avignon_Si0 1/1, Avignon_Si120 1/1, Avignon_Sim 1/1, Modified_stumvoll 1/1, Stumvoll_Demographics 1/1, Matsuda_AUC 1/1, Matsuda_ISI 1/1, BigttSi 1/1, Ifc_inv 1/1, HIRI_inv 1/1, Belfiore_isi_gly 1/1
 #> # A tibble: 1 × 14
 #>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim
 #>     <dbl>           <dbl>      <dbl>       <dbl>         <dbl>       <dbl>

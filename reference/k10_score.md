@@ -49,15 +49,19 @@ k10_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `K10_total`. Input columns are not
+included.
+
 ## Examples
 
 ``` r
 df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
                  k10_06 = 1, k10_07 = 2, k10_08 = 1, k10_09 = 0, k10_10 = 1)
 k10_score(df)
-#> # A tibble: 1 × 11
-#>   k10_01 k10_02 k10_03 k10_04 k10_05 k10_06 k10_07 k10_08 k10_09 k10_10
-#>    <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>
-#> 1      0      1      2      1      0      1      2      1      0      1
-#> # ℹ 1 more variable: K10_total <dbl>
+#> # A tibble: 1 × 1
+#>   K10_total
+#>       <dbl>
+#> 1         9
 ```

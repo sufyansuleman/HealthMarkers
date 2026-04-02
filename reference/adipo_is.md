@@ -82,8 +82,7 @@ adipo_is(
 
 - verbose:
 
-  Logical; when TRUE, emits progress via
-  [`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md)
+  Logical; when TRUE, emits progress via `hm_inform()`
 
 - ...:
 

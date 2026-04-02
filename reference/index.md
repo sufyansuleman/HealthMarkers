@@ -216,8 +216,6 @@ Fasting, OGTT, adipose-tissue, tracer and DXA-based indices.
   : Normalize a numeric vector
 - [`validate_inputs()`](https://sufyansuleman.github.io/HealthMarkers/reference/validate_inputs.md)
   : Validate required inputs for a calling function
-- [`make_marker_function()`](https://sufyansuleman.github.io/HealthMarkers/reference/make_marker_function.md)
-  : Generate a marker function
 - [`marker_summary()`](https://sufyansuleman.github.io/HealthMarkers/reference/marker_summary.md)
   : Summarize marker outputs
 - [`health_summary()`](https://sufyansuleman.github.io/HealthMarkers/reference/health_summary.md)

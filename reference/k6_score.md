@@ -54,6 +54,11 @@ k6_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `K6_total` and `K6_case`. Input columns
+are not included.
+
 ## References
 
 Prochaska JJ, Sung H, Max W, Shi Y, Ong M (2012). “Validity Study of the
@@ -67,8 +72,8 @@ Psychiatric Research*, **21**(2), 88–97.
 ``` r
 df <- data.frame(k6_01 = 0, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 0, k6_06 = 1)
 k6_score(df)
-#> # A tibble: 1 × 8
-#>   k6_01 k6_02 k6_03 k6_04 k6_05 k6_06 K6_total K6_case
-#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>    <dbl> <lgl>  
-#> 1     0     1     2     1     0     1        5 FALSE  
+#> # A tibble: 1 × 2
+#>   K6_total K6_case
+#>      <dbl> <lgl>  
+#> 1        5 FALSE  
 ```

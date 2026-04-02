@@ -9,7 +9,7 @@ validation, and references."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,10 @@ validation, and references."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul></div>
 
 
@@ -103,10 +106,13 @@ see di::di documentation for syntax.</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>One of:</p><ul><li><p>Legacy: "ignore","warn","error"</p></li>
-<li><p>HM-CS:  "keep","omit" (keep == ignore; omit drops rows with any NA in selected deficits)
-Default "ignore".</p></li>
-</ul></dd>
+<dd><p>One of <code>c("keep","omit","error","warn","ignore")</code>. Controls
+handling of missing values in selected deficit columns. <code>"keep"</code> (and its
+backward-compatible alias <code>"ignore"</code>) passes NAs through to di::di.
+<code>"warn"</code> emits a warning and then keeps NAs (alias for <code>"keep"</code> with a
+missingness warning). <code>"omit"</code> drops rows with any NA in selected deficits
+before computing. <code>"error"</code> stops if any NA is detected.
+Default <code>"ignore"</code> (retained for backward compatibility; equivalent to <code>"keep"</code>).</p></dd>
 
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
@@ -168,7 +174,7 @@ columns (post-capping if applied). Age is included if present.</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

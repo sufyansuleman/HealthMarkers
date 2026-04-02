@@ -197,6 +197,9 @@ df <- tibble::tibble(
   Phe              = c(50, 55)
 )
 nutrient_markers(df, verbose = TRUE)
+#> nutrient_markers(): preparing inputs
+#> nutrient_markers(): column map: ferritin -> 'ferritin', transferrin_sat -> 'transferrin_sat', albumin -> 'albumin', total_protein -> 'total_protein', EPA -> 'EPA', DHA -> 'DHA', Mg -> 'Mg', creatinine -> 'creatinine', glycated_albumin -> 'glycated_albumin', uric_acid -> 'uric_acid', BUN -> 'BUN', phosphate -> 'phosphate', calcium -> 'calcium', Na -> 'Na', K -> 'K', Cl -> 'Cl', HCO3 -> 'HCO3', Tyr -> 'Tyr', Phe -> 'Phe'
+#> nutrient_markers(): results: FerritinTS 2/2, AGR 2/2, Omega3Index 2/2, Mg_Cr_Ratio 2/2, GlycatedAlbuminPct 2/2, UA_Cr_Ratio 2/2, BUN_Cr_Ratio 2/2, Ca_x_Phosphate 2/2, AnionGap 2/2, Tyr_Phe_Ratio 2/2
 #> # A tibble: 2 × 10
 #>   FerritinTS   AGR Omega3Index Mg_Cr_Ratio GlycatedAlbuminPct UA_Cr_Ratio
 #>        <dbl> <dbl>       <dbl>       <dbl>              <dbl>       <dbl>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -157,7 +161,7 @@ outputs.</li>
 <span><span class="va">sim_small</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span><span class="va">sim</span>, n <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  30 225</span></span></code></pre></div>
+<span><span class="co">#&gt; [1]  30 282</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="minimal-example-broad-panels">Minimal example: broad panels<a class="anchor" aria-label="anchor" href="#minimal-example-broad-panels"></a>
@@ -176,20 +180,20 @@ columns.</p>
 <span></span>
 <span><span class="va">hm_new_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hm_out</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">hm_out</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">hm_new_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      SPISE METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c  remnant_c</span></span>
-<span><span class="co">#&gt; 1 8.297275      NA           0      NA  NA  NA        NA  4.472486  0.4091206</span></span>
-<span><span class="co">#&gt; 2 4.177562      NA           0      NA  NA  NA        NA  3.338557  0.2301283</span></span>
-<span><span class="co">#&gt; 3 6.351097      NA           0      NA  NA  NA        NA  4.154120  1.4407099</span></span>
-<span><span class="co">#&gt; 4 5.963605      NA           0      NA  NA  NA        NA  4.112558  1.1387383</span></span>
-<span><span class="co">#&gt; 5 7.139034      NA           0      NA  NA  NA        NA  3.324661  0.2533190</span></span>
-<span><span class="co">#&gt; 6 4.529109      NA           0      NA  NA  NA        NA  3.572372 -0.2791537</span></span>
-<span><span class="co">#&gt;   ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1     5.952950    1.0716354      4.499879  0.5855594</span></span>
-<span><span class="co">#&gt; 2     4.340045    1.8606939      3.109814  1.0015916</span></span>
-<span><span class="co">#&gt; 3     3.679324    0.7970881      1.750095  0.7404117</span></span>
-<span><span class="co">#&gt; 4     5.058502    1.5935284      2.934731  0.6027401</span></span>
-<span><span class="co">#&gt; 5     3.088419    1.0120564      1.929294  0.4739219</span></span>
-<span><span class="co">#&gt; 6     3.564597    1.5878714      2.765001  0.5349333</span></span>
+<span><span class="co">#&gt;      SPISE    METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c</span></span>
+<span><span class="co">#&gt; 1 6.538621   175.4422           0      NA  NA  NA  8.390992  2.805635</span></span>
+<span><span class="co">#&gt; 2 7.040211   163.2440           0      NA  NA  NA  9.133717  4.411394</span></span>
+<span><span class="co">#&gt; 3 6.738432   342.1412           0      NA  NA  NA  8.423506  3.306616</span></span>
+<span><span class="co">#&gt; 4 4.125126 -1869.7322           0      NA  NA  NA  9.073867  3.719980</span></span>
+<span><span class="co">#&gt; 5 6.245599   270.7383           0      NA  NA  NA  8.947845  4.025115</span></span>
+<span><span class="co">#&gt; 6 5.338716   347.0725           0      NA  NA  NA  8.365320  3.879587</span></span>
+<span><span class="co">#&gt;    remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
+<span><span class="co">#&gt; 1 -0.1707940     2.828547    0.6934188      1.939860  0.4725922</span></span>
+<span><span class="co">#&gt; 2  1.8086884     3.946180    1.4946281      1.738235  0.6374380</span></span>
+<span><span class="co">#&gt; 3  0.9604294     3.702865    0.9518317      1.917799  0.3916076</span></span>
+<span><span class="co">#&gt; 4 -0.1980635     4.916000    2.0409466      4.124501  0.8039860</span></span>
+<span><span class="co">#&gt; 5  0.7886167     4.085650    1.4183511      2.481097  0.5155962</span></span>
+<span><span class="co">#&gt; 6  0.6680692     3.971257    0.6777942      2.459603  0.8798657</span></span>
 <span></span>
 <span><span class="co"># New columns added (names only):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">hm_new_cols</span><span class="op">)</span></span>
@@ -294,14 +298,14 @@ differ.</p>
 <span><span class="va">aip_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aip</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">aip</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">aip_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
-<span><span class="co">#&gt;   model    value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP    0.030<span style="text-decoration: underline;">0</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP    0.270  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.202  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.005<span style="text-decoration: underline;">20</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AIP    0.201</span></span></code></pre></div>
+<span><span class="co">#&gt;   model   value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP   -<span style="color: #BB0000;">0.159</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP    0.175 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.310 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.152 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AIP   -<span style="color: #BB0000;">0.169</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="handling-missingness">Handling missingness<a class="anchor" aria-label="anchor" href="#handling-missingness"></a>
@@ -315,23 +319,32 @@ differ when required inputs are missing.</p>
 <span><span class="co"># Keep rows (produces NA where inputs are missing)</span></span>
 <span><span class="fu"><a href="../reference/cvd_marker_aip.html">cvd_marker_aip</a></span><span class="op">(</span><span class="va">missing_demo</span>, col_map <span class="op">=</span> <span class="va">lipid_cols</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   model    value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP    0.030<span style="text-decoration: underline;">0</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP   <span style="color: #BB0000;">NA</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.202  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.005<span style="text-decoration: underline;">20</span></span></span>
+<span><span class="co">#&gt;   model   value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP   -<span style="color: #BB0000;">0.159</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP   <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.310 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.152</span></span>
 <span></span>
 <span><span class="co"># Drop rows with required NA</span></span>
 <span><span class="fu"><a href="../reference/cvd_marker_aip.html">cvd_marker_aip</a></span><span class="op">(</span><span class="va">missing_demo</span>, col_map <span class="op">=</span> <span class="va">lipid_cols</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
-<span><span class="co">#&gt;   model    value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP    0.030<span style="text-decoration: underline;">0</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP   -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP    0.202  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.005<span style="text-decoration: underline;">20</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   model   value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP   -<span style="color: #BB0000;">0.159</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP   -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP    0.310 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.152</span></span></code></pre></div>
+<blockquote>
+<p><strong><code>na_action</code> aliases:</strong>
+<code>"ignore"</code> is a backward-compatible alias for
+<code>"keep"</code> (same behavior; retained so older code continues to
+work). <code>"warn"</code> is also an alias for <code>"keep"</code> that
+additionally emits a missingness warning. If you are reading another
+function’s help page and see <code>"ignore"</code> listed first in the
+choices, it behaves identically to <code>"keep"</code>.</p>
+</blockquote>
 <p>If you want to impute before computing markers:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">imputed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/impute_missing.html">impute_missing</a></span><span class="op">(</span><span class="va">sim_small</span>, method <span class="op">=</span> <span class="st">"mice"</span>, m <span class="op">=</span> <span class="fl">1</span>, maxit <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
@@ -377,12 +390,33 @@ sweat markers with any warnings emitted.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   Na_K_ratio sweat_rate</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       7.84      0.388</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       4.78      0.123</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       5.42      0.443</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       2.28      0.157</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       8.53      0.296</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      10.1       0.534</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       7.36     0.594 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       4.51     0.579 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       4.67     0.128 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      14.2      0.049<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      10.6      0.131 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>       5.89     0.062<span style="text-decoration: underline;">9</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="verbose-mode-skipped-optional-markers">Verbose mode: skipped optional markers<a class="anchor" aria-label="anchor" href="#verbose-mode-skipped-optional-markers"></a>
+</h2>
+<p>When a function supports optional inputs (columns that extend outputs
+when present), set <code>verbose = TRUE</code> to see which optional
+markers were not computed because their columns were absent from the
+data. This helps you distinguish “column not found” from “marker
+intentionally absent”.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Provide only required columns; optional columns are absent</span></span>
+<span><span class="va">glyc_min</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HDL_c"</span>, <span class="st">"TG"</span>, <span class="st">"BMI"</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># verbose = TRUE lists which optional markers were skipped</span></span>
+<span><span class="va">glyc_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span><span class="va">glyc_min</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>The informational message lists all optional keys (glucose, HbA1c,
+C_peptide, G0, I0, leptin, adiponectin) that had no matching column, so
+the caller knows which derived metrics (e.g., prediabetes flag, HOMA_CP,
+LAR) will be <code>NA</code> in the output. Once you add those columns
+to your data, the message disappears and the metrics are computed
+automatically.</p>
 </div>
 <div class="section level2">
 <h2 id="common-functions">Common functions<a class="anchor" aria-label="anchor" href="#common-functions"></a>
@@ -393,7 +427,7 @@ sweat markers with any warnings emitted.</p>
 <p>Input: <code>sim_small</code>; groups: glycemic, lipid, renal,
 inflammatory.</p>
 <p>Output: a tibble with those markers (first rows shown).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cardio_panel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  which <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"glycemic"</span>, <span class="st">"lipid"</span>, <span class="st">"renal"</span>, <span class="st">"inflammatory"</span><span class="op">)</span>,</span>
@@ -402,39 +436,39 @@ inflammatory.</p>
 <span></span>
 <span><span class="va">cardio_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cardio_panel</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cardio_panel</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">cardio_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      SPISE METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c  remnant_c</span></span>
-<span><span class="co">#&gt; 1 8.297275      NA           0      NA  NA  NA        NA  4.472486  0.4091206</span></span>
-<span><span class="co">#&gt; 2 4.177562      NA           0      NA  NA  NA        NA  3.338557  0.2301283</span></span>
-<span><span class="co">#&gt; 3 6.351097      NA           0      NA  NA  NA        NA  4.154120  1.4407099</span></span>
-<span><span class="co">#&gt; 4 5.963605      NA           0      NA  NA  NA        NA  4.112558  1.1387383</span></span>
-<span><span class="co">#&gt; 5 7.139034      NA           0      NA  NA  NA        NA  3.324661  0.2533190</span></span>
-<span><span class="co">#&gt; 6 4.529109      NA           0      NA  NA  NA        NA  3.572372 -0.2791537</span></span>
-<span><span class="co">#&gt;   ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1     5.952950    1.0716354      4.499879  0.5855594</span></span>
-<span><span class="co">#&gt; 2     4.340045    1.8606939      3.109814  1.0015916</span></span>
-<span><span class="co">#&gt; 3     3.679324    0.7970881      1.750095  0.7404117</span></span>
-<span><span class="co">#&gt; 4     5.058502    1.5935284      2.934731  0.6027401</span></span>
-<span><span class="co">#&gt; 5     3.088419    1.0120564      1.929294  0.4739219</span></span>
-<span><span class="co">#&gt; 6     3.564597    1.5878714      2.765001  0.5349333</span></span></code></pre></div>
+<span><span class="co">#&gt;      SPISE    METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c</span></span>
+<span><span class="co">#&gt; 1 6.538621   175.4422           0      NA  NA  NA  8.390992  2.805635</span></span>
+<span><span class="co">#&gt; 2 7.040211   163.2440           0      NA  NA  NA  9.133717  4.411394</span></span>
+<span><span class="co">#&gt; 3 6.738432   342.1412           0      NA  NA  NA  8.423506  3.306616</span></span>
+<span><span class="co">#&gt; 4 4.125126 -1869.7322           0      NA  NA  NA  9.073867  3.719980</span></span>
+<span><span class="co">#&gt; 5 6.245599   270.7383           0      NA  NA  NA  8.947845  4.025115</span></span>
+<span><span class="co">#&gt; 6 5.338716   347.0725           0      NA  NA  NA  8.365320  3.879587</span></span>
+<span><span class="co">#&gt;    remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
+<span><span class="co">#&gt; 1 -0.1707940     2.828547    0.6934188      1.939860  0.4725922</span></span>
+<span><span class="co">#&gt; 2  1.8086884     3.946180    1.4946281      1.738235  0.6374380</span></span>
+<span><span class="co">#&gt; 3  0.9604294     3.702865    0.9518317      1.917799  0.3916076</span></span>
+<span><span class="co">#&gt; 4 -0.1980635     4.916000    2.0409466      4.124501  0.8039860</span></span>
+<span><span class="co">#&gt; 5  0.7886167     4.085650    1.4183511      2.481097  0.5155962</span></span>
+<span><span class="co">#&gt; 6  0.6680692     3.971257    0.6777942      2.459603  0.8798657</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="urine-markers">Urine markers<a class="anchor" aria-label="anchor" href="#urine-markers"></a>
 </h3>
 <p>Input: <code>sim_small</code>; output: urine markers with rows
 containing required inputs.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">urine</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/urine_markers.html">urine_markers</a></span><span class="op">(</span><span class="va">sim_small</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
 <span><span class="va">urine_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">urine</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">urine</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">urine_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 11</span></span></span>
 <span><span class="co">#&gt;   albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A3                normal           226.         2.67        112.  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A3                normal           142.         2.36         80.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> A3                normal           252.         0.856        14.0 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> A3                normal           159.         2.63         61.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> A3                normal           390.         1.49        222.  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> A3                normal            36.1        5.13          6.01</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A2                micro             67.4         1.08         94.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A2                micro             66.6         2.36         77.0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> A3                normal            65.0         2.71         35.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> A2                micro             78.3         1.48         75.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> A3                normal           110.          2.33         34.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> A3                normal            95.7         1.86         54.6</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: KIM1_per_gCr &lt;dbl&gt;, NAG_per_gCr &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   Beta2Micro_per_gCr &lt;dbl&gt;, A1Micro_per_gCr &lt;dbl&gt;, IL18_per_gCr &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   L_FABP_per_gCr &lt;dbl&gt;</span></span></span></code></pre></div>
@@ -445,7 +479,7 @@ containing required inputs.</p>
 <p>To compute every available group on your data (can produce many
 columns), set <code>which = "all"</code>. Here we keep it example-only
 to avoid long output:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">sim_small</span>, which <span class="op">=</span> <span class="st">"all"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">all_out</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -455,7 +489,7 @@ to avoid long output:</p>
 </h2>
 <p>Select columns and write to a CSV (disabled during vignette
 build):</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">export_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"aip"</span>, <span class="st">"egfr_ckd_epi"</span>, <span class="st">"homa_ir"</span><span class="op">)</span></span>
 <span><span class="va">out_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"healthmarkers_export_"</span>, fileext <span class="op">=</span> <span class="st">".csv"</span><span class="op">)</span></span>
 <span><span class="va">hm_out_subset</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">cardio_panel</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">any_of</a></span><span class="op">(</span><span class="va">export_cols</span><span class="op">)</span><span class="op">)</span></span>
@@ -472,6 +506,12 @@ panels, and frailty.</li>
 <code><a href="../reference/cvd_risk.html">?cvd_risk</a></code>, <code><a href="../reference/frailty_index.html">?frailty_index</a></code>) for detailed
 arguments and references.</li>
 </ul>
+<blockquote>
+<p><strong>All 46 domain vignettes</strong> are available on the package
+website — only 12 core vignettes are bundled with the CRAN
+package.<br>
+Browse the full collection at <a href="https://sufyansuleman.github.io/HealthMarkers/articles/" class="uri">https://sufyansuleman.github.io/HealthMarkers/articles/</a></p>
+</blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -480,7 +520,7 @@ arguments and references.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

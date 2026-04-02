@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -50,7 +54,7 @@
       <h1>Atherogenic Indices</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/atherogenic_indices.Rmd" class="external-link"><code>vignettes/atherogenic_indices.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/atherogenic_indices.Rmd" class="external-link"><code>vignettes/articles/atherogenic_indices.Rmd</code></a></small>
       <div class="d-none name"><code>atherogenic_indices.Rmd</code></div>
     </div>
 
@@ -141,14 +145,14 @@ ratios.</p>
 <span><span class="va">new_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aip_out</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">aip_out</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">new_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;        AIP CRI_I CRI_II</span></span>
-<span><span class="co">#&gt;      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.030<span style="text-decoration: underline;">0</span>   5.95   4.50</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.270    4.34   3.11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span>   3.68   1.75</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.202    5.06   2.93</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.005<span style="text-decoration: underline;">20</span>  3.09   1.93</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.201    3.56   2.77</span></span></code></pre></div>
+<span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.175   3.95   1.74</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.152   4.09   2.48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -201,12 +205,12 @@ indices use HDL_c as the divisor.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.030<span style="text-decoration: underline;">0</span>  5.95   4.50</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span>  3.68   1.75</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.202   5.06   2.93</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.201   3.56   2.77</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -232,12 +236,12 @@ out-of-range lipids.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.030<span style="text-decoration: underline;">0</span>  5.95   4.50</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.270   4.34   3.11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.098</span><span style="color: #BB0000; text-decoration: underline;">5</span>  3.68   1.75</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.202   5.06   2.93</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  3.80    3.09   1.93</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  0.201   3.56   2.77</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.175   3.95   1.74</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  3.88    4.09   2.48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -342,7 +346,7 @@ active:</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

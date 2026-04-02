@@ -68,9 +68,11 @@ if (requireNamespace("missForest", quietly = TRUE)) {
   df <- tibble::tibble(a = c(1, NA, 3), b = c(2, 4, NA), c = 5)
   impute_missforest(df, ntree = 50, verbose = TRUE)
 }
+#> impute_missforest(): preparing inputs (3 rows, 2 columns)
 #> Warning: impute_missforest(): missForest failed; falling back to mean imputation.
 #> Warning: impute_missing(): column 'a' has high missingness (33.3%).
 #> Warning: impute_missing(): column 'b' has high missingness (33.3%).
+#> impute_missforest(): results: fallback mean imputation; imputed 2 values across 2 columns.
 #> # A tibble: 3 × 3
 #>       a     b     c
 #>   <dbl> <dbl> <dbl>

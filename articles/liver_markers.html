@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -84,10 +88,10 @@ one call for screening or modeling.</li>
 <code>data</code>: data.frame/tibble with required inputs.</li>
 <li>
 <code>col_map</code>: named list mapping required keys to columns
-(units assumed, no conversion): BMI (kg/m^2), waist (cm), triglycerides
-(mg/dL), GGT (U/L), age (years), AST (U/L), ALT (U/L), platelets
-(10^9/L), albumin (g/L), diabetes (0/1 or logical), bilirubin (mg/dL),
-creatinine (mg/dL).</li>
+(units assumed, no conversion): BMI (kg/m^2), waist (cm), TG (mg/dL),
+GGT (U/L), age (years), AST (U/L), ALT (U/L), platelets (10^9/L),
+albumin (g/L), diabetes (0/1 or logical), bilirubin (mg/dL), creatinine
+(mg/dL).</li>
 <li>
 <code>na_action</code>: <code>keep</code> (default) propagates NA;
 <code>omit</code> drops rows missing required inputs; <code>error</code>
@@ -132,7 +136,7 @@ are outside {0,1,TRUE,FALSE}.</li>
 <span><span class="fu"><a href="../reference/liver_markers.html">liver_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">liver</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    BMI <span class="op">=</span> <span class="st">"BMI"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, triglycerides <span class="op">=</span> <span class="st">"triglycerides"</span>, GGT <span class="op">=</span> <span class="st">"GGT"</span>, age <span class="op">=</span> <span class="st">"age"</span>,</span>
+<span>    BMI <span class="op">=</span> <span class="st">"BMI"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, TG <span class="op">=</span> <span class="st">"triglycerides"</span>, GGT <span class="op">=</span> <span class="st">"GGT"</span>, age <span class="op">=</span> <span class="st">"age"</span>,</span>
 <span>    AST <span class="op">=</span> <span class="st">"AST"</span>, ALT <span class="op">=</span> <span class="st">"ALT"</span>, platelets <span class="op">=</span> <span class="st">"platelets"</span>, albumin <span class="op">=</span> <span class="st">"albumin"</span>, diabetes <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>    bilirubin <span class="op">=</span> <span class="st">"bilirubin"</span>, creatinine <span class="op">=</span> <span class="st">"creatinine"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -181,14 +185,14 @@ negative ALT trigger warnings and yield NA in affected indices.</li>
 <span><span class="fu"><a href="../reference/liver_markers.html">liver_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">liver</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    BMI <span class="op">=</span> <span class="st">"BMI"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, triglycerides <span class="op">=</span> <span class="st">"triglycerides"</span>, GGT <span class="op">=</span> <span class="st">"GGT"</span>, age <span class="op">=</span> <span class="st">"age"</span>,</span>
+<span>    BMI <span class="op">=</span> <span class="st">"BMI"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, TG <span class="op">=</span> <span class="st">"triglycerides"</span>, GGT <span class="op">=</span> <span class="st">"GGT"</span>, age <span class="op">=</span> <span class="st">"age"</span>,</span>
 <span>    AST <span class="op">=</span> <span class="st">"AST"</span>, ALT <span class="op">=</span> <span class="st">"ALT"</span>, platelets <span class="op">=</span> <span class="st">"platelets"</span>, albumin <span class="op">=</span> <span class="st">"albumin"</span>, diabetes <span class="op">=</span> <span class="st">"diabetes"</span>,</span>
 <span>    bilirubin <span class="op">=</span> <span class="st">"bilirubin"</span>, creatinine <span class="op">=</span> <span class="st">"creatinine"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; liver_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; liver_markers(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist', triglycerides -&gt; 'triglycerides', GGT -&gt; 'GGT', age -&gt; 'age', AST -&gt; 'AST', ALT -&gt; 'ALT', platelets -&gt; 'platelets', albumin -&gt; 'albumin', diabetes -&gt; 'diabetes', bilirubin -&gt; 'bilirubin', creatinine -&gt; 'creatinine'</span></span>
+<span><span class="co">#&gt; liver_markers(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist', TG -&gt; 'triglycerides', GGT -&gt; 'GGT', age -&gt; 'age', AST -&gt; 'AST', ALT -&gt; 'ALT', platelets -&gt; 'platelets', albumin -&gt; 'albumin', diabetes -&gt; 'diabetes', bilirubin -&gt; 'bilirubin', creatinine -&gt; 'creatinine'</span></span>
 <span><span class="co">#&gt; liver_markers(): results: FLI 3/3, NFS 3/3, APRI 3/3, FIB4 3/3, BARD 3/3, ALBI 3/3, MELD_XI 3/3</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
 <span><span class="co">#&gt;     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI</span></span>
@@ -219,7 +223,7 @@ quality.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

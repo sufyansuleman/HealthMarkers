@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -50,7 +54,7 @@
       <h1>Psychometric markers</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/psych_markers.Rmd" class="external-link"><code>vignettes/psych_markers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/psych_markers.Rmd" class="external-link"><code>vignettes/articles/psych_markers.Rmd</code></a></small>
       <div class="d-none name"><code>psych_markers.Rmd</code></div>
     </div>
 
@@ -179,17 +183,10 @@ of 20% per scale.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; psych_markers(): preparing inputs</span></span>
 <span><span class="co">#&gt; psych_markers(): results: 1 rows, 4 new columns</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 123</span></span></span>
-<span><span class="co">#&gt;   phq9_01 phq9_02 phq9_03 phq9_04 phq9_05 phq9_06 phq9_07 phq9_08 phq9_09</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       1       2       1       0       1       2       1       2       1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 114 more variables: gad7_01 &lt;dbl&gt;, gad7_02 &lt;dbl&gt;, gad7_03 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   gad7_04 &lt;dbl&gt;, gad7_05 &lt;dbl&gt;, gad7_06 &lt;dbl&gt;, gad7_07 &lt;dbl&gt;, k6_01 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   k6_02 &lt;dbl&gt;, k6_03 &lt;dbl&gt;, k6_04 &lt;dbl&gt;, k6_05 &lt;dbl&gt;, k6_06 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   k10_01 &lt;dbl&gt;, k10_02 &lt;dbl&gt;, k10_03 &lt;dbl&gt;, k10_04 &lt;dbl&gt;, k10_05 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   k10_06 &lt;dbl&gt;, k10_07 &lt;dbl&gt;, k10_08 &lt;dbl&gt;, k10_09 &lt;dbl&gt;, k10_10 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ghq12_01 &lt;dbl&gt;, ghq12_02 &lt;dbl&gt;, ghq12_03 &lt;dbl&gt;, ghq12_04 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ghq12_05 &lt;dbl&gt;, ghq12_06 &lt;dbl&gt;, ghq12_07 &lt;dbl&gt;, ghq12_08 &lt;dbl&gt;, …</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt;   PHQ9_total PHQ9_severity GAD7_total GAD7_severity</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>         11 moderate               4 minimal</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -219,7 +216,7 @@ package.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

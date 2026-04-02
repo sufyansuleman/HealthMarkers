@@ -92,7 +92,7 @@ sim <- readRDS(sim_path)
 sim_small <- dplyr::slice_head(sim, n = 30)
 
 dim(sim_small)
-#> [1]  30 225
+#> [1]  30 282
 ```
 
 ## Minimal example: broad panels
@@ -115,20 +115,20 @@ hm_out <- all_health_markers(
 
 hm_new_cols <- setdiff(names(hm_out), names(sim_small))
 head(dplyr::select(hm_out, dplyr::all_of(hm_new_cols)))
-#>      SPISE METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c  remnant_c
-#> 1 8.297275      NA           0      NA  NA  NA        NA  4.472486  0.4091206
-#> 2 4.177562      NA           0      NA  NA  NA        NA  3.338557  0.2301283
-#> 3 6.351097      NA           0      NA  NA  NA        NA  4.154120  1.4407099
-#> 4 5.963605      NA           0      NA  NA  NA        NA  4.112558  1.1387383
-#> 5 7.139034      NA           0      NA  NA  NA        NA  3.324661  0.2533190
-#> 6 4.529109      NA           0      NA  NA  NA        NA  3.572372 -0.2791537
-#>   ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
-#> 1     5.952950    1.0716354      4.499879  0.5855594
-#> 2     4.340045    1.8606939      3.109814  1.0015916
-#> 3     3.679324    0.7970881      1.750095  0.7404117
-#> 4     5.058502    1.5935284      2.934731  0.6027401
-#> 5     3.088419    1.0120564      1.929294  0.4739219
-#> 6     3.564597    1.5878714      2.765001  0.5349333
+#>      SPISE    METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c
+#> 1 6.538621   175.4422           0      NA  NA  NA  8.390992  2.805635
+#> 2 7.040211   163.2440           0      NA  NA  NA  9.133717  4.411394
+#> 3 6.738432   342.1412           0      NA  NA  NA  8.423506  3.306616
+#> 4 4.125126 -1869.7322           0      NA  NA  NA  9.073867  3.719980
+#> 5 6.245599   270.7383           0      NA  NA  NA  8.947845  4.025115
+#> 6 5.338716   347.0725           0      NA  NA  NA  8.365320  3.879587
+#>    remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
+#> 1 -0.1707940     2.828547    0.6934188      1.939860  0.4725922
+#> 2  1.8086884     3.946180    1.4946281      1.738235  0.6374380
+#> 3  0.9604294     3.702865    0.9518317      1.917799  0.3916076
+#> 4 -0.1980635     4.916000    2.0409466      4.124501  0.8039860
+#> 5  0.7886167     4.085650    1.4183511      2.481097  0.5155962
+#> 6  0.6680692     3.971257    0.6777942      2.459603  0.8798657
 
 # New columns added (names only):
 head(hm_new_cols)
@@ -186,14 +186,14 @@ aip <- cvd_marker_aip(sim_small, col_map = lipid_cols, na_action = "keep")
 aip_new <- setdiff(names(aip), names(sim_small))
 head(dplyr::select(aip, dplyr::all_of(aip_new)))
 #> # A tibble: 6 × 2
-#>   model    value
-#>   <chr>    <dbl>
-#> 1 AIP    0.0300 
-#> 2 AIP    0.270  
-#> 3 AIP   -0.0985 
-#> 4 AIP    0.202  
-#> 5 AIP    0.00520
-#> 6 AIP    0.201
+#>   model   value
+#>   <chr>   <dbl>
+#> 1 AIP   -0.159 
+#> 2 AIP    0.175 
+#> 3 AIP   -0.0214
+#> 4 AIP    0.310 
+#> 5 AIP    0.152 
+#> 6 AIP   -0.169
 ```
 
 ## Handling missingness
@@ -208,24 +208,31 @@ missing_demo$TG[2] <- NA
 # Keep rows (produces NA where inputs are missing)
 cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "keep")
 #> # A tibble: 5 × 2
-#>   model    value
-#>   <chr>    <dbl>
-#> 1 AIP    0.0300 
-#> 2 AIP   NA      
-#> 3 AIP   -0.0985 
-#> 4 AIP    0.202  
-#> 5 AIP    0.00520
+#>   model   value
+#>   <chr>   <dbl>
+#> 1 AIP   -0.159 
+#> 2 AIP   NA     
+#> 3 AIP   -0.0214
+#> 4 AIP    0.310 
+#> 5 AIP    0.152
 
 # Drop rows with required NA
 cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "omit")
 #> # A tibble: 4 × 2
-#>   model    value
-#>   <chr>    <dbl>
-#> 1 AIP    0.0300 
-#> 2 AIP   -0.0985 
-#> 3 AIP    0.202  
-#> 4 AIP    0.00520
+#>   model   value
+#>   <chr>   <dbl>
+#> 1 AIP   -0.159 
+#> 2 AIP   -0.0214
+#> 3 AIP    0.310 
+#> 4 AIP    0.152
 ```
+
+> **`na_action` aliases:** `"ignore"` is a backward-compatible alias for
+> `"keep"` (same behavior; retained so older code continues to work).
+> `"warn"` is also an alias for `"keep"` that additionally emits a
+> missingness warning. If you are reading another function’s help page
+> and see `"ignore"` listed first in the choices, it behaves identically
+> to `"keep"`.
 
 If you want to impute before computing markers:
 
@@ -265,13 +272,34 @@ head(dplyr::select(sweat, dplyr::all_of(sweat_new)))
 #> # A tibble: 6 × 2
 #>   Na_K_ratio sweat_rate
 #>        <dbl>      <dbl>
-#> 1       7.84      0.388
-#> 2       4.78      0.123
-#> 3       5.42      0.443
-#> 4       2.28      0.157
-#> 5       8.53      0.296
-#> 6      10.1       0.534
+#> 1       7.36     0.594 
+#> 2       4.51     0.579 
+#> 3       4.67     0.128 
+#> 4      14.2      0.0497
+#> 5      10.6      0.131 
+#> 6       5.89     0.0629
 ```
+
+## Verbose mode: skipped optional markers
+
+When a function supports optional inputs (columns that extend outputs
+when present), set `verbose = TRUE` to see which optional markers were
+not computed because their columns were absent from the data. This helps
+you distinguish “column not found” from “marker intentionally absent”.
+
+``` r
+# Provide only required columns; optional columns are absent
+glyc_min <- sim_small[, c("HDL_c", "TG", "BMI")]
+
+# verbose = TRUE lists which optional markers were skipped
+glyc_out <- glycemic_markers(glyc_min, verbose = TRUE)
+```
+
+The informational message lists all optional keys (glucose, HbA1c,
+C_peptide, G0, I0, leptin, adiponectin) that had no matching column, so
+the caller knows which derived metrics (e.g., prediabetes flag, HOMA_CP,
+LAR) will be `NA` in the output. Once you add those columns to your
+data, the message disappears and the metrics are computed automatically.
 
 ## Common functions
 
@@ -290,20 +318,20 @@ cardio_panel <- all_health_markers(
 
 cardio_new <- setdiff(names(cardio_panel), names(sim_small))
 head(dplyr::select(cardio_panel, dplyr::all_of(cardio_new)))
-#>      SPISE METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c  remnant_c
-#> 1 8.297275      NA           0      NA  NA  NA        NA  4.472486  0.4091206
-#> 2 4.177562      NA           0      NA  NA  NA        NA  3.338557  0.2301283
-#> 3 6.351097      NA           0      NA  NA  NA        NA  4.154120  1.4407099
-#> 4 5.963605      NA           0      NA  NA  NA        NA  4.112558  1.1387383
-#> 5 7.139034      NA           0      NA  NA  NA        NA  3.324661  0.2533190
-#> 6 4.529109      NA           0      NA  NA  NA        NA  3.572372 -0.2791537
-#>   ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
-#> 1     5.952950    1.0716354      4.499879  0.5855594
-#> 2     4.340045    1.8606939      3.109814  1.0015916
-#> 3     3.679324    0.7970881      1.750095  0.7404117
-#> 4     5.058502    1.5935284      2.934731  0.6027401
-#> 5     3.088419    1.0120564      1.929294  0.4739219
-#> 6     3.564597    1.5878714      2.765001  0.5349333
+#>      SPISE    METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c
+#> 1 6.538621   175.4422           0      NA  NA  NA  8.390992  2.805635
+#> 2 7.040211   163.2440           0      NA  NA  NA  9.133717  4.411394
+#> 3 6.738432   342.1412           0      NA  NA  NA  8.423506  3.306616
+#> 4 4.125126 -1869.7322           0      NA  NA  NA  9.073867  3.719980
+#> 5 6.245599   270.7383           0      NA  NA  NA  8.947845  4.025115
+#> 6 5.338716   347.0725           0      NA  NA  NA  8.365320  3.879587
+#>    remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
+#> 1 -0.1707940     2.828547    0.6934188      1.939860  0.4725922
+#> 2  1.8086884     3.946180    1.4946281      1.738235  0.6374380
+#> 3  0.9604294     3.702865    0.9518317      1.917799  0.3916076
+#> 4 -0.1980635     4.916000    2.0409466      4.124501  0.8039860
+#> 5  0.7886167     4.085650    1.4183511      2.481097  0.5155962
+#> 6  0.6680692     3.971257    0.6777942      2.459603  0.8798657
 ```
 
 ### Urine markers
@@ -318,12 +346,12 @@ head(dplyr::select(urine, dplyr::all_of(urine_new)))
 #> # A tibble: 6 × 11
 #>   albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
 #>   <fct>             <fct>            <dbl>        <dbl>        <dbl>
-#> 1 A3                normal           226.         2.67        112.  
-#> 2 A3                normal           142.         2.36         80.6 
-#> 3 A3                normal           252.         0.856        14.0 
-#> 4 A3                normal           159.         2.63         61.9 
-#> 5 A3                normal           390.         1.49        222.  
-#> 6 A3                normal            36.1        5.13          6.01
+#> 1 A2                micro             67.4         1.08         94.3
+#> 2 A2                micro             66.6         2.36         77.0
+#> 3 A3                normal            65.0         2.71         35.1
+#> 4 A2                micro             78.3         1.48         75.3
+#> 5 A3                normal           110.          2.33         34.5
+#> 6 A3                normal            95.7         1.86         54.6
 #> # ℹ 6 more variables: KIM1_per_gCr <dbl>, NAG_per_gCr <dbl>,
 #> #   Beta2Micro_per_gCr <dbl>, A1Micro_per_gCr <dbl>, IL18_per_gCr <dbl>,
 #> #   L_FABP_per_gCr <dbl>
@@ -361,3 +389,8 @@ out_path
   [`?cvd_risk`](https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk.md),
   [`?frailty_index`](https://sufyansuleman.github.io/HealthMarkers/reference/frailty_index.md))
   for detailed arguments and references.
+
+> **All 46 domain vignettes** are available on the package website —
+> only 12 core vignettes are bundled with the CRAN package.  
+> Browse the full collection at
+> <https://sufyansuleman.github.io/HealthMarkers/articles/>

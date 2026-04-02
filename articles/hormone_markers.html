@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,8 +31,12 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/sufyansuleman/HealthMarkers" aria-label="GitHub repository"><span class="fa fa-github"></span></a></li>
       </ul>
 </div>
@@ -50,14 +54,13 @@
       <h1></h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/hormone_markers.Rmd" class="external-link"><code>vignettes/hormone_markers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/hormone_markers.Rmd" class="external-link"><code>vignettes/articles/hormone_markers.Rmd</code></a></small>
       <div class="d-none name"><code>hormone_markers.Rmd</code></div>
     </div>
 
     
     
-<p>title: “Hormone marker ratios” output: rmarkdown::html_vignette
-vignette: &gt; % % % —</p>
+<p>title: “Hormone marker ratios” output: rmarkdown::html_vignette —</p>
 <div class="section level2">
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
@@ -200,13 +203,13 @@ to <code>NA</code>; rows are retained when
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hm_out</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 9</span></span></span>
-<span><span class="co">#&gt;     FAI LH_FSH  E2_P T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  16.7  0.75   60   0.281  12.5   0.188 0.006<span style="text-decoration: underline;">67</span>  2         6   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  17.5  0.778  46.7 0.32   12     0.286 0.005<span style="text-decoration: underline;">62</span>  1.71      5.67</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  16.1  0.714  61.1 0.253  12.7   0.24  0.005<span style="text-decoration: underline;">88</span>  2.44      6   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  17.7  0.75   54   0.288  14.4   0.218 0.006<span style="text-decoration: underline;">67</span>  1.45      6.33</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 10</span></span></span>
+<span><span class="co">#&gt;     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  16.7  0.75   60    24   0.281  12.5   0.188 0.006<span style="text-decoration: underline;">67</span>  2         6   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  17.5  0.778  46.7  20   0.32   12     0.286 0.005<span style="text-decoration: underline;">62</span>  1.71      5.67</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  16.1  0.714  61.1  24.4 0.253  12.7   0.24  0.005<span style="text-decoration: underline;">88</span>  2.44      6   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  17.7  0.75   54    21.8 0.288  14.4   0.218 0.006<span style="text-decoration: underline;">67</span>  1.45      6.33</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-and-row-handling">Missing data and row handling<a class="anchor" aria-label="anchor" href="#missing-data-and-row-handling"></a>
@@ -301,13 +304,14 @@ a results summary.</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_v</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_v</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4</span></span>
 <span><span class="co">#&gt; hormone_markers(): preparing inputs</span></span>
 <span><span class="co">#&gt; hormone_markers(): column map: total_testosterone -&gt; 'total_testosterone', SHBG -&gt; 'SHBG', LH -&gt; 'LH', FSH -&gt; 'FSH', estradiol -&gt; 'estradiol', progesterone -&gt; 'progesterone', free_T3 -&gt; 'free_T3', free_T4 -&gt; 'free_T4', aldosterone -&gt; 'aldosterone', renin -&gt; 'renin', insulin -&gt; 'insulin', glucagon -&gt; 'glucagon', GH -&gt; 'GH', IGF1 -&gt; 'IGF1', prolactin -&gt; 'prolactin', cortisol_0 -&gt; 'cortisol_0', cortisol_30 -&gt; 'cortisol_30'</span></span>
-<span><span class="co">#&gt; hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span></span>
-<span><span class="co">#&gt;     FAI LH_FSH  E2_P T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   500      2     2   0.5     5       2     0.5   1.2         2</span></span>
+<span><span class="co">#&gt; hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, E2_T 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 10</span></span></span>
+<span><span class="co">#&gt;     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   500      2     2    10   0.5     5       2     0.5   1.2         2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -331,7 +335,7 @@ scan, and extreme handling summaries.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Sufyan Suleman.</p>
+  <p>Developed by <a href="https://orcid.org/0000-0001-6612-6915" class="external-link">Sufyan Suleman</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -49,6 +49,11 @@ cognitive_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `{prefix}_z_mean` or `{prefix}_pca1`.
+Input columns are not included.
+
 ## Examples
 
 ``` r
@@ -59,9 +64,9 @@ cm <- list(tasks = list(
   task_c = "task_c"
 ))
 cognitive_score(df, col_map = cm, method = "z_mean")
-#> # A tibble: 2 × 4
-#>   task_a task_b task_c cog_z_mean
-#>    <dbl>  <dbl>  <dbl>      <dbl>
-#> 1      1      2      3     -0.707
-#> 2      2      3      4      0.707
+#> # A tibble: 2 × 1
+#>   cog_z_mean
+#>        <dbl>
+#> 1     -0.707
+#> 2      0.707
 ```

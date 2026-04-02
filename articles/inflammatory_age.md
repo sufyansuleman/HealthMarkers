@@ -1,7 +1,7 @@
 # 
 
 title: “Inflammatory age (iAge proxy)” output: rmarkdown::html_vignette
-vignette: \> % % % —
+—
 
 ## Scope
 
@@ -96,11 +96,11 @@ ia_cap <- iAge(
 
 ia_cap
 #> # A tibble: 3 × 1
-#>      iAge
-#>     <dbl>
-#> 1   1.40 
-#> 2 101.   
-#> 3   0.801
+#>     iAge
+#>    <dbl>
+#> 1   1.40
+#> 2 101.  
+#> 3  NA
 ```
 
 `extreme_action = "warn"` would only warn; `error` aborts; `NA` blanks
@@ -120,7 +120,7 @@ iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
 #>   <dbl>
 #> 1  1.35
 #> 2  3.22
-#> 3  0.6
+#> 3 NA
 ```
 
 ## Expectations

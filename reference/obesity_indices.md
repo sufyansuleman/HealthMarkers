@@ -118,17 +118,19 @@ obesity_indices(
 
 ## Value
 
-A tibble with original columns plus new indices:
+A tibble with only the computed indices (slim output):
 
-- weight_kg, height_m, BMI, BMI_cat,
+- weight_kg, height_m (unit-normalised intermediates),
 
-- WHR, WHRadjBMI (optional), waist_to_height_ratio,
+- BMI, BMI_cat,
+
+- WHR, WHRadjBMI (if `adjust_WHR = TRUE`),
+
+- waist_to_height_ratio, waist_to_BMI_ratio, weight_to_height_ratio,
 
 - AVI, BAI, ABSI, BRI, CI,
 
-- waist_to_BMI_ratio, weight_to_height_ratio,
-
-- RFM (optional).
+- RFM (if `include_RFM = TRUE`).
 
 ## Details
 
@@ -218,12 +220,14 @@ obesity_indices(
   include_RFM  = TRUE,
   verbose      = TRUE
 )
-#> # A tibble: 2 × 20
-#>      wt    ht waist   hip   sex weight_kg height_m   BMI BMI_cat         WHR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>     <dbl>    <dbl> <dbl> <chr>         <dbl>
-#> 1    70   175    80   100     0        70     1.75  22.9 Normal weight 0.8  
-#> 2    80   165    90    95     1        80     1.65  29.4 Overweight    0.947
-#> # ℹ 10 more variables: waist_to_height_ratio <dbl>, waist_to_BMI_ratio <dbl>,
-#> #   weight_to_height_ratio <dbl>, AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>,
-#> #   CI <dbl>, WHRadjBMI <dbl>, RFM <dbl>
+#> obesity_indices(): preparing inputs
+#> obesity_indices(): column map: weight -> 'wt', height -> 'ht', waist -> 'waist', hip -> 'hip', sex -> 'sex'
+#> obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, WHRadjBMI 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2, RFM 2/2
+#> # A tibble: 2 × 15
+#>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio
+#>       <dbl>    <dbl> <dbl> <chr>         <dbl>     <dbl>                 <dbl>
+#> 1        70     1.75  22.9 Normal weight 0.8           0                  45.7
+#> 2        80     1.65  29.4 Overweight    0.947         0                  54.5
+#> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
+#> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 ```

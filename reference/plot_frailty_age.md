@@ -68,12 +68,14 @@ plot_frailty_age(
 
 - na_action:
 
-  One of:
-
-  - Legacy: "ignore","warn","error"
-
-  - HM-CS: "keep","omit" (keep == ignore; omit drops rows with any NA in
-    selected deficits) Default "ignore".
+  One of `c("keep","omit","error","warn","ignore")`. Controls handling
+  of missing values in selected deficit columns. `"keep"` (and its
+  backward-compatible alias `"ignore"`) passes NAs through to di::di.
+  `"warn"` emits a warning and then keeps NAs (alias for `"keep"` with a
+  missingness warning). `"omit"` drops rows with any NA in selected
+  deficits before computing. `"error"` stops if any NA is detected.
+  Default `"ignore"` (retained for backward compatibility; equivalent to
+  `"keep"`).
 
 - na_warn_prop:
 

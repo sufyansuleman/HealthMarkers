@@ -58,6 +58,11 @@ mdq_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `MDQ_symptom_count`, `MDQ_clustering`,
+`MDQ_impairment`, `MDQ_positive_screen`. Input columns are not included.
+
 ## References
 
 Hirschfeld RMA, Williams JBW, Spitzer RL, Calabrese JR, Flynn L, Keck
@@ -75,11 +80,8 @@ df <- data.frame(matrix(0, nrow = 1, ncol = 13))
 names(df) <- sprintf("mdq_%02d", 1:13)
 df$mdq_cluster <- 1; df$mdq_impair <- 1
 mdq_score(df)
-#> # A tibble: 1 × 19
-#>   mdq_01 mdq_02 mdq_03 mdq_04 mdq_05 mdq_06 mdq_07 mdq_08 mdq_09 mdq_10 mdq_11
-#>    <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>  <dbl>
-#> 1      0      0      0      0      0      0      0      0      0      0      0
-#> # ℹ 8 more variables: mdq_12 <dbl>, mdq_13 <dbl>, mdq_cluster <dbl>,
-#> #   mdq_impair <dbl>, MDQ_symptom_count <dbl>, MDQ_clustering <lgl>,
-#> #   MDQ_impairment <lgl>, MDQ_positive_screen <lgl>
+#> # A tibble: 1 × 4
+#>   MDQ_symptom_count MDQ_clustering MDQ_impairment MDQ_positive_screen
+#>               <dbl> <lgl>          <lgl>          <lgl>              
+#> 1                 0 TRUE           TRUE           FALSE              
 ```

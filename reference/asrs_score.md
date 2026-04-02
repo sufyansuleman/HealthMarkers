@@ -64,6 +64,11 @@ asrs_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only: `ASRS_total`, `ASRS_partA_count`,
+`ASRS_partA_positive`. Input columns are not included.
+
 ## References
 
 Adler LA, Spencer T, Faraone SV, Kessler RC, Howes MJ, Biederman J,
@@ -87,12 +92,8 @@ Psychiatry*, **163**(4), 716–723.
 df <- data.frame(matrix(2, nrow = 1, ncol = 18))
 names(df) <- sprintf("asrs_%02d", 1:18)
 asrs_score(df)
-#> # A tibble: 1 × 21
-#>   asrs_01 asrs_02 asrs_03 asrs_04 asrs_05 asrs_06 asrs_07 asrs_08 asrs_09
-#>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-#> 1       2       2       2       2       2       2       2       2       2
-#> # ℹ 12 more variables: asrs_10 <dbl>, asrs_11 <dbl>, asrs_12 <dbl>,
-#> #   asrs_13 <dbl>, asrs_14 <dbl>, asrs_15 <dbl>, asrs_16 <dbl>, asrs_17 <dbl>,
-#> #   asrs_18 <dbl>, ASRS_total <dbl>, ASRS_partA_count <dbl>,
-#> #   ASRS_partA_positive <lgl>
+#> # A tibble: 1 × 3
+#>   ASRS_total ASRS_partA_count ASRS_partA_positive
+#>        <dbl>            <dbl> <lgl>              
+#> 1         36                6 TRUE               
 ```

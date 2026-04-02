@@ -123,17 +123,10 @@ psych_markers(
 )
 #> psych_markers(): preparing inputs
 #> psych_markers(): results: 1 rows, 4 new columns
-#> # A tibble: 1 × 123
-#>   phq9_01 phq9_02 phq9_03 phq9_04 phq9_05 phq9_06 phq9_07 phq9_08 phq9_09
-#>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-#> 1       1       2       1       0       1       2       1       2       1
-#> # ℹ 114 more variables: gad7_01 <dbl>, gad7_02 <dbl>, gad7_03 <dbl>,
-#> #   gad7_04 <dbl>, gad7_05 <dbl>, gad7_06 <dbl>, gad7_07 <dbl>, k6_01 <dbl>,
-#> #   k6_02 <dbl>, k6_03 <dbl>, k6_04 <dbl>, k6_05 <dbl>, k6_06 <dbl>,
-#> #   k10_01 <dbl>, k10_02 <dbl>, k10_03 <dbl>, k10_04 <dbl>, k10_05 <dbl>,
-#> #   k10_06 <dbl>, k10_07 <dbl>, k10_08 <dbl>, k10_09 <dbl>, k10_10 <dbl>,
-#> #   ghq12_01 <dbl>, ghq12_02 <dbl>, ghq12_03 <dbl>, ghq12_04 <dbl>,
-#> #   ghq12_05 <dbl>, ghq12_06 <dbl>, ghq12_07 <dbl>, ghq12_08 <dbl>, …
+#> # A tibble: 1 × 4
+#>   PHQ9_total PHQ9_severity GAD7_total GAD7_severity
+#>        <dbl> <fct>              <dbl> <fct>        
+#> 1         11 moderate               4 minimal
 options(old_opt)
 ```
 

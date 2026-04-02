@@ -141,6 +141,9 @@ Method and Penalized Likelihood.” *Statistics in Medicine*, **11**(10),
 ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
 df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
 adiposity_sds(df, ref)
+#> adiposity_sds(): preparing inputs (4 rows, 2 vars)
+#> adiposity_sds(): column map: BMI -> 'BMI', waist -> 'waist'
+#> adiposity_sds(): results: BMI_SDS 3/4, waist_SDS 4/4
 #> # A tibble: 4 × 2
 #>   BMI_SDS waist_SDS
 #>     <dbl>     <dbl>

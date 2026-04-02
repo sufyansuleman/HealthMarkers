@@ -2,53 +2,53 @@ pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  adipo_is: adipo_is.html
-  adiposity_sds_strat: adiposity_sds_strat.html
-  adiposity_sds: adiposity_sds.html
-  allostatic_load: allostatic_load.html
-  alm_bmi_index: alm_bmi_index.html
-  atherogenic_indices: atherogenic_indices.html
-  bode_index: bode_index.html
-  bone_markers: bone_markers.html
-  calc_sds: calc_sds.html
-  charlson_index: charlson_index.html
-  ckd_stage: ckd_stage.html
-  corrected_calcium: corrected_calcium.html
+  articles/adipo_is: adipo_is.html
+  articles/adiposity_sds_strat: adiposity_sds_strat.html
+  articles/adiposity_sds: adiposity_sds.html
+  articles/allostatic_load: allostatic_load.html
+  articles/alm_bmi_index: alm_bmi_index.html
+  articles/atherogenic_indices: atherogenic_indices.html
+  articles/bode_index: bode_index.html
+  articles/bone_markers: bone_markers.html
+  articles/calc_sds: calc_sds.html
+  articles/charlson_index: charlson_index.html
+  articles/ckd_stage: ckd_stage.html
+  articles/corrected_calcium: corrected_calcium.html
   cvd_risk: cvd_risk.html
   fasting_is: fasting_is.html
   frailty_index: frailty_index.html
-  frax_score: frax_score.html
+  articles/frax_score: frax_score.html
   getting-started: getting-started.html
   glycemic_markers: glycemic_markers.html
   health_markers: health_markers.html
-  hormone_markers: hormone_markers.html
+  articles/hormone_markers: hormone_markers.html
   impute_missing: impute_missing.html
-  inflammatory_age: inflammatory_age.html
+  articles/inflammatory_age: inflammatory_age.html
   inflammatory_markers: inflammatory_markers.html
-  kidney_kfre: kidney_kfre.html
-  kyn_trp_ratio: kyn_trp_ratio.html
+  articles/kidney_kfre: kidney_kfre.html
+  articles/kyn_trp_ratio: kyn_trp_ratio.html
   lipid_markers: lipid_markers.html
-  liver_fat_markers: liver_fat_markers.html
+  articles/liver_fat_markers: liver_fat_markers.html
   liver_markers: liver_markers.html
-  metabolic_risk_features: metabolic_risk_features.html
-  metss: metss.html
-  nfl_marker: nfl_marker.html
-  nutrient_markers: nutrient_markers.html
+  articles/metabolic_risk_features: metabolic_risk_features.html
+  articles/metss: metss.html
+  articles/nfl_marker: nfl_marker.html
+  articles/nutrient_markers: nutrient_markers.html
   obesity_indices: obesity_indices.html
   ogtt_is: ogtt_is.html
-  oxidative_markers: oxidative_markers.html
-  psych_markers: psych_markers.html
-  pulmo_markers: pulmo_markers.html
-  renal_markers: renal_markers.html
-  saliva_markers: saliva_markers.html
-  sarc_f_score: sarc_f_score.html
-  spirometry_markers: spirometry_markers.html
-  sweat_markers: sweat_markers.html
-  tracer_dxa_is: tracer_dxa_is.html
-  urine_markers: urine_markers.html
-  vitamin_d_status: vitamin_d_status.html
-  vitamin_markers: vitamin_markers.html
-last_built: 2026-03-23T14:59Z
+  articles/oxidative_markers: oxidative_markers.html
+  articles/psych_markers: psych_markers.html
+  articles/pulmo_markers: pulmo_markers.html
+  articles/renal_markers: renal_markers.html
+  articles/saliva_markers: saliva_markers.html
+  articles/sarc_f_score: sarc_f_score.html
+  articles/spirometry_markers: spirometry_markers.html
+  articles/sweat_markers: sweat_markers.html
+  articles/tracer_dxa_is: tracer_dxa_is.html
+  articles/urine_markers: urine_markers.html
+  articles/vitamin_d_status: vitamin_d_status.html
+  articles/vitamin_markers: vitamin_markers.html
+last_built: 2026-04-02T13:21Z
 urls:
   reference: https://sufyansuleman.github.io/HealthMarkers/reference
   article: https://sufyansuleman.github.io/HealthMarkers/articles

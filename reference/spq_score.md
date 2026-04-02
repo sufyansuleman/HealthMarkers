@@ -55,6 +55,11 @@ spq_score(
 
   Logical flag for verbose messaging (reserved).
 
+## Value
+
+A tibble of score columns only (total and optional subscales). Input
+columns are not included.
+
 ## References
 
 Raine A (1991). “The SPQ: A Scale for the Assessment of Schizotypal
@@ -68,8 +73,8 @@ Personality Based on DSM-III-R Criteria.” *Schizophrenia Bulletin*,
 spq_key <- list(items = sprintf("spq_%02d", 1:5), min_val = 0, max_val = 1)
 df <- data.frame(spq_01 = 0, spq_02 = 1, spq_03 = 0, spq_04 = 1, spq_05 = 0)
 spq_score(df, key = spq_key)
-#> # A tibble: 1 × 6
-#>   spq_01 spq_02 spq_03 spq_04 spq_05 SPQ_total
-#>    <dbl>  <dbl>  <dbl>  <dbl>  <dbl>     <dbl>
-#> 1      0      1      0      1      0         2
+#> # A tibble: 1 × 1
+#>   SPQ_total
+#>       <dbl>
+#> 1         2
 ```

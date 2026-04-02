@@ -52,8 +52,7 @@ ckd_stage(
 
 - verbose:
 
-  Logical; if TRUE, emits progress messages via
-  [`hm_inform()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_inform.md).
+  Logical; if TRUE, emits progress messages via `hm_inform()`.
 
 ## Value
 

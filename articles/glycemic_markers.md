@@ -93,12 +93,12 @@ head(dplyr::select(gm, dplyr::all_of(gm_new)))
 #> # A tibble: 6 × 7
 #>   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index
 #>   <dbl>   <dbl>       <int>   <dbl> <dbl> <dbl>     <dbl>
-#> 1  8.30      NA           0      NA    NA    NA        NA
-#> 2  4.18      NA           0      NA    NA    NA        NA
-#> 3  6.35      NA           0      NA    NA    NA        NA
-#> 4  5.96      NA           0      NA    NA    NA        NA
-#> 5  7.14      NA           0      NA    NA    NA        NA
-#> 6  4.53      NA           0      NA    NA    NA        NA
+#> 1  6.54    175.           0      NA    NA    NA      8.39
+#> 2  7.04    163.           0      NA    NA    NA      9.13
+#> 3  6.74    342.           0      NA    NA    NA      8.42
+#> 4  4.13  -1870.           0      NA    NA    NA      9.07
+#> 5  6.25    271.           0      NA    NA    NA      8.95
+#> 6  5.34    347.           0      NA    NA    NA      8.37
 ```
 
 Interpretation: SPISE and METS_IR summarize insulin
@@ -168,14 +168,14 @@ list(
 #> 
 #> $capped_preview
 #> # A tibble: 6 × 7
-#>   SPISE  METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index
-#>   <dbl>    <dbl>       <int>   <dbl> <dbl>  <dbl>     <dbl>
-#> 1  8.30    -591.           1    12.2  1.25 0.133       8.35
-#> 2  4.18 -222583.          NA    20.7  1.71 0.0778      9.13
-#> 3  3.64     248.           0    25.9  2.5  0.05       11.6 
-#> 4  5.96    5710.           1    17.2  1.22 0.112       8.92
-#> 5  7.14     153.           1    16.9  0.9  0.133       8.95
-#> 6  4.53     278.           0    14.4  1.86 0.1         9.16
+#>   SPISE METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index
+#>   <dbl>   <dbl>       <int>   <dbl> <dbl>  <dbl>     <dbl>
+#> 1  6.54    179.           1    12.2  1.25 0.133       8.45
+#> 2  7.04    173.          NA    20.7  1.71 0.0778      9.31
+#> 3  3.82    504.           0    25.9  2.5  0.05       11.6 
+#> 4  4.13  -1886.           1    17.2  1.22 0.112       9.10
+#> 5  6.25    284.           1    16.9  0.9  0.133       9.09
+#> 6  5.34    332.           0    14.4  1.86 0.1         8.25
 ```
 
 `na_action = "keep"` preserves all rows (missing inputs flow to `NA`
@@ -210,6 +210,7 @@ glycemic_markers(
 )
 #> glycemic_markers(): preparing inputs
 #> glycemic_markers(): column map: HDL_c -> 'HDL_c', TG -> 'TG', BMI -> 'BMI'
+#> glycemic_markers(): optional markers not computed (columns absent): HbA1c, C_peptide, G0, I0, leptin, adiponectin
 #> glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1
 #> # A tibble: 1 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index
