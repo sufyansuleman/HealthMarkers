@@ -4,7 +4,7 @@
 #' Includes input validation, NA/error handling, data quality warnings, and
 #' verbose progress via the package logger (hm_inform), aligned with HM-CS v3.
 #'
-#' By default, returns a tibble with added <var>_sds columns (tidyverse-friendly).
+#' By default, returns a tibble with added `[var]_sds` columns (tidyverse-friendly).
 #' For backward compatibility, you can request the previous list output.
 #'
 #' @param data A data.frame/tibble containing the variables.
@@ -36,13 +36,13 @@
 #'   - na_prop: warn if proportion of rows with NA among `vars` exceeds this (default 0.05)
 #'   - extreme_prop: warn if proportion of extreme SDS (cells) exceeds this (default 0.01)
 #' @param return One of c("data","list"). "data" returns a tibble with added
-#'   `<var>_sds` columns (default). "list" returns a list with components
+#'   `[var]_sds` columns (default). "list" returns a list with components
 #'   `data`, `summary`, and `warnings` (backward compatible).
 #' @param verbose Logical; if TRUE, emit progress via hm_inform(). Also controlled by
 #'   options(healthmarkers.verbose = "none"|"inform"|"debug").
 #'
 #' @return
-#' - If `return = "data"` (default): a tibble with added `<var>_sds` columns.
+#' - If `return = "data"` (default): a tibble with added `[var]_sds` columns.
 #' - If `return = "list"`: a list with:
 #'   - data: tibble with added SDS columns
 #'   - summary: list with input/output row counts, omitted rows, total extremes, and per-variable summary

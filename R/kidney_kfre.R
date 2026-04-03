@@ -15,7 +15,7 @@
 #' - UACR: mg/g (albumin-to-creatinine ratio)
 #'
 #' Details
-#' - Prognostic index: PI = 0.220*log(age) + (-0.556)*log(eGFR) + 0.451*log(UACR) + 0.391*(male)
+#' - Prognostic index: `PI = 0.220 x log(age) + (-0.556) x log(eGFR) + 0.451 x log(UACR) + 0.391 x (male)`
 #'   where male = 1 if sex == 1, else 0.
 #' - Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).
 #' - Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).

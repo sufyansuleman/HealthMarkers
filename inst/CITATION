@@ -2,14 +2,14 @@ citHeader("To cite HealthMarkers in publications use:")
 
 bibentry(
   bibtype  = "Manual",
-  title    = "HealthMarkers: Clinical Marker Calculators and Indices",
+  title    = "HealthMarkers: A Comprehensive R Toolkit for Clinical and Research Biomarker Computation",
   author   = person("Sufyan", "Suleman"),
   year     = format(Sys.Date(), "%Y"),
   note     = sprintf("R package version %s", meta$Version),
   url      = "https://github.com/sufyansuleman/HealthMarkers",
   textVersion = paste0(
     "Suleman, S. (", format(Sys.Date(), "%Y"), "). ",
-    "HealthMarkers: Clinical Marker Calculators and Indices. ",
+    "HealthMarkers: A Comprehensive R Toolkit for Clinical and Research Biomarker Computation. ",
     "R package version ", meta$Version, ". ",
     "https://github.com/sufyansuleman/HealthMarkers"
   )

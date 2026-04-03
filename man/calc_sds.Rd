@@ -58,7 +58,7 @@ Must be positive. Default 6.}
 }}
 
 \item{return}{One of c("data","list"). "data" returns a tibble with added
-\verb{<var>_sds} columns (default). "list" returns a list with components
+\verb{[var]_sds} columns (default). "list" returns a list with components
 \code{data}, \code{summary}, and \code{warnings} (backward compatible).}
 
 \item{verbose}{Logical; if TRUE, emit progress via hm_inform(). Also controlled by
@@ -75,7 +75,7 @@ legacy behavior; defaults to TRUE in this implementation).}
 }
 \value{
 \itemize{
-\item If \code{return = "data"} (default): a tibble with added \verb{<var>_sds} columns.
+\item If \code{return = "data"} (default): a tibble with added \verb{[var]_sds} columns.
 \item If \code{return = "list"}: a list with:
 \itemize{
 \item data: tibble with added SDS columns
@@ -90,7 +90,7 @@ Includes input validation, NA/error handling, data quality warnings, and
 verbose progress via the package logger (hm_inform), aligned with HM-CS v3.
 }
 \details{
-By default, returns a tibble with added \if{html}{\out{<var>}}_sds columns (tidyverse-friendly).
+By default, returns a tibble with added \verb{[var]_sds} columns (tidyverse-friendly).
 For backward compatibility, you can request the previous list output.
 }
 \examples{

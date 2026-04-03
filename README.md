@@ -47,7 +47,7 @@ a unified dispatcher, `all_health_markers()`.
   inference, and range-capping are built in. Failed marker groups are
   skipped with a warning, never crashing your pipeline.
 - **Reproducible.** Explicit `col_map` arguments map *your* column names
-  to expected internal keys — no silent renaming.
+  to expected internal keys, no silent renaming.
 - **Reference-backed.** Every function cites the primary paper. Full
   bibliography in `inst/REFERENCES.bib`. 46 vignettes with worked
   clinical examples are included.
@@ -230,7 +230,7 @@ cvd_risk(data, model = "ALL")   # or "ASCVD", "QRISK3", "Stroke", etc.
 progression.
 
 ``` r
-# Kidney Failure Risk Equation (KFRE) — 2-year and 5-year probability
+# Kidney Failure Risk Equation (KFRE) 2-year and 5-year probability
 # Needs: age, sex, eGFR (CKD-EPI, mL/min/1.73m²), UACR (mg/g)
 kidney_failure_risk(data, col_map = list(age="age", sex="sex",
                                           eGFR="eGFR", UACR="UACR"))
@@ -257,7 +257,7 @@ studies.
 spirometry_markers(data, col_map = list(fev1="FEV1", fvc="FVC",
                                          age="age", height="ht_cm", sex="sex"))
 
-# Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) — no extra packages needed
+# Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) no extra packages needed
 pulmo_markers(data)
 
 # BODE index for COPD prognosis
@@ -384,7 +384,7 @@ urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
 
 ## Column mapping
 
-Every function accepts a `col_map` argument — a named list mapping
+Every function accepts a `col_map` argument a named list mapping
 internal keys (what the function expects) to your actual column names
 (what you have).
 
@@ -404,7 +404,7 @@ by pattern matching:
 inferred <- infer_cols(my_data)
 str(inferred)
 
-# Pass directly — the dispatcher will use it
+# Pass directly the dispatcher will use it
 all_health_markers(data = my_data, col_map = inferred)
 ```
 
@@ -415,13 +415,13 @@ all_health_markers(data = my_data, col_map = inferred)
 Impute missing values before passing data to any marker function:
 
 ``` r
-# Multiple imputation (mice) — recommended for inference
+# Multiple imputation (mice) recommended for inference
 completed <- impute_mice(my_data, m = 5, seed = 42)
 
-# Random-forest imputation (missForest) — recommended for prediction
+# Random-forest imputation (missForest) recommended for prediction
 completed <- impute_missforest(my_data)
 
-# Simple mean / median / mode — quick exploratory use
+# Simple mean / median / mode quick exploratory use
 completed <- impute_missing(my_data, method = "median")
 ```
 
@@ -470,7 +470,7 @@ vignettes below are bundled with the package; the remaining 34 are
 available exclusively on the package website (they are not built by CRAN
 to keep installation fast).
 
-**Bundled with the package** — accessible via `browseVignettes()` or
+**Bundled with the package** accessible via `browseVignettes()` or
 `vignette()`:
 
 ``` r
