@@ -88,7 +88,7 @@ calc_sds(
 - return:
 
   One of c("data","list"). "data" returns a tibble with added
-  `<var>_sds` columns (default). "list" returns a list with components
+  `[var]_sds` columns (default). "list" returns a list with components
   `data`, `summary`, and `warnings` (backward compatible).
 
 - verbose:
@@ -113,7 +113,7 @@ calc_sds(
 
 ## Value
 
-- If `return = "data"` (default): a tibble with added `<var>_sds`
+- If `return = "data"` (default): a tibble with added `[var]_sds`
   columns.
 
 - If `return = "list"`: a list with:
@@ -127,8 +127,9 @@ calc_sds(
 
 ## Details
 
-By default, returns a tibble with added
-`_sds columns (tidyverse-friendly). For backward compatibility, you can request the previous list output.`
+By default, returns a tibble with added `[var]_sds` columns
+(tidyverse-friendly). For backward compatibility, you can request the
+previous list output.
 
 ## References
 

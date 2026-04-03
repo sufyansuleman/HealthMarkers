@@ -84,7 +84,7 @@
 <li>
 <strong>Safe by default.</strong> NA handling, input validation, column-name inference, and range-capping are built in. Failed marker groups are skipped with a warning, never crashing your pipeline.</li>
 <li>
-<strong>Reproducible.</strong> Explicit <code>col_map</code> arguments map <em>your</em> column names to expected internal keys — no silent renaming.</li>
+<strong>Reproducible.</strong> Explicit <code>col_map</code> arguments map <em>your</em> column names to expected internal keys, no silent renaming.</li>
 <li>
 <strong>Reference-backed.</strong> Every function cites the primary paper. Full bibliography in <code>inst/REFERENCES.bib</code>. 46 vignettes with worked clinical examples are included.</li>
 </ul>
@@ -359,7 +359,7 @@
 </h3>
 <p><strong>When to use:</strong> nephrology studies; CKD cohorts; monitoring progression.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Kidney Failure Risk Equation (KFRE) — 2-year and 5-year probability</span></span>
+<code class="sourceCode R"><span><span class="co"># Kidney Failure Risk Equation (KFRE) 2-year and 5-year probability</span></span>
 <span><span class="co"># Needs: age, sex, eGFR (CKD-EPI, mL/min/1.73m²), UACR (mg/g)</span></span>
 <span><span class="fu"><a href="reference/kidney_failure_risk.html">kidney_failure_risk</a></span><span class="op">(</span><span class="va">data</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age<span class="op">=</span><span class="st">"age"</span>, sex<span class="op">=</span><span class="st">"sex"</span>,</span>
 <span>                                          eGFR<span class="op">=</span><span class="st">"eGFR"</span>, UACR<span class="op">=</span><span class="st">"UACR"</span><span class="op">)</span><span class="op">)</span></span>
@@ -384,7 +384,7 @@
 <span><span class="fu"><a href="reference/spirometry_markers.html">spirometry_markers</a></span><span class="op">(</span><span class="va">data</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1<span class="op">=</span><span class="st">"FEV1"</span>, fvc<span class="op">=</span><span class="st">"FVC"</span>,</span>
 <span>                                         age<span class="op">=</span><span class="st">"age"</span>, height<span class="op">=</span><span class="st">"ht_cm"</span>, sex<span class="op">=</span><span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) — no extra packages needed</span></span>
+<span><span class="co"># Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) no extra packages needed</span></span>
 <span><span class="fu"><a href="reference/pulmo_markers.html">pulmo_markers</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># BODE index for COPD prognosis</span></span>
@@ -499,7 +499,7 @@
 <div class="section level2">
 <h2 id="column-mapping">Column mapping<a class="anchor" aria-label="anchor" href="#column-mapping"></a>
 </h2>
-<p>Every function accepts a <code>col_map</code> argument — a named list mapping internal keys (what the function expects) to your actual column names (what you have).</p>
+<p>Every function accepts a <code>col_map</code> argument a named list mapping internal keys (what the function expects) to your actual column names (what you have).</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Internal key = "G0", your column is called "fasting_glucose_mmol"</span></span>
 <span><span class="fu"><a href="reference/fasting_is.html">fasting_is</a></span><span class="op">(</span></span>
@@ -512,7 +512,7 @@
 <span><span class="va">inferred</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/infer_cols.html">infer_cols</a></span><span class="op">(</span><span class="va">my_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">inferred</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Pass directly — the dispatcher will use it</span></span>
+<span><span class="co"># Pass directly the dispatcher will use it</span></span>
 <span><span class="fu"><a href="reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">my_data</span>, col_map <span class="op">=</span> <span class="va">inferred</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
@@ -521,13 +521,13 @@
 </h2>
 <p>Impute missing values before passing data to any marker function:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Multiple imputation (mice) — recommended for inference</span></span>
+<code class="sourceCode R"><span><span class="co"># Multiple imputation (mice) recommended for inference</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_mice.html">impute_mice</a></span><span class="op">(</span><span class="va">my_data</span>, m <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Random-forest imputation (missForest) — recommended for prediction</span></span>
+<span><span class="co"># Random-forest imputation (missForest) recommended for prediction</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_missforest.html">impute_missforest</a></span><span class="op">(</span><span class="va">my_data</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Simple mean / median / mode — quick exploratory use</span></span>
+<span><span class="co"># Simple mean / median / mode quick exploratory use</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_missing.html">impute_missing</a></span><span class="op">(</span><span class="va">my_data</span>, method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
@@ -569,7 +569,7 @@
 <h2 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a>
 </h2>
 <p>There are <strong>46 vignettes</strong> covering every marker domain. The 12 core vignettes below are bundled with the package; the remaining 34 are available exclusively on the package website (they are not built by CRAN to keep installation fast).</p>
-<p><strong>Bundled with the package</strong> — accessible via <code><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes()</a></code> or <code><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette()</a></code>:</p>
+<p><strong>Bundled with the package</strong> accessible via <code><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes()</a></code> or <code><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette()</a></code>:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"HealthMarkers"</span><span class="op">)</span></span>
 <span></span>

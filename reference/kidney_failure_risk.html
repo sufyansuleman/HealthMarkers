@@ -120,7 +120,7 @@ If NULL, broad defaults are used: age (18, 120), eGFR (1, 200), UACR (0.1, 10000
 </ul><p>Units (no automatic conversion):</p><ul><li><p>age: years; sex: 1 = male, 2 = female</p></li>
 <li><p>eGFR: mL/min/1.73 m^2</p></li>
 <li><p>UACR: mg/g (albumin-to-creatinine ratio)</p></li>
-</ul><p>Details</p><ul><li><p>Prognostic index: PI = 0.220<em>log(age) + (-0.556)<em>log(eGFR) + 0.451</em>log(UACR) + 0.391</em>(male)
+</ul><p>Details</p><ul><li><p>Prognostic index: <code>PI = 0.220 x log(age) + (-0.556) x log(eGFR) + 0.451 x log(UACR) + 0.391 x (male)</code>
 where male = 1 if sex == 1, else 0.</p></li>
 <li><p>Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).</p></li>
 <li><p>Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).</p></li>

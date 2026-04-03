@@ -115,7 +115,7 @@ Must be positive. Default 6.</p></dd>
 
 <dt id="arg-return">return<a class="anchor" aria-label="anchor" href="#arg-return"></a></dt>
 <dd><p>One of c("data","list"). "data" returns a tibble with added
-<code>&lt;var&gt;_sds</code> columns (default). "list" returns a list with components
+<code>[var]_sds</code> columns (default). "list" returns a list with components
 <code>data</code>, <code>summary</code>, and <code>warnings</code> (backward compatible).</p></dd>
 
 
@@ -142,7 +142,7 @@ legacy behavior; defaults to TRUE in this implementation).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
 
-<ul><li><p>If <code>return = "data"</code> (default): a tibble with added <code>&lt;var&gt;_sds</code> columns.</p></li>
+<ul><li><p>If <code>return = "data"</code> (default): a tibble with added <code>[var]_sds</code> columns.</p></li>
 <li><p>If <code>return = "list"</code>: a list with:</p><ul><li><p>data: tibble with added SDS columns</p></li>
 <li><p>summary: list with input/output row counts, omitted rows, total extremes, and per-variable summary</p></li>
 <li><p>warnings: character vector of warning messages emitted</p></li>
@@ -150,8 +150,8 @@ legacy behavior; defaults to TRUE in this implementation).</p></dd>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>By default, returns a tibble with added <var>_sds columns (tidyverse-friendly).
-For backward compatibility, you can request the previous list output.</var></p>
+    <p>By default, returns a tibble with added <code>[var]_sds</code> columns (tidyverse-friendly).
+For backward compatibility, you can request the previous list output.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
