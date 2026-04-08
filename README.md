@@ -12,9 +12,12 @@ HealthMarkers
   - [Verbose diagnostics](#verbose-diagnostics)
   - [Further information](#further-information)
   - [Vignettes](#vignettes)
+  - [Development status and validated
+    publications](#development-status-and-validated-publications)
   - [Contributing](#contributing)
   - [Citation](#citation)
   - [License](#license)
+  - [AI use disclaimer](#ai-use-disclaimer)
 
 <!-- badges: start -->
 
@@ -498,6 +501,42 @@ and searchable on the package website:
 
 ------------------------------------------------------------------------
 
+## Development status and validated publications
+
+HealthMarkers is under active development. All indices are implemented
+from their original, revised or verified published manuscripts. If you
+notice an error in any index, please [open an
+issue](https://github.com/sufyansuleman/HealthMarkers/issues) so it can
+be corrected.
+
+The insulin sensitivity and resistance indices have been independently
+verified and are used in the following peer-reviewed publications:
+
+- Suleman S, Ängquist L, Linneberg A, Hansen T, Grarup N. Exploring the
+  genetic intersection between obesity-associated genetic variants and
+  insulin sensitivity indices. *Sci Rep.* 2025;15:15761. [PMID
+  40328835](https://pubmed.ncbi.nlm.nih.gov/40328835/)
+
+- Suleman S, Huang Y, Jensen RT, Poggi AI, Christensen SB, Fraulund MM,
+  Anderson LV, Stinson SE, Fonvig CE, Pedersen O, Holm JC, Hansen T,
+  Grarup N. Adult-based Genetic Risk Scores for Insulin Resistance
+  Associate With Cardiometabolic Traits in Children and Adolescents. *J
+  Clin Endocrinol Metab.* 2024;110(9):2645–2654. [PMID
+  39690980](https://pubmed.ncbi.nlm.nih.gov/39690980/)
+
+- Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF,
+  Hansen T, Grarup N. Genetic Underpinnings of Fasting and Oral
+  Glucose-stimulated Based Insulin Sensitivity Indices. *J Clin
+  Endocrinol Metab.* 2024;109(11):2754–2763. [PMID
+  38635292](https://pubmed.ncbi.nlm.nih.gov/38635292/)
+
+- Williamson A, Norris DM, Yin X, et al. Genome-wide association study
+  and functional characterisation identifies candidate genes for
+  insulin-stimulated glucose uptake. *Nat Genet.* 2023;55(6):973–983.
+  [PMID 37291194](https://pubmed.ncbi.nlm.nih.gov/37291194/)
+
+------------------------------------------------------------------------
+
 ## Contributing
 
 Issues and pull requests are welcome at
@@ -527,3 +566,12 @@ citation("HealthMarkers")
 
 MIT Sufyan Suleman ([ORCID
 0000-0001-6612-6915](https://orcid.org/0000-0001-6612-6915))
+
+------------------------------------------------------------------------
+
+## AI use disclaimer
+
+OpenAI (ChatGPT) and Anthropic Claude were used during the development
+of this package to assist with code refinement, debugging, and editing
+of documentation content. All outputs were reviewed, verified, and
+approved by the author.
