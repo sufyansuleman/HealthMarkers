@@ -348,7 +348,8 @@ urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
 
 ## Column mapping
 
-Every function accepts a `col_map` argument a named list mapping internal keys (what the function expects) to your actual column names (what you have).
+Every function accepts a `col_map` argument — a named list mapping internal keys
+(what the function expects) to your actual column names (what you have).
 
 ```r
 # Internal key = "G0", your column is called "fasting_glucose_mmol"
@@ -358,16 +359,96 @@ fasting_is(
 )
 ```
 
-For multi-domain calls, use `infer_cols()` to let the package auto-map by pattern matching:
+### Recommended workflow for real datasets
+
+**Step 1 — call `hm_col_report()` first** to see which columns are auto-detected
+and which need a manual mapping:
 
 ```r
-# See what gets mapped and what's missing
-inferred <- infer_cols(my_data)
-str(inferred)
-
-# Pass directly the dispatcher will use it
-all_health_markers(data = my_data, col_map = inferred)
+library(HealthMarkers)
+hm_col_report(my_data)
 ```
+
+This prints a report like:
+
+```
+── HealthMarkers column report ────────────────────────────────────────────
+ Data: 40314 rows × 299 columns   |   Keys in dictionary: 258
+
+ key                  data_column        how matched
+ -------------------- ------------------ ------------------
+ fasting_glucose      pglu0              exact  ✔
+ TG                   trig               exact  ✔
+ ALT                  alat               exact  ✔
+ albumin              alb                exact  ✔
+ vitaminD             vitd25             exact  ✔
+ eGFR                 ─                  NOT FOUND ✘
+
+ ✔ 187 keys matched   ✘ 71 keys not found
+
+── col_map template for missing keys ──────────────────────────────────────
+ col_map <- list(
+   eGFR  = "from_your_data",   # fill in your column name
+ )
+```
+
+**Step 2 — copy the printed `col_map` template** and fill in your column names
+for any unmatched keys:
+
+```r
+my_col_map <- list(
+  eGFR = "GFR_ckdepi"
+)
+```
+
+Or capture the auto-detected mappings directly and merge:
+
+```r
+# Returns a named list of all matched key → column pairs
+cm <- hm_col_report(my_data, verbose = FALSE)
+
+# Add manual overrides for anything not matched
+cm$eGFR <- "GFR_ckdepi"
+```
+
+**Step 3 — pass `col_map` to any function:**
+
+```r
+all_health_markers(
+  data    = my_data,
+  which   = c("insulin_fasting", "glycemic", "lipid", "liver"),
+  col_map = cm
+)
+```
+
+`hm_col_report()` accepts two optional flags:
+
+```r
+hm_col_report(my_data, show_unmatched = TRUE)  # list every unmatched key
+hm_col_report(my_data, fuzzy = TRUE)           # add fuzzy matching as last resort
+```
+
+### Internal key reference
+
+The most commonly needed internal keys are:
+
+| Internal key | Meaning | Example column names |
+|---|---|---|
+| `G0` | Fasting glucose (mmol/L) | `pglu0`, `fasting_glucose`, `gluc0` |
+| `I0` | Fasting insulin (mU/L or pmol/L) | `insu0`, `insulin0`, `ins_fast` |
+| `G30`, `G120` | 30-/120-min OGTT glucose | `pglu30`, `pglu120` |
+| `I30`, `I120` | 30-/120-min OGTT insulin | `insu30`, `insu120` |
+| `TG` | Triglycerides (mmol/L) | `trig`, `TryG`, `TAG`, `triacylglycerol` |
+| `HDL_c` | HDL cholesterol | `hdlc`, `HDL`, `hdl_chol` |
+| `LDL_c` | LDL cholesterol | `ldl`, `LDL`, `ldl_chol` |
+| `TC` | Total cholesterol | `chol`, `total_chol` |
+| `ALT` | Alanine aminotransferase | `alat`, `SGPT`, `GPT` |
+| `albumin` | Serum albumin | `alb`, `Albumin` |
+| `creatinine` | Serum creatinine | `crea`, `Creatinine` |
+| `UACR` | Urine albumin/creatinine ratio | `ualbcrea`, `ACR` |
+| `SBP` / `DBP` | Systolic/diastolic BP | `sysbp`, `diabp` |
+| `BMI` | Body mass index | `bmi`, `BMI_kgm2` |
+| `waist` | Waist circumference (cm) | `waist_cm`, `WC` |
 
 ---
 

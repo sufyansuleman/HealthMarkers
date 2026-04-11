@@ -40,7 +40,7 @@
 #'
 #' @export
 atherogenic_indices <- function(data,
-                                col_map,
+                                col_map = NULL,
                                 na_action = c("keep","omit","error"),
                                 check_extreme = FALSE,
                                 extreme_action = c("warn","cap","error","ignore","NA"),
@@ -75,6 +75,7 @@ atherogenic_indices <- function(data,
   req <- c("TG", "HDL_c")
   opt <- c("TC", "LDL_c")
 
+  col_map <- .hm_autofill_col_map(col_map, data, c(req, opt), fn = "atherogenic_indices")
   hm_validate_inputs(data, col_map, required_keys = req, fn = "atherogenic_indices")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "atherogenic_indices(): preparing inputs")
 
@@ -82,7 +83,7 @@ atherogenic_indices <- function(data,
   req_cols <- unname(unlist(col_map[req], use.names = FALSE))
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[intersect(c(req, opt), names(col_map))], "atherogenic_indices")
+    msg   = hm_fmt_col_map(col_map[intersect(c(req, opt), names(col_map))], "atherogenic_indices")
   )
   missing_req <- setdiff(req_cols, names(data))
   if (length(missing_req)) {

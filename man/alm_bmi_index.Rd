@@ -6,7 +6,7 @@
 \usage{
 alm_bmi_index(
   data,
-  col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,

@@ -6,7 +6,7 @@
 \usage{
 inflammatory_markers(
   data,
-  col_map,
+  col_map = NULL,
   panel = c("auto", "classic", "eos", "both"),
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,

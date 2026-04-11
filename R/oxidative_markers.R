@@ -67,7 +67,7 @@ oxidative_markers <- function(
     }
   }
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[c("GSH", "GSSG")], "oxidative_markers"))
+            msg   = hm_fmt_col_map(col_map[c("GSH", "GSSG")], "oxidative_markers"))
 
   # NA policy
   if (na_action == "error") {

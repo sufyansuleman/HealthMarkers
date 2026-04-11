@@ -125,7 +125,7 @@ charlson_index <- function(
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "charlson_index(): preparing inputs")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[keys], "charlson_index")
+    msg   = hm_fmt_col_map(col_map[keys], "charlson_index")
   )
 
   # --- coerce to numeric 0/1; track NA coercion -----------------------------

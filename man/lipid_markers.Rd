@@ -7,8 +7,7 @@ Lipid Accumulation Product (LAP), and TyG-BMI index}
 \usage{
 lipid_markers(
   data,
-  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ApoB = "ApoB",
-    ApoA1 = "ApoA1", waist = NULL, BMI = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

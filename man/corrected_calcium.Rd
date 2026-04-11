@@ -6,7 +6,7 @@
 \usage{
 corrected_calcium(
   data,
-  col_map = list(calcium = "Ca", albumin = "Alb"),
+  col_map = NULL,
   units = c("auto", "conventional", "si"),
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,

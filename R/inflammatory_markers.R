@@ -55,7 +55,7 @@
 #'
 #' @references \insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 #' @export
-inflammatory_markers <- function(data, col_map,
+inflammatory_markers <- function(data, col_map = NULL,
                                  panel = c("auto","classic","eos","both"),
                                  na_action = c("keep","omit","error"),
                                  check_extreme = FALSE,
@@ -71,6 +71,12 @@ inflammatory_markers <- function(data, col_map,
     rlang::abort("inflammatory_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_inflammatory_markers_error_data_type")
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("neutrophils","lymphocytes","monocytes","platelets","WBC",
+      "CRP","albumin","eosinophils","ESR"),
+    fn = "inflammatory_markers")
+
   if (!is.list(col_map) || is.null(names(col_map)) || any(!nzchar(names(col_map)))) {
     rlang::abort("inflammatory_markers(): `col_map` must be a named list.",
                  class = "healthmarkers_inflammatory_markers_error_map_type")
@@ -110,7 +116,7 @@ inflammatory_markers <- function(data, col_map,
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req_keys], "inflammatory_markers"))
+            msg = hm_fmt_col_map(col_map[req_keys], "inflammatory_markers"))
 
   hm_inform("inflammatory_markers(): computing indices", level = "debug")
 

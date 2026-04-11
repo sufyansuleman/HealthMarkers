@@ -112,7 +112,7 @@ kidney_failure_risk <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req_keys], "kidney_failure_risk"))
+            msg = hm_fmt_col_map(col_map[req_keys], "kidney_failure_risk"))
 
   # Column classes
   if (!is.numeric(data[[col_map$age]]))  rlang::abort("kidney_failure_risk(): 'age' column must be numeric.",  class = "healthmarkers_kfre_error_nonnumeric_age")

@@ -18,7 +18,14 @@ Object returned by \code{RiskScorescvd::calc_scores()}.
 Passthrough to \code{RiskScorescvd::calc_scores()} with graceful fallback to NA.
 }
 \examples{
-if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
-  # cvd_risk_scorescvd(your_data_frame)
+\donttest{
+  if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
+    df <- data.frame(
+      Age = 55, Sex = 0, Smoking_status = 1,
+      systolic.bp = 140, Total_cholesterol = 5.5,
+      HDL.cholesterol = 1.3
+    )
+    cvd_risk_scorescvd(df)
+  }
 }
 }

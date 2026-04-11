@@ -1,7 +1,7 @@
 Package: HealthMarkers
 Type: Package
 Title: Toolkit for Clinical, Metabolic, and Cardiovascular Biomarker Calculations
-Version: 0.1.1
+Version: 0.1.2
 Authors@R:
     person(given = "Sufyan", family = "Suleman",
            email = "sufyansuleman@hotmail.com",
@@ -9,18 +9,31 @@ Authors@R:
            comment = c(ORCID = "0000-0001-6612-6915"))
 Description: Computes over 50 specialist health marker functions covering
     insulin sensitivity and resistance indices (fasting, oral glucose
-    tolerance test, adipose-tissue, tracer, and DXA-based), glycaemic and
-    lipid markers, atherogenic and metabolic syndrome scores, liver
-    steatosis and fibrosis scores, and cardiovascular risk algorithms
-    (Framingham, ASCVD, QRISK3, SCORE2/SCORE2-OP). Also implements renal
-    function (eGFR, KFRE, CKD staging), pulmonary function (spirometry
-    z-scores, BODE index), inflammatory markers and aging clocks (iAge),
-    hormonal panels, body composition and anthropometric z-scores, bone
-    turnover markers and fracture risk (FRAX), frailty and comorbidity
-    indices (Rockwood, Charlson), psychiatric rating scales, and biomarker
-    panels from alternative biofluids (urine, saliva, sweat). Missing value
-    imputation helpers and a unified 'all_health_markers()' dispatcher that
-    returns all requested marker groups as a single wide tibble are included.
+    tolerance test, adipose-tissue, tracer, and dual-energy X-ray
+    absorptiometry (DXA)-based), glycaemic and lipid markers, atherogenic
+    and metabolic syndrome scores, liver steatosis and fibrosis scores, and
+    cardiovascular risk algorithms (Framingham Heart Study equations,
+    atherosclerotic cardiovascular disease (ASCVD) Pooled Cohort Equations,
+    the QRISK3 cardiac risk score, and Systematic Coronary Risk Evaluation 2
+    (SCORE2) including the Older Persons variant (SCORE2-OP)). Also
+    implements renal function (estimated glomerular filtration rate (eGFR),
+    Kidney Failure Risk Equation (KFRE), chronic kidney disease (CKD)
+    staging), pulmonary function (spirometry z-scores, Body-mass index,
+    airflow Obstruction, Dyspnea, and Exercise capacity index (BODE)),
+    inflammatory markers and the inflammatory age clock (iAge), hormonal
+    panels, body composition and anthropometric z-scores, bone turnover
+    markers and fracture risk (Fracture Risk Assessment Tool (FRAX)),
+    frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating
+    scales, and biomarker panels from alternative biofluids (urine, saliva,
+    sweat). Missing value imputation helpers and a unified
+    all_health_markers() dispatcher that returns all requested marker groups
+    as a single wide tibble are included.
+    Goff et al. (2014) <doi:10.1161/01.cir.0000437741.48606.98>,
+    Hippisley-Cox et al. (2017) <doi:10.1136/bmj.j2099>,
+    Tangri et al. (2011) <doi:10.1001/jama.2011.451>,
+    Kanis et al. (2008) <doi:10.1007/s00198-007-0543-5>,
+    Celli et al. (2004) <doi:10.1056/NEJMoa021322>,
+    Sayed et al. (2021) <doi:10.1038/s43587-021-00082-y>.
 License: MIT + file LICENSE
 URL: https://sufyansuleman.github.io/HealthMarkers/,
     https://github.com/sufyansuleman/HealthMarkers

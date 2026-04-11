@@ -149,7 +149,7 @@ adiposity_sds_strat <- function(data,
                                             length(vars), nrow(data)))
   hm_inform(
     level = "inform",
-    msg   = hm_col_report(as.list(stats::setNames(unname(unlist(var_map)), names(var_map))), "adiposity_sds_strat")
+    msg   = hm_fmt_col_map(as.list(stats::setNames(unname(unlist(var_map)), names(var_map))), "adiposity_sds_strat")
   )
 
   # Coerce to numeric (warn on NA introduction)

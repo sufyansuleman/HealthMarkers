@@ -376,6 +376,10 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
 
 #' Internal: default exact-name patterns for hm_infer_cols()
 #' Not exported; used by all_health_markers() when col_map is missing.
+#' Each vector lists every column-name spelling observed in the package's
+#' simulated data, the Inter99/ADDITION real phenotype dataset, and common
+#' biobank / cohort study conventions.  The first element is the canonical
+#' internal key name.
 #' @keywords internal
 .hm_default_col_patterns_exact <- function() {
   list(
@@ -383,222 +387,392 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   ## =========================================================
   ## Demographics & basic
   ## =========================================================
-  age = c("age","Age","AGE","age_year","age_years","baseline_age","participant_age"),
-  sex = c("sex","Sex","SEX","gender","Gender","biological_sex","sex_at_birth",
-          "male","Male","female","Female","woman","women"),
-  ethnicity = c("ethnicity","race","Race","ASIAN","asian","BLACK","black","HISPANIC","hispanic",
-                "WHITE","white","latino","NHW","NHW_M","NHB","HISP","Caucasian","caucasian"),
+  age = c("age","Age","AGE","age_year","age_years","age_0","baseline_age",
+          "participant_age","age_at_visit","age_at_recruitment","age_enrol"),
+  sex = c("sex","Sex","SEX","gender","Gender","gender_qrisk",
+          "biological_sex","sex_at_birth","male","Male","female","Female",
+          "woman","women"),
+  ethnicity = c("ethnicity","Ethnicity","ethiniciy","race","Race",
+                "ethnicity_qrisk","ASIAN","asian","BLACK","black",
+                "HISPANIC","hispanic","WHITE","white","Caucasian","caucasian",
+                "NHW","NHW_M","NHB","HISP","latino"),
 
   ## =========================================================
   ## Anthropometry & obesity
   ## =========================================================
-  height = c("height","Height","HEIGHT","height_m","body_height","stature","standing_height","ht_cm","cm"),
-  weight = c("weight","Weight","WEIGHT","weight_kg","wt","wt_kg","weight_before","weight_after","kg"),
-  BMI    = c("BMI","bmi","BMI_value","bmi_calc","BMIkgm2","bmi_kg_m2","body_mass_index"),
-  waist  = c("waist","Waist","waist_cm","waist_circ","waist_circumference","waist_measure","WC"),
-  hip    = c("hip","Hip","hip_cm","hip_circ","hip_circumference"),
-  whr    = c("whr","WHR","whratio","waist_hip_ratio","waist_to_BMI_ratio","waist_to_height_ratio","WHRadjBMI"),
-  ABSI   = c("ABSI"),
-  BAI    = c("BAI"),
-  BRI    = c("BRI"),
-  RFM    = c("RFM"),
-  WHRadjBMI = c("WHRadjBMI"),
+  height = c("height","Height","HEIGHT","height_m","height_5",
+             "body_height","stature","standing_height","ht_cm","cm"),
+  weight = c("weight","Weight","WEIGHT","weight_kg","weight_0","weight_1",
+             "weight_3","weight_5","weight_before","weight_after","wt","wt_kg","kg"),
+  BMI    = c("BMI","bmi","bmi_0","bmi_1","bmi_3","bmi_5",
+             "BMI_value","bmi_calc","BMIkgm2","bmi_kg_m2","body_mass_index",
+             "BMI3025"),
+  waist  = c("waist","Waist","waist_cm","waist_0","waist_1","waist_3","waist_5",
+             "waist_circ","waist_circumference","waist_measure","WC","wc"),
+  hip    = c("hip","Hip","hip_cm","hip_0","hip_1","hip_3","hip_5",
+             "hip_circ","hip_circumference"),
+  whr    = c("whr","WHR","whratio","whratio_5","waist_hip_ratio",
+             "waist_to_BMI_ratio","waist_to_height_ratio","WHRadjBMI"),
+  ABSI   = c("ABSI","absi"),
+  BAI    = c("BAI","bai"),
+  BRI    = c("BRI","bri"),
+  RFM    = c("RFM","rfm"),
+  WHRadjBMI   = c("WHRadjBMI"),
   obesity_metrics = c("obesity_metrics","metabolic_risk_features"),
 
   ## =========================================================
   ## Body composition / DXA
   ## =========================================================
-  fat_mass = c("fat_mass","fatmass","FM","fm","fm_kg","fat_kg","body_fat_mass","fm_wt"),
-  lean_mass = c("lean_mass","leanmass","LM","lm","lm_kg"),
-  ALM   = c("ALM","alm","ALM_kg"),
+  fat_mass = c("fat_mass","fatmass","FM","fm","fm_kg","fm_wt","fat_kg","body_fat_mass",
+               "fatpct","fat_percent","fat_percentage","fatfreemass",
+               "fatfreemassindex","fatmassindex","body_fat_perc"),
+  lean_mass = c("lean_mass","leanmass","LM","lm","lm_kg","fat_free_mass",
+                "fatfreemass","FFM","ffm"),
+  ALM   = c("ALM","alm","ALM_kg","appendicular_lean_mass"),
   VAT   = c("VAT","vat","visceral_fat","visceral_adipose_tissue"),
-  SAT   = c("SAT","sat","subcutaneous_adipose_tissue"),
-  BMD   = c("BMD","bmd","bmd_t"),
+  SAT   = c("SAT","SAT_VAT_ratio","subcutaneous_adipose_tissue",
+            "subcutaneous_fat","SAT_kg","SAT_cm2"),
+  BMD   = c("BMD","bmd","bmd_t","bone_mineral_density"),
   BMD_ref_mean = c("BMD_ref_mean"),
   BMD_ref_sd   = c("BMD_ref_sd"),
-  liver_fat    = c("liver_fat"),
+  liver_fat    = c("liver_fat","liver_fat_pct"),
 
   ## =========================================================
-  ## Glycemic markers (glucose/HbA1c)
+  ## Glycemic markers (glucose / HbA1c)
   ## =========================================================
-  fasting_glucose = c("fasting_glucose","fpg","G0","pglu0","glu0","glucose_fasting","glucose0","glucose_0"),
-  glucose_30m     = c("G30","pglu30","glu30","glucose_30m"),
-  glucose_120m    = c("G120","pglu120","glu120","glucose_120","glucose_2h"),
+  fasting_glucose = c(
+    "G0","pglu0","pglu0_0","glu0","fasting_glucose","glucose_fasting",
+    "glucose0","glucose_0","fpg","FPG","fasting_plasma_glucose",
+    "fasting_bg","fbg","FBG","fast_glu","bg0","BG0",
+    "plasma_glucose","serum_glucose","glucose_f","GLUC","glu","Glu",
+    "GLUCOSE","glucose","nglu0","p_glucose0"),
+  glucose_30m  = c("G30","pglu30","pglu30_0","glu30","glucose_30m",
+                   "glucose_30","bg30","G30_0"),
+  glucose_120m = c("G120","pglu120","pglu120_0","glu120","glucose_120",
+                   "glucose_2h","glucose_120m","bg120","glu120m","G120_0"),
   glucose_generic = c("glucose"),
-  HbA1c = c("hba1c","HbA1c","A1c","glycated_hba1c","hba1c_mmol"),
+  HbA1c = c("hba1c","HbA1c","hba1c_0","hba1c_1","hba1c_3","hba1c_5",
+             "A1c","a1c","HBA1C","HbA1C","glycated_hba1c","hba1c_mmol",
+             "hemoglobin_a1c","HBAIC","ghb","GHB","hgba1c",
+             "glycohemoglobin","HbA1c_ifcc"),
   glycated_albumin = c("glycated_albumin","GlycatedAlbuminPct"),
 
   ## =========================================================
-  ## Insulin / OGTT / insulin sensitivity
+  ## Insulin / OGTT / C-peptide
   ## =========================================================
-  fasting_insulin = c("fasting_insulin","insulin_fasting","I0","ins0","insu0","insulin0","insulin_0","ins_f"),
-  insulin_30m     = c("I30","ins30","insu30","insulin_30"),
-  insulin_120m    = c("I120","ins120","insu120","insulin_120","ins_2h"),
-  insulin_ogtt    = c("insulin_ogtt","insulin_panel","insulin_adipose","insulin_tracer_dxa","insulin"),
-  c_peptide_0     = c("cp0","cpep0","C_peptide"),
+  fasting_insulin = c(
+    "I0","insu0","insu0_0","ins0","insulin0","insulin_0","fasting_insulin",
+    "insulin_fasting","ins_f","basal_insulin","FI","fi","fast_ins",
+    "Insulin","INS","ins","plasma_insulin","serum_insulin","Xinsulin",
+    "insulin_f","ins_fasting","insulin_bas","homair"),
+  insulin_30m  = c("I30","insu30","insu30_0","ins30","insulin_30",
+                   "ins_30","insulin_30m"),
+  insulin_120m = c("I120","insu120","insu120_0","ins120","insulin_120",
+                   "ins_2h","insulin_120m"),
+  insulin_ogtt    = c("insulin_ogtt","insulin_panel","insulin_adipose",
+                      "insulin_tracer_dxa","insulin"),
+  c_peptide_0     = c("cp0","cpep0","C_peptide","c_peptide","cp0_0"),
   c_peptide_30    = c("cp30","cpep30"),
   c_peptide_120   = c("cp120","cpep120"),
-  fast_is_index   = c("fasting_is","fasting_is","fasting"),
+  fast_is_index   = c("fasting_is","fasting"),
   glucose_markers = c("glycemic","glycemic_markers"),
 
-  ## main insulin resistance/sensitivity indices stored as variables
-  HOMA_IR   = c("HOMA_IR","z_HOMA","IR","IR_"),
-  ISI       = c("IS","isi","insulin_sensitivity_index"),
+  ## Derived IR / IS indices stored as columns
+  HOMA_IR   = c("HOMA_IR","homair","z_HOMA","HOMA","homa_ir","homa","IR","IR_"),
+  ISI       = c("ISI_matsuda","ISIstum0_120","isi","IS","insulin_sensitivity_index",
+                "BIG_SI","BIG_AIR"),
   AISI      = c("AISI"),
   Avignon_Si0   = c("Avignon_Si0"),
   Avignon_Si120 = c("Avignon_Si120"),
-  OGTT_ISI      = c("ogtt_is","OGTT"),
+  OGTT_ISI      = c("ogtt_is","OGTT","ISI_matsuda","ISIstum0_120"),
 
   ## =========================================================
   ## Lipids
   ## =========================================================
-  total_cholesterol = c("total_cholesterol","total_chol","chol_total","chol_t","TC","tc","chol"),
-  HDL_c = c("HDL_c","HDL","hdlc","HDLc","hdl_chol","chol_hdl","non_HDL_c"),
-  LDL_c = c("LDL_c","LDL","ldl","LDLc","ldl_c","ldl_chol","ldlcalc","LDL_PN"),
-  TG    = c("TG","tg","triglycerides","trig","trigs","tgs","triacylglycerol"),
-  VLDL  = c("VLDL","vldl","vldl_c","vldl_chol","vldlcalc"),
-  remnant_c = c("remnant_c"),
-  apoA1 = c("apoA1","ApoA1","apolipoprotein_A1"),
-  apoB  = c("apoB","ApoB","apolipoprotein_B","ApoB100"),
-  non_HDL = c("non_HDL_c"),
+  total_cholesterol = c(
+    "TC","tc","chol","Chol","CHOL","chol_0","chol_1","chol_3","chol_5",
+    "total_cholesterol","total_chol","chol_total","chol_t","cholesterol",
+    "Cholesterol","TCHOL","tot_chol","totalchol","TotalChol","total.chol",
+    "s_chol","serum_cholesterol","plasma_cholesterol","TC_mmol","CHOLE",
+    "tcholesterol","cholesterol_total"),
+  HDL_c = c(
+    "HDL_c","HDL","hdlc","hdlc_0","hdlc_1","hdlc_3","hdlc_5",
+    "HDLc","hdl_chol","chol_hdl","hdl_c","HDL_cholesterol",
+    "hdl_cholesterol","hdlchol","HDLC","s_HDL","p_hdl","HDL_mmol",
+    "hdl_mmol","HDLCHOLEST","chol_hdl_c","high_density_lipoprotein",
+    "total.hdl","cholesterol_HDL_ratio"),
+  LDL_c = c(
+    "LDL_c","LDL","ldl","ldl_5","LDLc","ldl_c","ldl_chol",
+    "ldlcalc","LDLcalc","LDL_PN","ldl_cholesterol","LDL_cholesterol",
+    "LDLC","ldlchol","ldl_calc","s_LDL","p_ldl","LDL_mmol","ldl_mmol",
+    "LDLCHOLEST","ldl_direct","LDL_direct","low_density_lipoprotein"),
+  TG    = c(
+    "TG","tg","trig","trig_0","trig_1","trig_3","trig_5",
+    "triglycerides","Triglycerides","TRIGLYCERIDES","trigs","tgs",
+    "TRIG","TryG","tryg","triacylglycerol","triacylglycerols",
+    "TAG","TAGs","tag","fasting_tg","fasting_triglycerides",
+    "plasma_tg","serum_tg","tg_mmol","tg_mg","tg_0","TG_fasting",
+    "s_TG","p_TG","lipid_tg","tg_baseline","triglycerid",
+    "TGL","tgl","non_fasting_tg","TG_mgdl","uNMR_TRIG"),
+  VLDL  = c("VLDL","vldl","vldl_c","vldl_chol","vldlcalc","VLDLC",
+            "vldl_cholesterol"),
+  remnant_c = c("remnant_c","remCHOL","remnant_cholesterol"),
+  non_HDL   = c("non_HDL_c","nonHDL","non_hdl","nonhdl","non_HDL_cholesterol",
+               "nonHDL_cholesterol","non_hdl_chol"),
+  apoA1 = c("apoA1","ApoA1","APOA1","apolipoprotein_A1","apo_A1","apo_a1"),
+  apoB  = c("apoB","ApoB","APOB","apolipoprotein_B","ApoB100","apo_B","apo_b"),
 
   ## Atherogenic / lipid-derived indices
-  AIP     = c("AIP","AIP_denHDL","ratio_TG_HDL","atherogenic","atherogenic_indices"),
-  CRI_I   = c("CRI_I_denHDL"),
-  CRI_II  = c("CRI_II_denHDL"),
+  AIP          = c("AIP","AIP_denHDL","ratio_TG_HDL","atherogenic","atherogenic_indices"),
+  CRI_I        = c("CRI_I_denHDL"),
+  CRI_II       = c("CRI_II_denHDL"),
   HDL_TG_ratio = c("ratio_TG_HDL"),
-  TC_HDL_ratio = c("ratio_TC_HDL"),
+  TC_HDL_ratio = c("ratio_TC_HDL","cholesterol_HDL_ratio"),
   LDL_HDL_ratio = c("ratio_LDL_HDL"),
 
   ## =========================================================
   ## Blood pressure & heart rate
   ## =========================================================
-  sbp = c("sbp","SBP","sysbp","systolic","systolic_bp","bp_sys","blood_pressure_systolic"),
-  dbp = c("dbp","DBP","diabp","diastolic","diastolic_bp","bp_dia","blood_pressure_diastolic"),
-  pulse = c("pulse","Pulse","bpm","heart_rate","hr"),
-  MAP   = c("MAP"),
+  sbp = c("sbp","SBP","sysbp","sysbp_0","sysbp_1","sysbp_3","sysbp_5",
+          "systolic","systolic_bp","bp_sys","bp_sys_z","systolic_blood_pressure",
+          "blood_pressure_systolic","std_systolic_blood_pressure"),
+  dbp = c("dbp","DBP","diabp","diabp_0","diabp_1","diabp_3","diabp_5",
+          "diastolic","diastolic_bp","bp_dia","bp_dia_z",
+          "blood_pressure_diastolic"),
+  pulse = c("pulse","Pulse","bpm","heart_rate","hr","heart.rate",
+            "AvgRRInterval","pulse_rate","pulse_0"),
+  MAP   = c("MAP","map","mean_arterial_pressure","PP","pp"),
 
   ## =========================================================
   ## Liver function
   ## =========================================================
-  ALT = c("ALT","alt","alat","alanine_aminotransferase"),
-  AST = c("AST","ast","asat","aspartate_aminotransferase"),
-  ALP = c("ALP","alk_phos","alkaline_phosphatase"),
-  GGT = c("GGT","ggt","gamma_gt","gamma_glutamyltransferase"),
-  bilirubin = c("bilirubin","bili","tbili","total_bilirubin"),
-  albumin   = c("albumin","Alb","alb","alb_gdl","serum_albumin","alb_s"),
-  total_protein = c("total_protein"),
+  ALT = c("ALT","alt","alat","ALAT","GPT","gpt","GPT",
+          "alanine_aminotransferase","alanine_transaminase",
+          "SGPT","sgpt","liver_alt","alt_ul","ALT_UL","alt_iu","ALT_IU",
+          "alt_u","alanine_aminotransferasa"),
+  AST = c("AST","ast","asat","ASAT","GOT","got","SGOT","sgot",
+          "aspartate_aminotransferase","aspartate_transaminase",
+          "liver_ast","ast_ul","AST_UL","ast_iu","AST_IU"),
+  ALP = c("ALP","alp","ap","AP","alk_phos","alkaline_phosphatase",
+          "alk_phosphatase","ALP_UL","alp_ul"),
+  GGT = c("GGT","ggt","gamma_gt","gamma_glutamyltransferase",
+          "gammaGT","gamma_GT","GGT_UL","ggt_ul"),
+  bilirubin = c("bilirubin","bili","tbili","total_bilirubin","BILI",
+                "Bilirubin","bilirubin_total","tbil","direct_bilirubin"),
+  albumin   = c("albumin","Albumin","ALBUMIN","Alb","alb","ALB",
+                "alb_gdl","serum_albumin","alb_s","plasma_albumin",
+                "alb_serum","s_albumin"),
+  total_protein = c("total_protein","total_prot","tot_protein","TP","tp"),
   sev_liver = c("sev_liver","mild_liver"),
 
   ## =========================================================
   ## Kidney / renal (serum)
   ## =========================================================
-  creatinine = c("creatinine","crea","Cr","serum_creatinine","creatinine_s"),
-  BUN        = c("BUN"),
-  urea_serum = c("urea_serum"),
-  cystatin_C = c("cystatin_C"),
-  eGFR       = c("eGFR","egfr","gfr","estimated_gfr"),
-  uric_acid  = c("uric_acid"),
+  creatinine = c("creatinine","Creatinine","CREATININE","crea","crea_s",
+                 "Cr","cr","SCr","sCr","serum_creatinine","creatinine_s",
+                 "creatinine_serum","creat","scr","s_creatinine",
+                 "p_creatinine","cr_mgdl","crea_umol"),
+  BUN        = c("BUN","bun","blood_urea_nitrogen","urea_plasma"),
+  urea_serum = c("urea_serum","urea_s","serum_urea","urea"),
+  cystatin_C = c("cystatin_C","cystatinC","cystatin_c","CysC","cysc"),
+  eGFR       = c("eGFR","egfr","gfr","estimated_gfr","GFR","mdrd_gfr",
+                 "ckd_epi_gfr"),
+  uric_acid  = c("uric_acid","uricacid","serum_urate","urate","UA","ua"),
 
-  ## BUN/Cr ratios, renal staging etc (derived)
+  ## Derived renal
   BUN_Cr_ratio = c("BUN_Cr_ratio","BUN_Cr_Ratio"),
   CKD_stage    = c("ckd_stage","kidney_failure_risk","kidney_kfre"),
 
   ## =========================================================
-  ## Urine markers (albumin, protein, electrolytes)
+  ## Urine markers
   ## =========================================================
-  u_albumin = c("u_albumin","ualb","urine_albumin","u_albumin_mgL"),
-  u_creatinine = c("u_creatinine","ucrea","u_crea_mgdl","urine_creatinine"),
-  UACR        = c("UACR","UACR_creatinine","albumin_creatinine_ratio","alb_cre_ratio","ualbcrea","ualb_ucrea","UA_Cr_Ratio"),
-  urine_protein = c("urine_protein"),
-  urine_Na      = c("urine_Na"),
-  urine_K       = c("urine_K"),
-  urine         = c("urine","urine_markers"),
+  u_albumin    = c("u_albumin","ualb","urine_albumin","u_albumin_mgL",
+                   "urinary_albumin","alb_urine"),
+  u_creatinine = c("u_creatinine","ucrea","u_crea_mgdl","urine_creatinine",
+                   "urinary_creatinine","uNMR_CREA"),
+  UACR         = c("UACR","ualbcrea","ualb_ucrea","UA_Cr_Ratio",
+                   "albumin_creatinine_ratio","alb_cre_ratio",
+                   "UACR_creatinine","urinary_ACR","uACR"),
+  urine_protein = c("urine_protein","u_protein","urinary_protein","uprotein"),
+  urine_Na      = c("urine_Na","uNa","u_Na","urinary_Na","u_sodium",
+                    "urinary_sodium","uNMR_CREA"),
+  urine_K       = c("urine_K","uK","u_K","urinary_K","u_potassium",
+                    "urinary_potassium"),
+  urine_Ca      = c("urine_Ca","uCa","u_Ca","urinary_Ca","u_calcium",
+                    "urine_calcium","urinary_calcium"),
+  urine_phos    = c("urine_phos","uPhos","u_phos","urinary_phosphate",
+                    "u_phosphate","urine_phosphate"),
+  urine         = c("urine_markers"),
+
+  ## NMR urine metabolomics (Inter99/ADDITION naming)
+  uNMR_CRTI    = c("uNMR_CRTI"),
+  uNMR_GLUC    = c("uNMR_GLUC"),
+  uNMR_ALAN    = c("uNMR_ALAN"),
+  uNMR_LACT    = c("uNMR_LACT"),
+  uNMR_ACTA    = c("uNMR_ACTA"),
+  uNMR_SUCC    = c("uNMR_SUCC"),
+  uNMR_CITR    = c("uNMR_CITR"),
+  uNMR_DIME    = c("uNMR_DIME"),
+  uNMR_TRIM    = c("uNMR_TRIM"),
+  uNMR_BETA    = c("uNMR_BETA"),
+  uNMR_GLYI    = c("uNMR_GLYI"),
+  uNMR_FUMA    = c("uNMR_FUMA"),
+  uNMR_FORM    = c("uNMR_FORM"),
+  uNMR_X1MN    = c("uNMR_X1MN"),
+  uNMR_NNDI    = c("uNMR_NNDI"),
+  uNMR_HIPP    = c("uNMR_HIPP"),
 
   ## =========================================================
   ## Renal tubular injury markers (urine +/- gCr normalized)
   ## =========================================================
-  A1M     = c("a1_micro","A1M_gCr"),
-  B2M     = c("beta2_micro","B2M_gCr"),
-  KIM1    = c("KIM1"),
+  A1M      = c("a1_micro","A1M_gCr","a1_microglobulin"),
+  B2M      = c("beta2_micro","B2M_gCr","beta2_microglobulin","B2M"),
+  KIM1     = c("KIM1","KIM1_gCr","kim1","kidney_injury_molecule_1"),
   KIM1_gCr = c("KIM1_gCr"),
-  NGAL    = c("NGAL"),
+  NGAL     = c("NGAL","NGAL_gCr","ngal","neutrophil_gelatinase"),
   NGAL_gCr = c("NGAL_gCr"),
-  NAG     = c("NAG"),
-  NAG_gCr = c("NAG_gCr"),
-  L_FABP  = c("L_FABP"),
+  NAG      = c("NAG","nag"),
+  NAG_gCr  = c("NAG_gCr"),
+  L_FABP   = c("L_FABP","l_fabp","liver_fabp"),
   L_FABP_gCr = c("L_FABP_gCr"),
-  IL18    = c("IL18"),
+  IL18     = c("IL18","il18","IL_18","interleukin_18"),
   IL18_gCr = c("IL18_gCr"),
+
+  ## =========================================================
+  ## Neurology / neurofilament
+  ## =========================================================
+  nfl      = c("nfl","NfL","NFL","neurofilament_light","neurofilament_light_chain",
+               "nfl_pgml","NfL_pgml"),
+
+  ## =========================================================
+  ## Endocrine / GI hormones
+  ## =========================================================
+  glucagon = c("glucagon","Glucagon","GLUCAGON","glucagon_pgml"),
+  GH       = c("GH","gh","growth_hormone","GH_ngml","somatotropin"),
+  PIVKA_II = c("PIVKA_II","PIVKA2","pivka_ii","des_gamma_carboxyprothrombin","DCP"),
 
   ## =========================================================
   ## Electrolytes & minerals
   ## =========================================================
+  sodium    = c("sodium","Na","na","natrium","Na_plasma","serum_Na","plasma_sodium"),
+  potassium = c("potassium","K","k","Kalium","K_plasma","serum_K","plasma_potassium"),
+  chloride  = c("chloride","Cl","cl","serum_chloride"),
+  bicarbonate = c("bicarbonate","HCO3","hco3","bicarb"),
   sodium_potassium_ratio = c("Na_K_ratio","U_Na_K_ratio_denK"),
-  calcium = c("calcium","ca","Ca","ca_mgdl"),
-  phosphate = c("phosphate"),
+  calcium   = c("calcium","Calcium","CALCIUM","ca","Ca","ca_mgdl",
+                "serum_calcium","plasma_Ca"),
+  phosphate = c("phosphate","Phosphate","phos","PHOS","phosphorus",
+                "inorganic_phosphate","serum_phos","p_phos"),
   corrected_calcium = c("corrected_calcium","calcium_corrected"),
-  magnesium = c("Magnesium","Mg"),
-  zinc      = c("Zinc"),
-  copper    = c("Copper"),
+  magnesium = c("magnesium","Magnesium","Mg","mg","serum_Mg","plasma_Mg"),
+  zinc      = c("zinc","Zinc","Zn","zn","serum_zinc","plasma_Zn"),
+  copper    = c("copper","Copper","Cu","cu","serum_copper"),
   Mg_Zn_den = c("Mg_Zn_den"),
   Cu_Zn_den = c("Cu_Zn_den"),
 
   ## =========================================================
   ## Inflammatory markers & hematology
   ## =========================================================
-  CRP = c("CRP","crp","crp_hs","hsCRP","CRP_tethys","high_sensitivity_crp","CRP_category"),
-  ESR = c("ESR"),
-  dNLR = c("dNLR"),
-  NLR  = c("NLR"),
-  PLR  = c("PLR"),
-  SII  = c("SII"),
-  SIRI = c("SIRI"),
-  WBC  = c("WBC"),
-  neutrophils  = c("neutrophils"),
-  lymphocytes  = c("lymphocytes"),
-  eosinophils  = c("eosinophils","eos"),
-  platelets    = c("platelets"),
-  inflammatory_age = c("inflammatory_age"),
+  CRP = c("CRP","crp","crp_hs","hs_crp","hsCRP","hs_CRP",
+          "CRP_tethys","high_sensitivity_crp","CRP_category",
+          "CRP_mgL","crp_mgL","crp_mg_L","CRP_mg_L",
+          "C_reactive_protein","c_reactive_protein","hscrp",
+          "CRP_hs","CRP_high_sens"),
+  IL6  = c("IL6","il6","IL_6","interleukin_6","il6_pgml","IL6_pgml"),
+  TNFa = c("TNFa","tnfa","TNF_alpha","tnf_alpha","TNFalpha"),
+  ESR  = c("ESR","esr","erythrocyte_sedimentation_rate"),
+  dNLR = c("dNLR","dnlr"),
+  NLR  = c("NLR","nlr","neutrophil_lymphocyte_ratio"),
+  PLR  = c("PLR","plr","platelet_lymphocyte_ratio"),
+  SII  = c("SII","sii"),
+  SIRI = c("SIRI","siri"),
+  WBC  = c("WBC","wbc","leukocytes","white_blood_cells","leucocytes"),
+  neutrophils = c("neutrophils","Neutrophils","NEUT","neut","neutro"),
+  lymphocytes = c("lymphocytes","Lymphocytes","LYMPH","lymph"),
+  eosinophils = c("eosinophils","Eosinophils","eos","EOS","EOSIN"),
+  platelets   = c("platelets","Platelets","PLT","plt","thrombocytes"),
+  Hgb         = c("Hgb","hgb","Hb","hb","hemoglobin","haemoglobin","HGB","HB"),
+  inflammatory_age     = c("inflammatory_age","iAge_raw","inf_age",
+                           "immune_age","inflammaging_score"),
   inflammatory_markers = c("inflammatory","inflammatory_markers"),
 
+  ## Cytokines / proteins from multiplex panel (ADDITION)
+  ADIPOQ   = c("ADIPOQ","adiponectin","Adiponectin"),
+  LEP      = c("LEP","leptin","Leptin"),
+  RETN     = c("RETN","resistin","Resistin"),
+  IGFBP1   = c("IGFBP1","igfbp1","IGFBP_1"),
+  IGFBP2   = c("IGFBP2","igfbp2","IGFBP_2"),
+  IGFBP3   = c("IGFBP3","igfbp3","IGFBP_3"),
+  FTH1     = c("FTH1","fth1"),
+  HSPA1B   = c("HSPA1B","hspa1b","HSP70"),
+  DPP4     = c("DPP4","dpp4","DPP_4","dipeptidyl_peptidase_4"),
+  GH1      = c("GH1","gh1","GH","gh","growth_hormone"),
+  Proinsulin = c("Proinsulin","proinsulin","pro_insulin"),
+  ntproBNP   = c("ntproBNP","NT_proBNP","nt_probnp","BNP","proBNP"),
+
   ## =========================================================
-  ## Vitamins & folate / B12 / iron
+  ## Vitamins, micronutrients & iron
   ## =========================================================
-  vitaminD = c("vitd","VitD","vitd25","vitd_level","25OHD","25(OH)D","vitamin_d","oh25d",
-               "VitD_ref_mean","VitD_ref_sd","vitamin_d_status"),
-  vitaminB12 = c("vitb12","vitamin_b12","B12","b12","b12_level"),
-  MMA       = c("MMA"),
-  folate    = c("folate","Folate","folic_acid","vitb9"),
-  ferritin  = c("ferritin","Ferritin","ferri","ferritin_s","serum_ferritin","FerritinTS"),
-  iron      = c("iron","iron_s","serum_iron"),
-  transferrin = c("transferrin","tf","transferrin_s"),
-  transferrin_sat = c("TSat","transferrin_sat","Ferr_TSat_den"),
-  Retinol   = c("Retinol","Retinol_ref_mean","Retinol_ref_sd"),
-  VitC      = c("VitC"),
-  Total_lipids = c("Total_lipids"),
+  vitaminD = c(
+    "vitd","VitD","VITD","vitd25","VitD25","vitd25_immu","vitd_level",
+    "25OHD","25OHD3","25(OH)D","25_OHD","25OH_D","25OH_D3",
+    "vitamin_d","vitamin_D","VITAMIN_D","oh25d","serum_25OHD",
+    "25OHD_nmol","vitd_nmol","calcidiol","vitamin_d_25oh",
+    "VitD_ref_mean","VitD_ref_sd","vitamin_d_status",
+    "vit_d","vit_d25","s_vitd","plasma_vitd"),
+  vitaminB12 = c("vitb12","vitb12_immu","vitamin_b12","B12","b12","b12_level",
+                 "vitaminB12","cobalamin","Cobalamin","cyanocobalamin"),
+  MMA        = c("MMA","mma","methylmalonic_acid"),
+  folate     = c("folate","Folate","folate_immu","folic_acid","vitb9",
+                 "folate_serum","serum_folate","folicacid"),
+  ferritin   = c("ferritin","Ferritin","ferri","ferri_immu","ferritin_s",
+                 "serum_ferritin","FerritinTS","s_ferritin"),
+  iron       = c("iron","Iron","iron_s","serum_iron","s_iron","Fe","fe"),
+  transferrin     = c("transferrin","Transferrin","tf","transferrin_s"),
+  transferrin_sat = c("TSat","transferrin_sat","Ferr_TSat_den",
+                      "transferrin_saturation","iron_saturation"),
+  Retinol    = c("Retinol","retinol","vitamin_A","Retinol_ref_mean",
+                 "Retinol_ref_sd"),
+  VitC       = c("VitC","vitc","vitamin_c","Vitamin_C","ascorbate",
+                 "ascorbic_acid","vit_c"),
+  Tocopherol = c("Tocopherol","tocopherol","vitamin_E","alpha_tocopherol"),
+  DHA        = c("DHA","dha","docosahexaenoic_acid"),
+  EPA        = c("EPA","epa","eicosapentaenoic_acid"),
+  FFA        = c("FFA","ffa","free_fatty_acids","NEFA","nefa"),
+  Homocysteine = c("Homocysteine","homocysteine","hcy","HCY","tHcy"),
+  Total_lipids = c("Total_lipids","total_lipids"),
 
   ## =========================================================
   ## Hormones
   ## =========================================================
-  PTH = c("pth","PTH","parathyroid_hormone"),
-  TSH = c("tsh","TSH","thyroid_stimulating_hormone"),
-  FT4 = c("ft4","FT4","free_t4","free_T4","free_thyroxine"),
-  free_T3 = c("free_T3"),
-  testosterone = c("testosterone","Testosterone","testo","total_testosterone"),
-  estradiol    = c("estradiol","Estradiol","e2","estrad"),
-  progesterone = c("progesterone"),
-  prolactin    = c("prolactin"),
-  FSH          = c("FSH"),
-  LH           = c("LH"),
-  DHEAS        = c("DHEAS"),
-  Cortisol     = c("Cortisol","cort1","cort2","cort3","cortisol_0","cortisol_30"),
-  renin        = c("renin"),
-  aldosterone  = c("aldosterone"),
-  SHBG         = c("SHBG","shbg","sex_hormone_binding_globulin"),
-  IGF1         = c("IGF1","igf1","insulin_growth_factor","insulin_like_growth_factor"),
+  PTH          = c("pth","PTH","pth_immu","parathyroid_hormone","iPTH"),
+  TSH          = c("tsh","TSH","tsh_immu","thyroid_stimulating_hormone",
+                   "thyrotropin","TSH_mIU"),
+  FT4          = c("ft4","FT4","free_t4","free_T4","free_thyroxine",
+                   "fT4","FT4_pmol"),
+  free_T3      = c("free_T3","fT3","ft3","FT3","free_triiodothyronine",
+                   "FT3_pmol"),
+  testosterone = c("testosterone","Testosterone","testo",
+                   "total_testosterone","TT","tt_nmol"),
+  estradiol    = c("estradiol","Estradiol","e2","E2","estrad",
+                   "oestradiol","estradiol_pmol"),
+  progesterone = c("progesterone","Progesterone","PROG","prog"),
+  prolactin    = c("prolactin","Prolactin","PRL","prl"),
+  FSH          = c("FSH","fsh","follicle_stimulating_hormone"),
+  LH           = c("LH","lh","luteinising_hormone","luteinizing_hormone"),
+  DHEAS        = c("DHEAS","dheas","dhaes","dehydroepiandrosterone_s",
+                   "dhea_s","DHEA_S"),
+  Cortisol     = c("Cortisol","cortisol","cort1","cort2","cort3",
+                   "cortisol_0","cortisol_30","cortisol_am",
+                   "morning_cortisol","cortisol_nmol"),
+  renin        = c("renin","Renin","plasma_renin","renin_activity","PRA"),
+  aldosterone  = c("aldosterone","Aldosterone","plasma_aldosterone"),
+  SHBG         = c("SHBG","shbg","sex_hormone_binding_globulin","SHBG_nmol"),
+  IGF1         = c("IGF1","igf1","IGF_1","insulin_growth_factor",
+                   "insulin_like_growth_factor","IGF1_ngml"),
+  tpoab        = c("tpoab","TPOAB","TPO_Ab","anti_TPO","anti_thyroid_peroxidase"),
 
-  ## hormone ratios
+  ## Hormone ratios (derived)
   Cort_DHEAS_den = c("Cort_DHEAS_den"),
   T_E2_den       = c("T_E2_den"),
   TSH_fT4_den    = c("TSH_fT4_den"),
@@ -606,52 +780,84 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   ## =========================================================
   ## Pulmonary / spirometry
   ## =========================================================
-  FEV1     = c("FEV1","fev1","FEV1_pred","fev1_pred","fev1_post"),
-  FEV1pct  = c("FEV1pct","fev1_pct","fev1_pp"),
-  FVC      = c("FVC","fvc","fvc_post"),
-  FEV1FVC  = c("FEV1FVC"),
-  mmrc     = c("mmrc","mMRC"),
-  sixmwd   = c("sixmwd"),
-  COPD     = c("copd"),
+  FEV1     = c("FEV1","fev1","FEV1_pred","fev1_pred","fev1_post","FEV1_L"),
+  FEV1pct  = c("FEV1pct","fev1_pct","fev1_pp","FEV1FVCratio"),
+  FVC      = c("FVC","fvc","fvc_post","FVC_L"),
+  FEV1FVC  = c("FEV1FVC","FEV1FVCratio","fev1_fvc","fev1fvc"),
+  mmrc     = c("mmrc","mMRC","MMRC","mrc_dyspnoea","mrc_score"),
+  sixmwd   = c("sixmwd","six_minute_walk","6mwd","6MWD","walk_6min"),
+  COPD     = c("copd","COPD","chronic_obstructive_pulmonary"),
   pulmo_markers = c("pulmo","pulmo_markers"),
+
+  ## =========================================================
+  ## Cardiovascular / ECG
+  ## =========================================================
+  qtcf     = c("qtcf","QTcF","qtc","QTc","QTcf_ms"),
+  qt_interval = c("qt_interval","QT","qt","QT_ms"),
+  qrs_duration = c("qrs_duration","QRS","qrs","QRS_ms"),
+  PR_interval  = c("PR_Interval","pr_interval","PR","pr"),
+  ntproBNP_cv  = c("ntproBNP","BNP","NT_proBNP"),
 
   ## =========================================================
   ## Bone markers
   ## =========================================================
-  BSAP      = c("BSAP"),
-  CTX       = c("CTX"),
-  PINP      = c("PINP"),
-  Osteocalcin = c("Osteocalcin"),
-  TBS       = c("TBS"),
-  parent_fracture = c("parent_fracture"),
-  prior_fracture  = c("prior_fracture"),
+  BSAP      = c("BSAP","bsap","bone_specific_alkaline_phosphatase"),
+  CTX       = c("CTX","ctx","CTX_I","C_telopeptide"),
+  PINP      = c("PINP","pinp","procollagen_type1","P1NP"),
+  Osteocalcin = c("Osteocalcin","osteocalcin","OC","oc","bone_gla_protein"),
+  TBS       = c("TBS","tbs","trabecular_bone_score"),
+  parent_fracture = c("parent_fracture","parental_fracture",
+                      "family_fracture","hip_fracture_parent"),
+  prior_fracture  = c("prior_fracture","previous_fracture",
+                      "fracture_history","fracture_hx"),
 
   ## =========================================================
   ## Frailty / sarcopenia
   ## =========================================================
-  frailty_index = c("frailty_index"),
-  sarc_f        = c("sarc_f","sarc_f_score","SarcF","sarcf"),
-  strength      = c("strength","Strength"),
-  chair         = c("chair","Chair"),
-  stairs        = c("stairs","Stairs"),
-  walking       = c("walking","Walking","Walk_m"),
+  frailty_index = c("frailty_index","frailty","fi_score","rockwood"),
+  sarc_f   = c("sarc_f","sarc_f_score","SarcF","sarcf","SARC_F"),
+  strength = c("strength","Strength","grip_strength","handgrip",
+               "handgripMax","handgrip_kg","grip"),
+  chair    = c("chair","Chair","chair_stand","five_chair_stands",
+               "chair_stand_time"),
+  stairs   = c("stairs","Stairs","stair_climb"),
+  walking  = c("walking","Walking","Walk_m","gait_speed","walk_speed",
+               "usual_gait_speed"),
+  falls    = c("falls","Falls","fall_history","number_of_falls"),
+
+  ## =========================================================
+  ## Lifestyle & comorbidities
+  ## =========================================================
+  smoking  = c("smoking","smoke","smoker","Smoking","smoke_daily_gr",
+               "smoke_packyrs","smoking_heavy","current_smoker","ever_smoker"),
+  alcohol  = c("alcohol","alko_unit0","alko_class0","alko_binge",
+               "alcohol_units","drinks_per_week","alcohol_consumption"),
+  physical_activity = c("FYSAKT0","physical_activity","PA","pa",
+                        "exercise","stepKondi","stepIlt"),
+  diabetes  = c("diabetes","T2D_NGT","T2D_NFG","glu_tol","diabetes1",
+                "diabetes2","dm","DM","T2D","t2d"),
+  hypertension = c("hypertension","HT_NT","HT_NT2","hyptreat",
+                   "blood_pressure_treatment","bp_treated"),
+  liptreat  = c("liptreat","lipid_treatment","statin","cholesterol_treatment"),
+  instreat  = c("instreat","insulin_treatment","insulin_therapy"),
+  pulsetreat = c("pulsetreat","pulse_treatment","beta_blocker"),
 
   ## =========================================================
   ## Sweat biomarkers
   ## =========================================================
-  sweat = c("sweat","sweat_markers"),
-  sweat_chloride = c("sweat_chloride"),
-  sweat_Na       = c("sweat_Na"),
-  sweat_K        = c("sweat_K"),
-  sweat_lactate  = c("sweat_lactate"),
-  sweat_rate_bsa = c("sweat_rate_bsa"),
-  sweat_rate_duration = c("sweat_rate_duration"),
+  sweat           = c("sweat","sweat_markers"),
+  sweat_chloride  = c("sweat_chloride"),
+  sweat_Na        = c("sweat_Na"),
+  sweat_K         = c("sweat_K"),
+  sweat_lactate   = c("sweat_lactate"),
+  sweat_rate_bsa       = c("sweat_rate_bsa"),
+  sweat_rate_duration  = c("sweat_rate_duration"),
 
   ## =========================================================
   ## Saliva biomarkers
   ## =========================================================
-  saliva = c("saliva","saliva_markers"),
-  saliva_amylase = c("saliva_amylase","amylase"),
+  saliva        = c("saliva","saliva_markers"),
+  saliva_amylase = c("saliva_amylase","amylase","salivary_amylase"),
   saliva_glucose = c("saliva_glucose"),
   saliva_cort1   = c("saliva_cort1"),
   saliva_cort2   = c("saliva_cort2"),
@@ -660,36 +866,36 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   ## =========================================================
   ## Tracer / metabolic flux markers
   ## =========================================================
-  tracer_dxa_is = c("tracer_dxa_is","insulin_tracer_dxa"),
-  rate_glycerol = c("rate_glycerol","glycerol_fm"),
+  tracer_dxa_is  = c("tracer_dxa_is","insulin_tracer_dxa"),
+  rate_glycerol  = c("rate_glycerol","glycerol_fm"),
   rate_palmitate = c("rate_palmitate","palmitate_fm"),
 
   ## =========================================================
   ## Tryptophan-kynurenine pathway
   ## =========================================================
-  tryptophan   = c("tryptophan","tryptophan_umolL","Trp_uM"),
-  kynurenine   = c("kynurenine","kynurenine_nmolL","Kyn_nM"),
-  kyn_trp_ratio = c("kyn_trp","kyn_trp_ratio"),
-  Tyr          = c("Tyr"),
-  Phe          = c("Phe"),
-  Tyr_Phe_Ratio = c("Tyr_Phe_Ratio"),
+  tryptophan    = c("tryptophan","Trp_uM","tryptophan_umolL","Trp","trp"),
+  kynurenine    = c("kynurenine","Kyn_nM","kynurenine_nmolL","Kyn","kyn"),
+  kyn_trp_ratio = c("kyn_trp","kyn_trp_ratio","KTR","ktr"),
+  Tyr           = c("Tyr","tyr","tyrosine","Tyrosine"),
+  Phe           = c("Phe","phe","phenylalanine","Phenylalanine"),
+  Tyr_Phe_Ratio = c("Tyr_Phe_Ratio","tyr_phe","TyrPhe"),
 
   ## =========================================================
-  ## Metabolic / cardio risk scores (as variables)
+  ## Metabolic / cardio risk scores (derived columns)
   ## =========================================================
-  ASCVD  = c("ASCVD","cvd_risk_ascvd"),
-  QRISK3 = c("QRISK3"),
-  PooledCohort = c("PooledCohort"),
-  CVrisk       = c("CVrisk","RiskScorescvd"),
+  ASCVD        = c("ASCVD","cvd_risk_ascvd","ascvd_10yr"),
+  QRISK3       = c("QRISK3","qrisk3","QRISK3_score","q_risk3"),
+  PooledCohort = c("PooledCohort","pooled_cohort"),
+  CVrisk       = c("CVrisk","RiskScorescvd","score2","SCORE2"),
 
   ## =========================================================
   ## Allostatic load & composite indices
   ## =========================================================
-  allostatic_load = c("allostatic_load","AllostaticLoad"),
+  allostatic_load = c("allostatic_load","AllostaticLoad","AL_score"),
 
   ## =========================================================
-  ## iAge (if present)
+  ## iAge / inflammatory clock
   ## =========================================================
-  iAge = c("iAge")
+  iAge = c("iAge","iage","inflammatory_age_clock","iAge_score")
 )
 }

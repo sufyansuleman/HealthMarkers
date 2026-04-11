@@ -92,20 +92,7 @@
 #' @importFrom rlang abort warn inform
 #' @export
 liver_markers <- function(data,
-                          col_map = list(
-                            BMI   = "BMI",
-                            waist = "waist",
-                            TG    = "TG",
-                            GGT   = "GGT",
-                            age           = "age",
-                            AST           = "AST",
-                            ALT           = "ALT",
-                            platelets     = "platelets",
-                            albumin       = "albumin",
-                            diabetes      = "diabetes",
-                            bilirubin     = "bilirubin",
-                            creatinine    = "creatinine"
-                          ),
+                          col_map = NULL,
                           verbose = FALSE,
                           na_action = c("keep","omit","error","ignore","warn"),
                           na_warn_prop = 0.2,
@@ -119,13 +106,15 @@ liver_markers <- function(data,
 
   hm_inform("liver_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  # Additional robust validation
-  .lm_validate_args(data, col_map, na_warn_prop, extreme_rules)
-
   required <- c("BMI","waist","TG","GGT","age","AST","ALT",
                 "platelets","albumin","diabetes","bilirubin","creatinine")
 
-  # Ensure required keys in col_map
+  col_map <- .hm_autofill_col_map(col_map, data, required, fn = "liver_markers")
+
+  # Additional robust validation
+  .lm_validate_args(data, col_map, na_warn_prop, extreme_rules)
+
+  # Ensure all required keys are present in col_map
   miss_keys <- setdiff(required, names(col_map))
   if (length(miss_keys)) {
     rlang::abort(
@@ -143,7 +132,7 @@ liver_markers <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[required], "liver_markers"))
+            msg = hm_fmt_col_map(col_map[required], "liver_markers"))
 
   used_cols <- unlist(col_map[required], use.names = FALSE)
 

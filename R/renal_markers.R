@@ -67,7 +67,7 @@
 #' @importFrom rlang abort warn inform
 #' @export
 renal_markers <- function(data,
-                          col_map,
+                          col_map = NULL,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
                           check_extreme = FALSE,
@@ -77,6 +77,11 @@ renal_markers <- function(data,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
   hm_inform("renal_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("creatinine","age","sex","race","BUN",
+      "cystatin_C","urea_serum","creatinine_urine","urea_urine"),
+    fn = "renal_markers")
 
   # 1) Validate mapping and data presence
   required <- c("creatinine", "age", "sex", "race", "BUN")
@@ -105,7 +110,7 @@ renal_markers <- function(data,
   # 2) High-missingness warnings on required inputs
   .rm_warn_high_missing(data, col_map[required], na_warn_prop = na_warn_prop)
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[required], "renal_markers"))
+            msg   = hm_fmt_col_map(col_map[required], "renal_markers"))
 
   # 3) NA policy on required inputs
   used_cols <- unname(unlist(col_map[required], use.names = FALSE))

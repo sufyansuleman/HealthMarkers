@@ -12,7 +12,7 @@ test_that("saliva_markers errors if missing required columns", {
   )
   expect_error(
     saliva_markers(df1),
-    "missing columns: saliva_cort1"
+    "cort1"
   )
 
   df2 <- tibble(
@@ -23,7 +23,7 @@ test_that("saliva_markers errors if missing required columns", {
   )
   expect_error(
     saliva_markers(df2),
-    "missing columns: saliva_cort2, saliva_glucose"
+    "cort2"
   )
 })
 

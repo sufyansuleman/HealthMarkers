@@ -6,7 +6,7 @@
 \usage{
 atherogenic_indices(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

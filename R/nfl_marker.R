@@ -29,7 +29,7 @@
 #' @export
 nfl_marker <- function(
   data,
-  col_map = list(nfl = "NfL"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
@@ -48,6 +48,9 @@ nfl_marker <- function(
       class = "healthmarkers_nfl_error_data_type"
     )
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data, "nfl", fn = "nfl_marker")
+  if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map)) {
     rlang::abort(
@@ -88,7 +91,7 @@ nfl_marker <- function(
   # --- verbose / debug messages ---------------------------------------------
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "nfl_marker(): preparing inputs")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map["nfl"], "nfl_marker"))
+            msg = hm_fmt_col_map(col_map["nfl"], "nfl_marker"))
 
   # --- coerce to numeric; warn on NA introduction ---------------------------
   cn <- mapped

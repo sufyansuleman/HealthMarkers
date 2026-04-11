@@ -6,8 +6,7 @@
 \usage{
 bode_index(
   data,
-  col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI",
-    fev1 = NULL, fev1_pred = NULL, fev1_pp = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),
@@ -52,7 +51,8 @@ BMI: >21 = 0; <=21 = 1
 \examples{
 df <- data.frame(FEV1pct = c(68, 45, 30), Walk_m = c(400, 280, 140),
                  mMRC = c(1, 2, 3), BMI = c(24, 19, 18))
-bode_index(df)
+bode_index(df, col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m",
+                              mmrc = "mMRC", bmi = "BMI"))
 }
 \references{
 \insertRef{celli2004bode}{HealthMarkers}

@@ -93,7 +93,7 @@
 #' @importFrom rlang abort warn inform
 #' @export
 iAge <- function(data,
-                 col_map,
+                 col_map = NULL,
                  weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
                  verbose = FALSE,
                  na_action = c("keep", "omit", "error", "ignore", "warn"),
@@ -109,6 +109,7 @@ iAge <- function(data,
   hm_inform("iAge(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   markers <- c("CRP","IL6","TNFa")
+  col_map <- .hm_autofill_col_map(col_map, data, markers, fn = "iAge")
   if (is.null(col_map) || !is.list(col_map)) rlang::abort("iAge(): `col_map` must be a named list.")
   missing_keys <- setdiff(markers, names(col_map))
   if (length(missing_keys)) rlang::abort(paste0("missing required columns: ", paste(missing_keys, collapse = ", ")))
@@ -124,7 +125,7 @@ iAge <- function(data,
   }
   used_cols_named <- stats::setNames(unname(used_cols), markers)
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[markers], "iAge"))
+            msg = hm_fmt_col_map(col_map[markers], "iAge"))
 
   # Validate weights
   if (is.null(weights)) rlang::abort("iAge(): `weights` must be a numeric vector.")

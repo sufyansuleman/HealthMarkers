@@ -35,7 +35,7 @@
 #' @export
 alm_bmi_index <- function(
   data,
-  col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
@@ -55,6 +55,8 @@ alm_bmi_index <- function(
     )
   }
 
+  col_map <- .hm_autofill_col_map(col_map, data, c("alm","bmi","sex"),
+                                   fn = "alm_bmi_index")
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort(
       "alm_bmi_index(): `col_map` must be a named list.",
@@ -95,7 +97,7 @@ alm_bmi_index <- function(
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "alm_bmi_index(): preparing inputs")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[req], "alm_bmi_index")
+    msg   = hm_fmt_col_map(col_map[req], "alm_bmi_index")
   )
 
   # --- coerce ALM/BMI numeric; sex as character ------------------------------

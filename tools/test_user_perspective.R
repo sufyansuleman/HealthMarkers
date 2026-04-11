@@ -21,28 +21,31 @@ library(HealthMarkers)
 # options(healthmarkers.verbose = "debug")
 
 
-# ── 1. LOAD & INSPECT SIMULATED DATA ─────────────────────────────────────────
-dat <- readRDS(system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers"))
+# ── 1. LOAD & INSPECT REAL DATA ──────────────────────────────────────────────
+# Read the real phenotype file (tab-delimited .txt)
+dat <- read.table(
+  "O:/HE_Sufyan/PhD_work/01_Projects/01_PhD_project/01_Phenotypic_correlations/data-raw/MergedPhenotypes_11mar2021.txt",
+  header    = TRUE,
+  sep       = "\t",
+  stringsAsFactors = FALSE,
+  na.strings = c("", "NA", ".", "N/A")
+)
+
 cat("Dimensions:", nrow(dat), "rows x", ncol(dat), "cols\n")
 cat("Column names:\n"); print(names(dat))
 str(dat[, 1:20])                        # first 20 columns
-# dat$sex is "M"/"F" -- all functions now accept M/F/male/female/1/2/0 directly.
+# sex is coded 1/2 in this dataset -- all functions accept 1/2 directly.
+
+
 
 
 # ── 2. MAIN DISPATCHER ───────────────────────────────────────────────────────
-# 2a. Full run – auto-infers col_map
-result_full <- all_health_markers(dat, verbose = TRUE)
-cat("\nall_health_markers() dimensions:", dim(result_full), "\n")
-cat("New columns added:", setdiff(names(result_full), names(dat)), "\n")
-
-# 2b. Subset run – only lipid + liver groups
-result_sub <- all_health_markers(
+# 2a. Run selected groups with explicit col_map
+result_full <- all_health_markers(
   dat,
-  which = c("lipid", "liver"),
-  include_insulin = FALSE,
   verbose = TRUE
 )
-dim(result_sub)
+
 
 # 2c. Summary of full result
 marker_summary(result_full, verbose = TRUE)
@@ -50,11 +53,8 @@ marker_summary(result_full, verbose = TRUE)
 # 2d. metabolic_markers() aggregator
 met_result <- metabolic_markers(
   dat,
-  col_map = list(
-    G0 = "G0", I0 = "I0", TG = "TG", HDL_c = "HDL_c",
-    BMI = "BMI", waist = "waist", age = "age"
-  ),
-  which = c("lipid", "liver", "glycemic"),
+  col_map = col_map,
+  which   = c("lipid", "liver", "glycemic"),
   verbose = TRUE
 )
 dim(met_result)
@@ -64,8 +64,8 @@ dim(met_result)
 # 3a. Fasting IS
 fasting_result <- fasting_is(
   data    = dat,
-  col_map = list(G0 = "G0", I0 = "I0", TG = "TG", HDL_c = "HDL_c",
-                 BMI = "BMI", waist = "waist", FFA = "FFA"),
+  col_map = list(G0 = "pglu0", I0 = "insu0", TG = "trig", HDL_c = "hdlc",
+                 BMI = "bmi", waist = "waist"),
   normalize = "none",
   verbose   = TRUE
 )
@@ -74,7 +74,7 @@ head(fasting_result)
 # 3b. Fasting IS with z-score normalisation
 fasting_z <- fasting_is(
   data      = dat,
-  col_map   = list(G0 = "G0", I0 = "I0"),
+  col_map   = list(G0 = "pglu0", I0 = "insu0"),
   normalize = "z",
   verbose   = FALSE
 )
@@ -84,9 +84,9 @@ head(fasting_z)
 # 3c. OGTT IS
 ogtt_result <- ogtt_is(
   data    = dat,
-  col_map = list(G0 = "G0", G30 = "G30", G120 = "G120",
-                 I0 = "I0", I30 = "I30", I120 = "I120",
-                 weight = "weight", bmi = "BMI",
+  col_map = list(G0 = "pglu0", G30 = "pglu30", G120 = "pglu120",
+                 I0 = "insu0", I30 = "insu30", I120 = "insu120",
+                 weight = "weight", bmi = "bmi",
                  age = "age", sex = "sex"),
   normalize = "none",
   verbose   = TRUE
@@ -96,23 +96,21 @@ head(ogtt_result[, 1:6])
 # 3d. Adipose IS
 adipo_result <- adipo_is(
   data    = dat,
-  col_map = list(G0 = "G0", I0 = "I0", TG = "TG", HDL_c = "HDL_c",
-                 FFA = "FFA", waist = "waist", bmi = "BMI"),
+  col_map = list(G0 = "pglu0", I0 = "insu0", TG = "trig", HDL_c = "hdlc",
+                 waist = "waist", bmi = "bmi"),
   verbose = TRUE
 )
 head(adipo_result)
 
-# 3e. All insulin indices combined
+# 3e. All insulin indices combined (fasting + OGTT + adipose; tracer/DXA not in dataset)
 all_ins <- all_insulin_indices(
   data    = dat,
-  col_map = list(G0 = "G0", I0 = "I0", G30 = "G30", I30 = "I30",
-                 G120 = "G120", I120 = "I120",
-                 TG = "TG", HDL_c = "HDL_c", FFA = "FFA",
-                 waist = "waist", weight = "weight", bmi = "BMI",
+  col_map = list(G0 = "pglu0", I0 = "insu0", G30 = "pglu30", I30 = "insu30",
+                 G120 = "pglu120", I120 = "insu120",
+                 TG = "trig", HDL_c = "hdlc",
+                 waist = "waist", weight = "weight", bmi = "bmi",
                  age = "age", sex = "sex",
-                 rate_palmitate = "rate_palmitate",
-                 rate_glycerol  = "rate_glycerol",
-                 fat_mass       = "fat_mass"),
+                 fat_mass = "fatmass"),
   normalize = "none",
   mode      = "both",
   verbose   = TRUE
@@ -123,9 +121,9 @@ dim(all_ins)
 # ── 4. GLYCEMIC MARKERS ───────────────────────────────────────────────────────
 glyc_result <- glycemic_markers(
   data    = dat,
-  col_map = list(G0 = "G0", I0 = "I0", HbA1c = "HbA1c",
-                 G120 = "G120", I120 = "I120",
-                 HDL_c = "HDL_c", TG = "TG", BMI = "BMI"),
+  col_map = list(G0 = "pglu0", I0 = "insu0", HbA1c = "hba1c",
+                 G120 = "pglu120", I120 = "insu120",
+                 HDL_c = "hdlc", TG = "trig", BMI = "bmi"),
   verbose = TRUE
 )
 head(glyc_result)
@@ -135,9 +133,9 @@ head(glyc_result)
 # 5a. lipid_markers
 lipid_result <- lipid_markers(
   data    = dat,
-  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG",
-                 LDL_c = "LDL_c", ApoB = "ApoB", ApoA1 = "ApoA1",
-                 waist = "waist", BMI = "BMI"),
+  col_map = list(TC = "chol", HDL_c = "hdlc", TG = "trig",
+                 LDL_c = "ldl", ApoB = "APOB", ApoA1 = "APOA1",
+                 waist = "waist", BMI = "bmi"),
   verbose = TRUE
 )
 head(lipid_result)
@@ -145,7 +143,7 @@ head(lipid_result)
 # 5b. atherogenic_indices
 ath_result <- atherogenic_indices(
   data    = dat,
-  col_map = list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c"),
+  col_map = list(TG = "trig", HDL_c = "hdlc", TC = "chol", LDL_c = "ldl"),
   verbose = TRUE
 )
 head(ath_result)
@@ -153,7 +151,7 @@ head(ath_result)
 # 5c. AIP marker via cvd_marker_aip
 aip_result <- cvd_marker_aip(
   data    = dat,
-  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+  col_map = list(TG = "trig", HDL_c = "hdlc"),
   verbose = TRUE
 )
 head(aip_result)
@@ -161,21 +159,19 @@ head(aip_result)
 # 5d. LDL particle number estimate
 ldl_pn <- cvd_marker_ldl_particle_number(
   data    = dat,
-  col_map = list(ApoB = "ApoB"),
+  col_map = list(ApoB = "APOB"),
   verbose = TRUE
 )
 head(ldl_pn)
 
 
 # ── 6. LIVER MARKERS ─────────────────────────────────────────────────────────
-# liver_markers expects TG in mg/dL; sim data has TG_mgdl = TG * 88.57 pre-computed
+# Note: no GGT, AST, or bilirubin in this dataset; those index components will be NA.
 liver_result <- liver_markers(
   data    = dat,
-  col_map = list(BMI = "BMI", waist = "waist", TG = "TG_mgdl",
-                 GGT = "GGT", age = "age", AST = "AST", ALT = "ALT",
-                 platelets = "platelets", albumin = "albumin",
-                 diabetes = "diabetes", bilirubin = "bilirubin",
-                 creatinine = "creatinine"),
+  col_map = list(BMI = "bmi", waist = "waist", TG = "trig",
+                 age = "age", ALT = "alat",
+                 albumin = "alb", creatinine = "crea"),
   verbose = TRUE
 )
 head(liver_result)
@@ -183,9 +179,8 @@ head(liver_result)
 # liver_fat_markers
 liverfat_result <- liver_fat_markers(
   data    = dat,
-  col_map = list(BMI = "BMI", waist = "waist", TG = "TG",
-                 GGT = "GGT", ALT = "ALT", AST = "AST",
-                 albumin = "albumin", bilirubin = "bilirubin"),
+  col_map = list(BMI = "bmi", waist = "waist", TG = "trig",
+                 ALT = "alat", albumin = "alb"),
   verbose = TRUE
 )
 head(liverfat_result)
@@ -193,11 +188,10 @@ head(liverfat_result)
 
 # ── 7. RENAL MARKERS ─────────────────────────────────────────────────────────
 # 7a. renal_markers
+# Note: race, BUN, cystatin_C not in this dataset; eGFR will be estimated from creatinine.
 renal_result <- renal_markers(
   data    = dat,
-  col_map = list(creatinine = "creatinine", age = "age",
-                 sex = "sex", race = "race",
-                 BUN = "BUN", cystatin_C = "cystatin_C"),
+  col_map = list(creatinine = "crea", age = "age", sex = "sex"),
   verbose = TRUE
 )
 head(renal_result)
@@ -205,45 +199,51 @@ head(renal_result)
 # 7b. urine_markers
 urine_result <- urine_markers(
   data    = dat,
+  col_map = list(urine_creat = "ucrea", urine_albumin = "ualb",
+                 urine_na = "uNa", urine_k = "uK"),
   verbose = TRUE
 )
 head(urine_result)
 
-# 7c. ckd_stage
-ckd_result <- ckd_stage(
-  data    = dat,
-  col_map = list(eGFR = "eGFR", UACR = "UACR"),
-  verbose = TRUE
-)
-head(ckd_result)
+# 7c. ckd_stage – requires eGFR; compute it first from creatinine
+# (skip if renal_markers above already produced an eGFR column)
+if ("eGFR" %in% names(renal_result)) {
+  ckd_result <- ckd_stage(
+    data    = renal_result,
+    col_map = list(eGFR = "eGFR", UACR = "ualbcrea"),
+    verbose = TRUE
+  )
+  head(ckd_result)
+}
 
-# 7d. Kidney Failure Risk
-kfre_result <- kidney_failure_risk(
-  data    = dat,
-  col_map = list(age = "age", sex = "sex",
-                 eGFR = "eGFR", UACR = "UACR"),
-  verbose = TRUE
-)
-head(kfre_result)
+# 7d. Kidney Failure Risk (also needs eGFR)
+if ("eGFR" %in% names(renal_result)) {
+  kfre_result <- kidney_failure_risk(
+    data    = renal_result,
+    col_map = list(age = "age", sex = "sex",
+                   eGFR = "eGFR", UACR = "ualbcrea"),
+    verbose = TRUE
+  )
+  head(kfre_result)
+}
 
 
 # ── 8. INFLAMMATORY MARKERS & iAGE ───────────────────────────────────────────
-# 8a. inflammatory_markers (classic panel; no monocytes in simulated data)
+# 8a. inflammatory_markers
+# Note: CBC (neutrophils, lymphocytes, platelets) not in this dataset;
+# only CRP and albumin are available -- ratio-based indices will be NA.
 inflam_result <- inflammatory_markers(
   data    = dat,
-  col_map = list(neutrophils = "neutrophils", lymphocytes = "lymphocytes",
-                 platelets = "platelets", WBC = "WBC",
-                 CRP = "CRP", albumin = "albumin",
-                 eosinophils = "eosinophils", ESR = "ESR"),
+  col_map = list(CRP = "CRP_tethys", albumin = "alb"),
   panel   = "both",
   verbose = TRUE
 )
 head(inflam_result)
 
-# 8b. iAge – simplified inflammatory age clock
+# 8b. iAge – simplified inflammatory age clock (CRP_tethys and IL6 available)
 iage_result <- iAge(
   data    = dat,
-  col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
+  col_map = list(CRP = "CRP_tethys", IL6 = "IL6"),
   verbose = TRUE
 )
 head(iage_result)
@@ -305,19 +305,16 @@ head(frax_result)
 
 # ── 11. HORMONE MARKERS ───────────────────────────────────────────────────────
 # Only map columns present in the simulated data
+# testo, shbg, tsh, ft4, IGF1, SHBG, DHEAS available in this dataset
 hormone_result <- hormone_markers(
   data    = dat,
   col_map = list(
-    total_testosterone = "testosterone",
-    SHBG               = "SHBG",
-    estradiol          = "estradiol",
-    TSH                = "TSH",
-    free_T4            = "FT4",
-    aldosterone        = "aldosterone",
-    renin              = "renin",
+    total_testosterone = "testo",
+    SHBG               = "shbg",
+    TSH                = "tsh",
+    free_T4            = "ft4",
     IGF1               = "IGF1",
-    cortisol_0         = "cort1",
-    cortisol_30        = "cort2"
+    DHEAS              = "dhaes"
   ),
   verbose = TRUE
 )
@@ -325,35 +322,16 @@ head(hormone_result)
 
 
 # ── 12. VITAMIN MARKERS & VITAMIN D STATUS ───────────────────────────────────
-# 12a. vitamin_markers
+# 12a. vitamin_markers – only columns available in this dataset
 vit_result <- vitamin_markers(
   data    = dat,
   col_map = list(
-    VitD              = "VitD",
-    VitD_ref_mean     = "VitD_ref_mean",
-    VitD_ref_sd       = "VitD_ref_sd",
-    B12               = "vitaminB12",
-    Folate            = "folate",
-    Ferritin          = "ferritin",
-    TSat              = "transferrin_sat",
-    Cortisol          = "Cortisol",
-    DHEAS             = "DHEAS",
-    Testosterone      = "testosterone",
-    Estradiol         = "estradiol",
-    TSH               = "TSH",
-    free_T4           = "FT4",
-    Retinol           = "Retinol",
-    Retinol_ref_mean  = "Retinol_ref_mean",
-    Retinol_ref_sd    = "Retinol_ref_sd",
-    Tocopherol        = "Tocopherol",
-    Total_lipids      = "Total_lipids",
-    PIVKA_II          = "PIVKA_II",
-    VitC              = "VitC",
-    Homocysteine      = "Homocysteine",
-    MMA               = "MMA",
-    Magnesium         = "magnesium",
-    Zinc              = "zinc",
-    Copper            = "copper"
+    VitD     = "vitd25",
+    B12      = "vitb12",
+    Folate   = "folate",
+    Ferritin = "ferri",
+    TSH      = "tsh",
+    free_T4  = "ft4"
   ),
   verbose = TRUE
 )
@@ -362,7 +340,7 @@ head(vit_result)
 # 12b. vitamin_d_status
 vitd_status <- vitamin_d_status(
   data    = dat,
-  col_map = list(vitd = "vitd"),
+  col_map = list(vitd = "vitd25"),
   verbose = TRUE
 )
 table(vitd_status$vitamin_d_status)
@@ -399,7 +377,7 @@ head(nutr_result)
 # ── 13. CORRECTED CALCIUM ────────────────────────────────────────────────────
 ca_result <- corrected_calcium(
   data    = dat,
-  col_map = list(calcium = "calcium", albumin = "albumin"),
+  col_map = list(calcium = "calcium", albumin = "alb"),
   units   = "auto",
   verbose = TRUE
 )
@@ -421,10 +399,11 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 }
 
 # 14b. BODE index (uses FEV1%, 6-min walk, mMRC, BMI)
+# FEV1pct, sixmwd, mmrc not pre-computed in this dataset; will return NAs
 bode_result <- bode_index(
   data    = dat,
   col_map = list(fev1_pct = "FEV1pct", sixmwd = "sixmwd",
-                 mmrc = "mmrc", bmi = "BMI"),
+                 mmrc = "mmrc", bmi = "bmi"),
   verbose = TRUE
 )
 head(bode_result)
@@ -863,4 +842,6 @@ tryCatch(
 )
 
 cat("\n=== All test blocks complete ===\n")
+
+
 

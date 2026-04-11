@@ -6,7 +6,7 @@
 \usage{
 vitamin_d_status(
   data,
-  col_map = list(vitd = "VitD"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

@@ -117,7 +117,7 @@ urine_markers <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map_id[req], "urine_markers"))
+            msg   = hm_fmt_col_map(col_map_id[req], "urine_markers"))
 
   # 3) High-missingness diagnostics on required inputs (debug level)
   for (cn in req) {

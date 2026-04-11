@@ -131,12 +131,131 @@ hm_bind_cols_quiet <- function(...) {
 #'   actually used by the function need to be supplied).
 #' @param fn Optional function name prefixed to the message.
 #' @keywords internal
-hm_col_report <- function(col_map, fn = NULL) {
+hm_fmt_col_map <- function(col_map, fn = NULL) {
   nms   <- names(col_map)
   parts <- vapply(nms, function(k) paste0(k, " -> '", col_map[[k]], "'"), character(1))
   msg   <- paste(parts, collapse = ", ")
   if (!is.null(fn)) msg <- paste0(fn, "(): column map: ", msg)
   msg
+}
+
+# Auto-fill a col_map from hm_col_report() when the caller didn't supply one.
+# Only fills keys present in the synonym dictionary; missing keys remain absent.
+# Translates internal short keys (G0, I0, TG, ...) to their hm_col_report()
+# dictionary key names, then back again so the returned list uses short keys.
+# @param col_map  User-supplied col_map (may be NULL or missing).
+# @param data     The data frame being analysed.
+# @param keys     Character vector of short internal keys to fill.
+# @param fn       Function name for informational message.
+# @keywords internal
+.hm_autofill_col_map <- function(col_map, data, keys, fn = "") {
+  if (!is.null(col_map)) return(col_map)
+
+  # Mapping: short internal key -> dictionary key used by hm_col_report()
+  short_to_dict <- c(
+    G0    = "fasting_glucose",  I0    = "fasting_insulin",
+    G30   = "glucose_30m",      I30   = "insulin_30m",
+    G120  = "glucose_120m",     I120  = "insulin_120m",
+    TC    = "total_cholesterol",
+    HDL_c = "HDL_c",            LDL_c = "LDL_c",
+    TG    = "TG",
+    total_chol = "total_cholesterol", sbp  = "sbp",
+    smoker = "smoking",         bp_treated = "hypertension",
+    diabetes = "diabetes",
+    ApoA1 = "apoA1",            ApoB  = "apoB",
+    ALT   = "ALT",              AST   = "AST",
+    BMI   = "BMI",              bmi   = "BMI",
+    waist = "waist",            weight = "weight",
+    age   = "age",              sex   = "sex",
+    eGFR  = "eGFR",             UACR  = "UACR",
+    FFA   = "FFA",
+    fat_mass     = "fat_mass",
+    rate_palmitate = "rate_palmitate",
+    rate_glycerol  = "rate_glycerol",
+    creatinine   = "creatinine",
+    albumin      = "albumin",   alb   = "albumin",
+    calcium      = "calcium",   ca    = "calcium",
+    height       = "height",
+    ALM          = "ALM",       alm   = "ALM",
+    bmd_t        = "BMD",       BMD   = "BMD",
+    FEV1         = "FEV1",      FVC   = "FVC",
+    fev1         = "FEV1",      fvc   = "FVC",
+    FEV1pct      = "FEV1pct",
+    kynurenine   = "kynurenine",tryptophan = "tryptophan",
+    vitd         = "vitaminD",
+    # Inflammatory
+    CRP          = "CRP",       IL6   = "IL6",        TNFa  = "TNFa",
+    WBC          = "WBC",       neutrophils = "neutrophils",
+    lymphocytes  = "lymphocytes", monocytes = "monocytes",
+    eosinophils  = "eosinophils", platelets = "platelets",
+    ESR          = "ESR",
+    # Renal
+    BUN          = "BUN",       race  = "ethnicity",
+    cystatin_C   = "cystatin_C",urea_serum = "urea_serum",
+    creatinine_urine = "creatinine_urine", urea_urine = "urea_urine",
+    # Vitamins / micronutrients
+    VitD         = "vitaminD",  B12   = "vitaminB12",
+    Folate       = "folate",    Ferritin = "ferritin",
+    TSat         = "transferrin_sat",
+    Cortisol     = "Cortisol",  DHEAS = "DHEAS",
+    Testosterone = "testosterone",  Estradiol = "estradiol",
+    TSH          = "TSH",       free_T4 = "FT4",
+    Retinol      = "Retinol",   Tocopherol = "Tocopherol",
+    Total_lipids = "Total_lipids",
+    VitC         = "VitC",      Homocysteine = "Homocysteine",
+    MMA          = "MMA",       Magnesium = "magnesium",
+    Zinc         = "zinc",      Copper = "copper",
+    # Hormones
+    total_testosterone = "testosterone",
+    SHBG         = "SHBG",      LH    = "LH",         FSH   = "FSH",
+    progesterone = "progesterone", free_T3 = "free_T3",
+    aldosterone  = "aldosterone", renin = "renin",
+    IGF1         = "IGF1",      prolactin = "prolactin",
+    cortisol_0   = "Cortisol",  cortisol_30 = "Cortisol",
+    insulin      = "fasting_insulin",
+    # Sarcopenia
+    strength     = "strength",  walking = "walking",
+    chair        = "chair",     stairs  = "stairs",
+    falls        = "falls",
+    # BODE / pulmonary
+    fev1_pct     = "FEV1pct",   sixmwd = "sixmwd",    mmrc  = "mmrc",
+    fev1_pp      = "FEV1pct",
+    # Saliva
+    cort1        = "saliva_cort1", cort2 = "saliva_cort2",
+    cort3        = "saliva_cort3", amylase = "saliva_amylase",
+    glucose      = "saliva_glucose",
+    # Endocrine / neuro
+    nfl          = "nfl",
+    GH           = "GH",        glucagon = "glucagon",
+    PIVKA_II     = "PIVKA_II",
+    # vitamin_d_status
+    vitamin_d    = "vitaminD"
+  )
+
+  inferred <- tryCatch(
+    hm_col_report(data, col_map = NULL, verbose = FALSE,
+                  fuzzy = FALSE, show_unmatched = FALSE),
+    error = function(e) list()
+  )
+
+  out <- list()
+  for (k in keys) {
+    dict_key <- if (!is.na(short_to_dict[k])) short_to_dict[[k]] else k
+    if (!is.null(inferred[[dict_key]])) {
+      out[[k]] <- inferred[[dict_key]]
+    } else if (!is.null(inferred[[k]])) {
+      # fallback: key already matches dictionary directly
+      out[[k]] <- inferred[[k]]
+    }
+  }
+
+  if (length(out) > 0L) {
+    hm_inform(level = "debug",
+              msg = sprintf("%s(): col_map not supplied -- auto-inferred %d/%d keys: %s",
+                            fn, length(out), length(keys),
+                            paste(names(out), unlist(out), sep = "->", collapse = ", ")))
+  }
+  out
 }
 
 #' Summarise a result tibble: count non-NA rows per output column

@@ -6,7 +6,7 @@
 \usage{
 ogtt_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = "none",
   verbose = FALSE,
   na_action = c("keep", "omit", "error"),

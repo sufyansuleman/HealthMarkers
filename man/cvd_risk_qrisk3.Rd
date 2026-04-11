@@ -26,8 +26,23 @@ Wrapper around \code{QRISK3::QRISK3_2017()} that auto-generates a \code{patid}
 if one is not supplied. Adds input validation and quiet failure to NA on backend error.
 }
 \examples{
-if (requireNamespace("QRISK3", quietly = TRUE)) {
-  # cvd_risk_qrisk3(your_data_frame, verbose = TRUE)
+\donttest{
+  if (requireNamespace("QRISK3", quietly = TRUE)) {
+    df <- data.frame(
+      gender = 1L, age = 55L,
+      atrial_fibrillation = 0L, atypical_antipsy = 0L,
+      regular_steroid_tablets = 0L, erectile_disfunction = 0L,
+      migraine = 0L, rheumatoid_arthritis = 0L,
+      chronic_kidney_disease = 0L, severe_mental_illness = 0L,
+      systemic_lupus_erythematosis = 0L, blood_pressure_treatment = 0L,
+      diabetes1 = 0L, diabetes2 = 0L,
+      weight = 80, height = 175,
+      ethnicity = 1L, heart_attack_relative = 0L,
+      cholesterol_HDL_ratio = 4.2, systolic_blood_pressure = 130,
+      std_systolic_blood_pressure = 7, smoke = 0L, townsend = 0
+    )
+    cvd_risk_qrisk3(df)
+  }
 }
 
 }

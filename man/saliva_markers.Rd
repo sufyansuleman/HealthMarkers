@@ -6,8 +6,7 @@
 \usage{
 saliva_markers(
   data,
-  col_map = list(cort1 = "saliva_cort1", cort2 = "saliva_cort2", cort3 = "saliva_cort3",
-    amylase = "saliva_amylase", glucose = "saliva_glucose"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,

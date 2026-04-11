@@ -70,7 +70,7 @@
   add("liver_fat",          "liver_fat_markers",     TRUE)
 
   # Glycemic
-  add("glycemic",           "glycemic_markers",      FALSE)
+  add("glycemic",           "glycemic_markers",      TRUE)
 
   # Metabolic syndrome
   add("mets",               "metss",                 FALSE)
@@ -177,14 +177,46 @@
 }
 
 # Prepare data for specific groups (small convenience fixes)
-.hm_prepare_for_group <- function(data, grp) {
+.hm_prepare_for_group <- function(data, grp, col_map = NULL) {
   out <- data
 
+  # Helper: resolve data column via col_map key or ordered synonym list
+  .prep_resolve <- function(key, synonyms = character(0)) {
+    if (!is.null(col_map)) {
+      cm_val <- col_map[[key]]
+      if (!is.null(cm_val) && cm_val %in% names(out)) return(cm_val)
+    }
+    for (syn in synonyms) if (syn %in% names(out)) return(syn)
+    NULL
+  }
+
   if (identical(grp, "mets")) {
-    if (!("bp_sys" %in% names(out)) && "sbp" %in% names(out)) out$bp_sys <- out$sbp
-    if (!("bp_dia" %in% names(out)) && "dbp" %in% names(out)) out$bp_dia <- out$dbp
-    if (!("glucose" %in% names(out)) && "G0" %in% names(out)) out$glucose <- out$G0
-    if (!("waist" %in% names(out)) && "WC" %in% names(out)) out$waist <- out$WC
+    if (!("bp_sys" %in% names(out))) {
+      src <- .prep_resolve("sbp", c("sbp", "SBP", "sysbp", "systolic", "sys_bp", "systolic_bp"))
+      if (!is.null(src)) out$bp_sys <- out[[src]]
+    }
+    if (!("bp_dia" %in% names(out))) {
+      src <- .prep_resolve("dbp", c("dbp", "DBP", "diabp", "diastolic", "dia_bp", "diastolic_bp"))
+      if (!is.null(src)) out$bp_dia <- out[[src]]
+    }
+    if (!("glucose" %in% names(out))) {
+      src <- .prep_resolve("G0", c("G0", "pglu0", "bglu0", "glu0", "fasting_glucose",
+                                   "glucose0", "glucose_fasting", "fpg", "FPG", "GLUC", "nglu0"))
+      if (!is.null(src)) out$glucose <- out[[src]]
+    }
+    if (!("TG" %in% names(out))) {
+      src <- .prep_resolve("TG", c("trig", "Trig", "TRIG", "triglycerides", "trigl", "TGly"))
+      if (!is.null(src)) out$TG <- out[[src]]
+    }
+    if (!("HDL_c" %in% names(out))) {
+      src <- .prep_resolve("HDL_c", c("hdlc", "HDLC", "HDL", "hdl", "HDLc", "hdl_c"))
+      if (!is.null(src)) out$HDL_c <- out[[src]]
+    }
+    if (!("waist" %in% names(out))) {
+      src <- .prep_resolve("waist", c("WC", "wc", "waistc", "waist_c", "waist_circumference",
+                                      "abdominal_circumference", "abdcirc"))
+      if (!is.null(src)) out$waist <- out[[src]]
+    }
     if (!("triglycerides" %in% names(out)) && "TG" %in% names(out)) out$triglycerides <- out$TG
     if (!("bp_treated" %in% names(out))) out$bp_treated <- FALSE
     if (!("smoker" %in% names(out))) out$smoker <- FALSE
@@ -212,6 +244,40 @@
       out$race <- "NHW"
     }
   }
+
+  if (identical(grp, "urine")) {
+    if (!("urine_albumin" %in% names(out))) {
+      src <- .prep_resolve("UACR", c("ualb", "urine_alb", "u_albumin", "alb_urine",
+                                     "urinary_albumin", "albumin_urine", "u_alb"))
+      if (!is.null(src)) out$urine_albumin <- out[[src]]
+    }
+    if (!("urine_creatinine" %in% names(out))) {
+      src <- .prep_resolve("creatinine", c("ucrea", "urine_crea", "u_creatinine",
+                                           "crea_urine", "urinary_creatinine",
+                                           "creatinine_urine", "u_crea"))
+      if (!is.null(src)) out$urine_creatinine <- out[[src]]
+    }
+  }
+
+  if (identical(grp, "pulmo")) {
+    if (!("ethnicity" %in% names(out))) {
+      src <- .prep_resolve("race", c("race", "Race", "ethnic", "ethn", "ethnicity_code"))
+      if (!is.null(src)) out$ethnicity <- out[[src]]
+    }
+    if (!("fev1" %in% names(out))) {
+      src <- .prep_resolve("FEV1", c("FEV1", "fev1_abs", "FEV1_abs"))
+      if (!is.null(src)) out$fev1 <- out[[src]]
+    }
+    if (!("fvc" %in% names(out))) {
+      src <- .prep_resolve("FVC", c("FVC", "fvc_abs", "FVC_abs"))
+      if (!is.null(src)) out$fvc <- out[[src]]
+    }
+    if (!("height" %in% names(out))) {
+      src <- .prep_resolve("height", c("ht", "hgt", "height_cm", "HEIGHT", "Ht", "HGT"))
+      if (!is.null(src)) out$height <- out[[src]]
+    }
+  }
+
   out
 }
 
@@ -324,7 +390,7 @@ all_insulin_indices <- function(
     adipo_is      = .hm_safe_call(adipo_is,      data, col_map, TRUE, verbose, "adipose",    common_args),
     tracer_dxa_is = .hm_safe_call(tracer_dxa_is, data, col_map, TRUE, verbose, "tracer/DXA", common_args)
   )
-  pieces <- pieces[!vapply(pieces, is.null, logical(1))]
+  pieces <- Filter(is.data.frame, pieces)
   if (!length(pieces)) return(tibble::tibble())
   is_tbl <- dplyr::bind_cols(pieces)
 
@@ -421,20 +487,20 @@ metabolic_markers <- function(
   }
 
   if ("liver" %in% which) {
-    out2 <- .hm_prepare_for_group(out, "liver")
+    out2 <- .hm_prepare_for_group(out, "liver", col_map)
     add <- .hm_safe_call(liver_markers, out2, col_map, FALSE, verbose, "liver",
                          list(verbose = verbose, na_action = na_action))
     if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("glycemic" %in% which) {
-    add <- .hm_safe_call(glycemic_markers, out, col_map, FALSE, verbose, "glycemic",
+    add <- .hm_safe_call(glycemic_markers, out, col_map, TRUE, verbose, "glycemic",
                          list(verbose = verbose, na_action = na_action))
     if (is.data.frame(add)) out <- .hm_bind_new_cols(out, add)
   }
 
   if ("mets" %in% which) {
-    out_m <- .hm_prepare_for_group(out, "mets")
+    out_m <- .hm_prepare_for_group(out, "mets", col_map)
     mets_add <- .hm_safe_call(metss, out_m, col_map, FALSE, verbose, "mets",
                               list(verbose = verbose, na_warn_prop = 0, na_action = na_action))
     if (!is.data.frame(mets_add)) mets_add <- .hm_mets_fallback(out_m)
@@ -525,60 +591,55 @@ all_health_markers <- function(
     which_vec <- which
   }
 
-  # Auto-infer col_map if not supplied
+  # Auto-infer col_map if not supplied -- best-effort, never throws
   if (missing(col_map) || is.null(col_map)) {
-    patterns <- .hm_default_col_patterns_exact()
-    req_keys <- .hm_group_required_keys(which_vec, include_insulin = include_insulin)
-    required <- intersect(names(patterns), req_keys)
-
+    # Use hm_col_report() internally: matches all keys it can, silently skips the rest
     col_map <- tryCatch(
-      hm_infer_cols(
-        data,
-        patterns      = patterns,
-        required_keys = required,
-        verbose       = isTRUE(verbose)
-      ),
+      hm_col_report(data, col_map = NULL, verbose = FALSE, fuzzy = FALSE, show_unmatched = FALSE),
       error = function(e) {
-        hm_inform(level = "debug", msg = sprintf("hm_infer_cols fallback to infer_cols(): %s", conditionMessage(e)))
-        if (!length(required)) rlang::abort(e)
-        spec <- stats::setNames(vector("list", length(required)), required)
-        fallback <- infer_cols(
-          data,
-          map       = spec,
-          patterns  = NULL,
-          prefer    = NULL,
-          strategy  = "prefer",
-          strict    = FALSE,
-          verbose   = isTRUE(verbose),
-          return    = "map"
-        )
-        missing_required <- required[vapply(fallback[required], function(x) is.null(x) || is.na(x), logical(1))]
-        if (length(missing_required)) {
-          rlang::abort(
-            sprintf("all_health_markers(): could not infer required columns for: %s", paste(missing_required, collapse = ", ")),
-            class = "healthmarkers_health_markers_error_infer"
-          )
-        }
-        fallback
+        hm_inform(level = "debug", msg = sprintf(
+          "all_health_markers(): column inference failed (%s); proceeding with empty col_map",
+          conditionMessage(e)))
+        list()
       }
     )
   }
 
+  # Track which keys were mapped vs not found (for verbose summary)
+  all_pattern_keys <- names(.hm_default_col_patterns_exact())
+  user_keys <- if (is.null(orig_col_map)) character(0) else
+    names(orig_col_map)[!vapply(orig_col_map, is.null, logical(1))]
+  did_auto_infer <- is.null(orig_col_map)  # TRUE when we ran hm_col_report() above
+  inferred_keys  <- if (did_auto_infer) names(col_map) else character(0)
+  not_found_keys <- if (did_auto_infer) setdiff(all_pattern_keys, names(col_map)) else character(0)
+
   if (isTRUE(verbose)) {
-    user_keys <- if (is.null(orig_col_map)) character(0) else
-      names(orig_col_map)[!vapply(orig_col_map, is.null, logical(1))]
+    hm_inform(sprintf("all_health_markers(): mapping summary -- %d key(s) mapped",
+                      length(names(col_map))), level = "inform")
+    rule <- paste(rep("\u2500", 55L), collapse = "")
+    cat(sprintf("\u2500\u2500 all_health_markers(): column mapping %s\n", rule))
+    cat(sprintf(" Data: %d row%s \u00d7 %d column%s\n",
+                nrow(data), if (nrow(data) != 1L) "s" else "",
+                ncol(data), if (ncol(data) != 1L) "s" else ""))
 
-    kinds <- ifelse(names(col_map) %in% user_keys, "user", "inferred")
-
-    mapping_str <- paste(
-      sprintf("%s->%s (%s)", names(col_map), unlist(col_map), kinds),
-      collapse = ", "
-    )
-
-    hm_inform(
-      level = "inform",
-      msg   = sprintf("Column mapping summary: %s", mapping_str)
-    )
+    if (length(user_keys)) {
+      cat(sprintf("\n User-supplied (%d):\n", length(user_keys)))
+      for (k in user_keys)
+        cat(sprintf("   \u2714 %-24s -> %s\n", k, col_map[[k]]))
+    }
+    if (did_auto_infer && length(inferred_keys)) {
+      cat(sprintf("\n Auto-detected (%d):\n", length(inferred_keys)))
+      for (k in inferred_keys)
+        cat(sprintf("   \u2714 %-24s -> %s\n", k, col_map[[k]]))
+    }
+    if (did_auto_infer && length(not_found_keys)) {
+      cat(sprintf("\n Not found (%d) \u2014 groups needing these keys will be skipped:\n",
+                  length(not_found_keys)))
+      for (k in not_found_keys)
+        cat(sprintf("   \u2718 %s\n", k))
+    }
+    cat(sprintf(" %s\n\n",
+                paste(rep("\u2500", 87L), collapse = "")))
   }
 
   out <- data
@@ -613,7 +674,7 @@ all_health_markers <- function(
       next
     }
 
-    data2 <- .hm_prepare_for_group(out, grp)
+    data2 <- .hm_prepare_for_group(out, grp, col_map)
     addon <- .hm_safe_call(
       entry$fun, data2, col_map, entry$needs_col_map, verbose, grp,
       extra_args = list(
@@ -650,10 +711,26 @@ all_health_markers <- function(
     }
 
     if (length(parts)) {
-      hm_inform(
-        level = "inform",
-        msg   = sprintf("all_health_markers(): summary - %s", paste(parts, collapse = " | "))
-      )
+      hm_inform(paste0("all_health_markers(): ", paste(parts, collapse = "; ")), level = "inform")
+      cat(sprintf("\u2500\u2500 all_health_markers(): group summary %s\n",
+                  paste(rep("\u2500", 55L), collapse = "")))
+      if (length(ok)) {
+        cat(sprintf(" Computed (%d):\n", length(ok)))
+        for (nm in ok) cat(sprintf("   \u2714 %s\n", nm))
+      }
+      if (length(other)) {
+        cat(sprintf("\n Skipped / failed (%d):\n", length(other)))
+        for (nm in other) {
+          st <- group_status[[nm]]
+          extras <- c(
+            if (!is.null(st$missing_pkg)) sprintf("missing package: %s", st$missing_pkg) else NULL,
+            if (!is.null(st$message))     sprintf("%s", st$message) else NULL
+          )
+          reason <- if (length(extras)) paste(extras, collapse = "; ") else st$state
+          cat(sprintf("   \u2718 %-30s %s\n", nm, reason))
+        }
+      }
+      cat(sprintf(" %s\n", paste(rep("\u2500", 87L), collapse = "")))
     }
   }
 

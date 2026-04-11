@@ -4,15 +4,26 @@
 \alias{cvd_risk_ascvd}
 \title{ASCVD risk (ACC/AHA Pooled Cohort Equations)}
 \usage{
-cvd_risk_ascvd(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...)
+cvd_risk_ascvd(
+  data,
+  year = 10,
+  col_map = NULL,
+  na_warn_prop = 0.2,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
-\item{data}{A data frame with columns:
-\code{age}, \code{sex} (1 = male, 0 = female), \code{race} ("white","black","other"),
-\code{smoker} (logical), \code{total_chol}, \code{HDL_c}, \code{sbp},
-\code{bp_treated} (logical), \code{diabetes} (logical), \code{bmi}.}
+\item{data}{A data frame with the required cardiovascular risk columns.}
 
 \item{year}{Risk horizon: 10 or 30.}
+
+\item{col_map}{Optional named list mapping internal keys (\code{age}, \code{sex},
+\code{race}, \code{smoker}, \code{total_chol}, \code{HDL_c}, \code{sbp},
+\code{bp_treated}, \code{diabetes}, \code{bmi}) to actual column names in
+\code{data}. If \code{NULL} (default), column names are auto-inferred then fall
+back to the key names themselves. \code{sex} accepts \code{1}/\code{0},
+\code{"m"}/\code{"f"}, or \code{"male"}/\code{"female"} (case-insensitive).}
 
 \item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}; underlying backend handles NA as per its API.}

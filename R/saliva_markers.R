@@ -60,13 +60,7 @@
 #' @importFrom rlang abort warn inform
 #' @export
 saliva_markers <- function(data,
-                           col_map = list(
-                             cort1 = "saliva_cort1",
-                             cort2 = "saliva_cort2",
-                             cort3 = "saliva_cort3",
-                             amylase = "saliva_amylase",
-                             glucose = "saliva_glucose"
-                           ),
+                           col_map = NULL,
                            verbose = FALSE,
                            na_action = c("keep","omit","error"),
                            na_warn_prop = 0.2,
@@ -84,6 +78,7 @@ saliva_markers <- function(data,
   # HM-CS v2: standardized validation
   required_keys <- c("cort1","cort2","cort3","amylase","glucose")
   hm_inform("saliva_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = "saliva_markers")
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "saliva_markers")
 
   # Ensure mapped columns exist
@@ -120,7 +115,7 @@ saliva_markers <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[required_keys], "saliva_markers"))
+            msg   = hm_fmt_col_map(col_map[required_keys], "saliva_markers"))
 
   # NA policy on required inputs
   if (na_action == "error") {

@@ -75,7 +75,7 @@ bone_markers <- function(
   hm_inform(level = "debug", msg = "bone_markers(): computing bone markers")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[required], "bone_markers")
+    msg   = hm_fmt_col_map(col_map[required], "bone_markers")
   )
 
   # Coerce required and present optional columns to numeric; warn if NAs introduced

@@ -6,7 +6,7 @@
 \usage{
 frax_score(
   data,
-  col_map = list(age = "Age", sex = "Sex", bmd_t = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

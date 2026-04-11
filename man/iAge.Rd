@@ -6,7 +6,7 @@
 \usage{
 iAge(
   data,
-  col_map,
+  col_map = NULL,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),

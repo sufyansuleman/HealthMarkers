@@ -6,7 +6,7 @@
 \usage{
 hormone_markers(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,

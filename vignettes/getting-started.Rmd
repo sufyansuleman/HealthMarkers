@@ -24,7 +24,7 @@ Load the bundled simulated dataset, pick which markers to compute, and view only
 ## What the package offers
 - Many clinical/metabolic markers: glycemic, lipid, renal, inflammatory, liver, anthropometric/obesity, atherogenic indices, frailty/Charlson, sweat/urine panels, micronutrients, pulmonary indices, and more.
 - Single-purpose helpers (e.g., `cvd_marker_aip()`, `sweat_markers()`, `fasting_is()`) plus `all_health_markers()` to run multiple groups at once.
-- Column inference with `infer_cols()` and override via `col_map` when your labels differ.
+- Column mapping diagnostics with `hm_col_report()` and override via `col_map` when your labels differ.
 - Light missing-data utilities (`impute_missing()`) to prep data before computing markers.
 
 ## Quick starts
@@ -96,18 +96,30 @@ Most functions infer columns automatically. If your names differ, provide a `col
 | Blood pressure (used by CVD risk helpers) | `SBP`, `DBP` | Inputs to CVD risk functions; not a standalone `all_health_markers()` group |
 | Anthropometrics | `height`, `weight`, `BMI`, `waist_circumference` | Supports z-score and obesity indices |
 
-Column inference is usually enough; if your data use different labels, provide a `col_map` override.
+### The easiest way: `hm_col_report()`
 
-Tip: To inspect what the package would infer on your data without running calculations, use:
+Call `hm_col_report()` **before running any computation** to see a full
+column-mapping report for your data:
 
 ```{r, eval = FALSE}
-infer_cols(sim_small)
+# See which columns are matched and how — no computation performed
+hm_col_report(my_data)
+
+# Show all 258 keys, including unmatched ones
+hm_col_report(my_data, show_unmatched = TRUE)
+
+# Capture the matched col_map to pass directly to any function
+cm <- hm_col_report(my_data, verbose = FALSE)
+all_health_markers(my_data, col_map = cm)
 ```
 
-## Prepare your data (optional but recommended)
-- **Check columns**: `infer_cols(your_data)` to see what will be picked up.
-- **Handle missing values**: `impute_missing(your_data, method = "mice" | "missForest" | "mean" | "median" | "constant")` and use the completed data in calculators.
-- **Normalize (insulin helpers)**: insulin-related functions accept normalization choices (e.g., `normalize = "z"`, `normalize = "range"`); leave defaults unless you need scaled outputs.
+The report shows:
+- **key** — the internal name all functions use
+- **data_column** — the matched column in your data
+- **how matched** — `exact`, `case-insensitive`, `col contains synonym`, or `synonym contains col`
+- A ready-to-paste `col_map` template for any keys not found
+
+Column inference is usually enough; if your data use different labels, provide a `col_map` override.
 
 ## Column inference vs explicit mapping
 Input: the same data but with explicit column aliases.

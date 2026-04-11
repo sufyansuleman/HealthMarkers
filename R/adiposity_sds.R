@@ -184,7 +184,7 @@ adiposity_sds <- function(
 
   total_rows <- nrow(data)
   .inform(sprintf("adiposity_sds(): preparing inputs (%d rows, %d vars)", total_rows, length(vars)))
-  .inform(hm_col_report(as.list(var_map), "adiposity_sds"))
+  .inform(hm_fmt_col_map(as.list(var_map), "adiposity_sds"))
 
   # ---- Copy & numeric coercion ----
   df <- data

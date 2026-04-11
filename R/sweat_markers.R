@@ -119,7 +119,7 @@ sweat_markers <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[required_keys], "sweat_markers"))
+            msg   = hm_fmt_col_map(col_map[required_keys], "sweat_markers"))
 
   # NA policy
   if (na_action == "error") {

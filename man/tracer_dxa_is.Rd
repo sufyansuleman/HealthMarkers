@@ -6,7 +6,7 @@
 \usage{
 tracer_dxa_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,

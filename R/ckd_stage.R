@@ -58,7 +58,7 @@ ckd_stage <- function(
   hm_inform(level = "debug", msg = "ckd_stage(): computing stages")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[intersect(c("eGFR","UACR"), names(col_map))], "ckd_stage")
+    msg   = hm_fmt_col_map(col_map[intersect(c("eGFR","UACR"), names(col_map))], "ckd_stage")
   )
 
   # Coerce to numeric; warn on NA introduction; non-finite -> NA

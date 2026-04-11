@@ -6,7 +6,7 @@
 \usage{
 kyn_trp_ratio(
   data,
-  col_map = list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

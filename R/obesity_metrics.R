@@ -123,7 +123,7 @@ obesity_indices <- function(data,
     if (!is.null(sx_name)) list(sex = sx_name) else list()
   )
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map_report, "obesity_indices"))
+            msg   = hm_fmt_col_map(col_map_report, "obesity_indices"))
 
   # NA policy on required inputs
   used_cols <- c(wt_name, ht_name, wst_name, hp_name, if (include_RFM) sx_name else NULL)

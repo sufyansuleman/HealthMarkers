@@ -6,7 +6,7 @@
 \usage{
 adipo_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = "none",
   na_action = c("keep", "omit", "error"),
   check_extreme = FALSE,

@@ -29,10 +29,7 @@
 #' @export
 sarc_f_score <- function(
   data,
-  col_map = list(
-    strength = "Strength", walking = "Walking", chair = "Chair",
-    stairs = "Stairs", falls = "Falls"
-  ),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
@@ -50,6 +47,18 @@ sarc_f_score <- function(
       class = "healthmarkers_sarcf_error_data_type"
     )
   }
+
+  if (!is.list(col_map) && !is.null(col_map)) {
+    rlang::abort(
+      "sarc_f_score(): `col_map` must be a named list.",
+      class = "healthmarkers_sarcf_error_colmap_type"
+    )
+  }
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("strength","walking","chair","stairs","falls"),
+    fn = "sarc_f_score")
+  if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map)) {
     rlang::abort(
@@ -100,7 +109,7 @@ sarc_f_score <- function(
     hm_inform("sarc_f_score(): preparing inputs", level = "debug")
   }
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map, "sarc_f_score"))
+            msg   = hm_fmt_col_map(col_map, "sarc_f_score"))
 
   for (cn in mapped) {
     if (!is.numeric(data[[cn]])) {

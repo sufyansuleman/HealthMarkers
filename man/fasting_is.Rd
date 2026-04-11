@@ -6,7 +6,7 @@
 \usage{
 fasting_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = c("none", "z", "inverse", "range", "robust"),
   na_action = c("keep", "omit", "error", "warn"),
   check_extreme = FALSE,

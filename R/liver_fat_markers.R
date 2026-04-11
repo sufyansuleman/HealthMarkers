@@ -76,7 +76,7 @@ liver_fat_markers <- function(data,
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
             msg = "liver_fat_markers(): preparing inputs")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req], "liver_fat_markers"))
+            msg = hm_fmt_col_map(col_map[req], "liver_fat_markers"))
 
   # Columns potentially used directly in formulas
   direct_keys <- c("ALT", "AST", "BMI", "sex", "diabetes", "MetS", "insulin", "I0")

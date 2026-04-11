@@ -6,8 +6,7 @@
 \usage{
 sarc_f_score(
   data,
-  col_map = list(strength = "Strength", walking = "Walking", chair = "Chair", stairs =
-    "Stairs", falls = "Falls"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,

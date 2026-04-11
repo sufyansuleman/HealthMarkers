@@ -67,11 +67,14 @@
 #' Wrapper around the PooledCohort ASCVD calculators with added input validation,
 #' optional data-quality warnings, and quiet failure to NA if the backend errors.
 #'
-#' @param data A data frame with columns:
-#'   \code{age}, \code{sex} (1 = male, 0 = female), \code{race} ("white","black","other"),
-#'   \code{smoker} (logical), \code{total_chol}, \code{HDL_c}, \code{sbp},
-#'   \code{bp_treated} (logical), \code{diabetes} (logical), \code{bmi}.
+#' @param data A data frame with the required cardiovascular risk columns.
 #' @param year Risk horizon: 10 or 30.
+#' @param col_map Optional named list mapping internal keys (\code{age}, \code{sex},
+#'   \code{race}, \code{smoker}, \code{total_chol}, \code{HDL_c}, \code{sbp},
+#'   \code{bp_treated}, \code{diabetes}, \code{bmi}) to actual column names in
+#'   \code{data}. If \code{NULL} (default), column names are auto-inferred then fall
+#'   back to the key names themselves. \code{sex} accepts \code{1}/\code{0},
+#'   \code{"m"}/\code{"f"}, or \code{"male"}/\code{"female"} (case-insensitive).
 #' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}; underlying backend handles NA as per its API.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
@@ -89,14 +92,20 @@
 #' }
 #'
 #' @references \insertRef{goff2014accaha}{HealthMarkers}
-cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...) {
+cvd_risk_ascvd <- function(data, year = 10, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   if (!is.numeric(year) || length(year) != 1L || !(year %in% c(10, 30))) {
     stop("`year` must be 10 or 30.")
   }
-  req <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
-  .require_cols(data, req, fun = "cvd_risk_ascvd")
+  keys <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
+  col_map <- .hm_autofill_col_map(col_map, data, keys, fn = "cvd_risk_ascvd")
+  # fall back to identity mapping for any key not matched by autofill
+  for (k in keys) if (is.null(col_map[[k]])) col_map[[k]] <- k
+  # validate all mapped columns exist in data
+  miss <- setdiff(unlist(col_map[keys]), names(data))
+  if (length(miss)) stop(sprintf("cvd_risk_ascvd(): missing column(s) in data: %s", paste(miss, collapse = ", ")))
+  req <- unname(unlist(col_map[keys]))
   if (verbose) {
     qs <- .quality_scan_warn(data, req, .warn = FALSE, na_warn_prop = na_warn_prop)
     hm_inform(sprintf("cvd_risk_ascvd(): preparing inputs; non-finite=%d var(s), high-NA=%d, all-NA=%d",
@@ -105,20 +114,23 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
   } else {
     hm_inform("cvd_risk_ascvd(): preparing inputs", level = "debug")
   }
+  # normalize sex: accept numeric 1/0 or character m/f/male/female
+  sex_chr  <- tolower(as.character(data[[col_map$sex]]))
+  sex_norm <- ifelse(substr(sex_chr, 1, 1) %in% c("m", "1"), "male", "female")
   res <- try({
     fn <- if (year == 10) PooledCohort::predict_10yr_ascvd_risk else PooledCohort::predict_30yr_ascvd_risk
     fn(
-      age_years       = data$age,
-      race            = data$race,
-      sex             = ifelse(data$sex == 1, "male", "female"),
-      smoke_current   = ifelse(as.logical(data$smoker), "yes", "no"),
-      chol_total_mgdl = data$total_chol,
-      chol_hdl_mgdl   = data$HDL_c,
-      bp_sys_mmhg     = data$sbp,
-      bp_meds         = ifelse(as.logical(data$bp_treated), "yes", "no"),
+      age_years       = data[[col_map$age]],
+      race            = data[[col_map$race]],
+      sex             = sex_norm,
+      smoke_current   = ifelse(as.logical(data[[col_map$smoker]]), "yes", "no"),
+      chol_total_mgdl = data[[col_map$total_chol]],
+      chol_hdl_mgdl   = data[[col_map$HDL_c]],
+      bp_sys_mmhg     = data[[col_map$sbp]],
+      bp_meds         = ifelse(as.logical(data[[col_map$bp_treated]]), "yes", "no"),
       statin_meds     = "no",
-      diabetes        = ifelse(as.logical(data$diabetes), "yes", "no"),
-      bmi             = data$bmi,
+      diabetes        = ifelse(as.logical(data[[col_map$diabetes]]), "yes", "no"),
+      bmi             = data[[col_map$bmi]],
       ...
     )
   }, silent = TRUE)
@@ -145,8 +157,23 @@ cvd_risk_ascvd <- function(data, year = 10, na_warn_prop = 0.2, verbose = FALSE,
 #' @return A tibble with columns \code{model}, \code{year}, \code{risk}.
 #' @export
 #' @examples
-#' if (requireNamespace("QRISK3", quietly = TRUE)) {
-#'   # cvd_risk_qrisk3(your_data_frame, verbose = TRUE)
+#' \donttest{
+#'   if (requireNamespace("QRISK3", quietly = TRUE)) {
+#'     df <- data.frame(
+#'       gender = 1L, age = 55L,
+#'       atrial_fibrillation = 0L, atypical_antipsy = 0L,
+#'       regular_steroid_tablets = 0L, erectile_disfunction = 0L,
+#'       migraine = 0L, rheumatoid_arthritis = 0L,
+#'       chronic_kidney_disease = 0L, severe_mental_illness = 0L,
+#'       systemic_lupus_erythematosis = 0L, blood_pressure_treatment = 0L,
+#'       diabetes1 = 0L, diabetes2 = 0L,
+#'       weight = 80, height = 175,
+#'       ethnicity = 1L, heart_attack_relative = 0L,
+#'       cholesterol_HDL_ratio = 4.2, systolic_blood_pressure = 130,
+#'       std_systolic_blood_pressure = 7, smoke = 0L, townsend = 0
+#'     )
+#'     cvd_risk_qrisk3(df)
+#'   }
 #' }
 #'
 #' @references \insertRef{hippisleycox2017qrisk3}{HealthMarkers}
@@ -208,8 +235,13 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' Wrapper around \code{PooledCohort::predict_10yr_stroke_risk()} with quiet
 #' fallback to NA if the backend errors.
 #'
-#' @param data Data frame with: \code{age}, \code{sex}, \code{race}, \code{smoker},
-#'   \code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.
+#' @param data A data frame with the required cardiovascular risk columns.
+#' @param col_map Optional named list mapping internal keys (\code{age}, \code{sex},
+#'   \code{race}, \code{smoker}, \code{total_chol}, \code{HDL_c}, \code{sbp},
+#'   \code{bp_treated}, \code{diabetes}, \code{bmi}) to actual column names in
+#'   \code{data}. If \code{NULL} (default), column names are auto-inferred then fall
+#'   back to the key names themselves. \code{sex} accepts \code{1}/\code{0},
+#'   \code{"m"}/\code{"f"}, or \code{"male"}/\code{"female"} (case-insensitive).
 #' @param na_warn_prop Proportion (0-1) to flag high missingness warnings (default 0.2).
 #'   Only used when \code{verbose = TRUE}.
 #' @param verbose Logical; if TRUE, prints progress and a short summary.
@@ -225,11 +257,18 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' @export
 #'
 #' @references \insertRef{goff2014accaha}{HealthMarkers}
-cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
+cvd_risk_stroke <- function(data, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
+  keys <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
+  col_map <- .hm_autofill_col_map(col_map, data, keys, fn = "cvd_risk_stroke")
+  # fall back to identity mapping for any key not matched by autofill
+  for (k in keys) if (is.null(col_map[[k]])) col_map[[k]] <- k
+  # validate all mapped columns exist in data
+  miss <- setdiff(unlist(col_map[keys]), names(data))
+  if (length(miss)) stop(sprintf("cvd_risk_stroke(): missing column(s) in data: %s", paste(miss, collapse = ", ")))
+  req <- unname(unlist(col_map[keys]))
   if (verbose) {
-    req <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
     qs <- .quality_scan_warn(data, req, .warn = FALSE, na_warn_prop = na_warn_prop)
     hm_inform(sprintf("cvd_risk_stroke(): preparing inputs; non-finite=%d, high-NA=%d, all-NA=%d",
                     length(qs$nonfinite), length(qs$high_na), length(qs$all_na)),
@@ -237,19 +276,22 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
   } else {
     hm_inform("cvd_risk_stroke(): preparing inputs", level = "debug")
   }
+  # normalize sex: accept numeric 1/0 or character m/f/male/female
+  sex_chr  <- tolower(as.character(data[[col_map$sex]]))
+  sex_norm <- ifelse(substr(sex_chr, 1, 1) %in% c("m", "1"), "male", "female")
   res <- try({
     PooledCohort::predict_10yr_stroke_risk(
-      age_years       = data$age,
-      race            = data$race,
-      sex             = ifelse(data$sex == 1, "male", "female"),
-      smoke_current   = ifelse(as.logical(data$smoker), "yes", "no"),
-      chol_total_mgdl = data$total_chol,
-      chol_hdl_mgdl   = data$HDL_c,
-      bp_sys_mmhg     = data$sbp,
-      bp_meds         = ifelse(as.logical(data$bp_treated), "yes", "no"),
+      age_years       = data[[col_map$age]],
+      race            = data[[col_map$race]],
+      sex             = sex_norm,
+      smoke_current   = ifelse(as.logical(data[[col_map$smoker]]), "yes", "no"),
+      chol_total_mgdl = data[[col_map$total_chol]],
+      chol_hdl_mgdl   = data[[col_map$HDL_c]],
+      bp_sys_mmhg     = data[[col_map$sbp]],
+      bp_meds         = ifelse(as.logical(data[[col_map$bp_treated]]), "yes", "no"),
       statin_meds     = "no",
-      diabetes        = ifelse(as.logical(data$diabetes), "yes", "no"),
-      bmi             = data$bmi,
+      diabetes        = ifelse(as.logical(data[[col_map$diabetes]]), "yes", "no"),
+      bmi             = data[[col_map$bmi]],
       equation_version = "Goff_2013",  # use PCEs; avoids CKD inputs in PREVENT
       ...
     )
@@ -271,8 +313,15 @@ cvd_risk_stroke <- function(data, na_warn_prop = 0.2, verbose = FALSE, ...) {
 #' @param ... Passed to \code{RiskScorescvd::calc_scores()}.
 #' @return Object returned by \code{RiskScorescvd::calc_scores()}.
 #' @examples
-#' if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
-#'   # cvd_risk_scorescvd(your_data_frame)
+#' \donttest{
+#'   if (requireNamespace("RiskScorescvd", quietly = TRUE)) {
+#'     df <- data.frame(
+#'       Age = 55, Sex = 0, Smoking_status = 1,
+#'       systolic.bp = 140, Total_cholesterol = 5.5,
+#'       HDL.cholesterol = 1.3
+#'     )
+#'     cvd_risk_scorescvd(df)
+#'   }
 #' }
 #' @export
 cvd_risk_scorescvd <- function(data, ...) {
@@ -333,7 +382,7 @@ cvd_marker_aip <- function(data,
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
             msg = "cvd_marker_aip(): preparing inputs")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req_keys], "cvd_marker_aip"))
+            msg = hm_fmt_col_map(col_map[req_keys], "cvd_marker_aip"))
 
   tg_col <- col_map$TG
   hdl_col <- col_map$HDL_c
@@ -413,7 +462,7 @@ cvd_marker_ldl_particle_number <- function(data,
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
             msg = "cvd_marker_ldl_particle_number(): preparing inputs")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(list(ApoB = apob_col), "cvd_marker_ldl_particle_number"))
+            msg = hm_fmt_col_map(list(ApoB = apob_col), "cvd_marker_ldl_particle_number"))
 
   apob <- data[[apob_col]]
   if (!is.numeric(apob)) {

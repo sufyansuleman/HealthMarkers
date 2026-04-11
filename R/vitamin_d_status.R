@@ -34,7 +34,7 @@
 #' @export
 vitamin_d_status <- function(
   data,
-  col_map = list(vitd = "VitD"),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -52,6 +52,14 @@ vitamin_d_status <- function(
                  class = "healthmarkers_vitd_error_data_type")
   }
   # Validate col_map: list vs. missing keys
+  if (!is.list(col_map) && !is.null(col_map)) {
+    rlang::abort("vitamin_d_status(): `col_map` must be a named list.",
+                 class = "healthmarkers_vitd_error_colmap_type")
+  }
+
+  col_map <- .hm_autofill_col_map(col_map, data, c("vitd","vitamin_d"), fn = "vitamin_d_status")
+  if (is.null(col_map)) col_map <- list()
+
   if (!is.list(col_map)) {
     rlang::abort("vitamin_d_status(): `col_map` must be a named list.",
                  class = "healthmarkers_vitd_error_colmap_type")
@@ -84,7 +92,7 @@ vitamin_d_status <- function(
 
   hm_inform("vitamin_d_status(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[key_used], "vitamin_d_status"))
+            msg   = hm_fmt_col_map(col_map[key_used], "vitamin_d_status"))
 
   # Coerce numeric
   vitd <- data[[vitd_col]]

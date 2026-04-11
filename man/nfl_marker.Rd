@@ -6,7 +6,7 @@
 \usage{
 nfl_marker(
   data,
-  col_map = list(nfl = "NfL"),
+  col_map = NULL,
   verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,

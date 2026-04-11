@@ -47,7 +47,7 @@
 #' @export
 fasting_is <- function(
   data,
-  col_map,
+  col_map = NULL,
   normalize = c("none","z","inverse","range","robust"),
   na_action = c("keep","omit","error","warn"),
   check_extreme = FALSE,
@@ -72,6 +72,7 @@ fasting_is <- function(
     rlang::abort("fasting_is(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_fi_error_data_type")
   }
+  col_map <- .hm_autofill_col_map(col_map, data, c("G0","I0"), fn = "fasting_is")
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("fasting_is(): `col_map` must be a named list with entries for G0 and I0.",
                  class = "healthmarkers_fi_error_colmap_type")
@@ -102,7 +103,7 @@ fasting_is <- function(
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "fasting_is(): preparing inputs")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req_keys], "fasting_is"))
+            msg = hm_fmt_col_map(col_map[req_keys], "fasting_is"))
 
   # Coerce to numeric; warn if NAs introduced; non-finite -> NA
   for (nm in req_keys) {

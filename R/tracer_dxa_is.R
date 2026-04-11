@@ -63,7 +63,7 @@
 #' \insertRef{karpe2011ffa}{HealthMarkers};
 #' \insertRef{petersen2007muscleinsulin}{HealthMarkers};
 #' \insertRef{santomauro1999acipimox}{HealthMarkers}
-tracer_dxa_is <- function(data, col_map,
+tracer_dxa_is <- function(data, col_map = NULL,
                           normalize = NULL,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
@@ -87,6 +87,9 @@ tracer_dxa_is <- function(data, col_map,
   else hm_inform("tracer_dxa_is(): preparing inputs", level = "debug")
 
   adipose_keys <- c("I0", "rate_palmitate", "rate_glycerol", "fat_mass", "weight", "HDL_c", "bmi")
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c(adipose_keys, "G0","G30","G120","I30","I120","TG","FFA"),
+    fn = "tracer_dxa_is")
   # Adipose-only when all adipose keys present and not all OGTT keys present
   adipose_only <- all(adipose_keys %in% names(col_map)) &&
     !all(c("G0", "I30") %in% names(col_map))
@@ -128,7 +131,7 @@ tracer_dxa_is <- function(data, col_map,
   # High-missingness warnings on required inputs
   .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[required_keys], "tracer_dxa_is"))
+            msg   = hm_fmt_col_map(col_map[required_keys], "tracer_dxa_is"))
 
   # NA policy on required inputs
   if (na_action == "error") {

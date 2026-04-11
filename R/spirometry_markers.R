@@ -19,11 +19,7 @@
 #' @export
 spirometry_markers <- function(
   data,
-  col_map = list(
-    fev1 = "FEV1", fvc = "FVC",
-    fev1_post = NULL, fvc_post = NULL,
-    age = NULL, height = NULL, sex = NULL, ethnicity = NULL
-  ),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -40,6 +36,12 @@ spirometry_markers <- function(
     rlang::abort("spirometry_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_spiro_error_data_type")
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("fev1","fvc","fev1_post","fvc_post","age","height","sex","ethnicity"),
+    fn = "spirometry_markers")
+  if (is.null(col_map)) col_map <- list()
+
   req_keys <- c("fev1","fvc")
   if (!is.list(col_map) || anyNA(match(req_keys, names(col_map)))) {
     rlang::abort("spirometry_markers(): `col_map` must map fev1 and fvc.",
@@ -55,7 +57,7 @@ spirometry_markers <- function(
 
   hm_inform("spirometry_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[req_keys], "spirometry_markers"))
+            msg   = hm_fmt_col_map(col_map[req_keys], "spirometry_markers"))
 
   # Coerce numeric for volumes; sanitize
   vol_cols <- c(col_map$fev1, col_map$fvc, col_map$fev1_post, col_map$fvc_post)

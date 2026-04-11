@@ -4,11 +4,17 @@
 \alias{cvd_risk_stroke}
 \title{Stroke 10-year risk}
 \usage{
-cvd_risk_stroke(data, na_warn_prop = 0.2, verbose = FALSE, ...)
+cvd_risk_stroke(data, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...)
 }
 \arguments{
-\item{data}{Data frame with: \code{age}, \code{sex}, \code{race}, \code{smoker},
-\code{total_chol}, \code{HDL_c}, \code{sbp}, \code{bp_treated}, \code{diabetes}, \code{bmi}.}
+\item{data}{A data frame with the required cardiovascular risk columns.}
+
+\item{col_map}{Optional named list mapping internal keys (\code{age}, \code{sex},
+\code{race}, \code{smoker}, \code{total_chol}, \code{HDL_c}, \code{sbp},
+\code{bp_treated}, \code{diabetes}, \code{bmi}) to actual column names in
+\code{data}. If \code{NULL} (default), column names are auto-inferred then fall
+back to the key names themselves. \code{sex} accepts \code{1}/\code{0},
+\code{"m"}/\code{"f"}, or \code{"male"}/\code{"female"} (case-insensitive).}
 
 \item{na_warn_prop}{Proportion (0-1) to flag high missingness warnings (default 0.2).
 Only used when \code{verbose = TRUE}.}

@@ -145,7 +145,7 @@ nutrient_markers <- function(
   used_cols <- intersect(unname(mapped), names(data))
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[intersect(names(col_map), names(data))], "nutrient_markers"))
+            msg = hm_fmt_col_map(col_map[intersect(names(col_map), names(data))], "nutrient_markers"))
 
   # Coerce used inputs to numeric; NA on non-finite
   for (cn in used_cols) {

@@ -114,7 +114,7 @@ pulmo_markers <- function(data,
 
   col_map_report <- as.list(stats::setNames(req, req))
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map_report, "pulmo_markers"))
+            msg   = hm_fmt_col_map(col_map_report, "pulmo_markers"))
 
   # Map sex and ethnicity to rspiro codes (male=1, female=2; GLI: 1-5 ethnic groups)
   sex_code <- .pm_map_sex(data$sex)

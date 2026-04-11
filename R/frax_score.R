@@ -27,7 +27,7 @@
 #' @export
 frax_score <- function(
   data,
-  col_map = list(age = "Age", sex = "Sex", bmd_t = NULL),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -50,6 +50,10 @@ frax_score <- function(
     rlang::abort("frax_score(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_frax_error_data_type")
   }
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("age","sex","bmd_t","prior_fracture","parent_fracture",
+      "steroids","smoker","alcohol"),
+    fn = "frax_score")
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("frax_score(): `col_map` must be a named list.",
                  class = "healthmarkers_frax_error_colmap_type")
@@ -77,7 +81,7 @@ frax_score <- function(
 
   hm_inform("frax_score(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req], "frax_score"))
+            msg = hm_fmt_col_map(col_map[req], "frax_score"))
 
   # Build list of used columns that are present in data
   opt_keys <- c("prior_fracture","parent_fracture","steroids","rheumatoid",

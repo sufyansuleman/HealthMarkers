@@ -57,7 +57,7 @@
 #' head(out)
 #' @export
 adipo_is <- function(data,
-                     col_map,
+                     col_map = NULL,
                      normalize = "none",
                      na_action = c("keep","omit","error"),
                      check_extreme = FALSE,
@@ -79,6 +79,8 @@ adipo_is <- function(data,
 
   # Centralized validation
   req <- c("G0","I0","TG","HDL_c","FFA","waist","bmi")
+
+  col_map <- .hm_autofill_col_map(col_map, data, req, fn = "adipo_is")
 
   # Emit test-aligned error before any generic helper
   nm <- names(col_map)
@@ -107,7 +109,7 @@ adipo_is <- function(data,
   # Column-resolution report: which data column each key was mapped to
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[req], "adipo_is")
+    msg   = hm_fmt_col_map(col_map[req], "adipo_is")
   )
 
   # Coerce to numeric when needed (warn once per column on NA introduction)

@@ -146,7 +146,7 @@ glycemic_markers <- function(
     stop(sprintf("missing required columns: %s", paste(miss, collapse = ", ")), call. = FALSE)
   }
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req_keys], "glycemic_markers"))
+            msg = hm_fmt_col_map(col_map[req_keys], "glycemic_markers"))
 
   # Determine used keys present in data
   all_keys <- c(req_keys, "glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")

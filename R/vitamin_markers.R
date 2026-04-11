@@ -63,7 +63,7 @@
 #' @importFrom rlang abort warn inform
 #' @export
 vitamin_markers <- function(data,
-                            col_map,
+                            col_map = NULL,
                             na_action = c("keep","omit","error"),
                             na_warn_prop = 0.2,
                             check_extreme = FALSE,
@@ -83,6 +83,8 @@ vitamin_markers <- function(data,
     "Retinol","Retinol_ref_mean","Retinol_ref_sd","Tocopherol","Total_lipids",
     "PIVKA_II","VitC","Homocysteine","MMA","Magnesium","Zinc","Copper"
   )
+
+  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = "vitamin_markers")
 
   # HM-CS v2: standardized validation
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "vitamin_markers")
@@ -124,7 +126,7 @@ vitamin_markers <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[required_keys], "vitamin_markers"))
+            msg   = hm_fmt_col_map(col_map[required_keys], "vitamin_markers"))
 
   # NA policy
   used_cols <- req_cols

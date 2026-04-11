@@ -113,7 +113,7 @@ metabolic_risk_features <- function(
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[required_cols], "metabolic_risk_features"))
+            msg = hm_fmt_col_map(col_map[required_cols], "metabolic_risk_features"))
 
   # HM-CS v2: numeric coercion for required inputs; warn if NAs introduced; set non-finite to NA
   for (cn in mapped_cols) {

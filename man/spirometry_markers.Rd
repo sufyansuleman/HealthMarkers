@@ -6,8 +6,7 @@
 \usage{
 spirometry_markers(
   data,
-  col_map = list(fev1 = "FEV1", fvc = "FVC", fev1_post = NULL, fvc_post = NULL, age =
-    NULL, height = NULL, sex = NULL, ethnicity = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
   extreme_action = c("warn", "cap", "error", "ignore", "NA"),

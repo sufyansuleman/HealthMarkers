@@ -94,7 +94,7 @@ allostatic_load <- function(
   req_cols <- unname(unlist(var_map, use.names = FALSE))
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(as.list(var_map), "allostatic_load")
+    msg   = hm_fmt_col_map(as.list(var_map), "allostatic_load")
   )
   missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {

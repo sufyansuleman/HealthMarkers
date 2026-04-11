@@ -81,7 +81,7 @@
 #'   verbose = TRUE
 #' )
 ogtt_is <- function(data,
-                    col_map,
+                    col_map = NULL,
                     normalize = "none",
                     verbose = FALSE,
                     na_action = c("keep","omit","error"),
@@ -92,6 +92,10 @@ ogtt_is <- function(data,
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
   .ogtt_validate_args(normalize, na_warn_prop, check_extreme, extreme_limit, verbose)
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex"),
+    fn = "ogtt_is")
 
   # HM-CS v2: required keys validation
   hm_validate_inputs(
@@ -124,7 +128,7 @@ ogtt_is <- function(data,
     na_warn_prop = na_warn_prop
   )
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_col_report(col_map[keys_to_check], "ogtt_is"))
+            msg   = hm_fmt_col_map(col_map[keys_to_check], "ogtt_is"))
 
   # NA policy on required inputs
   used_cols <- unname(unlist(col_map[keys_to_check], use.names = FALSE))

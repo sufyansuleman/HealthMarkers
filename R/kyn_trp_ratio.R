@@ -30,7 +30,7 @@
 #' @export
 kyn_trp_ratio <- function(
   data,
-  col_map = list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM"),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -47,6 +47,10 @@ kyn_trp_ratio <- function(
     rlang::abort("kyn_trp_ratio(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_ktr_error_data_type")
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data, c("kynurenine","tryptophan"), fn = "kyn_trp_ratio")
+  if (is.null(col_map)) col_map <- list()
+
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("kyn_trp_ratio(): `col_map` must be a named list.",
                  class = "healthmarkers_ktr_error_colmap_type")
@@ -75,7 +79,7 @@ kyn_trp_ratio <- function(
   hm_inform("kyn_trp_ratio(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req], "kyn_trp_ratio"))
+            msg = hm_fmt_col_map(col_map[req], "kyn_trp_ratio"))
 
   # Coerce numeric; warn if NAs introduced; sanitize
   for (cn in mapped) {

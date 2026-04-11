@@ -44,7 +44,7 @@
 #' @export
 hormone_markers <- function(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("ignore","warn","error","keep","omit"),
   na_warn_prop = 0.2,
   check_extreme = FALSE,
@@ -106,6 +106,13 @@ hormone_markers <- function(
   if (!is.data.frame(data)) {
     rlang::abort("hormone_markers(): `data` must be a data.frame or tibble.", class = "healthmarkers_horm_error_data_type")
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
+      "free_T3","free_T4","TSH","aldosterone","renin",
+      "insulin","IGF1","prolactin","cortisol_0","cortisol_30"),
+    fn = "hormone_markers")
+
   if (is.null(col_map) || !is.list(col_map)) {
     rlang::abort("hormone_markers(): `col_map` must be a named list.", class = "healthmarkers_horm_error_colmap_type")
   }
@@ -160,7 +167,7 @@ hormone_markers <- function(
 
   hm_inform("hormone_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[used_keys], "hormone_markers"))
+            msg = hm_fmt_col_map(col_map[used_keys], "hormone_markers"))
 
   # Coerce to numeric; warn if NAs introduced; sanitize non-finite to NA
   for (cn in used_cols) {

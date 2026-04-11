@@ -165,7 +165,7 @@ calc_sds <- function(
     hm_inform(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s",
                       total_rows, length(vars), msg_id), level = "inform")
     hm_inform(level = "inform",
-              msg = hm_col_report(as.list(stats::setNames(vars, vars)), "calc_sds"))
+              msg = hm_fmt_col_map(as.list(stats::setNames(vars, vars)), "calc_sds"))
   }
 
   warns <- character(0)

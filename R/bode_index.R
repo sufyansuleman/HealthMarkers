@@ -28,12 +28,12 @@
 #' @examples
 #' df <- data.frame(FEV1pct = c(68, 45, 30), Walk_m = c(400, 280, 140),
 #'                  mMRC = c(1, 2, 3), BMI = c(24, 19, 18))
-#' bode_index(df)
+#' bode_index(df, col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m",
+#'                               mmrc = "mMRC", bmi = "BMI"))
 #' @export
 bode_index <- function(
   data,
-  col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI",
-                 fev1 = NULL, fev1_pred = NULL, fev1_pp = NULL),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -50,6 +50,12 @@ bode_index <- function(
     rlang::abort("bode_index(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_bode_error_data_type")
   }
+
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("fev1_pct","fev1_pp","fev1","sixmwd","mmrc","bmi"),
+    fn = "bode_index")
+  if (is.null(col_map)) col_map <- list()
+
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("bode_index(): `col_map` must be a named list.",
                  class = "healthmarkers_bode_error_colmap_type")
@@ -96,7 +102,7 @@ bode_index <- function(
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "bode_index(): preparing inputs")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(col_map[intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))], "bode_index")
+    msg   = hm_fmt_col_map(col_map[intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))], "bode_index")
   )
 
   # Coercion helper

@@ -58,16 +58,7 @@
 #' @export
 lipid_markers <- function(
   data,
-  col_map = list(
-    TC    = "TC",
-    HDL_c = "HDL_c",
-    TG    = "TG",
-    LDL_c = "LDL_c",
-    ApoB  = "ApoB",
-    ApoA1 = "ApoA1",
-    waist = NULL,
-    BMI   = NULL
-  ),
+  col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   check_extreme = FALSE,
   extreme_action = c("warn","cap","error","ignore","NA"),
@@ -79,6 +70,10 @@ lipid_markers <- function(
   na_action_eff <- .na$na_action_eff
   extreme_action <- match.arg(extreme_action)
 
+  col_map <- .hm_autofill_col_map(col_map, data,
+    c("TC","HDL_c","TG","LDL_c","ApoB","ApoA1","waist","BMI"),
+    fn = "lipid_markers")
+
   req <- c("TC","HDL_c","TG")
   hm_validate_inputs(data, col_map, required_keys = req, fn = "lipid_markers")
   mapped_req <- unname(unlist(col_map[req]))
@@ -87,7 +82,7 @@ lipid_markers <- function(
 
   hm_inform("lipid_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(col_map[req], "lipid_markers"))
+            msg = hm_fmt_col_map(col_map[req], "lipid_markers"))
 
   # Collect used columns (required + present optional + glucose if present)
   optional <- c("LDL_c","ApoB","ApoA1","waist","BMI")

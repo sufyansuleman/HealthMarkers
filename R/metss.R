@@ -124,7 +124,7 @@ metss <- function(data,
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_col_report(as.list(stats::setNames(req, req)), "metss"))
+            msg = hm_fmt_col_map(as.list(stats::setNames(req, req)), "metss"))
 
   # Coerce numerics and clean non-finite
   num_cols <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose")

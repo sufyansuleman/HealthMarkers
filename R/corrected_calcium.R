@@ -28,7 +28,7 @@
 #' @export
 corrected_calcium <- function(
   data,
-  col_map = list(calcium = "Ca", albumin = "Alb"),
+  col_map = NULL,
   units = c("auto", "conventional", "si"),
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   check_extreme = FALSE,
@@ -49,6 +49,8 @@ corrected_calcium <- function(
       class = "healthmarkers_calcium_error_data_type"
     )
   }
+  col_map <- .hm_autofill_col_map(col_map, data, c("calcium","albumin"),
+                                   fn = "corrected_calcium")
   if (!is.list(col_map)) {
     rlang::abort(
       "corrected_calcium(): `col_map` must be a named list.",
@@ -89,7 +91,7 @@ corrected_calcium <- function(
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "corrected_calcium(): preparing inputs")
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_col_report(list(calcium = ca_col, albumin = alb_col), "corrected_calcium")
+    msg   = hm_fmt_col_map(list(calcium = ca_col, albumin = alb_col), "corrected_calcium")
   )
 
   ## --- Coercion to numeric --------------------------------------------------
