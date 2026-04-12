@@ -33,24 +33,7 @@
 #' )
 #' @export
 liver_fat_markers <- function(data,
-                              col_map = list(
-                                ALT = "ALT",
-                                AST = "AST",
-                                BMI = "BMI",
-                                sex = "sex",
-                                diabetes = "diabetes",
-                                MetS = "MetS",
-                                insulin = "insulin",
-                                I0 = "I0",
-                                waist = "waist",
-                                TG = "TG",
-                                HDL_c = "HDL_c",
-                                sbp = "sbp",
-                                bp_sys = "bp_sys",
-                                bp_treated = "bp_treated",
-                                glucose = "glucose",
-                                G0 = "G0"
-                              ),
+                              col_map = NULL,
                               na_action = c("keep", "omit", "error", "ignore", "warn"),
                               na_warn_prop = 0.2,
                               check_extreme = FALSE,
@@ -63,6 +46,12 @@ liver_fat_markers <- function(data,
   extreme_action <- match.arg(extreme_action)
   
   # Validate required mapping and data
+  all_lfm_keys <- c("ALT","AST","BMI","sex","diabetes","MetS","insulin",
+                    "I0","waist","TG","HDL_c","sbp","bp_sys","bp_treated","glucose","G0")
+  col_map <- .hm_autofill_col_map(col_map, data, all_lfm_keys, fn = "liver_fat_markers")
+  for (k in all_lfm_keys) {
+    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+  }
   req <- c("ALT", "AST", "BMI")
   hm_validate_inputs(data, col_map, required_keys = req, fn = "liver_fat_markers")
   mapped_req <- unname(unlist(col_map[req]))

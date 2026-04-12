@@ -24,7 +24,7 @@
 #' @export
 ckd_stage <- function(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep","omit","error"),
   check_extreme = FALSE,
   extreme_action = c("cap","NA","error"),
@@ -32,6 +32,14 @@ ckd_stage <- function(
 ) {
   na_action <- match.arg(na_action)
   extreme_action <- match.arg(extreme_action)
+
+  # Auto-fill col_map when not supplied
+  col_map <- .hm_autofill_col_map(col_map, data, c("eGFR","UACR"), fn = "ckd_stage")
+  if (is.null(col_map)) col_map <- list()
+  # Identity fill
+  for (k in c("eGFR","UACR")) {
+    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+  }
 
   # Validate mapping and columns (explicit; no hm_validate_inputs)
   if (!is.list(col_map) || is.null(names(col_map))) {

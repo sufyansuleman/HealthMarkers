@@ -164,6 +164,8 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
     diabetes = "diabetes",
     ApoA1 = "apoA1",            ApoB  = "apoB",
     ALT   = "ALT",              AST   = "AST",
+    GGT   = "GGT",
+    bilirubin  = "bilirubin",
     BMI   = "BMI",              bmi   = "BMI",
     waist = "waist",            weight = "weight",
     age   = "age",              sex   = "sex",
@@ -175,6 +177,7 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
     creatinine   = "creatinine",
     albumin      = "albumin",   alb   = "albumin",
     calcium      = "calcium",   ca    = "calcium",
+    platelets    = "platelets",
     height       = "height",
     ALM          = "ALM",       alm   = "ALM",
     bmd_t        = "BMD",       BMD   = "BMD",
@@ -182,7 +185,8 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
     fev1         = "FEV1",      fvc   = "FVC",
     FEV1pct      = "FEV1pct",
     kynurenine   = "kynurenine",tryptophan = "tryptophan",
-    vitd         = "vitaminD",
+    vitd         = "vitaminD",  vitaminD = "vitaminD",
+    vitamin_d    = "vitaminD",
     # Inflammatory
     CRP          = "CRP",       IL6   = "IL6",        TNFa  = "TNFa",
     WBC          = "WBC",       neutrophils = "neutrophils",
@@ -228,8 +232,15 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
     nfl          = "nfl",
     GH           = "GH",        glucagon = "glucagon",
     PIVKA_II     = "PIVKA_II",
-    # vitamin_d_status
-    vitamin_d    = "vitaminD"
+    # metabolic_risk_features column aliases
+    chol_total   = "total_cholesterol",
+    chol_ldl     = "LDL_c",
+    chol_hdl     = "HDL_c",
+    triglycerides = "TG",
+    age_year     = "age",
+    z_HOMA       = "fasting_insulin",
+    bp_sys_z     = "sbp",
+    bp_dia_z     = "dbp"
   )
 
   inferred <- tryCatch(

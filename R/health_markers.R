@@ -25,6 +25,35 @@
   tibble::tibble(MetS_simple = rep(NA_integer_, nrow(data)))
 }
 
+# Dispatcher wrapper for obesity_indices (which uses NSE column arguments)
+.hm_obesity_indices_dispatch <- function(data, col_map = NULL, verbose = FALSE,
+                                         na_action = "keep", ...) {
+  allkv <- c("weight", "height", "waist", "hip", "sex")
+  col_map2 <- .hm_autofill_col_map(col_map, data, allkv, fn = "obesity_indices")
+  for (k in allkv) {
+    if (is.null(col_map2[[k]]) && k %in% names(data)) col_map2[[k]] <- k
+  }
+  req <- c("weight", "height", "waist", "hip")
+  miss <- setdiff(req, names(col_map2))
+  if (length(miss)) {
+    rlang::abort(
+      sprintf("obesity_indices(): missing required columns: %s", paste(miss, collapse = ", ")),
+      class = "healthmarkers_obesity_error_missing_columns"
+    )
+  }
+  args <- list(
+    data      = data,
+    weight    = as.name(col_map2[["weight"]]),
+    height    = as.name(col_map2[["height"]]),
+    waist     = as.name(col_map2[["waist"]]),
+    hip       = as.name(col_map2[["hip"]]),
+    na_action = na_action,
+    verbose   = verbose
+  )
+  if (!is.null(col_map2[["sex"]])) args$sex <- as.name(col_map2[["sex"]])
+  do.call(obesity_indices, args)
+}
+
 .hm_marker_registry <- function(verbose = FALSE) {
   reg <- list()
   add <- function(name, fun_name, needs_col_map) {
@@ -46,17 +75,17 @@
   add("insulin_tracer_dxa", "tracer_dxa_is",         TRUE)
 
   # Body composition / obesity
-  add("adiposity_sds",        "adiposity_sds",           FALSE)
-  add("adiposity_sds_strat",  "adiposity_sds_strat",     TRUE)
-  add("obesity_metrics",      "obesity_indices",         FALSE)  # fixed: function is obesity_indices
-  add("alm_bmi",              "alm_bmi_index",           TRUE)
+  add("adiposity_sds",        "adiposity_sds",                   FALSE)
+  add("adiposity_sds_strat",  "adiposity_sds_strat",             FALSE)
+  add("obesity_metrics",      ".hm_obesity_indices_dispatch",    FALSE)
+  add("alm_bmi",              "alm_bmi_index",                   FALSE)
 
   # Lipid and atherogenic
-  add("lipid",                  "lipid_markers",         FALSE)
-  add("atherogenic_indices",    "atherogenic_indices",   TRUE)
-  add("atherogenic",            "atherogenic_indices",   TRUE)  # alias
-  add("cvd_aip",                "cvd_marker_aip",        TRUE)
-  add("cvd_ldl_particles",      "cvd_marker_ldl_particle_number", TRUE)
+  add("lipid",                  "lipid_markers",               FALSE)
+  add("atherogenic_indices",    "atherogenic_indices",         FALSE)
+  add("atherogenic",            "atherogenic_indices",         FALSE)  # alias
+  add("cvd_aip",                "cvd_marker_aip",              FALSE)
+  add("cvd_ldl_particles",      "cvd_marker_ldl_particle_number", FALSE)
 
   # Cardiovascular risk scores
   add("cvd_risk",           "cvd_risk",              FALSE)
@@ -67,65 +96,65 @@
 
   # Liver
   add("liver",              "liver_markers",         FALSE)
-  add("liver_fat",          "liver_fat_markers",     TRUE)
+  add("liver_fat",          "liver_fat_markers",     FALSE)
 
   # Glycemic
-  add("glycemic",           "glycemic_markers",      TRUE)
+  add("glycemic",           "glycemic_markers",      FALSE)
 
   # Metabolic syndrome
   add("mets",               "metss",                 FALSE)
-  add("metabolic_risk",     "metabolic_risk_features", TRUE)
+  add("metabolic_risk",     "metabolic_risk_features", FALSE)
 
   # Pulmonary
   add("pulmo",              "pulmo_markers",         FALSE)
-  add("spirometry",         "spirometry_markers",    TRUE)
-  add("bode",               "bode_index",            TRUE)
+  add("spirometry",         "spirometry_markers",    FALSE)
+  add("bode",               "bode_index",            FALSE)
 
   # Saliva, Sweat, Urine
-  add("saliva",             "saliva_markers",        TRUE)
-  add("sweat",              "sweat_markers",         TRUE)
-  add("urine",              "urine_markers",         TRUE)
+  add("saliva",             "saliva_markers",        FALSE)
+  add("sweat",              "sweat_markers",         FALSE)
+  add("urine",              "urine_markers",         FALSE)
 
   # Renal and CKD
-  add("renal",              "renal_markers",         TRUE)
-  add("kidney_kfre",        "kidney_failure_risk",   TRUE)   # fixed: function is kidney_failure_risk
-  add("ckd_stage",          "ckd_stage",             TRUE)
+  add("renal",              "renal_markers",         FALSE)
+  add("kidney_kfre",        "kidney_failure_risk",   FALSE)
+  add("ckd_stage",          "ckd_stage",             FALSE)
 
   # Nutrients and vitamins
-  add("nutrient",           "nutrient_markers",      TRUE)
-  add("vitamin",            "vitamin_markers",       TRUE)
+  add("nutrient",           "nutrient_markers",      FALSE)
+  add("vitamin",            "vitamin_markers",       FALSE)
 
   # Hormone and inflammation
-  add("hormone",            "hormone_markers",       TRUE)
-  add("inflammatory",       "inflammatory_markers",  TRUE)
+  add("hormone",            "hormone_markers",       FALSE)
+  add("inflammatory",       "inflammatory_markers",  FALSE)
 
   # Bone, FRAX, and allostatic load
-  add("bone",               "bone_markers",          TRUE)
-  add("frax",               "frax_score",            TRUE)
+  add("bone",               "bone_markers",          FALSE)
+  add("frax",               "frax_score",            FALSE)
   add("allostatic_load",    "allostatic_load",       FALSE)
 
   # Oxidative stress
-  add("oxidative",          "oxidative_markers",     TRUE)
+  add("oxidative",          "oxidative_markers",     FALSE)
 
   # Frailty / comorbidity / functional
   add("frailty_index",      "frailty_index",        FALSE)
-  add("charlson",           "charlson_index",       TRUE)
-  add("sarc_f",             "sarc_f_score",         TRUE)
+  add("charlson",           "charlson_index",       FALSE)
+  add("sarc_f",             "sarc_f_score",         FALSE)
 
   # Psychiatric markers
-  add("psych",              "psych_markers",        TRUE)
+  add("psych",              "psych_markers",        FALSE)
 
   # Neuro / aging markers
-  add("nfl",                "nfl_marker",           TRUE)
-  add("iAge",               "iAge",                 TRUE)
+  add("nfl",                "nfl_marker",           FALSE)
+  add("iAge",               "iAge",                 FALSE)
   add("inflammatory_age",   "inflammatory_age",     FALSE)
 
   # Micronutrient / vitamin sub-panels
-  add("vitamin_d_status",   "vitamin_d_status",     TRUE)
+  add("vitamin_d_status",   "vitamin_d_status",     FALSE)
 
   # Single biochemical ratios / corrections
-  add("calcium_corrected",  "corrected_calcium",    TRUE)
-  add("kyn_trp",            "kyn_trp_ratio",        TRUE)
+  add("calcium_corrected",  "corrected_calcium",    FALSE)
+  add("kyn_trp",            "kyn_trp_ratio",        FALSE)
 
   reg
 }
@@ -227,7 +256,7 @@
     } else {
       s <- out$sex
       if (is.numeric(s)) {
-        out$sex <- ifelse(s == 2, "F", "M")
+        out$sex <- ifelse(!is.na(s) & s == 2, "F", "M")
       } else {
         s <- toupper(as.character(s))
         out$sex <- ifelse(startsWith(s, "F"), "F", "M")
@@ -263,6 +292,7 @@
     if (!("ethnicity" %in% names(out))) {
       src <- .prep_resolve("race", c("race", "Race", "ethnic", "ethn", "ethnicity_code"))
       if (!is.null(src)) out$ethnicity <- out[[src]]
+      else out$ethnicity <- "Other"   # default so GLI reference works
     }
     if (!("fev1" %in% names(out))) {
       src <- .prep_resolve("FEV1", c("FEV1", "fev1_abs", "FEV1_abs"))

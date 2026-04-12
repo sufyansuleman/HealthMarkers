@@ -222,7 +222,7 @@ metss <- function(data,
 
   # Per-row key derivation
   key_vec <- .metss_key_from_data(data)
-  unique_keys <- unique(key_vec[!is.na(key_vec)])
+  unique_keys <- unique(key_vec[!is.na(key_vec)])   # NA rows scored as NA, not an error
   missing_keys <- setdiff(unique_keys, names(params))
   if (length(missing_keys)) {
     rlang::abort(
@@ -314,7 +314,9 @@ metss <- function(data,
                    ifelse(race_raw %in% c("HW","HISPANIC","H/L"), "HW",
                      ifelse(race_raw %in% c("HA","ASIAN"), "HA", race_raw))))
   sex_norm <- .hm_normalize_sex(data$sex, to = "MF")
-  paste0(race_norm, "_", sex_norm)
+  # Return NA_character_ when sex or race is NA, so those rows are scored as NA
+  ifelse(is.na(sex_norm) | is.na(race_norm), NA_character_,
+         paste0(race_norm, "_", sex_norm))
 }
 .metss_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {
   for (cn in cols) {

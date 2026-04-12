@@ -90,15 +90,27 @@ metabolic_risk_features <- function(
     "age_year", "z_HOMA", "glucose", "HbA1c", "bp_sys_z", "bp_dia_z"
   )
 
-  if (is.null(col_map)) {
-    col_map <- as.list(stats::setNames(required_cols, required_cols))
-  } else {
+  explicit_col_map <- !is.null(col_map)
+  col_map <- .hm_autofill_col_map(col_map, data, required_cols,
+                                   fn = "metabolic_risk_features")
+  if (explicit_col_map) {
+    # Strict: error if any required key is missing from the user-supplied col_map
     miss_keys <- setdiff(required_cols, names(col_map))
     if (length(miss_keys)) {
       rlang::abort(
         paste0("metabolic_risk_features(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-        class = "healthmarkers_mrf_error_missing_map"
-      )
+        class = "healthmarkers_mrf_error_missing_map")
+    }
+  } else {
+    # Lenient: identity fill any key whose column exists in data
+    for (k in required_cols) {
+      if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+    }
+    miss_keys <- setdiff(required_cols, names(col_map))
+    if (length(miss_keys)) {
+      rlang::abort(
+        paste0("metabolic_risk_features(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
+        class = "healthmarkers_mrf_error_missing_map")
     }
   }
 

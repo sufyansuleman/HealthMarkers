@@ -109,36 +109,60 @@ liver_markers <- function(data,
   required <- c("BMI","waist","TG","GGT","age","AST","ALT",
                 "platelets","albumin","diabetes","bilirubin","creatinine")
 
+  explicit_col_map <- !is.null(col_map)  # was a non-NULL col_map explicitly supplied?
   col_map <- .hm_autofill_col_map(col_map, data, required, fn = "liver_markers")
 
-  # Additional robust validation
-  .lm_validate_args(data, col_map, na_warn_prop, extreme_rules)
-
-  # Ensure all required keys are present in col_map
-  miss_keys <- setdiff(required, names(col_map))
-  if (length(miss_keys)) {
-    rlang::abort(
-      paste0("liver_markers(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-      class = "healthmarkers_liver_error_missing_map"
-    )
+  if (explicit_col_map) {
+    # Strict mode: error if a mapped column is absent, error if required key missing
+    miss_cols <- setdiff(
+      unlist(col_map[intersect(required, names(col_map))], use.names = FALSE),
+      names(data))
+    if (length(miss_cols)) {
+      rlang::abort(
+        paste0("liver_markers(): mapped columns not found in data: ", paste(miss_cols, collapse = ", ")),
+        class = "healthmarkers_liver_error_missing_columns")
+    }
+    miss_keys <- setdiff(required, names(col_map))
+    if (length(miss_keys)) {
+      rlang::abort(
+        paste0("liver_markers(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
+        class = "healthmarkers_liver_error_missing_map")
+    }
+  } else {
+    # Lenient mode: identity fill any key whose column exists in data
+    for (k in required) {
+      if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+    }
+    # Drop keys whose mapped column is still absent (grace: produce NA for those indices)
+    for (k in names(col_map)) {
+      if (!is.null(col_map[[k]]) && !col_map[[k]] %in% names(data)) col_map[[k]] <- NULL
+    }
+    miss_keys <- setdiff(required, names(col_map))
+    if (length(miss_keys) > 0L) {
+      hm_inform(level = "debug",
+                msg = sprintf("liver_markers(): columns not found, affected indices will be NA: %s",
+                              paste(miss_keys, collapse = ", ")))
+    }
   }
-  # Ensure mapped columns exist
-  miss_cols <- setdiff(unlist(col_map[required], use.names = FALSE), names(data))
-  if (length(miss_cols)) {
-    rlang::abort(
-      paste0("liver_markers(): mapped columns not found in data: ", paste(miss_cols, collapse = ", ")),
-      class = "healthmarkers_liver_error_missing_columns"
-    )
+
+  # Additional robust validation (structural only)
+  .lm_validate_args(data, if (length(col_map) > 0L) col_map else list(placeholder = "x"),
+                    na_warn_prop, extreme_rules)
+
+  # Helper: pull column as numeric vector, NA if key unavailable
+  .lm_col <- function(k) {
+    cn <- col_map[[k]]
+    if (is.null(cn)) rep(NA_real_, nrow(data)) else data[[cn]]
   }
 
   hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[required], "liver_markers"))
+            msg = hm_fmt_col_map(col_map[intersect(required, names(col_map))], "liver_markers"))
 
-  used_cols <- unlist(col_map[required], use.names = FALSE)
+  avail_cols <- unlist(col_map[intersect(required, names(col_map))], use.names = FALSE)
 
-  # HM-CS v3: coerce to numeric for all required inputs except diabetes; warn if NAs introduced
-  for (cn in used_cols) {
-    if (identical(cn, col_map$diabetes)) next
+  # HM-CS v3: coerce to numeric for all available required inputs
+  for (cn in avail_cols) {
+    if (identical(cn, col_map[["diabetes"]])) next
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
       suppressWarnings(new <- as.numeric(old))
@@ -150,18 +174,20 @@ liver_markers <- function(data,
   }
   # Missingness warnings only when na_action_raw == "warn"
   if (identical(na_action_raw, "warn")) {
-    .lm_warn_high_missing(data, used_cols, na_warn_prop = na_warn_prop)
+    .lm_warn_high_missing(data, avail_cols, na_warn_prop = na_warn_prop)
   }
 
-  # NA policy
+  # NA policy (only against available columns)
   if (identical(na_action, "error")) {
-    any_na <- Reduce(`|`, lapply(required, function(k) is.na(data[[col_map[[k]]]])))
+    avail_req <- intersect(required, names(col_map))
+    any_na <- Reduce(`|`, lapply(avail_req, function(k) is.na(data[[col_map[[k]]]])))
     if (any(any_na)) {
       rlang::abort("liver_markers(): required inputs contain missing values (na_action='error').",
                    class = "healthmarkers_liver_error_missing_values")
     }
   } else if (identical(na_action, "omit")) {
-    keep <- !Reduce(`|`, lapply(required, function(k) is.na(data[[col_map[[k]]]])))
+    avail_req <- intersect(required, names(col_map))
+    keep <- !Reduce(`|`, lapply(avail_req, function(k) is.na(data[[col_map[[k]]]])))
     hm_inform(sprintf("liver_markers(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   } # "keep" leaves NA as-is
@@ -203,19 +229,24 @@ liver_markers <- function(data,
 
   hm_inform("liver_markers(): computing indices", level = "debug")
 
-  # Pull vectors
-  BMI        <- data[[col_map$BMI]]
-  waist      <- data[[col_map$waist]]
-  TG         <- data[[col_map$TG]]
-  GGT        <- data[[col_map$GGT]]
-  age        <- data[[col_map$age]]
-  AST        <- data[[col_map$AST]]
-  ALT        <- data[[col_map$ALT]]
-  platelets  <- data[[col_map$platelets]]
-  albumin    <- data[[col_map$albumin]]
-  diabetes_x <- data[[col_map$diabetes]]
-  bilirubin  <- data[[col_map$bilirubin]]
-  creatinine <- data[[col_map$creatinine]]
+  # Pull vectors (NA vector when column unavailable)
+  BMI        <- .lm_col("BMI")
+  waist      <- .lm_col("waist")
+  TG         <- .lm_col("TG")
+  GGT        <- .lm_col("GGT")
+  age        <- .lm_col("age")
+  AST        <- .lm_col("AST")
+  ALT        <- .lm_col("ALT")
+  platelets  <- .lm_col("platelets")
+  albumin    <- .lm_col("albumin")
+  bilirubin  <- .lm_col("bilirubin")
+  creatinine <- .lm_col("creatinine")
+
+  # Diabetes: default to 0 (no diabetes) when column absent
+  diabetes_x <- {
+    cn <- col_map[["diabetes"]]
+    if (is.null(cn)) rep(0L, nrow(data)) else data[[cn]]
+  }
 
   # Diabetes coercion with diagnostics (preserve prior behavior: as.integer)
   diab_ok <- is.logical(diabetes_x) || all(diabetes_x %in% c(0,1,NA))
