@@ -21,15 +21,11 @@
 #' @param params Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
 #'   list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
 #'   is a named numeric vector c(mean=, sd=, coef=).
-#' @param verbose Logical; print progress.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".
 #' @param na_warn_prop Proportion (0-1) above which high-missingness warning fires when na_action='warn'. Default 0.2.
-#' @param check_extreme Logical; scan for extreme values if TRUE.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia, TG, HDL_c, glucose).
 #' @param diagnostics Logical; if TRUE (default) emit value/range diagnostic warnings
-#'   (negative, out-of-range checks). Set FALSE to suppress these (e.g., in tests when
-#'   also using check_extreme).
+#'   (negative, out-of-range checks).
 #'
 #' @return tibble with one numeric column: MetSSS
 #' @export 
@@ -98,20 +94,16 @@ metss <- function(data,
                       MAP       = c(mean = 91.0, sd = 11.0, coef = 0.512)
                     )
                   ),
-                  verbose = FALSE,
+                  verbose = TRUE,
                   na_action = c("keep","omit","error","ignore","warn"),
                   na_warn_prop = 0.2,
-                  check_extreme = FALSE,
-                  extreme_action = c("warn","cap","error","ignore","NA"),
-                  extreme_rules = NULL,
                   diagnostics = TRUE) {
 
+  fn_name <- "metss"
+  id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
-
-  hm_inform("metss(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   .metss_validate_data_frame(data)
   .metss_validate_params(params)
@@ -123,8 +115,11 @@ metss <- function(data,
                  class = "healthmarkers_metss_error_missing_columns")
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(as.list(stats::setNames(req, req)), "metss"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, k), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  MetSSS  [factor-loading z-score, sex/race-specific params]", fn_name), level = "inform")
+  }
 
   # Coerce numerics and clean non-finite
   num_cols <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose")
@@ -175,51 +170,6 @@ metss <- function(data,
 
   if (nrow(data) == 0L) return(tibble::tibble(MetSSS = numeric()))
 
-  # Extremes
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      list(
-        waist = c(40, 200),
-        bp_sys = c(60, 300),
-        bp_dia = c(30, 200),
-        TG = c(0, 20),
-        HDL_c = c(0, 5),
-        glucose = c(0, 40)
-      )
-    } else extreme_rules
-    ex_counts <- integer(0)
-    flags <- list()
-    for (nm in intersect(names(rules), req)) {
-      rng <- rules[[nm]]
-      x <- data[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      flags[[nm]] <- bad
-      ex_counts[nm] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
-        x[bad & x < rng[1] & is.finite(x)] <- rng[1]
-        x[bad & x > rng[2] & is.finite(x)] <- rng[2]
-        data[[nm]] <- x
-      } else if (extreme_action == "NA") {
-        x[bad] <- NA_real_
-        data[[nm]] <- x
-      }
-    }
-    total_ex <- sum(ex_counts, na.rm = TRUE)
-    if (total_ex > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("metss(): detected %d extreme input values.", total_ex),
-                     class = "healthmarkers_metss_error_extremes")
-      } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("metss(): capped %d extreme input values into allowed ranges.", total_ex))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("metss(): detected %d extreme input values (not altered).", total_ex))
-      }
-      # "ignore" and "NA": no warning
-    }
-  }
-
   # Per-row key derivation
   key_vec <- .metss_key_from_data(data)
   unique_keys <- unique(key_vec[!is.na(key_vec)])   # NA rows scored as NA, not an error
@@ -239,7 +189,7 @@ metss <- function(data,
       class = "healthmarkers_metss_warn_multiple_keys"
     )
   }
-  hm_inform("metss(): computing score", level = "debug")
+  # Compute MetSSS per row
 
   MAP <- (2 * data$bp_dia + data$bp_sys) / 3
   MetSSS <- rep(NA_real_, nrow(data))
@@ -265,9 +215,12 @@ metss <- function(data,
 
   out <- tibble::tibble(MetSSS = as.numeric(MetSSS))
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "metss"))
-
+  if (!is.null(id_col)) {
+    out[[id_col]] <- data[[id_col]]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
   out
 }
 

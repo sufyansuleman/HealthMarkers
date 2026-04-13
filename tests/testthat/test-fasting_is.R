@@ -72,8 +72,8 @@ test_that("normalize = 'range' and 'z' behave correctly", {
 
 test_that("normalize = 'inverse' and 'robust' run silently", {
   df <- tibble::tibble(G0 = c(5.5, 6), I0 = c(60, 80))
-  expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "inverse"))
-  expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "robust"))
+  expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "inverse", verbose = FALSE))
+  expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "robust",  verbose = FALSE))
 })
 
 test_that("invalid normalize argument errors", {

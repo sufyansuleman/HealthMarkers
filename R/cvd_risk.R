@@ -92,7 +92,7 @@
 #' }
 #'
 #' @references \insertRef{goff2014accaha}{HealthMarkers}
-cvd_risk_ascvd <- function(data, year = 10, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...) {
+cvd_risk_ascvd <- function(data, year = 10, col_map = NULL, na_warn_prop = 0.2, verbose = TRUE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   if (!is.numeric(year) || length(year) != 1L || !(year %in% c(10, 30))) {
@@ -177,7 +177,7 @@ cvd_risk_ascvd <- function(data, year = 10, col_map = NULL, na_warn_prop = 0.2, 
 #' }
 #'
 #' @references \insertRef{hippisleycox2017qrisk3}{HealthMarkers}
-cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE) {
+cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = TRUE) {
   .need_pkg("QRISK3")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   if (is.null(patid)) {
@@ -257,7 +257,7 @@ cvd_risk_qrisk3 <- function(data, ..., patid = NULL, na_warn_prop = 0.2, verbose
 #' @export
 #'
 #' @references \insertRef{goff2014accaha}{HealthMarkers}
-cvd_risk_stroke <- function(data, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...) {
+cvd_risk_stroke <- function(data, col_map = NULL, na_warn_prop = 0.2, verbose = TRUE, ...) {
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   keys <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
@@ -358,9 +358,9 @@ cvd_risk_scorescvd <- function(data, ...) {
 #' cvd_marker_aip(df)
 #' @export
 cvd_marker_aip <- function(data,
-                           col_map = list(TG = "TG", HDL_c = "HDL_c"),
+                           col_map = NULL,
                            na_action = c("keep","omit","error"),
-                           verbose = FALSE) {
+                           verbose = TRUE) {
   na_action <- match.arg(na_action)
 
   # Explicit validation (HM-CS v3)
@@ -368,8 +368,15 @@ cvd_marker_aip <- function(data,
     rlang::abort("cvd_marker_aip(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_aip_data_type")
   }
-  hm_validate_inputs(data, col_map, required_keys = c("TG", "HDL_c"), fn = "cvd_marker_aip")
+  was_null <- is.null(col_map)
+  col_map <- .hm_autofill_col_map(col_map, data, c("TG", "HDL_c"), fn = "cvd_marker_aip")
   req_keys <- c("TG","HDL_c")
+  if (!all(req_keys %in% names(col_map))) {
+    if (!was_null) {
+      hm_validate_inputs(data, col_map, required_keys = req_keys, fn = "cvd_marker_aip")
+    }
+    return(tibble::tibble(model = "AIP", value = rep(NA_real_, nrow(data))))
+  }
   req_cols <- unname(unlist(col_map[req_keys], use.names = FALSE))
   miss_cols <- setdiff(req_cols, names(data))
   if (length(miss_cols)) {
@@ -379,10 +386,11 @@ cvd_marker_aip <- function(data,
     )
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = "cvd_marker_aip(): preparing inputs")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req_keys], "cvd_marker_aip"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("cvd_marker_aip(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform("cvd_marker_aip(): computing markers:\n  AIP [TG, HDL_c]", level = "inform")
+  }
 
   tg_col <- col_map$TG
   hdl_col <- col_map$HDL_c
@@ -419,8 +427,7 @@ cvd_marker_aip <- function(data,
   value <- log10(.safe_div(tg, hdl))
   out <- tibble::tibble(model = "AIP", value = value)
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(tibble::tibble(AIP = value), "cvd_marker_aip"))
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(tibble::tibble(AIP = value), "cvd_marker_aip"), level = "inform")
   out
 }
 
@@ -442,9 +449,9 @@ cvd_marker_aip <- function(data,
 #' cvd_marker_ldl_particle_number(df)
 #' @export
 cvd_marker_ldl_particle_number <- function(data,
-                                           col_map = list(ApoB = "ApoB"),
+                                           col_map = NULL,
                                            na_action = c("keep","omit","error"),
-                                           verbose = FALSE) {
+                                           verbose = TRUE) {
   na_action <- match.arg(na_action)
 
   # Explicit validation (HM-CS v3)
@@ -452,17 +459,24 @@ cvd_marker_ldl_particle_number <- function(data,
     rlang::abort("cvd_marker_ldl_particle_number(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_ldlpn_data_type")
   }
-  hm_validate_inputs(data, col_map, required_keys = c("ApoB"), fn = "cvd_marker_ldl_particle_number")
+  was_null <- is.null(col_map)
+  col_map <- .hm_autofill_col_map(col_map, data, c("ApoB"), fn = "cvd_marker_ldl_particle_number")
+  if (!("ApoB" %in% names(col_map))) {
+    if (!was_null) {
+      hm_validate_inputs(data, col_map, required_keys = c("ApoB"), fn = "cvd_marker_ldl_particle_number")
+    }
+    return(tibble::tibble(model = "LDL_PN", value = rep(NA_real_, nrow(data))))
+  }
   apob_col <- col_map$ApoB
   if (!(apob_col %in% names(data))) {
     rlang::abort(sprintf("cvd_marker_ldl_particle_number(): missing required column in data: %s", apob_col),
                  class = "healthmarkers_cvd_error_ldlpn_missing_columns")
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = "cvd_marker_ldl_particle_number(): preparing inputs")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(list(ApoB = apob_col), "cvd_marker_ldl_particle_number"))
+  if (isTRUE(verbose)) {
+    hm_inform(sprintf("cvd_marker_ldl_particle_number(): column mapping: ApoB -> '%s'", apob_col), level = "inform")
+    hm_inform("cvd_marker_ldl_particle_number(): computing markers:\n  LDL_PN [ApoB]", level = "inform")
+  }
 
   apob <- data[[apob_col]]
   if (!is.numeric(apob)) {
@@ -483,8 +497,7 @@ cvd_marker_ldl_particle_number <- function(data,
 
   out <- tibble::tibble(model = "LDL_PN", value = apob)
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(tibble::tibble(LDL_PN = apob), "cvd_marker_ldl_particle_number"))
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(tibble::tibble(LDL_PN = apob), "cvd_marker_ldl_particle_number"), level = "inform")
   out
 }
 
@@ -514,7 +527,7 @@ cvd_risk <- function(data,
                                "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
                      year = 10,
                      ...,
-                     verbose = FALSE) {
+                     verbose = TRUE) {
   model <- match.arg(model)
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   if (!is.numeric(year) || length(year) != 1L) stop("`year` must be a single numeric (e.g., 10, 30).")

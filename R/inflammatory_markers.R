@@ -22,12 +22,12 @@
 #'   Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR.
 #' @param panel one of c("auto","classic","eos","both"). "auto" uses presence of eosinophils key.
 #' @param na_action one of c("keep","omit","error"). Default "keep" propagates NA
-#'   in outputs where inputs are missing. "omit" drops rows with any NA in required
-#'   inputs. "error" aborts if required inputs contain NA.
-#' @param check_extreme logical; if TRUE, handle extremes per `extreme_action`
-#' @param extreme_action one of c("warn","cap","error","ignore","NA")
-#' @param verbose logical; if TRUE, prints progress messages via hm_inform
-#' @return tibble with selected inflammatory indices
+#'   in outputs where inputs are missing.
+#' @param verbose logical; if `TRUE` (default), prints column mapping, optional input
+#'   availability, physiological range information (informational only), the list of
+#'   markers being computed, and a results summary.
+#' @return tibble with selected inflammatory indices, with ID column prepended if
+#'   detected (e.g. `id`, `IID`, `participant_id`).
 #'
 #' @examples
 #' df <- data.frame(
@@ -56,28 +56,42 @@
 #' @references \insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 #' @export
 inflammatory_markers <- function(data, col_map = NULL,
-                                 panel = c("auto","classic","eos","both"),
-                                 na_action = c("keep","omit","error"),
-                                 check_extreme = FALSE,
-                                 extreme_action = c("warn","cap","error","ignore","NA"),
-                                 verbose = FALSE) {
-  panel <- match.arg(panel)
+                                 panel      = c("auto", "classic", "eos", "both"),
+                                 na_action  = c("keep", "omit", "error"),
+                                 verbose    = TRUE) {
+  fn_name   <- "inflammatory_markers"
+  panel     <- match.arg(panel)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
-
-  hm_inform("inflammatory_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   if (!is.data.frame(data)) {
-    rlang::abort("inflammatory_markers(): `data` must be a data.frame or tibble.",
+    rlang::abort(sprintf("%s(): `data` must be a data.frame or tibble.", fn_name),
                  class = "healthmarkers_inflammatory_markers_error_data_type")
   }
 
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
+
+  was_null_cm <- is.null(col_map)
   col_map <- .hm_autofill_col_map(col_map, data,
     c("neutrophils","lymphocytes","monocytes","platelets","WBC",
       "CRP","albumin","eosinophils","ESR"),
-    fn = "inflammatory_markers")
+    fn = fn_name)
+  if (is.null(col_map) || !is.list(col_map)) col_map <- list()
 
-  if (!is.list(col_map) || is.null(names(col_map)) || any(!nzchar(names(col_map)))) {
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    found_keys <- names(col_map)[nzchar(names(col_map))]
+    map_parts  <- vapply(found_keys,
+                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                         character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
+
+  if (!was_null_cm && (is.null(names(col_map)) || any(!nzchar(names(col_map))))) {
     rlang::abort("inflammatory_markers(): `col_map` must be a named list.",
                  class = "healthmarkers_inflammatory_markers_error_map_type")
   }
@@ -92,7 +106,7 @@ inflammatory_markers <- function(data, col_map = NULL,
     c("neutrophils","lymphocytes")
   )
   missing_keys <- setdiff(req_keys, names(col_map))
-  if (length(missing_keys)) {
+  if (!was_null_cm && length(missing_keys)) {
     rlang::abort(
       paste0("inflammatory_markers(): missing col_map entries for: ",
              paste(missing_keys, collapse = ", ")),
@@ -104,21 +118,34 @@ inflammatory_markers <- function(data, col_map = NULL,
       (is.atomic(v) && length(v) == 1L && (is.na(v) || identical(v, "") || !nzchar(as.character(v))))
   }
   empty_keys <- names(Filter(is_empty_map, col_map))
-  if (length(empty_keys)) {
+  if (!was_null_cm && length(empty_keys)) {
     rlang::abort(
       paste0("inflammatory_markers(): `col_map` has empty mapping for: ",
              paste(empty_keys, collapse = ", ")),
       class = "healthmarkers_inflammatory_markers_error_missing_map"
     )
   }
-  if (panel == "eos" && ("CRP" %in% names(col_map)) && !("albumin" %in% names(col_map))) {
+  if (!was_null_cm && panel == "eos" && ("CRP" %in% names(col_map)) && !("albumin" %in% names(col_map))) {
     rlang::abort("inflammatory_markers(): missing col_map entries for: albumin",
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req_keys], "inflammatory_markers"))
+  avail_req <- intersect(req_keys, names(col_map))
 
-  hm_inform("inflammatory_markers(): computing indices", level = "debug")
+  # --- Verbose: optional inputs
+  if (isTRUE(verbose)) {
+    all_keys  <- c("neutrophils","lymphocytes","monocytes","platelets",
+                   "WBC","CRP","albumin","eosinophils","ESR")
+    get_col_v <- function(key) if (key %in% names(col_map)) as.character(col_map[[key]])[1] else NA_character_
+    has_col_v <- function(k) { cn <- get_col_v(k); is.character(cn) && !is.na(cn) && cn %in% names(data) }
+    present_all <- all_keys[vapply(all_keys, has_col_v, logical(1))]
+    missing_all <- setdiff(all_keys, present_all)
+    lines <- sprintf("%s(): optional inputs (panel = %s)", fn_name, panel)
+    if (length(present_all))
+      lines <- c(lines, sprintf("  present:  %s", paste(present_all, collapse = ", ")))
+    if (length(missing_all))
+      lines <- c(lines, sprintf("  missing:  %s", paste(missing_all, collapse = ", ")))
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
   supported_keys <- c("neutrophils","lymphocytes","monocytes","platelets","WBC","CRP","albumin","eosinophils","ESR")
   get_col <- function(key) if (key %in% names(col_map)) as.character(col_map[[key]])[1] else NA_character_
@@ -140,47 +167,42 @@ inflammatory_markers <- function(data, col_map = NULL,
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # Extreme handling (cap/warn/error/NA/ignore)
-  if (isTRUE(check_extreme)) {
-    limits <- list(
-      neutrophils = c(0, 30),
-      lymphocytes = c(1, Inf),   # keep denom >= 1 for test-aligned capping
-      monocytes   = c(0, 5),
-      eosinophils = c(1, Inf),   # keep denom >= 1 for test-aligned capping
-      platelets   = c(0, 1000),
-      WBC         = c(0, Inf),
-      CRP         = c(0, 300),
-      albumin     = c(10, Inf)
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    limits_info <- list(
+      neutrophils = c(0, 30), lymphocytes = c(0.2, 15), monocytes = c(0, 5),
+      eosinophils = c(0, 3),  platelets   = c(0, 1000), WBC = c(0, 50),
+      CRP = c(0, 300),        albumin     = c(10, 60)
     )
-    any_extreme <- FALSE
-    for (k in names(limits)) {
+    ex_details <- character(0)
+    for (k in names(limits_info)) {
       if (!avail[[k]]) next
-      cn <- map_cols[[k]]
-      x <- data[[cn]]
-      rng <- limits[[k]]
-      bad <- (is.finite(x) & (x < rng[1] | x > rng[2]))
-      if (any(bad, na.rm = TRUE)) {
-        any_extreme <- TRUE
-        if (extreme_action == "error") {
-          rlang::abort("inflammatory_markers(): detected out-of-range extreme input values.",
-                       class = "healthmarkers_inflammatory_markers_error_extremes")
-        } else if (extreme_action == "cap") {
-          x[x < rng[1]] <- rng[1]; x[x > rng[2]] <- rng[2]; data[[cn]] <- x
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_; data[[cn]] <- x
-        }
-      }
+      x   <- data[[map_cols[[k]]]]
+      rng <- limits_info[[k]]
+      nb  <- sum(is.finite(x) & (x < rng[1] | x > rng[2]), na.rm = TRUE)
+      if (nb > 0L)
+        ex_details <- c(ex_details, sprintf("  %s: %d value(s) outside plausible range", k, nb))
     }
-    if (any_extreme) {
-      if (extreme_action == "cap") {
-        rlang::warn("inflammatory_markers(): capped out-of-range extreme input values.")
-      } else if (extreme_action == "warn") {
-        rlang::warn("inflammatory_markers(): detected out-of-range extreme input values (not altered).")
-      } else if (extreme_action == "NA") {
-        rlang::warn("inflammatory_markers(): set out-of-range extreme input values to NA.")
-      }
-    }
+    if (length(ex_details))
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                ex_details), collapse = "\n"),
+        level = "inform"
+      )
   }
+
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    panel_markers <- switch(panel,
+      classic = "NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category",
+      eos     = "NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR",
+      both    = "NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR, dNLR, AISI, CRP_category"
+    )
+    hm_inform(
+      sprintf("%s(): computing markers: %s", fn_name, panel_markers),
+      level = "inform"
+    )
+ }
 
   g <- function(key) data[[map_cols[[key]]]]
   n <- nrow(data)
@@ -251,7 +273,7 @@ inflammatory_markers <- function(data, col_map = NULL,
   used_cols <- used_cols[!is.na(used_cols)]
   cc <- if (length(used_cols)) stats::complete.cases(data[, used_cols, drop = FALSE]) else rep(TRUE, n)
 
-  na_action_eff <- if (isTRUE(check_extreme) && identical(extreme_action, "NA")) "keep" else na_action
+  na_action_eff <- na_action
   if (na_action_eff == "error" && any(!cc)) {
     rlang::abort("inflammatory_markers(): required columns contain missing or non-finite values (na_action='error').",
                  class = "healthmarkers_inflammatory_markers_error_missing_values")
@@ -261,7 +283,18 @@ inflammatory_markers <- function(data, col_map = NULL,
 
   if (dz_count > 0L) rlang::warn("inflammatory_markers(): zero denominators detected.")
   out <- tibble::as_tibble(out)
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "inflammatory_markers"))
+
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
   out
 }

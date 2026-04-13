@@ -5,10 +5,7 @@
 #' @param col_map Named list:
 #'   fev1, fvc, fev1_post, fvc_post, age, height, sex, ethnicity
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; scan for implausible values (liters).
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional list with c(min,max) for fev1,fvc.
-#' @param verbose Logical; if TRUE, emits progress via rlang::inform.
+#' @param verbose Logical; if TRUE (default), emits progress via rlang::inform.
 #'
 #' @references \insertRef{miller2005spirometry}{HealthMarkers}; \insertRef{quanjer2012}{HealthMarkers}; \insertRef{ats2002sixmw}{HealthMarkers}; \insertRef{gold2025copd}{HealthMarkers}
 #' @return Tibble with ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
@@ -21,15 +18,13 @@ spirometry_markers <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = list(fev1 = c(0, 8), fvc = c(0, 10)),
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "spirometry_markers"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   # Validate inputs
   if (!is.data.frame(data)) {
@@ -55,9 +50,11 @@ spirometry_markers <- function(
                  class = "healthmarkers_spiro_error_missing_columns")
   }
 
-  hm_inform("spirometry_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[req_keys], "spirometry_markers"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  ratio_pre/post  [FEV1/FVC]\n  copd_flag_fixed [ratio < 0.70]\n  obstruction_lln [LLN-based]\n  fev1_pp/fvc_pp  [%% predicted]\n  gold_grade      [GOLD severity]", fn_name), level = "inform")
+  }
 
   # Coerce numeric for volumes; sanitize
   vol_cols <- c(col_map$fev1, col_map$fvc, col_map$fev1_post, col_map$fvc_post)
@@ -95,35 +92,6 @@ spirometry_markers <- function(
   d_fev1 <- fev1[keep]; d_fvc <- fvc[keep]
   d_fev1_post <- if (!is.null(fev1_post)) fev1_post[keep] else NULL
   d_fvc_post  <- if (!is.null(fvc_post))  fvc_post[keep]  else NULL
-
-  # Extreme scan
-  if (isTRUE(check_extreme)) {
-    total <- 0L
-    for (nm in c("fev1","fvc")) {
-      rng <- extreme_rules[[nm]]
-      x <- if (nm == "fev1") d_fev1 else d_fvc
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      total <- total + sum(bad)
-      if (extreme_action == "cap") {
-        x[bad & x < rng[1]] <- rng[1]; x[bad & x > rng[2]] <- rng[2]
-      } else if (extreme_action == "NA") {
-        x[bad] <- NA_real_
-      }
-      if (nm == "fev1") d_fev1 <- x else d_fvc <- x
-    }
-    if (total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("spirometry_markers(): %d extreme input values detected.", total),
-                     class = "healthmarkers_spiro_error_extremes")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("spirometry_markers(): detected %d extreme input values (not altered).", total),
-                    class = "healthmarkers_spiro_warn_extremes_detected")
-      } else if (extreme_action == "cap")  {
-        rlang::warn(sprintf("spirometry_markers(): capped %d extreme input values into allowed ranges.", total),
-                    class = "healthmarkers_spiro_warn_extremes_capped")
-      }
-    }
-  }
 
   # Ratios
   sdiv <- function(a,b){ z <- a/b; z[!is.finite(z)] <- NA_real_; z }
@@ -268,8 +236,13 @@ spirometry_markers <- function(
     out <- tibble::as_tibble(res)
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "spirometry_markers"))
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
 
   out
 }

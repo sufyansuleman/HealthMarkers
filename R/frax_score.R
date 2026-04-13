@@ -12,9 +12,6 @@
 #'   - Optional: bmd (T-score; if present and in (-5,0], used to adjust risk)
 #' @param country optional country/region code for FRAX calibration (accepted, currently unused).
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides for defaults (age, bmd).
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return Tibble with frax_major_percent and frax_hip_percent.
 #'
@@ -29,21 +26,19 @@ frax_score <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
   country = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
   # Accept but do not use; normalize without emitting warnings
   if (!is.null(country)) {
     country <- as.character(country)[1L]
   }
 
+  fn_name <- "frax_score"
+  id_col  <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
 
   # Validate inputs
   if (!is.data.frame(data)) {
@@ -79,9 +74,11 @@ frax_score <- function(
                  class = "healthmarkers_frax_error_missing_columns")
   }
 
-  hm_inform("frax_score(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req], "frax_score"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  frax_major_percent [age, sex, risk factors, bmd]\n  frax_hip_percent [age, sex, risk factors, bmd]", fn_name), level = "inform")
+  }
 
   # Build list of used columns that are present in data
   opt_keys <- c("prior_fracture","parent_fracture","steroids","rheumatoid",
@@ -162,61 +159,15 @@ frax_score <- function(
   d_alc  <- if (!is.null(alcohol)) alcohol[keep] else rep(0L, sum(keep))
   d_bmd  <- if (!is.null(bmd)) bmd[keep] else rep(NA_real_, sum(keep))
 
-  # Domain warnings (suppress during extreme scan)
-  if (!isTRUE(check_extreme)) {
-    if (any(is.finite(d_age) & (d_age < 40 | d_age > 90))) {
-      rlang::warn(
-        "frax_score(): age outside typical FRAX range (40-90 years) detected.",
-        class = "healthmarkers_frax_warn_age_range"
-      )
-    }
-    if (!is.null(d_bmd) && any(is.finite(d_bmd) & (d_bmd < -6 | d_bmd > 2))) {
-      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-                msg   = "frax_score(): BMD T-scores outside plausible range (-6 to +2) detected.")
-    }
+  # Domain warnings
+  if (any(is.finite(d_age) & (d_age < 40 | d_age > 90))) {
+    rlang::warn(
+      "frax_score(): age outside typical FRAX range (40-90 years) detected.",
+      class = "healthmarkers_frax_warn_age_range"
+    )
   }
-
-  # HM-CS v3: Extreme scan (age, BMD) with warn/cap/NA/error behaviors
-  if (isTRUE(check_extreme)) {
-    # defaults; can be overridden via extreme_rules
-    rules_def <- list(age = c(40, 90), bmd_t = c(-6, 2))
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) {
-        rules_def[[nm]] <- extreme_rules[[nm]]
-      }
-    }
-
-    total <- 0L
-    cap_or_na <- function(x, bounds) {
-      if (is.null(x)) return(list(x = x, n_bad = 0L))
-      bad <- is.finite(x) & (x < bounds[1] | x > bounds[2])
-      nb <- sum(bad)
-      if (nb > 0) {
-        if (extreme_action == "cap") {
-          x[bad & x < bounds[1]] <- bounds[1]
-          x[bad & x > bounds[2]] <- bounds[2]
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-        }
-      }
-      list(x = x, n_bad = nb)
-    }
-
-    r_age <- cap_or_na(d_age, rules_def$age);   d_age <- r_age$x; total <- total + r_age$n_bad
-    r_bmd <- cap_or_na(d_bmd, rules_def$bmd_t); d_bmd <- r_bmd$x; total <- total + r_bmd$n_bad
-
-    if (total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("frax_score(): %d extreme input values detected.", total),
-                     class = "healthmarkers_frax_error_extremes")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("frax_score(): detected %d extreme input values (not altered).", total),
-                    class = "healthmarkers_frax_warn_extremes_detected")
-      } else if (extreme_action == "cap") {
-        rlang::warn(sprintf("frax_score(): capped %d extreme input values into allowed ranges.", total),
-                    class = "healthmarkers_frax_warn_extremes_capped")
-      }
-    }
+  if (!is.null(d_bmd) && any(is.finite(d_bmd) & (d_bmd < -6 | d_bmd > 2))) {
+    hm_inform(level = "debug", msg = "frax_score(): BMD T-scores outside plausible range (-6 to +2) detected.")
   }
 
   hm_inform("frax_score(): computing risk", level = "debug")
@@ -279,9 +230,15 @@ frax_score <- function(
     out <- res
   }
 
-  # Completion summary
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "frax_score"))
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

@@ -17,7 +17,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(GSH = c(1000, 1500), GSSG = c(10, 15))
   expect_message(oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"), verbose = TRUE), "oxidative_markers")
-  expect_message(oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"), verbose = TRUE), "column map")
+  expect_message(oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"), verbose = TRUE), "column mapping")
   expect_message(oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"), verbose = TRUE), "results:")
 })
 
@@ -27,7 +27,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"), verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

@@ -11,9 +11,6 @@
 #' @param thresholds named list of scalar numeric cutoffs (names must match columns).
 #' @param col_map optional named list mapping keys in `thresholds` to column names in `data`.
 #' @param na_action one of c("keep","omit","error") ("keep" treats NA as zero contribution).
-#' @param check_extreme logical; scan columns with name containing "sds" for |value| > sds_limit.
-#' @param extreme_action one of c("cap","NA","error") for SDS-like extremes.
-#' @param sds_limit positive numeric cutoff for SDS-like scan (default 6).
 #' @param return_summary logical; TRUE returns list(data, summary, warnings).
 #' @param verbose logical; print progress messages via hm_inform() (also gated by options(healthmarkers.verbose)).
 #'
@@ -48,16 +45,12 @@ allostatic_load <- function(
   thresholds,
   col_map = NULL,
   na_action = c("keep","omit","error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap","NA","error"),
-  sds_limit = 6,
   return_summary = FALSE,
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "allostatic_load"
+  id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
-
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "allostatic_load(): preparing inputs")
 
   # ---- Validate inputs ----
   if (!is.data.frame(data)) {
@@ -92,10 +85,11 @@ allostatic_load <- function(
 
   # Confirm required columns exist in data
   req_cols <- unname(unlist(var_map, use.names = FALSE))
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(as.list(var_map), "allostatic_load")
-  )
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  AllostaticLoad [%s]", fn_name, paste(vars, collapse = ", ")), level = "inform")
+  }
   missing_cols <- setdiff(req_cols, names(data))
   if (length(missing_cols)) {
     rlang::abort(
@@ -140,32 +134,6 @@ allostatic_load <- function(
     ) else out0)
   }
 
-  # ---- Optional SDS-like extreme scan over vars containing "sds" ----
-  if (isTRUE(check_extreme) && length(vars)) {
-    sds_vars <- vars[grepl("sds", vars, ignore.case = TRUE)]
-    for (v in sds_vars) {
-      cn <- var_map[[v]]
-      x <- data[[cn]]
-      bad <- is.finite(x) & abs(x) > sds_limit
-      nbad <- sum(bad, na.rm = TRUE)
-      if (nbad > 0) {
-        if (extreme_action == "error") {
-          rlang::abort(
-            sprintf("allostatic_load(): extreme SDS-like values in '%s' (%d > |%g|).", v, nbad, sds_limit),
-            class = "healthmarkers_allo_error_extreme_sds"
-          )
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-          data[[cn]] <- x
-        } else if (extreme_action == "cap") {
-          x[bad & x > 0] <-  sds_limit
-          x[bad & x < 0] <- -sds_limit
-          data[[cn]] <- x
-        }
-      }
-    }
-  }
-
   # ---- Compute flags and sum ----
   inclusive <- length(vars) == 1L
   hm_inform(level = "debug", msg = sprintf("allostatic_load(): computing (rule %s)", if (inclusive) ">=" else ">"))
@@ -188,10 +156,15 @@ allostatic_load <- function(
 
   out <- tibble::tibble(AllostaticLoad = as.integer(rowSums(flag_mat, na.rm = TRUE)))
 
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "allostatic_load")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   if (isTRUE(return_summary)) {
     return(list(

@@ -30,10 +30,7 @@
 #' @param include_RFM   Logical; if TRUE, computes Relative Fat Mass (requires sex column).
 #' @param na_action One of c("keep","omit","error") for handling NA in required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (heuristic). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes are detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) for c("weight_kg","height_m","waist","hip"). NULL uses defaults.
-#' @param verbose Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #'
 #' @return A tibble with only the computed indices (slim output):
 #' * weight_kg, height_m (unit-normalised intermediates),
@@ -95,18 +92,13 @@ obesity_indices <- function(data,
                             include_RFM = FALSE,
                             na_action = c("keep","omit","error"),
                             na_warn_prop = 0.2,
-                            check_extreme = FALSE,
-                            extreme_action = c("warn","cap","error","ignore"),
-                            extreme_rules = NULL,
-                            verbose = FALSE) {
+                            verbose = TRUE) {
+  fn_name <- "obesity_indices"
+  id_col <- .hm_detect_id_col(data)
   # Match args
   weight_unit <- match.arg(weight_unit)
   height_unit <- match.arg(height_unit)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
-
-  hm_inform("obesity_indices(): preparing inputs",
-            level = if (isTRUE(verbose)) "inform" else "debug")
 
   # Capture and quote arguments
   wt_q <- rlang::enquo(weight);  wt_name  <- rlang::quo_name(wt_q)
@@ -118,12 +110,19 @@ obesity_indices <- function(data,
   # Validate data frame and required columns
   .oi_validate_data_and_cols(data, c(wt_name, ht_name, wst_name, hp_name), include_RFM, sx_name)
   .oi_warn_high_missing(data, c(wt_name, ht_name, wst_name, hp_name, if (include_RFM) sx_name else NULL), na_warn_prop)
-  col_map_report <- c(
-    list(weight = wt_name, height = ht_name, waist = wst_name, hip = hp_name),
-    if (!is.null(sx_name)) list(sex = sx_name) else list()
-  )
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map_report, "obesity_indices"))
+  if (isTRUE(verbose)) {
+    col_mapping_str <- paste(
+      c(sprintf("weight -> '%s'", wt_name), sprintf("height -> '%s'", ht_name),
+        sprintf("waist -> '%s'", wst_name), sprintf("hip -> '%s'", hp_name),
+        if (!is.null(sx_name)) sprintf("sex -> '%s'", sx_name) else NULL),
+      collapse = ", ")
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, col_mapping_str), level = "inform")
+    hm_inform(sprintf(
+      "%s(): computing markers:\n  BMI, BMI_cat, WHR, WHtR, AVI, BAI, ABSI, BRI, CI%s",
+      fn_name,
+      paste0(if (isTRUE(adjust_WHR)) ", WHRadjBMI" else "", if (isTRUE(include_RFM)) ", RFM" else "")),
+      level = "inform")
+  }
 
   # NA policy on required inputs
   used_cols <- c(wt_name, ht_name, wst_name, hp_name, if (include_RFM) sx_name else NULL)
@@ -141,8 +140,6 @@ obesity_indices <- function(data,
       data <- data[keep, , drop = FALSE]
     }
   }
-  hm_inform("obesity_indices(): computing indices", level = "debug")
-
   # Unit-normalized base fields
   out <- dplyr::mutate(
     data,
@@ -155,26 +152,6 @@ obesity_indices <- function(data,
       height_unit == "cm" ~ !!ht_q / 100
     )
   )
-
-  # Optional extreme scan/cap on base inputs
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .oi_default_extreme_rules() else extreme_rules
-    ex <- .oi_extreme_scan(out, c("weight_kg","height_m", wst_name, hp_name), rules)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("obesity_indices(): detected %d extreme input values.", ex$count),
-                     class = "healthmarkers_obesity_error_extremes")
-      } else if (extreme_action == "cap") {
-        out <- .oi_cap_inputs(out, ex$flags, rules)
-        capped_n <- ex$count
-        rlang::warn(sprintf("obesity_indices(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("obesity_indices(): detected %d extreme input values (not altered).", ex$count))
-      }
-      # ignore: no-op
-    }
-  }
 
   # Compute BMI and category using normalized units
   out <- dplyr::mutate(
@@ -301,9 +278,12 @@ obesity_indices <- function(data,
   )
   slim <- out[, intersect(index_cols, names(out)), drop = FALSE]
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(slim, "obesity_indices"))
-
+  if (!is.null(id_col)) {
+    slim[[id_col]] <- data[[id_col]]
+    slim <- slim[, c(id_col, setdiff(names(slim), id_col)), drop = FALSE]
+    slim <- tibble::as_tibble(slim)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(slim, fn_name), level = "inform") }
   slim
 }
 

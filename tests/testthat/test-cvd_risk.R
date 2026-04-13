@@ -149,9 +149,16 @@ test_that("cvd_marker_ldl_particle_number returns tibble with model=LDL_PN", {
   expect_identical(out$value, 120)
 })
 
-test_that("cvd_marker_ldl_particle_number errors on missing ApoB column", {
+test_that("cvd_marker_ldl_particle_number returns NA when ApoB column absent and col_map=NULL", {
   df_ldl <- tibble::tibble(x = 1)
-  expect_error(cvd_marker_ldl_particle_number(df_ldl))
+  out <- cvd_marker_ldl_particle_number(df_ldl)
+  expect_s3_class(out, "tbl_df")
+  expect_true(is.na(out$value))
+})
+
+test_that("cvd_marker_ldl_particle_number errors on missing ApoB when col_map explicit", {
+  df_ldl <- tibble::tibble(x = 1)
+  expect_error(cvd_marker_ldl_particle_number(df_ldl, col_map = list(ApoB = "ApoB")))
 })
 
 test_that("cvd_marker_ldl_particle_number verbose = TRUE emits preparing, column map, and results messages", {

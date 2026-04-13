@@ -690,6 +690,7 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   neutrophils = c("neutrophils","Neutrophils","NEUT","neut","neutro"),
   lymphocytes = c("lymphocytes","Lymphocytes","LYMPH","lymph"),
   eosinophils = c("eosinophils","Eosinophils","eos","EOS","EOSIN"),
+  monocytes   = c("monocytes","Monocytes","MONO","mono","monocyte_count"),
   platelets   = c("platelets","Platelets","PLT","plt","thrombocytes"),
   Hgb         = c("Hgb","hgb","Hb","hb","hemoglobin","haemoglobin","HGB","HB"),
   inflammatory_age     = c("inflammatory_age","iAge_raw","inf_age",
@@ -765,6 +766,8 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   Cortisol     = c("Cortisol","cortisol","cort1","cort2","cort3",
                    "cortisol_0","cortisol_30","cortisol_am",
                    "morning_cortisol","cortisol_nmol"),
+  cortisol_0   = c("cortisol_0","cort1","cort_wake","saliva_cort1"),
+  cortisol_30  = c("cortisol_30","cort2","cort_30min","saliva_cort2"),
   renin        = c("renin","Renin","plasma_renin","renin_activity","PRA"),
   aldosterone  = c("aldosterone","Aldosterone","plasma_aldosterone"),
   SHBG         = c("SHBG","shbg","sex_hormone_binding_globulin","SHBG_nmol"),
@@ -859,9 +862,9 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   saliva        = c("saliva","saliva_markers"),
   saliva_amylase = c("saliva_amylase","amylase","salivary_amylase"),
   saliva_glucose = c("saliva_glucose"),
-  saliva_cort1   = c("saliva_cort1"),
-  saliva_cort2   = c("saliva_cort2"),
-  saliva_cort3   = c("saliva_cort3"),
+  saliva_cort1   = c("saliva_cort1","cort1"),
+  saliva_cort2   = c("saliva_cort2","cort2"),
+  saliva_cort3   = c("saliva_cort3","cort3"),
 
   ## =========================================================
   ## Tracer / metabolic flux markers

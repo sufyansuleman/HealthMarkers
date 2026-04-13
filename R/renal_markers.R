@@ -32,22 +32,20 @@
 #'   - optional creatinine_urine -> urine creatinine (mg/dL)
 #'   - optional urea_urine -> urine urea (mg/dL)
 #'   - optional NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP -> urine injury markers
-#' @param na_action One of c("keep","omit","error") for handling missing values in
+#' @param na_action One of `c("keep","omit","error")` for handling missing values in
 #'   required inputs. Default "keep".
-#' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings for
-#'   required inputs. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scans selected inputs for out-of-range
-#'   values using simple heuristics. Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes
-#'   are detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds keyed by input
-#'   names (e.g., "creatinine","BUN","cystatin_C","urea_serum","creatinine_urine","urea_urine").
-#'   If NULL, built-in defaults are used.
-#' @param verbose Logical; if TRUE, prints progress messages and a completion summary.
+#' @param na_warn_prop Proportion (0-1) threshold for high-missingness diagnostics.
+#'   Default 0.2.
+#' @param verbose Logical; if `TRUE` (default), prints step-by-step progress
+#'   including column mapping, optional input availability, physiological range
+#'   information (informational only, values are not altered), the list of
+#'   markers being computed, and a per-column results summary.
 #'
-#' @return A tibble with columns:
-#'   eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio, FE_Urea,
-#'   NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP
+#' @return A tibble with computed renal markers:
+#'   `eGFR_cr`, `eGFR_cys`, `eGFR_combined`, `BUN_Cr_ratio`, `FE_Urea`,
+#'   `NGAL`, `KIM1`, `NAG`, `Beta2Micro`, `IL18`, `L_FABP`.
+#'   If an ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`),
+#'   it is prepended as the first output column.
 #'
 #' @examples
 #' df <- tibble::tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14)
@@ -67,50 +65,66 @@
 #' @importFrom rlang abort warn inform
 #' @export
 renal_markers <- function(data,
-                          col_map = NULL,
-                          na_action = c("keep","omit","error"),
+                          col_map      = NULL,
+                          na_action    = c("keep", "omit", "error"),
                           na_warn_prop = 0.2,
-                          check_extreme = FALSE,
-                          extreme_action = c("warn","cap","error","ignore"),
-                          extreme_rules = NULL,
-                          verbose = FALSE) {
+                          verbose      = TRUE) {
+  fn_name   <- "renal_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
-  hm_inform("renal_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("creatinine","age","sex","race","BUN",
-      "cystatin_C","urea_serum","creatinine_urine","urea_urine"),
-    fn = "renal_markers")
+  if (!is.data.frame(data))
+    stop(sprintf("%s(): `data` must be a data.frame or tibble.", fn_name), call. = FALSE)
+
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
+
+  all_keys <- c("creatinine", "age", "sex", "race", "BUN",
+                "cystatin_C", "urea_serum", "creatinine_urine", "urea_urine",
+                "NGAL", "KIM1", "NAG", "beta2_micro", "IL18", "L_FABP")
+  col_map <- .hm_autofill_col_map(col_map, data, all_keys, fn = fn_name)
+  for (k in all_keys) {
+    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+  }
+
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    req_show <- c("creatinine", "age", "sex", "race", "BUN")
+    found_keys <- intersect(all_keys, names(col_map))
+    map_parts  <- vapply(found_keys,
+                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                         character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
 
   # 1) Validate mapping and data presence
   required <- c("creatinine", "age", "sex", "race", "BUN")
   missing_map <- setdiff(required, names(col_map))
   if (length(missing_map)) {
     rlang::abort(
-      paste0("renal_markers(): missing col_map entries for: ", paste(missing_map, collapse = ", ")),
+      paste0(fn_name, "(): missing col_map entries for: ", paste(missing_map, collapse = ", ")),
       class = "healthmarkers_renal_error_missing_map"
     )
   }
-  # HM-CS v2 standardized validation
-  hm_validate_inputs(data, col_map, required_keys = required, fn = "renal_markers")
-  # Ensure mapped required columns exist in data
+  hm_validate_inputs(data, col_map, required_keys = required, fn = fn_name)
   req_cols <- unname(unlist(col_map[required], use.names = FALSE))
   not_in_df <- setdiff(req_cols, names(data))
   if (length(not_in_df)) {
     rlang::abort(
-      sprintf("renal_markers(): mapped column(s) not found in data: %s", paste(not_in_df, collapse = ", ")),
+      sprintf("%s(): mapped column(s) not found in data: %s", fn_name, paste(not_in_df, collapse = ", ")),
       class = "healthmarkers_renal_error_missing_columns"
     )
   }
-  .rm_validate_df_numeric(data, col_map, cols = c("creatinine","age","BUN",
-                                                  "cystatin_C","urea_serum","creatinine_urine","urea_urine"),
+  .rm_validate_df_numeric(data, col_map, cols = c("creatinine", "age", "BUN",
+                                                  "cystatin_C", "urea_serum",
+                                                  "creatinine_urine", "urea_urine"),
                           warn = TRUE)
 
-  # 2) High-missingness warnings on required inputs
+  # 2) High-missingness diagnostics
   .rm_warn_high_missing(data, col_map[required], na_warn_prop = na_warn_prop)
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[required], "renal_markers"))
 
   # 3) NA policy on required inputs
   used_cols <- unname(unlist(col_map[required], use.names = FALSE))
@@ -138,28 +152,75 @@ renal_markers <- function(data,
     ))
   }
 
-  # 4) Optional input extremes scan/cap
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .rm_default_extreme_rules() else extreme_rules
-    flags <- .rm_extreme_scan(data, col_map, rules)
-    ex_count <- sum(vapply(flags, function(v) sum(v, na.rm = TRUE), integer(1)))
+  # --- Verbose: optional inputs block
+  opt_keys <- c("cystatin_C", "urea_serum", "creatinine_urine", "urea_urine",
+                "NGAL", "KIM1", "NAG", "beta2_micro", "IL18", "L_FABP")
+  if (isTRUE(verbose)) {
+    present_opt <- opt_keys[vapply(opt_keys, function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    missing_opt <- setdiff(opt_keys, present_opt)
+    idx_deps <- list(
+      eGFR_cys      = c("cystatin_C"),
+      eGFR_combined = c("cystatin_C"),
+      FE_Urea       = c("urea_serum", "creatinine_urine", "urea_urine")
+    )
+    na_indices <- character(0)
+    for (idx in names(idx_deps)) {
+      still_missing <- setdiff(idx_deps[[idx]], present_opt)
+      if (length(still_missing))
+        na_indices <- c(na_indices,
+          sprintf("  %s -> NA  [missing: %s]", idx, paste(still_missing, collapse = ", ")))
+    }
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(present_opt))
+      lines <- c(lines, sprintf("  present:  %s", paste(present_opt, collapse = ", ")))
+    if (length(missing_opt))
+      lines <- c(lines, sprintf("  missing:  %s", paste(missing_opt, collapse = ", ")))
+    if (length(na_indices))
+      lines <- c(lines, "  indices -> NA:", na_indices)
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
+
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    rules     <- .rm_default_extreme_rules()
+    flags     <- .rm_extreme_scan(data, col_map, rules)
+    ex_count  <- sum(vapply(flags, function(v) sum(v, na.rm = TRUE), integer(1)))
     if (ex_count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("renal_markers(): detected %d extreme input values.", ex_count),
-                     class = "healthmarkers_renal_error_extremes")
-      } else if (extreme_action == "cap") {
-        data <- .rm_cap_inputs(data, col_map, flags, rules)
-        capped_n <- ex_count
-        rlang::warn(sprintf("renal_markers(): capped %d extreme input values into allowed ranges.", ex_count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("renal_markers(): detected %d extreme input values (not altered).", ex_count))
-      }
-      # "ignore": no-op
+      details <- vapply(names(flags), function(nm) {
+        nb <- sum(flags[[nm]], na.rm = TRUE)
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", nm, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
   }
 
-  hm_inform("renal_markers(): computing markers", level = "debug")
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    has_cys  <- !is.null(col_map[["cystatin_C"]]) && col_map[["cystatin_C"]] %in% names(data)
+    has_fe   <- all(c("urea_serum","creatinine_urine","urea_urine") %in% {
+      opt_keys[vapply(opt_keys, function(k) {
+        !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+      }, logical(1))]
+    })
+    status <- c(
+      "  eGFR_cr        [creatinine, age, sex, race]",
+      sprintf("  eGFR_cys       %s", if (has_cys) "[cystatin_C, age, sex]" else "NA [cystatin_C missing]"),
+      sprintf("  eGFR_combined  %s", if (has_cys) "[creatinine, cystatin_C, age, sex, race]" else "NA [cystatin_C missing]"),
+      "  BUN_Cr_ratio   [BUN, creatinine]",
+      sprintf("  FE_Urea        %s", if (has_fe) "[urea_serum, urea_urine, creatinine_urine, creatinine]" else "NA [urea/urine inputs missing]")
+    )
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # 5) Pull and normalize inputs (sex/race mapping)
   Cr   <- data[[col_map$creatinine]] # mg/dL
@@ -261,8 +322,18 @@ renal_markers <- function(data,
     rlang::warn(sprintf("renal_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "renal_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }
@@ -349,17 +420,4 @@ renal_markers <- function(data,
   flags
 }
 
-.rm_cap_inputs <- function(data, col_map, flags, rules) {
-  for (key in names(flags)) {
-    if (!key %in% names(col_map)) next
-    cn <- col_map[[key]]
-    if (!(cn %in% names(data))) next
-    rng <- rules[[key]]
-    x <- data[[cn]]
-    bad <- flags[[key]]
-    x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-    x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-    data[[cn]] <- x
-  }
-  data
-}
+

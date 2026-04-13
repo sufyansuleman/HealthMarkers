@@ -160,25 +160,16 @@ test_that("na_action policies behave as expected", {
   expect_true(is.na(out_keep$BMI[2]))
 })
 
-# 6) Extreme checks and capping
-test_that("check_extreme='warn' detects extremes and 'cap' truncates and warns", {
+# 6) Extreme values pass through unchanged (no check_extreme)
+test_that("extreme input values pass through without error", {
   df_ext <- tibble(
     wt    = 80,
-    ht    = 200,   # cm or m depending on height_unit; we pass m below
-    waist = 500,   # extreme
+    ht    = 200,
+    waist = 500,
     hip   = 100
   )
-  # warn: detection message
-  expect_warning(
-    obesity_indices(df_ext, wt, ht, waist, hip, height_unit = "m", check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-  # cap: truncates waist to 200 (default rule) so WHR == 200/100 = 2
-  expect_warning(
-    out_cap <- obesity_indices(df_ext, wt, ht, waist, hip, height_unit = "m", check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values"
-  )
-  expect_equal(out_cap$WHR, 2, tolerance = 1e-8)
+  out <- obesity_indices(df_ext, wt, ht, waist, hip, height_unit = "m")
+  expect_true(is.finite(out$WHR))
 })
 
 # 7) Denominator-zero summary warning
@@ -212,8 +203,8 @@ test_that("include_RFM warns on invalid sex values and sets NA", {
   expect_true(all(is.na(out$RFM)))
 })
 
-# 9) Verbose emits preparing, column map, and results messages
-test_that("verbose emits preparing, column map, and results messages", {
+# 9) Verbose emits column mapping and results messages
+test_that("verbose emits preparing, column mapping, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
@@ -221,7 +212,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
-    "column map"
+    "column mapping"
   )
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
@@ -234,6 +225,6 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

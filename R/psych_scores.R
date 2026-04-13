@@ -223,13 +223,12 @@ phq9_score <- function(data,
                        impute = c("none","mean"),
                        variant = c("PHQ9","PHQ8"),
                        prefix = "PHQ9",
-                       verbose = FALSE) {
+                       verbose = TRUE) {
   variant <- match.arg(variant, c("PHQ9","PHQ8"))
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
-  hm_inform("phq9_score(): preparing inputs",
-            level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform("phq9_score(): preparing inputs", level = "inform")
 
   items <- if (variant == "PHQ9") sprintf("phq9_%02d", 1:9) else sprintf("phq9_%02d", 1:8)
   item_cols <- .hm_resolve_items(data, items, col_map = col_map, where = "items")
@@ -246,8 +245,7 @@ phq9_score <- function(data,
     !!paste0(prefix, "_severity") := factor(severity, levels = c("minimal","mild","moderate","moderately_severe","severe"))
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out_cols, "phq9_score"))
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(out_cols, "phq9_score"), level = "inform")
 
   .hm_add_cols(data, out_cols, na_action = na_action)
 }
@@ -269,7 +267,7 @@ gad7_score <- function(data,
                        missing_prop_max = 0.2,
                        impute = c("none","mean"),
                        prefix = "GAD7",
-                       verbose = FALSE) {
+                       verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -308,7 +306,7 @@ k6_score <- function(data, col_map = list(),
                      impute = c("none","mean"),
                      prefix = "K6",
                      cutoff = 13,
-                     verbose = FALSE) {
+                     verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -339,7 +337,7 @@ k10_score <- function(data, col_map = list(),
                       missing_prop_max = 0.2,
                       impute = c("none","mean"),
                       prefix = "K10",
-                      verbose = FALSE) {
+                      verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -374,7 +372,7 @@ ghq12_score <- function(data, col_map = list(),
                         prefix = "GHQ12",
                         method = c("likert","binary"),
                         case_cutoff_binary = 3,
-                        verbose = FALSE) {
+                        verbose = TRUE) {
   method <- match.arg(method, c("likert","binary"))
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
@@ -421,7 +419,7 @@ who5_score <- function(data, col_map = list(),
                        impute = c("none","mean"),
                        prefix = "WHO5",
                        low_cutoff_percent = 50,
-                       verbose = FALSE) {
+                       verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -458,7 +456,7 @@ isi_score <- function(data, col_map = list(),
                       missing_prop_max = 0.2,
                       impute = c("none","mean"),
                       prefix = "ISI",
-                      verbose = FALSE) {
+                      verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -501,7 +499,7 @@ mdq_score <- function(data, col_map = list(),
                       symptom_cutoff = 7,
                       require_clustering = TRUE,
                       require_impairment = TRUE,
-                      verbose = FALSE) {
+                      verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
 
   sym_items <- sprintf("mdq_%02d", 1:13)
@@ -560,7 +558,7 @@ asrs_score <- function(data, col_map = list(),
                        partA_items = sprintf("asrs_%02d", 1:6),
                        partA_thresholds = rep(2, 6),
                        partA_cutoff = 4,
-                       verbose = FALSE) {
+                       verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -607,7 +605,7 @@ bis_score <- function(data,
                       missing_prop_max = 0.2,
                       impute = c("none","mean"),
                       prefix = "BIS",
-                      verbose = FALSE) {
+                      verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -641,7 +639,7 @@ spq_score <- function(data,
                       missing_prop_max = 0.2,
                       impute = c("none","mean"),
                       prefix = "SPQ",
-                      verbose = FALSE) {
+                      verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
 
@@ -680,7 +678,7 @@ cognitive_score <- function(data,
                             missing_prop_max = 0.2,
                             method = c("z_mean","pca1"),
                             prefix = "cog",
-                            verbose = FALSE) {
+                            verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))
   method <- match.arg(method, c("z_mean","pca1"))
 
@@ -839,34 +837,33 @@ psych_markers <- function(data,
                           bis_key = NULL,
                           spq_key = NULL,
                           cognitive_method = c("z_mean","pca1"),
-                          verbose = FALSE) {
+                          verbose = TRUE) {
 
   na_action <- match.arg(na_action, c("keep","omit","error"))
   impute <- match.arg(impute, c("none","mean"))
   cognitive_method <- match.arg(cognitive_method, c("z_mean","pca1"))
 
-  hm_inform("psych_markers(): preparing inputs",
-            level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_inform("psych_markers(): preparing inputs", level = "inform")
 
   base <- tibble::as_tibble(data)
   parts <- list()
 
-  if ("phq9" %in% which) parts$phq9 <- phq9_score(base, col_map = col_map$phq9, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, variant = "PHQ9", prefix = "PHQ9")
-  if ("gad7" %in% which) parts$gad7 <- gad7_score(base, col_map = col_map$gad7, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "GAD7")
-  if ("k6"   %in% which) parts$k6   <- k6_score(base,   col_map = col_map$k6,   na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K6")
-  if ("k10"  %in% which) parts$k10  <- k10_score(base,  col_map = col_map$k10,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K10")
+  if ("phq9" %in% which) parts$phq9 <- phq9_score(base, col_map = col_map$phq9, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, variant = "PHQ9", prefix = "PHQ9", verbose = FALSE)
+  if ("gad7" %in% which) parts$gad7 <- gad7_score(base, col_map = col_map$gad7, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "GAD7", verbose = FALSE)
+  if ("k6"   %in% which) parts$k6   <- k6_score(base,   col_map = col_map$k6,   na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K6", verbose = FALSE)
+  if ("k10"  %in% which) parts$k10  <- k10_score(base,  col_map = col_map$k10,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "K10", verbose = FALSE)
 
-  if ("ghq12_likert" %in% which) parts$ghq12_likert <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "likert", prefix = "GHQ12")
-  if ("ghq12_binary" %in% which) parts$ghq12_binary <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "binary", prefix = "GHQ12")
+  if ("ghq12_likert" %in% which) parts$ghq12_likert <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "likert", prefix = "GHQ12", verbose = FALSE)
+  if ("ghq12_binary" %in% which) parts$ghq12_binary <- ghq12_score(base, col_map = col_map$ghq12, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, method = "binary", prefix = "GHQ12", verbose = FALSE)
 
-  if ("who5" %in% which) parts$who5 <- who5_score(base, col_map = col_map$who5, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "WHO5")
-  if ("isi"  %in% which) parts$isi  <- isi_score(base,  col_map = col_map$isi,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ISI")
+  if ("who5" %in% which) parts$who5 <- who5_score(base, col_map = col_map$who5, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "WHO5", verbose = FALSE)
+  if ("isi"  %in% which) parts$isi  <- isi_score(base,  col_map = col_map$isi,  na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ISI", verbose = FALSE)
 
-  if ("mdq"  %in% which) parts$mdq  <- mdq_score(base,  col_map = col_map$mdq,  na_action = na_action, missing_prop_max = missing_prop_max, prefix = "MDQ")
-  if ("asrs" %in% which) parts$asrs <- asrs_score(base, col_map = col_map$asrs, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ASRS")
+  if ("mdq"  %in% which) parts$mdq  <- mdq_score(base,  col_map = col_map$mdq,  na_action = na_action, missing_prop_max = missing_prop_max, prefix = "MDQ", verbose = FALSE)
+  if ("asrs" %in% which) parts$asrs <- asrs_score(base, col_map = col_map$asrs, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ASRS", verbose = FALSE)
 
-  if ("bis" %in% which) parts$bis <- bis_score(base, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS")
-  if ("spq" %in% which) parts$spq <- spq_score(base, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ")
+  if ("bis" %in% which) parts$bis <- bis_score(base, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS", verbose = FALSE)
+  if ("spq" %in% which) parts$spq <- spq_score(base, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ", verbose = FALSE)
 
   if ("cognitive" %in% which) parts$cognitive <- cognitive_score(base, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
   if ("dx_flags"  %in% which) parts$dx_flags  <- psych_dx_flags(base,  col_map = col_map$dx_flags,  na_action = na_action, prefix = "dx")
@@ -874,9 +871,8 @@ psych_markers <- function(data,
 
   out <- if (length(parts)) do.call(dplyr::bind_cols, parts) else tibble::tibble(.rows = nrow(base))
 
-  hm_inform(sprintf("psych_markers(): results: %d rows, %d new columns",
-                    nrow(out), ncol(out)),
-            level = if (isTRUE(verbose)) "inform" else "debug")
+  if (isTRUE(verbose)) hm_inform(sprintf("psych_markers(): results: %d rows, %d new columns",
+                    nrow(out), ncol(out)), level = "inform")
 
   out
 }

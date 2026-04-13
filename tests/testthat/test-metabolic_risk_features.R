@@ -106,58 +106,15 @@ test_that("na_action='keep' yields NA only when the rule cannot be decided", {
   expect_true(is.na(out$dyslipidemia))
 })
 
-test_that("check_extreme='warn' detects extremes and warns (not altered)", {
-  # Only HbA1c is extreme to avoid other diagnostics
+test_that("extreme input values pass through without error", {
   df <- tibble(
     chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
     age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
     bp_sys_z = 0, bp_dia_z = 0
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_warning(
-    metabolic_risk_features(df, col_map = cm, check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-})
-
-test_that("check_extreme='cap' caps extremes and warns", {
-  df <- tibble(
-    chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
-    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
-    bp_sys_z = 0, bp_dia_z = 0
-  )
-  cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_warning(
-    metabolic_risk_features(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values"
-  )
-})
-
-test_that("check_extreme='error' aborts on extremes", {
-  df <- tibble(
-    chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
-    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
-    bp_sys_z = 0, bp_dia_z = 0
-  )
-  cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_error(
-    metabolic_risk_features(df, col_map = cm, check_extreme = TRUE, extreme_action = "error"),
-    "detected .* extreme input values"
-  )
-})
-
-test_that("invalid extreme_rules aborts with informative error", {
-  df <- tibble(
-    chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
-    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 40,
-    bp_sys_z = 0, bp_dia_z = 0
-  )
-  cm <- as.list(names(df)); names(cm) <- names(df)
-  bad_rules <- list(HbA1c = c(100, 50)) # min > max
-  expect_error(
-    metabolic_risk_features(df, col_map = cm, extreme_rules = bad_rules),
-    "extreme_rules\\[\\['HbA1c'\\]\\]` must be numeric length-2 with min <= max\\."
-  )
+  out <- metabolic_risk_features(df, col_map = cm)
+  expect_s3_class(out, "tbl_df")
 })
 
 test_that("high missingness warning is emitted when proportion exceeds threshold", {
@@ -173,7 +130,7 @@ test_that("high missingness warning is emitted when proportion exceeds threshold
   )
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
@@ -182,7 +139,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
   expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "metabolic_risk_features")
-  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "column mapping")
   expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -197,19 +154,19 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     metabolic_risk_features(df, col_map = cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
-test_that("extreme_action='NA' sets flagged inputs to NA and propagates to outputs", {
+test_that("output has correct row count without check_extreme", {
   df <- tibble(
     chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
-    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,  # extreme HbA1c
+    age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
     bp_sys_z = 0, bp_dia_z = 0
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
-  out <- metabolic_risk_features(df, col_map = cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(is.na(out$hyperglycemia))
+  out <- metabolic_risk_features(df, col_map = cm)
+  expect_equal(nrow(out), 1L)
 })
 
 test_that("numeric coercion warns when NAs introduced", {

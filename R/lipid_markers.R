@@ -17,28 +17,44 @@
 #'   - `TC`    -> total cholesterol
 #'   - `HDL_c` -> HDL-C
 #'   - `TG`    -> triglycerides
-#'   - `LDL_c` -> (optional) LDL-C; if missing, estimated via Friedewald
+#'   - `LDL_c` -> (optional) LDL-C; if absent, estimated via Friedewald
 #'   - `ApoB`, `ApoA1` -> (optional) apolipoproteins
 #'   - `waist` -> (optional) waist circumference (cm)
 #'   - `BMI`   -> (optional) body mass index (kg/m^2)
-#' @param na_action One of c("keep","omit","error","ignore","warn").
+#'   - `glucose` -> (optional) fasting glucose (mmol/L); used for TyG_BMI
+#' @param na_action One of `c("keep","omit","error","ignore","warn")`.
 #'   - keep/ignore: compute and propagate NA in outputs
 #'   - omit: drop rows with NA in required inputs (TC, HDL_c, TG)
 #'   - error: abort if any required input contains NA
 #'   - warn: like keep, but emit missingness warnings
-#' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling
-#'   how extremes are handled when check_extreme=TRUE. "cap" truncates to range; "NA" sets flagged values to NA.
-#' @param extreme_rules Optional named list of c(min,max) per key to override defaults.
-#' @param verbose Logical; if `TRUE`, prints messages about computing markers.
+#' @param na_warn_prop Proportion (0-1) threshold for high-missingness
+#'   warnings when `na_action = "warn"`. Default 0.2.
+#' @param verbose Logical; if `TRUE` (default), prints step-by-step progress
+#'   including column mapping, optional input availability, pre-computation
+#'   notes, physiological range information (informational only, values are
+#'   not altered), the list of markers being computed with their inputs, and a
+#'   per-column results summary.
 #'
-#' @return A tibble with:
-#'   - `non_HDL_c`, `remnant_c`
-#'   - `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`
-#'   - `ApoB_ApoA1`
-#'   - `VAI_Men`, `VAI_Women`
-#'   - `LAP_Men`, `LAP_Women`
-#'   - `TyG_BMI`
+#' @return A tibble with computed lipid markers.
+#'   Required outputs (always present):
+#'   `non_HDL_c`, `remnant_c`, `ratio_TC_HDL`, `ratio_TG_HDL`,
+#'   `ratio_LDL_HDL`, `ApoB_ApoA1`.
+#'   Optional outputs (present when inputs available):
+#'   `VAI_Men`, `VAI_Women` (waist + BMI required);
+#'   `LAP_Men`, `LAP_Women` (waist required);
+#'   `TyG_BMI` (BMI + glucose required).
+#'   If an ID column is detected in `data` (e.g. `id`, `IID`,
+#'   `participant_id`), it is prepended as the first output column.
+#'
+#' @details
+#' Pre-computation (one level deep):
+#' - If `BMI` is absent but `weight` (kg) and `height` (m or cm) are
+#'   present, BMI is computed automatically.
+#' - If `glucose` is absent but `G0` is present (or vice versa), the alias
+#'   is derived automatically.
+#' - If `LDL_c` is absent, it is always estimated via Friedewald
+#'   (TC - HDL - TG/5). An informational message is emitted when
+#'   `verbose = TRUE`.
 #'
 #' @references
 #' \insertRef{friedewald1972}{HealthMarkers}
@@ -52,146 +68,252 @@
 #'
 #' @examples
 #' df <- data.frame(TC = c(5.2, 6.1), HDL_c = c(1.3, 1.1), TG = c(1.8, 2.3),
-#'                  LDL_c = c(3.2, 4.1), WC = c(88, 95), BMI = c(26, 29),
-#'                  Sex = c("female", "male"))
+#'                  LDL_c = c(3.2, 4.1), waist = c(88, 95), BMI = c(26, 29))
+#' # Full verbose output (default)
 #' lipid_markers(df)
+#' # Suppress messaging for batch use
+#' lipid_markers(df, verbose = FALSE)
+#' # Pre-compute BMI from weight and height
+#' df2 <- data.frame(TC = 5.2, HDL_c = 1.3, TG = 1.8, weight = 70, height = 175)
+#' lipid_markers(df2, verbose = FALSE)
 #' @export
 lipid_markers <- function(
   data,
-  col_map = NULL,
-  na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  col_map      = NULL,
+  na_action    = c("keep", "omit", "error", "ignore", "warn"),
+  na_warn_prop = 0.2,
+  verbose      = TRUE
 ) {
-  .na <- .hm_normalize_na_action(match.arg(na_action))
-  na_action_raw <- .na$na_action_raw
-  na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  fn_name   <- "lipid_markers"
+  na_action <- match.arg(na_action)
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("TC","HDL_c","TG","LDL_c","ApoB","ApoA1","waist","BMI"),
-    fn = "lipid_markers")
+  if (!is.data.frame(data))
+    stop(sprintf("%s(): `data` must be a data.frame or tibble.", fn_name), call. = FALSE)
 
-  req <- c("TC","HDL_c","TG")
-  hm_validate_inputs(data, col_map, required_keys = req, fn = "lipid_markers")
-  mapped_req <- unname(unlist(col_map[req]))
-  missing_cols <- setdiff(mapped_req, names(data))
-  if (length(missing_cols)) rlang::abort(paste("missing required columns:", paste(missing_cols, collapse = ", ")))
+  # --- Detect and preserve ID column -----------------------------------------
+  id_col <- .hm_detect_id_col(data)
 
-  hm_inform("lipid_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req], "lipid_markers"))
+  # --- Build col_map ----------------------------------------------------------
+  all_lm_keys <- c("TC", "HDL_c", "TG", "LDL_c", "ApoB", "ApoA1", "waist", "BMI", "glucose")
+  req_keys    <- c("TC", "HDL_c", "TG")
+  opt_keys    <- c("LDL_c", "ApoB", "ApoA1", "waist", "BMI", "glucose")
 
-  # Collect used columns (required + present optional + glucose if present)
-  optional <- c("LDL_c","ApoB","ApoA1","waist","BMI")
-  mapped_opt <- unname(unlist(col_map[optional]))
-  mapped_opt <- mapped_opt[!is.na(mapped_opt) & nzchar(mapped_opt) & mapped_opt %in% names(data)]
-  used_cols <- unique(c(mapped_req, mapped_opt, intersect("glucose", names(data))))
+  col_map <- .hm_autofill_col_map(col_map, data, all_lm_keys, fn = fn_name)
+  for (k in all_lm_keys) {
+    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+  }
 
-  # Coerce numeric where applicable; warn if NAs introduced; set non-finite to NA
+  # --- Verbose: column mapping ------------------------------------------------
+  if (isTRUE(verbose)) {
+    found_keys <- intersect(all_lm_keys, names(col_map))
+    map_parts  <- vapply(found_keys,
+                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                         character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
+
+  # --- Pre-computation: fill missing required keys from raw inputs ------------
+  deps <- .lm_precompute_deps()
+  is_missing_key <- function(k) is.null(col_map[[k]]) || !(col_map[[k]] %in% names(data))
+  missing_req <- req_keys[vapply(req_keys, is_missing_key, logical(1))]
+  if (length(missing_req) > 0L) {
+    pc   <- .hm_precompute_from_deps(data, deps, missing_req, fn = fn_name, verbose = verbose)
+    data <- pc$data
+    for (k in missing_req) if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+    missing_req <- req_keys[vapply(req_keys, is_missing_key, logical(1))]
+  }
+  if (length(missing_req))
+    stop(sprintf("%s(): missing required columns: %s",
+                 fn_name, paste(missing_req, collapse = ", ")), call. = FALSE)
+
+  req_cols <- unname(unlist(col_map[req_keys]))
+  miss     <- setdiff(req_cols, names(data))
+  if (length(miss))
+    stop(sprintf("%s(): missing required columns: %s",
+                 fn_name, paste(miss, collapse = ", ")), call. = FALSE)
+
+  # --- Pre-computation: fill missing optional keys (BMI, glucose from G0) ----
+  missing_opt <- opt_keys[vapply(opt_keys, is_missing_key, logical(1))]
+  if (length(missing_opt) > 0L) {
+    pc          <- .hm_precompute_from_deps(data, deps, missing_opt, fn = fn_name, verbose = verbose)
+    newly_added <- setdiff(names(pc$data), names(data))
+    if (length(newly_added)) {
+      data <- pc$data
+      for (k in newly_added) if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+    }
+  }
+
+  # --- Determine which optional keys are now present --------------------------
+  present_opt   <- vapply(opt_keys, function(k) {
+    nm <- col_map[[k]]; !is.null(nm) && nm %in% names(data)
+  }, logical(1))
+  used_opt_keys <- opt_keys[present_opt]
+  missing_opt   <- setdiff(opt_keys, used_opt_keys)
+
+  # --- Friedewald LDL if absent (always derivable: TC, HDL_c, TG required) ---
+  if (!"LDL_c" %in% used_opt_keys) {
+    data[["LDL_c_fried"]] <- data[[col_map$TC]] - data[[col_map$HDL_c]] - data[[col_map$TG]] / 5
+    col_map[["LDL_c"]]    <- "LDL_c_fried"
+    used_opt_keys         <- c(used_opt_keys, "LDL_c")
+    missing_opt           <- setdiff(missing_opt, "LDL_c")
+    if (isTRUE(verbose))
+      hm_inform(
+        sprintf("%s(): pre-computation: LDL_c estimated via Friedewald (TC - HDL - TG/5)", fn_name),
+        level = "inform"
+      )
+  }
+
+  used_keys <- c(req_keys, used_opt_keys)
+  used_cols <- unname(unlist(col_map[used_keys]))
+
+  # --- Verbose: optional inputs block -----------------------------------------
+  if (isTRUE(verbose)) {
+    idx_deps <- list(
+      ApoB_ApoA1 = c("ApoB", "ApoA1"),
+      VAI        = c("waist", "BMI"),
+      LAP        = c("waist"),
+      TyG_BMI    = c("BMI", "glucose")
+    )
+    na_indices <- character(0)
+    for (idx in names(idx_deps)) {
+      still_missing <- setdiff(idx_deps[[idx]], used_opt_keys)
+      if (length(still_missing))
+        na_indices <- c(na_indices,
+          sprintf("  %s -> NA  [missing: %s]", idx, paste(still_missing, collapse = ", ")))
+    }
+    derivable_hints <- character(0)
+    for (k in setdiff(missing_opt, "LDL_c")) {
+      dep <- deps[[k]]
+      if (!is.null(dep)) {
+        prereqs_absent <- setdiff(dep$needs, names(data))
+        if (length(prereqs_absent) == 0L) {
+          derivable_hints <- c(derivable_hints,
+            sprintf("  %s can be derived from: %s", k, paste(dep$needs, collapse = ", ")))
+        } else {
+          derivable_hints <- c(derivable_hints,
+            sprintf("  %s: provide %s to enable", k, paste(dep$needs, collapse = ", ")))
+        }
+      }
+    }
+    shown_present <- setdiff(used_opt_keys, "LDL_c")
+    shown_missing <- setdiff(missing_opt, "LDL_c")
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(shown_present))
+      lines <- c(lines, sprintf("  present:  %s", paste(shown_present, collapse = ", ")))
+    if (length(shown_missing))
+      lines <- c(lines, sprintf("  missing:  %s", paste(shown_missing, collapse = ", ")))
+    if (length(na_indices))
+      lines <- c(lines, "  indices -> NA:", na_indices)
+    if (length(derivable_hints))
+      lines <- c(lines, "  derivable:", derivable_hints)
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
+
+  # --- Coerce used columns to numeric -----------------------------------------
   for (cn in used_cols) {
     if (!is.numeric(data[[cn]])) {
-      old <- data[[cn]]
-      suppressWarnings(new <- as.numeric(old))
-      introduced_na <- sum(is.na(new) & !is.na(old))
-      if (introduced_na > 0L) rlang::warn(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na))
-      data[[cn]] <- new
+      old_vals <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old_vals))
+      introduced_na <- sum(is.na(data[[cn]]) & !is.na(old_vals))
+      if (introduced_na > 0L)
+        warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na),
+                call. = FALSE)
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  # NA policy on required inputs
-  cc_req <- stats::complete.cases(data[, mapped_req, drop = FALSE])
-  if (na_action_eff == "error" && !all(cc_req)) {
-    rlang::abort("lipid_markers(): missing or non-finite values in required inputs with na_action='error'.")
-  }
-  if (na_action_raw == "warn") {
-    any_na_cols <- names(which(colSums(is.na(data[, mapped_req, drop = FALSE])) > 0))
-    if (length(any_na_cols)) rlang::warn(sprintf("Missing values in: %s.", paste(any_na_cols, collapse = ", ")))
-  }
-  keep_rows <- if (na_action_eff == "omit") cc_req else rep(TRUE, nrow(data))
+  # --- NA handling ------------------------------------------------------------
+  nonfin_mask <- vapply(used_cols, function(cn) any(!is.finite(data[[cn]])), logical(1))
+  if (na_action == "warn" && any(nonfin_mask))
+    warning(sprintf("Non-finite values in: %s; treated as NA.",
+                    paste(used_cols[nonfin_mask], collapse = ", ")), call. = FALSE)
+  if (na_action == "error" && any(!stats::complete.cases(data[, req_cols, drop = FALSE])))
+    stop(sprintf("%s(): missing or non-finite values in required inputs with na_action='error'.",
+                 fn_name), call. = FALSE)
+
+  keep_rows <- if (na_action == "omit")
+    stats::complete.cases(data[, req_cols, drop = FALSE]) else rep(TRUE, nrow(data))
   d <- data[keep_rows, , drop = FALSE]
 
-  # Extreme scanning/handling
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(
-      TC = c(0, 50), HDL_c = c(0, 10), TG = c(0, 50), LDL_c = c(0, 50),
-      ApoB = c(0, 10), ApoA1 = c(0, 10),
-      waist = c(30, 250), BMI = c(10, 80),
-      glucose = c(0, 50)
-    )
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) rules_def[[nm]] <- extreme_rules[[nm]]
+  # --- Helper: is key available in d? ----------------------------------------
+  has <- function(k) !is.null(col_map[[k]]) && col_map[[k]] %in% names(d)
+
+  # --- Verbose: physiological range check (informational, not altered) --------
+  if (isTRUE(verbose)) {
+    rules    <- .lm_default_extreme_rules()
+    remapped <- list()
+    for (nm in names(rules)) {
+      cn <- if (!is.null(col_map[[nm]])) col_map[[nm]] else nm
+      remapped[[cn]] <- rules[[nm]]
     }
-    flags <- list(); total <- 0L
-    used_for_scan <- intersect(names(rules_def), c(req, optional, "glucose"))
-    # Build name -> column mapping (add 'glucose' explicitly)
-    # Build name -> column mapping
-    name_to_col <- c(col_map, list(glucose = "glucose"))
-    for (nm in used_for_scan) {
-      cn <- name_to_col[[nm]]
-      if (is.null(cn) || !(cn %in% names(d))) next
-      rng <- rules_def[[nm]]
-      x <- d[[cn]]
+    scan_vars <- intersect(used_cols, names(remapped))
+    ex_flags  <- list(); total <- 0L
+    for (v in scan_vars) {
+      x <- d[[v]]; rng <- remapped[[v]]
       bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      flags[[nm]] <- bad
-      total <- total + sum(bad)
+      ex_flags[[v]] <- bad; total <- total + sum(bad)
     }
     if (total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("lipid_markers(): %d extreme input values detected.", total))
-      } else if (extreme_action == "cap") {
-        for (nm in names(flags)) {
-          cn <- name_to_col[[nm]]
-          if (is.null(cn) || !(cn %in% names(d))) next
-          bad <- flags[[nm]]; lo <- rules_def[[nm]][1]; hi <- rules_def[[nm]][2]
-          x <- d[[cn]]
-          x[bad & is.finite(x) & x < lo] <- lo
-          x[bad & is.finite(x) & x > hi] <- hi
-          d[[cn]] <- x
-        }
-        rlang::warn(sprintf("lipid_markers(): capped %d extreme input values into allowed ranges.", total))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("lipid_markers(): detected %d extreme input values (not altered).", total))
-      } else if (extreme_action == "NA") {
-        for (nm in names(flags)) {
-          cn <- name_to_col[[nm]]
-          if (is.null(cn) || !(cn %in% names(d))) next
-          bad <- flags[[nm]]
-          x <- d[[cn]]; x[bad] <- NA_real_; d[[cn]] <- x
-        }
-      }
-      # ignore -> do nothing
+      details <- vapply(names(ex_flags), function(v) {
+        nb <- sum(ex_flags[[v]])
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", v, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
   }
 
-  # Helper safe division
-  sdiv <- function(a, b) { z <- a / b; z[!is.finite(z)] <- NA_real_; z }
-
-  # Required
-  TC <- d[[col_map$TC]]
-  HDL <- d[[col_map$HDL_c]]
-  TG  <- d[[col_map$TG]]
-
-  # LDL measured or Friedewald
-  LDL <- if (!is.null(col_map$LDL_c) && (col_map$LDL_c %in% names(d))) {
-    d[[col_map$LDL_c]]
-  } else {
-    rlang::warn("lipid_markers(): estimating LDL_c via Friedewald (TC - HDL - TG/5)")
-    TC - HDL - TG / 5
+  # --- Verbose: computing markers list ----------------------------------------
+  if (isTRUE(verbose)) {
+    status <- c(
+      "  non_HDL_c     [TC, HDL_c]",
+      "  remnant_c     [TC, HDL_c, LDL_c]",
+      "  ratio_TC_HDL  [TC, HDL_c]",
+      "  ratio_TG_HDL  [TG, HDL_c]",
+      "  ratio_LDL_HDL [LDL_c, HDL_c]",
+      sprintf("  ApoB_ApoA1    %s",
+              if (has("ApoB") && has("ApoA1")) "[ApoB, ApoA1]"
+              else "NA [ApoB/ApoA1 missing]"),
+      sprintf("  VAI_Men/Women %s",
+              if (has("waist") && has("BMI")) "[waist, BMI, TG, HDL_c]"
+              else "NA [waist/BMI missing]"),
+      sprintf("  LAP_Men/Women %s",
+              if (has("waist")) "[waist, TG]"
+              else "NA [waist missing]"),
+      sprintf("  TyG_BMI       %s",
+              if (has("BMI") && has("glucose")) "[TG, glucose, BMI]"
+              else "NA [BMI/glucose missing]")
+    )
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
   }
 
-  # ApoB/ApoA1 ratio if both present
-  ApoB_ApoA1 <- if (!is.null(col_map$ApoB) && !is.null(col_map$ApoA1) &&
-                    all(c(col_map$ApoB, col_map$ApoA1) %in% names(d))) {
+  # --- Compute markers --------------------------------------------------------
+  sdiv <- function(a, b) { z <- a / b; z[!is.finite(z)] <- NA_real_; z }
+  lg   <- function(x) { y <- log(x); y[!is.finite(y)] <- NA_real_; y }
+
+  TC  <- d[[col_map$TC]]
+  HDL <- d[[col_map$HDL_c]]
+  TG  <- d[[col_map$TG]]
+  LDL <- d[[col_map$LDL_c]]
+
+  ApoB_ApoA1 <- if (has("ApoB") && has("ApoA1")) {
     sdiv(d[[col_map$ApoB]], d[[col_map$ApoA1]])
   } else {
     rep(NA_real_, nrow(d))
   }
 
-  out_sub <- tibble::tibble(
+  out <- tibble::tibble(
     non_HDL_c     = TC - HDL,
     remnant_c     = TC - (HDL + LDL),
     ratio_TC_HDL  = sdiv(TC, HDL),
@@ -200,71 +322,79 @@ lipid_markers <- function(
     ApoB_ApoA1    = ApoB_ApoA1
   )
 
-  # VAI if waist and BMI present
-  if (!is.null(col_map$waist) && !is.null(col_map$BMI) &&
-      all(c(col_map$waist, col_map$BMI) %in% names(d))) {
+  if (has("waist") && has("BMI")) {
     W  <- d[[col_map$waist]]
     BM <- d[[col_map$BMI]]
-    VAI_Men   <- (W / (39.68 + 1.88 * BM)) * sdiv(TG, 1.03) * sdiv(1.31, HDL)
-    VAI_Women <- (W / (36.58 + 1.89 * BM)) * sdiv(TG, 0.81) * sdiv(1.52, HDL)
-    out_sub <- dplyr::bind_cols(out_sub, tibble::tibble(VAI_Men = VAI_Men, VAI_Women = VAI_Women))
+    out$VAI_Men   <- (W / (39.68 + 1.88 * BM)) * sdiv(TG, 1.03) * sdiv(1.31, HDL)
+    out$VAI_Women <- (W / (36.58 + 1.89 * BM)) * sdiv(TG, 0.81) * sdiv(1.52, HDL)
   }
 
-  # LAP if waist present
-  if (!is.null(col_map$waist) && (col_map$waist %in% names(d))) {
+  if (has("waist")) {
     W <- d[[col_map$waist]]
-    LAP_Men   <- (W - 65) * TG
-    LAP_Women <- (W - 58) * TG
-    out_sub <- dplyr::bind_cols(out_sub, tibble::tibble(LAP_Men = LAP_Men, LAP_Women = LAP_Women))
+    out$LAP_Men   <- (W - 65) * TG
+    out$LAP_Women <- (W - 58) * TG
   }
 
-  # TyG-BMI if glucose and BMI present
-  if ("glucose" %in% names(d) && !is.null(col_map$BMI) && (col_map$BMI %in% names(d))) {
+  if (has("BMI") && has("glucose")) {
     TG_mgdl  <- TG * 88.57
-    Glu_mgdl <- d$glucose * 18
-    TyG      <- log(TG_mgdl * Glu_mgdl / 2)
-    TyG_BMI  <- TyG * d[[col_map$BMI]]
-    out_sub  <- dplyr::bind_cols(out_sub, tibble::tibble(TyG_BMI = TyG_BMI))
+    Glu_mgdl <- d[[col_map$glucose]] * 18
+    BM       <- d[[col_map$BMI]]
+    out$TyG_BMI <- lg(TG_mgdl * Glu_mgdl / 2) * BM
   }
 
-  # Pad back if na_action != 'omit'
-  if (na_action_eff != "omit") {
-    res <- tibble::tibble(
-      non_HDL_c = rep(NA_real_, nrow(data)),
-      remnant_c = NA_real_,
-      ratio_TC_HDL = NA_real_, ratio_TG_HDL = NA_real_, ratio_LDL_HDL = NA_real_,
-      ApoB_ApoA1 = NA_real_
-    )
-    res <- res[rep(1, nrow(data)), , drop = FALSE]
-    res$non_HDL_c[keep_rows]     <- out_sub$non_HDL_c
-    res$remnant_c[keep_rows]     <- out_sub$remnant_c
-    res$ratio_TC_HDL[keep_rows]  <- out_sub$ratio_TC_HDL
-    res$ratio_TG_HDL[keep_rows]  <- out_sub$ratio_TG_HDL
-    res$ratio_LDL_HDL[keep_rows] <- out_sub$ratio_LDL_HDL
-    res$ApoB_ApoA1[keep_rows]    <- out_sub$ApoB_ApoA1
-
-    # Conditionally add optional outputs with proper padding
-    if ("VAI_Men" %in% names(out_sub)) {
-      res$VAI_Men   <- NA_real_; res$VAI_Women <- NA_real_
-      res$VAI_Men[keep_rows]   <- out_sub$VAI_Men
-      res$VAI_Women[keep_rows] <- out_sub$VAI_Women
-    }
-    if ("LAP_Men" %in% names(out_sub)) {
-      res$LAP_Men   <- NA_real_; res$LAP_Women <- NA_real_
-      res$LAP_Men[keep_rows]   <- out_sub$LAP_Men
-      res$LAP_Women[keep_rows] <- out_sub$LAP_Women
-    }
-    if ("TyG_BMI" %in% names(out_sub)) {
-      res$TyG_BMI <- NA_real_
-      res$TyG_BMI[keep_rows] <- out_sub$TyG_BMI
-    }
-    out <- res
-  } else {
-    out <- out_sub
+  # --- Prepend ID column if detected ------------------------------------------
+  if (!is.null(id_col)) {
+    id_vec        <- d[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "lipid_markers"))
+  # --- Verbose: results summary -----------------------------------------------
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
+}
+
+# ---- internal helpers --------------------------------------------------------
+
+.lm_precompute_deps <- function() {
+  list(
+    BMI = list(
+      needs    = c("weight", "height"),
+      describe = "weight_kg / height_m^2",
+      compute  = function(data) {
+        w   <- as.numeric(data[["weight"]])
+        h   <- as.numeric(data[["height"]])
+        h_m <- ifelse(is.finite(h) & h > 3, h / 100, h)
+        w / (h_m ^ 2)
+      }
+    ),
+    glucose = list(
+      needs    = "G0",
+      describe = "alias: fasting glucose (G0)",
+      compute  = function(data) as.numeric(data[["G0"]])
+    ),
+    G0 = list(
+      needs    = "glucose",
+      describe = "alias: fasting glucose (glucose)",
+      compute  = function(data) as.numeric(data[["glucose"]])
+    )
+  )
+}
+
+.lm_default_extreme_rules <- function() {
+  list(
+    TC      = c(0, 50),
+    HDL_c   = c(0, 10),
+    TG      = c(0, 50),
+    LDL_c   = c(0, 50),
+    ApoB    = c(0, 10),
+    ApoA1   = c(0, 10),
+    waist   = c(30, 250),
+    BMI     = c(10, 80),
+    glucose = c(0, 50)
+  )
 }

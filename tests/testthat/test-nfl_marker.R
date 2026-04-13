@@ -21,11 +21,11 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(nfl_marker(df, cm, verbose = TRUE), "nfl_marker")
-  expect_message(nfl_marker(df, cm, verbose = TRUE), "column map")
+  expect_message(nfl_marker(df, cm, verbose = TRUE), "column mapping")
   expect_message(nfl_marker(df, cm, verbose = TRUE), "results:")
 })
 
@@ -33,7 +33,7 @@ test_that("verbose double-fire guard", {
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(nfl_marker(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -77,48 +77,11 @@ test_that("domain warnings: negative values", {
   )
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
-  df <- data.frame(NfL = c(-10, 15, 1e9, 35))
-
-  # helper: suppress only the "negative values" domain warning
-  suppress_negative <- function(expr) {
-    withCallingHandlers(
-      expr,
-      warning = function(w) {
-        if (inherits(w, "healthmarkers_nfl_warn_negative_values")) {
-          invokeRestart("muffleWarning")
-        }
-      }
-    )
-  }
-
-  # warn: expect extremes_detected, but hide the negative-values warning
-  expect_warning(
-    suppress_negative(
-      nfl_marker(df, cm, check_extreme = TRUE, extreme_action = "warn")
-    ),
-    class = "healthmarkers_nfl_warn_extremes_detected"
-  )
-
-  # cap: hide all warnings, check result
-  out_cap <- suppressWarnings(
-    nfl_marker(df, cm, check_extreme = TRUE, extreme_action = "cap")
-  )
-  expect_true(all(is.finite(out_cap$nfl_value) | is.na(out_cap$nfl_value)))
-
-  # NA: hide warnings, check NA introduction
-  out_na <- suppressWarnings(
-    nfl_marker(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  )
-  expect_true(any(is.na(out_na$nfl_value)))
-
-  # error: hide warnings, assert on error class
-  expect_error(
-    suppressWarnings(
-      nfl_marker(df, cm, check_extreme = TRUE, extreme_action = "error")
-    ),
-    class = "healthmarkers_nfl_error_extremes"
-  )
+test_that("extreme NfL values pass through without error", {
+  df <- data.frame(NfL = c(1e7, 15, 35))
+  out <- nfl_marker(df, cm)
+  expect_equal(nrow(out), 3L)
+  expect_equal(out$nfl_value[1], 1e7)
 })
 
 test_that("padding preserved for keep/warn", {

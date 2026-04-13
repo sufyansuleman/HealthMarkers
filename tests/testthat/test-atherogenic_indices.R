@@ -36,13 +36,12 @@ test_that("invalid normalize argument errors early", {
   expect_error(atherogenic_indices(dat, col_map = cm, normalize = "foo"))
 })
 
-test_that("check_extreme with cap modifies extremes", {
-  dat <- tibble(TG = 20000, HDL_c = 10)  # TG out of bounds
+test_that("AIP computed correctly with large TG values", {
+  dat <- tibble(TG = 20000, HDL_c = 10)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
-  res <- atherogenic_indices(dat, col_map = cm, check_extreme = TRUE, extreme_action = "cap")
+  res <- atherogenic_indices(dat, col_map = cm, verbose = FALSE)
   expect_true(is.finite(res$AIP))
-  # After cap to 10000, AIP should equal log10(10000/10) = log10(1000) = 3
-  expect_equal(res$AIP, log10(10000/10))
+  expect_equal(res$AIP, log10(20000/10))
 })
 
 test_that("missing columns reported clearly", {
@@ -66,7 +65,7 @@ test_that("verbose = TRUE emits preparing, column map, and results messages", {
   dat <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
   cm2 <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
   expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "atherogenic_indices")
-  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "column map")
+  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "column mapping")
   expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "results:")
 })
 
@@ -77,6 +76,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     atherogenic_indices(dat, col_map = cm2, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

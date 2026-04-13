@@ -26,9 +26,6 @@
 #'   hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv.
 #' @param verbose Logical; if TRUE, emits progress messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides (applied per key); default bounds c(0,1) for all.
 #'
 #' @return A tibble with one column: charlson_index (integer total score; NA if any
 #' required input is NA and na_action != "omit").
@@ -54,16 +51,14 @@ charlson_index <- function(
     leukemia="leukemia", lymphoma="lymphoma", sev_liver="sev_liver",
     metastatic_cancer="metastatic_cancer", hiv="hiv"
   ),
-  verbose = FALSE,
-  na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL
+  verbose = TRUE,
+  na_action = c("keep","omit","error","ignore","warn")
 ) {
+  fn_name <- "charlson_index"
+  id_col  <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
 
   keys <- c(
     "mi","chf","pvd","stroke","dementia","copd","rheum","ulcer",
@@ -122,11 +117,11 @@ charlson_index <- function(
   }
 
   # --- verbose / debug ------------------------------------------------------
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "charlson_index(): preparing inputs")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[keys], "charlson_index")
-  )
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]", fn_name), level = "inform")
+  }
 
   # --- coerce to numeric 0/1; track NA coercion -----------------------------
   for (cn in mapped) {
@@ -174,54 +169,6 @@ charlson_index <- function(
     )
   }
 
-  # --- optional extreme scan / handling -------------------------------------
-  if (isTRUE(check_extreme) && nrow(d) > 0) {
-    rules_def <- as.list(stats::setNames(rep(list(c(0,1)), length(keys)), keys))
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) {
-        rules_def[[nm]] <- extreme_rules[[nm]]
-      }
-    }
-
-    total_extreme <- 0L
-    for (k in keys) {
-      x  <- d[[k]]
-      lo <- rules_def[[k]][1]; hi <- rules_def[[k]][2]
-      bad <- is.finite(x) & (x < lo | x > hi)
-      nb  <- sum(bad)
-      total_extreme <- total_extreme + nb
-
-      if (nb > 0L) {
-        if (extreme_action == "cap") {
-          x[bad & x < lo] <- lo
-          x[bad & x > hi] <- hi
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-        }
-      }
-      d[[k]] <- x
-    }
-
-    if (total_extreme > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("charlson_index(): %d extreme input values detected.", total_extreme),
-          class = "healthmarkers_cci_error_extremes"
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf("charlson_index(): detected %d extreme input values (not altered).", total_extreme),
-          class = "healthmarkers_cci_warn_extremes_detected"
-        )
-      } else if (extreme_action == "cap") {
-        rlang::warn(
-          sprintf("charlson_index(): capped %d extreme input values into allowed ranges.", total_extreme),
-          class = "healthmarkers_cci_warn_extremes_capped"
-        )
-      }
-    }
-  }
-
   hm_inform(level = "debug", msg = "charlson_index(): computing")
 
   # --- scoring --------------------------------------------------------------
@@ -250,10 +197,15 @@ charlson_index <- function(
     out <- out_core
   }
 
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "charlson_index")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

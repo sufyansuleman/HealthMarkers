@@ -53,9 +53,11 @@ pulmo_markers <- function(data,
                           equation = c("GLI", "GLIgl", "NHANES3"),
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
-                          verbose = FALSE) {
+                          verbose = TRUE) {
   # HM-CS v2: validate inputs (data-frame only here)
   hm_validate_inputs(data, col_map = NULL, required_keys = character(0), fn = "pulmo_markers")
+  fn_name <- "pulmo_markers"
+  id_col  <- .hm_detect_id_col(data)
 
   # Custom equation check (clear error message on unknown)
   eq <- as.character(equation)[1]
@@ -98,7 +100,7 @@ pulmo_markers <- function(data,
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
     if (sum(!keep) > 0L)
       hm_inform(sprintf("pulmo_markers(): omitting %d rows with NA in required inputs", sum(!keep)),
-                level = if (isTRUE(verbose)) "inform" else "debug")
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -113,8 +115,11 @@ pulmo_markers <- function(data,
   }
 
   col_map_report <- as.list(stats::setNames(req, req))
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map_report, "pulmo_markers"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map_report[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  fev1_pred, fev1_z, fev1_pctpred, fev1_LLN [age, height, sex, ethnicity, fev1]\n  fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]\n  fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]", fn_name), level = "inform")
+  }
 
   # Map sex and ethnicity to rspiro codes (male=1, female=2; GLI: 1-5 ethnic groups)
   sex_code <- .pm_map_sex(data$sex)
@@ -214,8 +219,13 @@ pulmo_markers <- function(data,
     fev1_fvc_LLN     = NA_real_
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "pulmo_markers"))
+  if (!is.null(id_col)) {
+    id_vec <- data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(out, fn_name), level = "inform")
 
   out
 }

@@ -11,11 +11,8 @@
 #' @param data A data.frame or tibble with SARC-F questionnaire responses.
 #' @param col_map Named list mapping the five SARC-F components to columns:
 #'   strength, walking, chair, stairs, falls.
-#' @param verbose Logical; if TRUE, emits progress messages.
+#' @param verbose Logical; if TRUE (default), emits progress messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (0-2).
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides; default caps each item to c(0,2).
 #'
 #' @return A tibble with:
 #'   - sarc_f_score (numeric 0-10; NA if any component is NA)
@@ -30,16 +27,14 @@
 sarc_f_score <- function(
   data,
   col_map = NULL,
-  verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 ) {
+  fn_name <- "sarc_f_score"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   if (!is.data.frame(data)) {
     rlang::abort(
@@ -104,12 +99,10 @@ sarc_f_score <- function(
   }
 
   if (isTRUE(verbose)) {
-    hm_inform("sarc_f_score(): preparing inputs", level = "inform")
-  } else {
-    hm_inform("sarc_f_score(): preparing inputs", level = "debug")
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  sarc_f_score      [0-10 sum]\n  sarc_f_high_risk  [score >= 4]", fn_name), level = "inform")
   }
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map, "sarc_f_score"))
 
   for (cn in mapped) {
     if (!is.numeric(data[[cn]])) {
@@ -162,62 +155,6 @@ sarc_f_score <- function(
     )
   }
 
-  # ---- fixed extreme scan block ----
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(
-      strength = c(0, 2),
-      walking  = c(0, 2),
-      chair    = c(0, 2),
-      stairs   = c(0, 2),
-      falls    = c(0, 2)
-    )
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(rules_def), names(extreme_rules))) {
-        rules_def[[nm]] <- extreme_rules[[nm]]
-      }
-    }
-
-    total_extreme <- 0L
-    cap_vec <- function(x, lo, hi) {
-      bad <- is.finite(x) & (x < lo | x > hi)
-      total_extreme <<- total_extreme + sum(bad)
-      if (extreme_action == "cap") {
-        x[bad & x < lo] <- lo
-        x[bad & x > hi] <- hi
-      } else if (extreme_action == "NA") {
-        x[bad] <- NA_real_
-      }
-      x
-    }
-
-    d_xs <- cap_vec(d_xs, rules_def$strength[1], rules_def$strength[2])
-    d_xw <- cap_vec(d_xw, rules_def$walking[1],  rules_def$walking[2])
-    d_xc <- cap_vec(d_xc, rules_def$chair[1],    rules_def$chair[2])
-    d_xt <- cap_vec(d_xt, rules_def$stairs[1],   rules_def$stairs[2])
-    d_xf <- cap_vec(d_xf, rules_def$falls[1],    rules_def$falls[2])
-
-    if (total_extreme > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("sarc_f_score(): %d extreme input values detected.", total_extreme),
-          class = "healthmarkers_sarcf_error_extremes"
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf("sarc_f_score(): detected %d extreme input values (not altered).", total_extreme),
-          class = "healthmarkers_sarcf_warn_extremes_detected"
-        )
-      } else if (extreme_action == "cap") {
-        rlang::warn(
-          sprintf("sarc_f_score(): capped %d extreme input values into allowed ranges.", total_extreme),
-          class = "healthmarkers_sarcf_warn_extremes_capped"
-        )
-      }
-      # extreme_action == "NA": silently set to NA, no extra warning
-    }
-  }
-  # ---- end extreme scan block ----
-
   hm_inform("sarc_f_score(): computing markers", level = "debug")
 
   total_score <- d_xs + d_xw + d_xc + d_xt + d_xf
@@ -238,8 +175,13 @@ sarc_f_score <- function(
     out <- out_core
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "sarc_f_score"))
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
 
   out
 }

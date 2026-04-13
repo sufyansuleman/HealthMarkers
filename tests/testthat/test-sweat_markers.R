@@ -73,7 +73,7 @@ test_that("sweat_markers is vectorized over multiple rows", {
   expect_equal(out$sweat_rate[2], (80 - 79) / 2 / 2)
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   df <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -86,7 +86,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(sweat_markers(df, verbose = TRUE), "sweat_markers")
-  expect_message(sweat_markers(df, verbose = TRUE), "column map")
+  expect_message(sweat_markers(df, verbose = TRUE), "column mapping")
   expect_message(sweat_markers(df, verbose = TRUE), "results:")
 })
 
@@ -103,7 +103,7 @@ test_that("verbose double-fire guard", {
   )
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(sweat_markers(df, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -126,27 +126,19 @@ test_that("na_action policies: error and omit behave as expected", {
   expect_equal(nrow(out_omit), 0L)
 })
 
-test_that("extreme input detection and capping warn as expected", {
+test_that("check_extreme removed: function passes through outlier rows", {
   df_ext <- tibble(
-    sweat_chloride    = 300,  # > 200
-    sweat_Na          = 300,  # > 200
-    sweat_K           = 50,   # > 40
-    sweat_lactate     = 60,   # > 50
-    weight_before     = 500,  # > 400
-    weight_after      = 600,  # > 400
-    duration          = 0.01, # < 0.05
-    body_surface_area = 0.1   # < 0.3
+    sweat_chloride    = 300,
+    sweat_Na          = 300,
+    sweat_K           = 50,
+    sweat_lactate     = 60,
+    weight_before     = 500,
+    weight_after      = 600,
+    duration          = 0.01,
+    body_surface_area = 0.1
   )
-  expect_warning(
-    out_warn <- sweat_markers(df_ext, check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-  expect_warning(
-    out_cap <- sweat_markers(df_ext, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values into allowed ranges"
-  )
-  expect_false(isTRUE(all.equal(out_warn$Na_K_ratio, out_cap$Na_K_ratio)))
-  expect_false(isTRUE(all.equal(out_warn$sweat_rate, out_cap$sweat_rate)))
+  out <- sweat_markers(df_ext)
+  expect_equal(nrow(out), 1L)
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA in ratios", {

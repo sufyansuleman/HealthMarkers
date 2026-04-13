@@ -133,7 +133,7 @@ test_that("vectorized over multiple rows", {
   expect_equal(nrow(out2), 2)
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   df_full <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,
@@ -152,7 +152,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "tracer_dxa_is")
-  expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "column map")
+  expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "column mapping")
   expect_message(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE), "results:")
 })
 
@@ -175,7 +175,7 @@ test_that("verbose double-fire guard", {
   )
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(tracer_dxa_is(df_full, col_map_adipose, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -201,11 +201,11 @@ test_that("na_action policies: error and omit behave as expected", {
   expect_equal(nrow(out_omit), 0L)
 })
 
-test_that("extreme input detection and capping warn as expected", {
+test_that("check_extreme removed: function passes through outlier rows", {
   df_ext <- tibble(
-    G0 = 50, G30 = 60, G120 = 70,        # glucose > 40
-    I0 = 6000, I30 = 6000, I120 = 6000,  # insulin > 5000
-    TG = 60, HDL_c = 12, FFA = 6,        # over bounds
+    G0 = 50, G30 = 60, G120 = 70,
+    I0 = 6000, I30 = 6000, I120 = 6000,
+    TG = 60, HDL_c = 12, FFA = 6,
     rate_palmitate = 20000, rate_glycerol = 20000,
     fat_mass = 0.05, weight = 700, bmi = 120
   )
@@ -219,15 +219,8 @@ test_that("extreme input detection and capping warn as expected", {
     weight = "weight",
     bmi = "bmi"
   )
-  expect_warning(
-    out_warn <- tracer_dxa_is(df_ext, full_map, check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-  expect_warning(
-    out_cap <- tracer_dxa_is(df_ext, full_map, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values into allowed ranges"
-  )
-  expect_false(isTRUE(all.equal(out_warn$tracer_palmitate_SI, out_cap$tracer_palmitate_SI)))
+  out <- tracer_dxa_is(df_ext, full_map)
+  expect_equal(nrow(out), 1L)
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA where applicable", {

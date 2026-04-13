@@ -22,10 +22,6 @@
 #' @param extreme_action One of `c("cap","NA","error","warn","ignore")` for
 #'   SDS values exceeding `sds_cap`.
 #' @param sds_cap Positive numeric; absolute cap used when `extreme_action = "cap"`.
-#' @param check_extreme Logical; if TRUE run raw-value extreme screening using
-#'   `extreme_rules` before SDS computation.
-#' @param extreme_rules Optional named list of c(min, max) ranges for raw variables;
-#'   if NULL, broad defaults are used for common anthropometric measures.
 #' @param diagnostics Logical; if TRUE emit informational/warning messages
 #'   (coercions, missingness, extremes). FALSE suppresses non-critical warnings.
 #' @param warn_thresholds Named list with optional elements `na_prop` (default 0.05)
@@ -38,8 +34,6 @@
 #'   `na_action` missing, it is used).
 #' @param extreme_strategy Soft-deprecated alias for `extreme_action` (if provided
 #'   and `extreme_action` missing, it is used).
-#' @param check_raw_extreme Soft-deprecated alias for `check_extreme`.
-#' @param raw_extreme_rules Soft-deprecated alias for `extreme_rules`.
 #'
 #' @return A tibble with one `<var>_SDS` column per reference variable, or a
 #'   list when `return_summary = TRUE`.
@@ -59,17 +53,13 @@ adiposity_sds <- function(
   na_action = c("keep","omit","error"),
   extreme_action = c("cap","NA","error","warn","ignore"),
   sds_cap = 6,
-  check_extreme = FALSE,
-  extreme_rules = NULL,
   diagnostics = FALSE,  # quiet by default
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   id_col = NULL,
   return_summary = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   na_strategy = NULL,
-  extreme_strategy = NULL,
-  check_raw_extreme = NULL,
-  raw_extreme_rules = NULL
+  extreme_strategy = NULL
 ) {
 
   # --- Back-compat: allow adiposity_sds(data, ref, ...) positional calls ---
@@ -101,14 +91,6 @@ adiposity_sds <- function(
       extreme_action <- extreme_strategy
       legacy_msgs <- c(legacy_msgs, "argument 'extreme_strategy' is deprecated; use 'extreme_action'.")
     }
-  }
-  if (!is.null(check_raw_extreme)) {
-    check_extreme <- isTRUE(check_raw_extreme)
-    legacy_msgs <- c(legacy_msgs, "'check_raw_extreme' is deprecated; use 'check_extreme'.")
-  }
-  if (!is.null(raw_extreme_rules)) {
-    extreme_rules <- raw_extreme_rules
-    legacy_msgs <- c(legacy_msgs, "'raw_extreme_rules' is deprecated; use 'extreme_rules'.")
   }
   if (length(legacy_msgs)) {
     rlang::warn(paste0("adiposity_sds(): ", paste(legacy_msgs, collapse = " ")))
@@ -183,8 +165,11 @@ adiposity_sds <- function(
   }
 
   total_rows <- nrow(data)
-  .inform(sprintf("adiposity_sds(): preparing inputs (%d rows, %d vars)", total_rows, length(vars)))
-  .inform(hm_fmt_col_map(as.list(var_map), "adiposity_sds"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
+    hm_inform(sprintf("adiposity_sds(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("adiposity_sds(): computing markers:\n  %s", paste(paste0(vars, "_SDS"), collapse = ", ")), level = "inform")
+  }
 
   # ---- Copy & numeric coercion ----
   df <- data
@@ -244,50 +229,6 @@ adiposity_sds <- function(
     return(out_empty)
   }
 
-  # ---- Raw extreme screening (consistent API) ----
-  capped_raw <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      list(
-        BMI = c(5, 80),
-        waist = c(20, 250),
-        weight = c(2, 400),
-        height = c(40, 250),
-        hip = c(30, 250),
-        WC = c(20, 250),
-        HC = c(30, 250)
-      )
-    } else extreme_rules
-
-    for (v in intersect(names(rules), vars)) {
-      cn <- var_map[[v]]
-      rng <- rules[[v]]
-      x <- df[[cn]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      nbad <- sum(bad, na.rm = TRUE)
-      if (nbad > 0) {
-        if (extreme_action == "error") {
-          .abort(sprintf("adiposity_sds(): %d raw extremes in '%s' (check_extreme).", nbad, v),
-                 "healthmarkers_adiposds_error_raw_extreme")
-        } else if (extreme_action == "cap") {
-          x[bad & x < rng[1]] <- rng[1]
-          x[bad & x > rng[2]] <- rng[2]
-          df[[cn]] <- x
-          capped_raw <- capped_raw + nbad
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-          df[[cn]] <- x
-          capped_raw <- capped_raw + nbad
-        } else if (extreme_action == "warn") {
-          .warn(sprintf("adiposity_sds(): %d raw extremes detected in '%s' (not altered).", nbad, v))
-        } # ignore -> do nothing
-      }
-    }
-    if (capped_raw > 0 && extreme_action %in% c("cap","NA")) {
-      .warn(sprintf("adiposity_sds(): adjusted %d raw extreme values (%s).", capped_raw, extreme_action))
-    }
-  }
-
   # ---- Compute SDS over mapped columns ----
   per_var_summary <- data.frame(variable = vars, n_missing = integer(length(vars)), n_extreme = integer(length(vars)), stringsAsFactors = FALSE)
   total_extreme <- 0L
@@ -330,7 +271,9 @@ adiposity_sds <- function(
   }
 
   # ---- Verbose/package-level completion summary ----
-  .inform(hm_result_summary(out, "adiposity_sds"))
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, "adiposity_sds"), level = "inform")
+  }
 
   # ---- Return ----
   if (isTRUE(return_summary)) {
@@ -341,7 +284,6 @@ adiposity_sds <- function(
         rows_out = n_rows_out,
         omitted_rows = omitted_rows,
         total_extreme = total_extreme,
-        raw_adjusted = capped_raw,
         per_var = per_var_summary
       ),
       warnings = unique(collected_warnings)

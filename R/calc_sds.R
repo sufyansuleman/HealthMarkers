@@ -86,7 +86,7 @@ calc_sds <- function(
   extreme_strategy = c("cap","warn","error","NA"),
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   return = c("data","list"),
-  verbose = FALSE,
+  verbose = TRUE,
   # HM-CS aliases (back-compat)
   na_action = NULL,
   check_extreme = TRUE,
@@ -164,8 +164,8 @@ calc_sds <- function(
     msg_id <- if (is.null(id_col)) "" else paste0(" (id: ", id_col, ")")
     hm_inform(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s",
                       total_rows, length(vars), msg_id), level = "inform")
-    hm_inform(level = "inform",
-              msg = hm_fmt_col_map(as.list(stats::setNames(vars, vars)), "calc_sds"))
+    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, k), character(1))
+    hm_inform(sprintf("calc_sds(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
   }
 
   warns <- character(0)

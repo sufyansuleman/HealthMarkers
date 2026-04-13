@@ -12,11 +12,11 @@ test_that("errors on missing mapping keys", {
   expect_error(bode_index(df, bad), class = "healthmarkers_bode_error_missing_map")
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   expect_message(bode_index(df, cm, verbose = TRUE), "bode_index")
-  expect_message(bode_index(df, cm, verbose = TRUE), "column map")
+  expect_message(bode_index(df, cm, verbose = TRUE), "column mapping")
   expect_message(bode_index(df, cm, verbose = TRUE), "results:")
 })
 
@@ -24,7 +24,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   msgs <- testthat::capture_messages(bode_index(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -100,39 +100,31 @@ test_that("domain warnings for individual ranges", {
   expect_warning(bode_index(df_bmi, cm), class = "healthmarkers_bode_warn_bmi_range")
 })
 
-test_that("extreme scan behaviors", {
+test_that("extreme values trigger domain warnings", {
   df <- data.frame(
     FEV1pct = c(160,40,20),
     Walk_m  = c(900,140,300),
     mMRC    = c(6,2,-1),
     BMI     = c(5,90,22)
   )
-  expect_warning(bode_index(df, cm, check_extreme = TRUE, extreme_action = "warn"),
-                 class = "healthmarkers_bode_warn_extremes_detected")
-  out_cap <- expect_warning(
-    bode_index(df, cm, check_extreme = TRUE, extreme_action = "cap"),
-    class = "healthmarkers_bode_warn_extremes_capped"
-  )
-  expect_true(all(is.finite(out_cap$bode_index)))
-  out_na <- bode_index(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$bode_index)))
-  expect_error(bode_index(df, cm, check_extreme = TRUE, extreme_action = "error"),
-               class = "healthmarkers_bode_error_extremes")
+  expect_warning(bode_index(df, cm), class = "healthmarkers_bode_warn_fev1pct_range")
+  # Values still produce output
+  out <- suppressWarnings(bode_index(df, cm))
+  expect_equal(nrow(out), 3L)
 })
 
-test_that("custom extreme_rules honored", {
+test_that("formula correctness with normal input", {
   df <- data.frame(
-    FEV1pct = c(-10, 200),
-    Walk_m  = c(900, -5),
-    mMRC    = c(5, -1),
-    BMI     = c(5, 90)
+    FEV1pct = c(70, 50, 30),
+    Walk_m  = c(400, 300, 200),
+    mMRC    = c(1, 2, 3),
+    BMI     = c(25, 22, 19)
   )
-  out <- expect_warning(
-    bode_index(df, cm, check_extreme = TRUE, extreme_action = "cap",
-               extreme_rules = list(fev1_pct = c(10,140), sixmwd = c(50,700), mmrc = c(0,4), bmi = c(15,60))),
-    class = "healthmarkers_bode_warn_extremes_capped"
-  )
-  expect_true(all(is.finite(out$bode_index) | is.na(out$bode_index)))
+  out <- bode_index(df, cm)
+  expect_equal(nrow(out), 3L)
+  expect_true(all(is.finite(out$bode_index)))
+  # Row 1: fev1>=65=0, walk>=350=0, mmrc<=1=0, bmi>21=0 => total 0
+  expect_equal(out$bode_index[1], 0L)
 })
 
 test_that("padding keep/warn/ignore retain row count; omit reduces", {
@@ -154,23 +146,14 @@ test_that("empty input returns 0-row tibble", {
   expect_true("bode_index" %in% names(out))
 })
 
-test_that("extreme scan behaviors isolated", {
-  # Values within domain (no domain warnings) but outside extreme rules
+test_that("extreme values outside domain ranges produce domain warnings", {
+  # Values within some domains but outside others
   df <- data.frame(
-    FEV1pct = c(9, 50, 30),    # 9 triggers extreme (below 10)
-    Walk_m  = c(45, 300, 700), # 45 triggers extreme (below 50)
-    mMRC    = c(0, 2, 4),      # all in domain
-    BMI     = c(9, 22, 61)     # 9 and 61 trigger extreme (outside 10–60)
+    FEV1pct = c(9, 50, 30),
+    Walk_m  = c(45, 300, 700),
+    mMRC    = c(0, 2, 4),
+    BMI     = c(9, 22, 61)
   )
-  expect_warning(bode_index(df, cm, check_extreme = TRUE, extreme_action = "warn"),
-                 class = "healthmarkers_bode_warn_extremes_detected")
-
-  expect_warning(bode_index(df, cm, check_extreme = TRUE, extreme_action = "cap"),
-                 class = "healthmarkers_bode_warn_extremes_capped")
-
-  out_na <- bode_index(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$bode_index)))
-
-  expect_error(bode_index(df, cm, check_extreme = TRUE, extreme_action = "error"),
-               class = "healthmarkers_bode_error_extremes")
+  out <- suppressWarnings(bode_index(df, cm))
+  expect_equal(nrow(out), 3L)
 })

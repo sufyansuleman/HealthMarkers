@@ -15,11 +15,11 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(sarc_f_score(df, cm, verbose = TRUE), "sarc_f_score")
-  expect_message(sarc_f_score(df, cm, verbose = TRUE), "column map")
+  expect_message(sarc_f_score(df, cm, verbose = TRUE), "column mapping")
   expect_message(sarc_f_score(df, cm, verbose = TRUE), "results:")
 })
 
@@ -27,7 +27,7 @@ test_that("verbose double-fire guard", {
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(sarc_f_score(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -83,7 +83,7 @@ test_that("domain warnings for values outside 0–2", {
   )
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
+test_that("out-of-range items (0-2) trigger domain warning and still compute", {
   df <- data.frame(
     Strength=c(-1, 0, 3),
     Walking =c(0, 2, 1),
@@ -91,46 +91,12 @@ test_that("extreme scan behaviors: warn, cap, NA, error", {
     Stairs  =c(0, 0, 0),
     Falls   =c(0, 0, 0)
   )
-
-  # helper: suppress only the out_of_range warning, keep extremes_detected visible
-  suppress_out_of_range <- function(expr) {
-    withCallingHandlers(
-      expr,
-      warning = function(w) {
-        if (inherits(w, "healthmarkers_sarcf_warn_out_of_range")) {
-          invokeRestart("muffleWarning")
-        }
-      }
-    )
-  }
-
-  # 1) warn: expect only the extremes_detected class here
   expect_warning(
-    suppress_out_of_range(
-      sarc_f_score(df, cm, check_extreme = TRUE, extreme_action = "warn")
-    ),
-    class = "healthmarkers_sarcf_warn_extremes_detected"
+    sarc_f_score(df, cm),
+    class = "healthmarkers_sarcf_warn_out_of_range"
   )
-
-  # 2) cap
-  out_cap <- suppressWarnings(
-    sarc_f_score(df, cm, check_extreme = TRUE, extreme_action = "cap")
-  )
-  expect_true(all(out_cap$sarc_f_score >= 0 | is.na(out_cap$sarc_f_score)))
-
-  # 3) NA
-  out_na <- suppressWarnings(
-    sarc_f_score(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  )
-  expect_true(any(is.na(out_na$sarc_f_score)))
-
-  # 4) error
-  expect_error(
-    suppressWarnings(
-      sarc_f_score(df, cm, check_extreme = TRUE, extreme_action = "error")
-    ),
-    class = "healthmarkers_sarcf_error_extremes"
-  )
+  out <- suppressWarnings(sarc_f_score(df, cm))
+  expect_equal(nrow(out), 3L)
 })
 
 test_that("thresholding: high risk is TRUE for score >= 4", {

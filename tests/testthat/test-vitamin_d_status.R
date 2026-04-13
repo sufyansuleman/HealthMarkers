@@ -59,28 +59,11 @@ test_that("domain warnings: negative values and suspicious units", {
                  class = "healthmarkers_vitd_warn_units_suspicious")
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
+test_that("extreme inputs pass through without error (check_extreme removed)", {
   df <- data.frame(VitD = c(-10, 15, 500, 35))
-  # warn
-  expect_warning(
-    vitamin_d_status(df, cm, check_extreme = TRUE, extreme_action = "warn"),
-    class = "healthmarkers_vitd_warn_extremes_detected"
-  )
-  # cap (capture the cap warning)
-  out_cap <- expect_warning(
-    vitamin_d_status(df, cm, check_extreme = TRUE, extreme_action = "cap"),
-    class = "healthmarkers_vitd_warn_extremes_capped"
-  )
-  expect_true(all(is.na(out_cap$vitamin_d_status) | out_cap$vitamin_d_status %in%
-                    factor(c("Deficient","Insufficient","Sufficient"), ordered = TRUE)))
-  # NA
-  out_na <- vitamin_d_status(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$vitamin_d_status)))
-  # error
-  expect_error(
-    vitamin_d_status(df, cm, check_extreme = TRUE, extreme_action = "error"),
-    class = "healthmarkers_vitd_error_extremes"
-  )
+  out <- suppressWarnings(vitamin_d_status(df, cm))
+  expect_s3_class(out, "tbl_df")
+  expect_true("vitamin_d_status" %in% names(out))
 })
 
 test_that("classification boundaries are correct and ordered factor returned", {

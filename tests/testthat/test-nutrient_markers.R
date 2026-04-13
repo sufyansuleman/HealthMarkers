@@ -121,20 +121,17 @@ test_that("na_action='omit' drops rows with NA in used inputs", {
   expect_equal(out$FerritinTS, 100 / 50, tolerance = 1e-8)
 })
 
-test_that("check_extreme warns when extremes detected (warn vs cap vs error)", {
+test_that("extreme values produce range note in verbose and no warnings in silent mode", {
   df <- tibble(ferritin = 5000, transferrin_sat = 50)
-  expect_warning(
-    out_warn <- nutrient_markers(df, col_map = cm_id(df), check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
+  # No warning emitted in non-verbose mode
+  expect_no_warning(
+    nutrient_markers(df, col_map = cm_id(df), verbose = FALSE)
   )
-  expect_warning(
-    out_cap <- nutrient_markers(df, col_map = cm_id(df), check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values into allowed ranges"
-  )
-  expect_false(isTRUE(all.equal(out_warn$FerritinTS, out_cap$FerritinTS)))
-  expect_error(
-    nutrient_markers(df, col_map = cm_id(df), check_extreme = TRUE, extreme_action = "error"),
-    "detected .* extreme input values\\."
+  # Verbose mode emits a range note informational message
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    nutrient_markers(df, col_map = cm_id(df), verbose = TRUE),
+    "range note"
   )
 })
 

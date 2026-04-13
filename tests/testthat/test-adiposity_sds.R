@@ -51,19 +51,11 @@ test_that("return_summary = TRUE returns list with data, summary, warnings eleme
   expect_type(res$warnings, "character")
 })
 
-test_that("raw extreme scanning (cap) caps values", {
+test_that("check_extreme removed: legacy alias warns, function passes through", {
   df <- tibble(BMI = c(120, 22), waist = c(300, 60))
-  out <- NULL
-  expect_warning(
-    out <- adiposity_sds(
-      df,
-      ref = ref,
-      check_raw_extreme = TRUE,                 # legacy alias (warns)
-      raw_extreme_rules = list(BMI = c(5, 80))  # legacy alias (warns)
-    ),
-    "deprecated"
-  )
-  expect_true(all(abs(out$BMI_SDS) < 30))
+  # check_raw_extreme (legacy alias) now emits no deprecated warning since param removed
+  out <- adiposity_sds(df, ref = ref)
+  expect_equal(nrow(out), 2L)
 })
 
 test_that("computes SDS on identity mapping", {
@@ -81,12 +73,10 @@ test_that("na_action policies: keep, omit, error", {
                "rows have missing values")
 })
 
-test_that("check_extreme with cap/NA/error adjusts raw values", {
+test_that("check_extreme removed: function passes through raw outlier rows", {
   df <- tibble(BMI = c(120, 22), waist = c(300, 60))
-  expect_true(all(abs(adiposity_sds(df, ref = ref, check_extreme = TRUE, extreme_action = "cap", diagnostics = FALSE)$BMI_SDS) < 30))
-  expect_true(anyNA(adiposity_sds(df, ref = ref, check_extreme = TRUE, extreme_action = "NA", diagnostics = FALSE)$BMI_SDS))
-  expect_error(adiposity_sds(df, ref = ref, check_extreme = TRUE, extreme_action = "error", diagnostics = FALSE),
-               "raw extremes")
+  out <- adiposity_sds(df, ref = ref, diagnostics = FALSE)
+  expect_equal(nrow(out), 2L)
 })
 
 test_that("SDS extreme handling respects sds_cap and extreme_action", {
@@ -96,11 +86,11 @@ test_that("SDS extreme handling respects sds_cap and extreme_action", {
   expect_error(adiposity_sds(df, ref = ref, extreme_action = "error", sds_cap = 6), "SDS beyond")
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(BMI = 23, waist = 80)
   expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "adiposity_sds")
-  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "column map")
+  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "column mapping")
   expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "results:")
 })
 
@@ -108,6 +98,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(BMI = 23, waist = 80)
   msgs <- testthat::capture_messages(adiposity_sds(df, ref = ref, verbose = TRUE))
-  expect_equal(sum(grepl("column map",  msgs)), 1L)
+  expect_equal(sum(grepl("column mapping",  msgs)), 1L)
   expect_equal(sum(grepl("results:",    msgs)), 1L)
 })

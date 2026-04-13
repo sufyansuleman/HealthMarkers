@@ -33,8 +33,7 @@
 #'   - "omit": drop rows with NA in required inputs before computation.
 #'   - "warn": like "keep" but emits high-missingness warnings.
 #' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan for out-of-range values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when `check_extreme = TRUE`.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #'   - "warn": only warn about out-of-range values (default).
 #'   - "cap": truncate to range and warn.
 #'   - "error": abort if any out-of-range is detected.
@@ -85,21 +84,16 @@ kidney_failure_risk <- function(data,
                                 ),
                                 na_action = c("keep","error","omit","warn"),
                                 na_warn_prop = 0.2,
-                                check_extreme = FALSE,
-                                extreme_action = c("warn","cap","error","ignore","NA"),
-                                extreme_rules = NULL,
-                                verbose = FALSE) {
+                                verbose = TRUE) {
+  fn_name <- "kidney_failure_risk"
+  id_col <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
-  hm_inform("kidney_failure_risk(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  .kfre_validate_args(data, col_map, na_warn_prop)
 
   # Optional package-level validation; keep test-facing messages stable
   req_keys <- c("age", "sex", "eGFR", "UACR")
   hm_validate_inputs(data, col_map, required_keys = req_keys, fn = "kidney_failure_risk")
-
-  .kfre_validate_args(data, col_map, na_warn_prop, extreme_rules)
-
   # Check data columns
   req <- req_keys
   mapped_cols <- unlist(col_map[req_keys], use.names = FALSE)
@@ -111,8 +105,11 @@ kidney_failure_risk <- function(data,
     )
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req_keys], "kidney_failure_risk"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  KFRE_2yr  [age, sex, eGFR, UACR — 2-year kidney failure risk]\n  KFRE_5yr  [age, sex, eGFR, UACR — 5-year kidney failure risk]", fn_name), level = "inform")
+  }
 
   # Column classes
   if (!is.numeric(data[[col_map$age]]))  rlang::abort("kidney_failure_risk(): 'age' column must be numeric.",  class = "healthmarkers_kfre_error_nonnumeric_age")
@@ -137,8 +134,9 @@ kidney_failure_risk <- function(data,
     na_warn_prop = na_warn_prop,
     do_warn_high_missing = identical(na_action, "warn")
   )
+keep <- rep(TRUE, nrow(data))
   if (na_action == "error") {
-    any_na <- Reduce(`|`, lapply(req, function(k) is.na(data[[col_map[[k]]]])))
+    any_na <- Reduce(`|`, lapply(req, function(k) is.na(data[[col_map[[k]]]])))  
     if (any(any_na)) {
       rlang::abort("kidney_failure_risk(): required inputs contain missing values (na_action='error').",
                    class = "healthmarkers_kfre_error_missing_values")
@@ -158,33 +156,6 @@ kidney_failure_risk <- function(data,
   # Sex coding (already normalized to 1/2 above)
   male <- ifelse(sex == 1, 1L, 0L)
 
-  # Optional extreme scanning/capping
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .kfre_default_extreme_rules() else extreme_rules
-    ex <- .kfre_extreme_scan(age = age, eGFR = eGFR, UACR = UACR, rules = rules)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("kidney_failure_risk(): detected %d out-of-range values.", ex$count),
-                     class = "healthmarkers_kfre_error_extremes")
-      } else if (extreme_action == "cap") {
-        tmp <- .kfre_cap_inputs(age = age, eGFR = eGFR, UACR = UACR, flags = ex$flags, rules = rules)
-        age <- tmp$age; eGFR <- tmp$eGFR; UACR <- tmp$UACR
-        capped_n <- ex$count
-        rlang::warn(sprintf("kidney_failure_risk(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("kidney_failure_risk(): detected %d extreme input values (not altered).", ex$count))
-      } else if (extreme_action == "NA") {
-        if (any(ex$flags$age, na.rm = TRUE))   age[ex$flags$age]   <- NA_real_
-        if (any(ex$flags$eGFR, na.rm = TRUE))  eGFR[ex$flags$eGFR] <- NA_real_
-        if (any(ex$flags$UACR, na.rm = TRUE))  UACR[ex$flags$UACR] <- NA_real_
-      }
-      # "ignore" does nothing
-    }
-  }
-
-  hm_inform("kidney_failure_risk(): computing KFRE risks", level = "debug")
-
   # Prognostic index and risk
   pi <- 0.220 * log(age) +
     (-0.556) * log(eGFR) +
@@ -202,15 +173,19 @@ kidney_failure_risk <- function(data,
     KFRE_5yr = KFRE_5yr
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "kidney_failure_risk"))
-
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
   return(out)
 }
 
 # ---- internal helpers (not exported) -----------------------------------------
 
-.kfre_validate_args <- function(data, col_map, na_warn_prop, extreme_rules) {
+.kfre_validate_args <- function(data, col_map, na_warn_prop) {
   if (!is.data.frame(data)) {
     rlang::abort("kidney_failure_risk(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_kfre_error_data_type")
@@ -229,19 +204,6 @@ kidney_failure_risk <- function(data,
         na_warn_prop >= 0 && na_warn_prop <= 1)) {
     rlang::abort("kidney_failure_risk(): `na_warn_prop` must be a single numeric in [0, 1].",
                  class = "healthmarkers_kfre_error_na_warn_prop")
-  }
-  if (!is.null(extreme_rules)) {
-    if (!is.list(extreme_rules)) {
-      rlang::abort("kidney_failure_risk(): `extreme_rules` must be NULL or a named list of c(min,max).",
-                   class = "healthmarkers_kfre_error_extreme_rules_type")
-    }
-    for (nm in names(extreme_rules)) {
-      rng <- extreme_rules[[nm]]
-      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)) && rng[1] <= rng[2])) {
-        rlang::abort(sprintf("kidney_failure_risk(): `extreme_rules[['%s']]` must be numeric length-2 with min <= max.", nm),
-                     class = "healthmarkers_kfre_error_extreme_rules_value")
-      }
-    }
   }
   invisible(TRUE)
 }

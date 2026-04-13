@@ -91,7 +91,7 @@ test_that("metss errors when params key for sex-race is missing", {
 })
 
 # ---- Verbose messages ----
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     waist   = 94,
@@ -104,7 +104,7 @@ test_that("verbose emits preparing, column map, and results messages", {
     race    = "NHW"
   )
   expect_message(metss(df, verbose = TRUE), "metss")
-  expect_message(metss(df, verbose = TRUE), "column map")
+  expect_message(metss(df, verbose = TRUE), "column mapping")
   expect_message(metss(df, verbose = TRUE), "results:")
 })
 
@@ -116,7 +116,7 @@ test_that("verbose double-fire guard", {
     sex = 1, race = "NHW"
   )
   msgs <- testthat::capture_messages(metss(df, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -140,8 +140,8 @@ test_that("na_action = error and omit behave as expected", {
   expect_equal(nrow(out_omit), 1L)
 })
 
-# ---- Extreme detection (warn vs cap) ----
-test_that("extreme input detection and capping warn as expected", {
+# ---- Extreme values pass through unchanged ----
+test_that("extreme input values pass through without error", {
   df_ext <- tibble(
     waist   = 400,
     bp_sys  = 500,
@@ -152,15 +152,8 @@ test_that("extreme input detection and capping warn as expected", {
     sex     = 1,
     race    = "NHW"
   )
-  expect_warning(
-    out_warn <- metss(df_ext, check_extreme = TRUE, extreme_action = "warn", diagnostics = FALSE),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-  expect_warning(
-    out_cap <- metss(df_ext, check_extreme = TRUE, extreme_action = "cap", diagnostics = FALSE),
-    "capped .* extreme input values into allowed ranges"
-  )
-  expect_false(isTRUE(all.equal(out_warn$MetSSS, out_cap$MetSSS)))
+  out <- suppressWarnings(metss(df_ext, diagnostics = FALSE))
+  expect_equal(nrow(out), 1L)
 })
 
 # ---- Multiple keys warning ----

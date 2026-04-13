@@ -37,14 +37,14 @@
 #'   - age -> age (years)
 #'   - sex -> sex (1 = male, 2 = female)
 #' @param normalize One of c("none","z","inverse","range","robust") used by normalize_vec().
-#' @param verbose Logical; if TRUE, prints progress messages via hm_inform().
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, the list
+#'   of indices being computed, and a per-column results summary.
 #' @param na_action One of c("keep","omit","error") for missing/non-finite required inputs. Default "keep".
 #' @param na_warn_prop Proportion (0-1) for high-missingness diagnostics (debug). Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan outputs for |value| > extreme_limit. Default FALSE.
-#' @param extreme_limit Positive numeric magnitude threshold for extremes. Default 1e3.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".
 #'
-#' @return A tibble with the OGTT-based index columns listed above.
+#' @return A tibble with the OGTT-based index columns listed above. If an ID
+#'   column is detected in `data` (e.g. `id`, `IID`, `participant_id`), it is
+#'   prepended as the first output column.
 #' @importFrom tibble tibble
 #' @importFrom dplyr mutate across everything
 #' @export
@@ -83,15 +83,13 @@
 ogtt_is <- function(data,
                     col_map = NULL,
                     normalize = "none",
-                    verbose = FALSE,
+                    verbose = TRUE,
                     na_action = c("keep","omit","error"),
-                    na_warn_prop = 0.2,
-                    check_extreme = FALSE,
-                    extreme_limit = 1e3,
-                    extreme_action = c("warn","cap","error","ignore","NA")) {
-  na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
-  .ogtt_validate_args(normalize, na_warn_prop, check_extreme, extreme_limit, verbose)
+                    na_warn_prop = 0.2) {
+  fn_name    <- "ogtt_is"
+  na_action  <- match.arg(na_action)
+  id_col     <- .hm_detect_id_col(data)
+  .ogtt_validate_args(normalize, na_warn_prop, verbose)
 
   col_map <- .hm_autofill_col_map(col_map, data,
     c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex"),
@@ -104,8 +102,42 @@ ogtt_is <- function(data,
     fn = "ogtt_is"
   )
 
-  hm_inform("ogtt_is(): preparing inputs",
-            level = if (isTRUE(verbose)) "inform" else "debug")
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    req_keys  <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
+    map_parts <- vapply(req_keys,
+                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    indices <- list(
+      c("Isi_120",            "G120, I120"),
+      c("Cederholm_index",    "G0, G120, I0, I120, weight"),
+      c("Gutt_index",         "G0, G120, I0, I120, weight"),
+      c("Avignon_Si0",        "G0, I0, weight"),
+      c("Avignon_Si120",      "G120, I120, weight"),
+      c("Avignon_Sim",        "Si0, Si120"),
+      c("Modified_stumvoll",  "I0, I120, G120"),
+      c("Stumvoll_Demog.",    "bmi, I120, age"),
+      c("Matsuda_AUC",        "G0, I0, G_AUC, I_AUC"),
+      c("Matsuda_ISI",        "G0, I0, G_mean, I_mean"),
+      c("BigttSi",            "I0, I30, I120, G0, G30, G120, sex, bmi"),
+      c("Ifc_inv",            "I0, I120"),
+      c("HIRI_inv",           "G0, G30, I0, I30"),
+      c("Belfiore_isi_gly",   "I_AUC, G_AUC")
+    )
+    status <- vapply(indices, function(x) sprintf("  %-22s [%s]", x[1], x[2]), character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Coerce required columns to numeric if needed (warn on NAs introduced)
   keys_to_check <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
@@ -127,8 +159,6 @@ ogtt_is <- function(data,
     vars = unname(unlist(col_map[keys_to_check], use.names = FALSE)),
     na_warn_prop = na_warn_prop
   )
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[keys_to_check], "ogtt_is"))
 
   # NA policy on required inputs
   used_cols <- unname(unlist(col_map[keys_to_check], use.names = FALSE))
@@ -140,12 +170,13 @@ ogtt_is <- function(data,
     }
   } else if (na_action == "omit" && length(used_cols)) {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-      hm_inform(sprintf("ogtt_is(): omitting %d rows with NA in required inputs", sum(!keep)),
-                level = if (isTRUE(verbose)) "inform" else "debug")
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
-  hm_inform("ogtt_is(): converting units", level = "debug")
+  hm_inform(sprintf("%s(): converting units", fn_name), level = "debug")
 
   # 1) Extract & convert raw inputs
   G0   <- data[[col_map$G0]]   * 18 # mg/dL
@@ -161,7 +192,7 @@ ogtt_is <- function(data,
   # Normalize sex to 1=male, 0=female for formula use
   sex  <- .hm_normalize_sex(data[[col_map$sex]], to = "10", fn = "ogtt_is")
 
-  hm_inform("ogtt_is(): computing indices", level = "debug")
+  hm_inform(sprintf("%s(): computing indices", fn_name), level = "debug")
 
   # Helpers: safe log and safe division
   lg <- function(x) .ogtt_log(x)
@@ -209,31 +240,7 @@ ogtt_is <- function(data,
     Belfiore_isi_gly = dv(2, (I_AUC * G_AUC) + 1)
   )
 
-  # 4) Optional extremes check/cap on output magnitudes
-  extreme_count <- 0L
-  if (isTRUE(check_extreme)) {
-    vals <- as.matrix(out)
-    is_ext <- is.finite(vals) & abs(vals) > extreme_limit
-    extreme_count <- sum(is_ext, na.rm = TRUE)
-    if (extreme_count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("ogtt_is: %d extreme values beyond +/-%g detected.", extreme_count, extreme_limit),
-                     class = "healthmarkers_ogtt_is_error_extremes")
-      } else if (extreme_action == "cap") {
-        out[] <- .ogtt_cap_matrix(vals, extreme_limit)
-        rlang::warn(sprintf("ogtt_is: capped %d extreme values beyond +/-%g.", extreme_count, extreme_limit))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("ogtt_is: detected %d extreme values beyond +/-%g (not capped).", extreme_count, extreme_limit))
-      } else if (extreme_action == "NA") {
-        vals[is_ext] <- NA_real_
-        out[] <- vals
-        rlang::warn(sprintf("ogtt_is: set %d extreme values to NA (>|+/-%g|).", extreme_count, extreme_limit))
-      }
-      # "ignore": no-op
-    }
-  }
-
-  # 5) Normalize if requested
+  # 4) Normalize if requested
   out <- dplyr::mutate(
     out,
     dplyr::across(
@@ -242,15 +249,25 @@ ogtt_is <- function(data,
     )
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "ogtt_is"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }
 
 # ---- internal helpers (not exported) -----------------------------------------
 
-.ogtt_validate_args <- function(normalize, na_warn_prop, check_extreme, extreme_limit, verbose) {
+.ogtt_validate_args <- function(normalize, na_warn_prop, verbose) {
   ok_norm <- normalize %in% c("none","z","inverse","range","robust")
   if (!ok_norm) rlang::abort("`normalize` must be one of: 'none','z','inverse','range','robust'.",
                              class = "healthmarkers_ogtt_is_error_normalize")
@@ -258,14 +275,6 @@ ogtt_is <- function(data,
         na_warn_prop >= 0 && na_warn_prop <= 1)) {
     rlang::abort("`na_warn_prop` must be a single numeric in [0, 1].",
                  class = "healthmarkers_ogtt_is_error_na_warn_prop")
-  }
-  if (!(is.logical(check_extreme) && length(check_extreme) == 1L && !is.na(check_extreme))) {
-    rlang::abort("`check_extreme` must be a single logical value.",
-                 class = "healthmarkers_ogtt_is_error_check_extreme")
-  }
-  if (!(is.numeric(extreme_limit) && length(extreme_limit) == 1L && is.finite(extreme_limit) && extreme_limit > 0)) {
-    rlang::abort("`extreme_limit` must be a single positive finite numeric.",
-                 class = "healthmarkers_ogtt_is_error_extreme_limit")
   }
   if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
     rlang::abort("`verbose` must be a single logical value.",
@@ -301,11 +310,3 @@ ogtt_is <- function(data,
   out
 }
 
-.ogtt_cap_matrix <- function(m, lim) {
-  out <- m
-  over <- is.finite(out) & out > lim
-  under <- is.finite(out) & out < -lim
-  out[over]  <- lim
-  out[under] <- -lim
-  out
-}

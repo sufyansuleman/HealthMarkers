@@ -16,10 +16,7 @@
 #'   - Optional to derive MetS or insulin: I0, waist, TG, HDL_c, sbp, bp_sys, bp_treated, glucose, G0
 #' @param na_action One of c("keep","omit","error","ignore","warn").
 #' @param na_warn_prop Proportion in \eqn{[0,1]} for high-missingness warnings when na_action = "warn". Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan selected inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.
-#' @param extreme_rules Optional named list of c(min,max) to override defaults.
-#' @param verbose Logical; if TRUE, prints progress.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #' @return A tibble with columns HSI and NAFLD_LFS.
 #' @references
 #' \insertRef{lee2010hsi}{HealthMarkers}
@@ -36,14 +33,12 @@ liver_fat_markers <- function(data,
                               col_map = NULL,
                               na_action = c("keep", "omit", "error", "ignore", "warn"),
                               na_warn_prop = 0.2,
-                              check_extreme = FALSE,
-                              extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-                              extreme_rules = NULL,
-                              verbose = FALSE) {
+                              verbose = TRUE) {
+  fn_name <- "liver_fat_markers"
+  id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
   
   # Validate required mapping and data
   all_lfm_keys <- c("ALT","AST","BMI","sex","diabetes","MetS","insulin",
@@ -62,10 +57,13 @@ liver_fat_markers <- function(data,
       paste(miss, collapse = ", ")
     ))
   
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = "liver_fat_markers(): preparing inputs")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req], "liver_fat_markers"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf(
+      "%s(): computing markers:\n  HSI        [8*(ALT/AST) + BMI + sex + diabetes]\n  NAFLD_LFS  [MetS/insulin/diabetes required; NA if unavailable]",
+      fn_name), level = "inform")
+  }
 
   # Columns potentially used directly in formulas
   direct_keys <- c("ALT", "AST", "BMI", "sex", "diabetes", "MetS", "insulin", "I0")
@@ -144,105 +142,6 @@ liver_fat_markers <- function(data,
   
   d <- data[keep, , drop = FALSE]
   
-  # Optional extreme-value scan/handling (broad defaults)
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(
-      ALT = c(0, 1000),
-      AST = c(0, 1000),
-      BMI = c(10, 80),
-      insulin = c(0, 500),
-      I0 = c(0, 3000),
-      TG = c(0, 50),
-      HDL_c = c(0, 10),
-      waist = c(30, 250),
-      sbp = c(60, 300),
-      bp_sys = c(60, 300),
-      glucose = c(0, 50),
-      G0 = c(0, 50)
-    )
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def)))
-        rules_def[[nm]] <- extreme_rules[[nm]]
-    }
-    total_flag <- 0L
-    flags <- list()
-    # name->column map (prefer sbp, else bp_sys)
-    name_to_col <- list(
-      ALT = col_map$ALT,
-      AST = col_map$AST,
-      BMI = col_map$BMI,
-      insulin = col_map$insulin,
-      I0 = col_map$I0,
-      TG = col_map$TG,
-      HDL_c = col_map$HDL_c,
-      waist = col_map$waist,
-      sbp = if (!is.null(col_map$sbp))
-        col_map$sbp
-      else
-        col_map$bp_sys,
-      bp_sys = col_map$bp_sys,
-      glucose = col_map$glucose,
-      G0 = col_map$G0
-    )
-    for (nm in names(rules_def)) {
-      cn <- name_to_col[[nm]]
-      if (is.null(cn) || !(cn %in% names(d)))
-        next
-      x <- d[[cn]]
-      rng <- rules_def[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      flags[[nm]] <- bad
-      total_flag <- total_flag + sum(bad)
-    }
-    if (total_flag > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf(
-            "liver_fat_markers(): %d extreme input values detected.",
-            total_flag
-          )
-        )
-      } else if (extreme_action == "cap") {
-        for (nm in names(flags)) {
-          cn <- name_to_col[[nm]]
-          if (is.null(cn) || !(cn %in% names(d)))
-            next
-          lo <- rules_def[[nm]][1]
-          hi <- rules_def[[nm]][2]
-          x <- d[[cn]]
-          bad <- flags[[nm]]
-          x[bad & is.finite(x) & x < lo] <- lo
-          x[bad & is.finite(x) & x > hi] <- hi
-          d[[cn]] <- x
-        }
-        rlang::warn(
-          sprintf(
-            "liver_fat_markers(): capped %d extreme input values into allowed ranges.",
-            total_flag
-          )
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf(
-            "liver_fat_markers(): detected %d extreme input values (not altered).",
-            total_flag
-          )
-        )
-      } else if (extreme_action == "NA") {
-        for (nm in names(flags)) {
-          cn <- name_to_col[[nm]]
-          if (is.null(cn) || !(cn %in% names(d)))
-            next
-          bad <- flags[[nm]]
-          x <- d[[cn]]
-          x[bad] <- NA_real_
-          d[[cn]] <- x
-        }
-      }
-      # ignore: do nothing
-    }
-  }
-  
   # Extract helpers from subset
   getv <- function(k) {
     nm <- col_map[[k]]
@@ -305,8 +204,6 @@ liver_fat_markers <- function(data,
   if (is.null(dm2_flag))
     dm2_flag <- rep(0L, length(BMI))
   
-  hm_inform(level = "debug", msg = "liver_fat_markers(): computing")
-
   # HSI
   HSI <- 8 * sdiv(ALT, AST) + BMI + ifelse(female_flag == 1L, 2, 0) + ifelse(dm2_flag == 1L, 2, 0)
   
@@ -360,18 +257,19 @@ liver_fat_markers <- function(data,
   NAFLD_LFS <- -2.89 + 1.18 * MetS + 0.45 * dm2_flag + 0.15 * Ins_u + 0.04 * AST - 0.94 * sdiv(AST, ALT)
   
   out <- tibble::tibble(HSI = as.numeric(HSI), NAFLD_LFS = as.numeric(NAFLD_LFS))
-  if (na_action_eff == "omit") {
-    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-              msg = hm_result_summary(out, "liver_fat_markers"))
-    return(out)
+  if (na_action_eff != "omit") {
+    res <- tibble::tibble(HSI = rep(NA_real_, nrow(data)),
+                          NAFLD_LFS = rep(NA_real_, nrow(data)))
+    res$HSI[keep] <- out$HSI
+    res$NAFLD_LFS[keep] <- out$NAFLD_LFS
+    out <- res
   }
-  
-  # if keep/error, preserve original row count by padding
-  res <- tibble::tibble(HSI = rep(NA_real_, nrow(data)),
-                        NAFLD_LFS = rep(NA_real_, nrow(data)))
-  res$HSI[keep] <- out$HSI
-  res$NAFLD_LFS[keep] <- out$NAFLD_LFS
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(res, "liver_fat_markers"))
-  res
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
+  out
 }

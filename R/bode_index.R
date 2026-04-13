@@ -17,11 +17,7 @@
 #'   Example derive: list(fev1="FEV1", fev1_pred="FEV1_pred", sixmwd="Walk_m", mmrc="mMRC", bmi="BMI")
 #'   Example from spirometry_markers: list(fev1_pp="fev1_pp", sixmwd="Walk_m", mmrc="mMRC", bmi="BMI")
 #' @param na_action one of c("keep","omit","error","ignore","warn").
-#' @param check_extreme logical; if TRUE scan for extreme values.
-#' @param extreme_action one of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules named list of bounds (c(lo,hi)) for fev1_pct,sixmwd,mmrc,bmi.
-#'                      Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).
-#' @param verbose logical; TRUE emits messages.
+#' @param verbose logical; TRUE (default) emits messages.
 #' @return tibble with bode_index (integer). NA if any required input missing (unless omitted).
 #' @references \insertRef{celli2004bode}{HealthMarkers}
 #'
@@ -35,15 +31,13 @@ bode_index <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "bode_index"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   # Validate data
   if (!is.data.frame(data)) {
@@ -99,11 +93,12 @@ bode_index <- function(
                  class = "healthmarkers_bode_error_missing_columns")
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "bode_index(): preparing inputs")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))], "bode_index")
-  )
+  if (isTRUE(verbose)) {
+    active_keys <- intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))
+    map_parts <- vapply(active_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  bode_index  [0-10 COPD severity score]", fn_name), level = "inform")
+  }
 
   # Coercion helper
   coerce_col <- function(cn) {
@@ -159,64 +154,22 @@ bode_index <- function(
   d_mmrc <- mmrc[keep]
   d_bmi  <- bmi[keep]
 
-  # Domain warnings (skip if check_extreme to reduce noise)
-  if (!isTRUE(check_extreme)) {
-    if (any(is.finite(d_mmrc) & (d_mmrc < 0 | d_mmrc > 4))) {
-      rlang::warn("bode_index(): mMRC values outside 0-4 detected.",
-                  class = "healthmarkers_bode_warn_mmrc_range")
-    }
-    if (any(is.finite(d_fev1) & (d_fev1 < 0 | d_fev1 > 150))) {
-      rlang::warn("bode_index(): FEV1 % predicted values outside 0-150 detected.",
-                  class = "healthmarkers_bode_warn_fev1pct_range")
-    }
-    if (any(is.finite(d_walk) & (d_walk < 0 | d_walk > 1500))) {
-      rlang::warn("bode_index(): 6MWD values outside plausible range detected.",
-                  class = "healthmarkers_bode_warn_sixmwd_range")
-    }
-    if (any(is.finite(d_bmi) & (d_bmi < 10 | d_bmi > 80))) {
-      rlang::warn("bode_index(): BMI values outside plausible range detected.",
-                  class = "healthmarkers_bode_warn_bmi_range")
-    }
+  # Domain warnings
+  if (any(is.finite(d_mmrc) & (d_mmrc < 0 | d_mmrc > 4))) {
+    rlang::warn("bode_index(): mMRC values outside 0-4 detected.",
+                class = "healthmarkers_bode_warn_mmrc_range")
   }
-
-  # Extreme scan
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(fev1_pct = c(10,140), sixmwd = c(50,800), mmrc = c(0,4), bmi = c(10,60))
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) {
-        rules_def[[nm]] <- extreme_rules[[nm]]
-      }
-    }
-    total <- 0L
-    cap_or_na <- function(x, bounds) {
-      bad <- is.finite(x) & (x < bounds[1] | x > bounds[2])
-      nb <- sum(bad)
-      if (nb > 0) {
-        if (extreme_action == "cap") {
-          x[bad & x < bounds[1]] <- bounds[1]
-          x[bad & x > bounds[2]] <- bounds[2]
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-        }
-      }
-      list(x = x, n_bad = nb)
-    }
-    r1 <- cap_or_na(d_fev1, rules_def$fev1_pct); d_fev1 <- r1$x; total <- total + r1$n_bad
-    r2 <- cap_or_na(d_walk, rules_def$sixmwd);    d_walk <- r2$x; total <- total + r2$n_bad
-    r3 <- cap_or_na(d_mmrc, rules_def$mmrc);      d_mmrc <- r3$x; total <- total + r3$n_bad
-    r4 <- cap_or_na(d_bmi,  rules_def$bmi);       d_bmi  <- r4$x; total <- total + r4$n_bad
-    if (total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("bode_index(): %d extreme input values detected.", total),
-                     class = "healthmarkers_bode_error_extremes")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("bode_index(): detected %d extreme input values (not altered).", total),
-                    class = "healthmarkers_bode_warn_extremes_detected")
-      } else if (extreme_action == "cap") {
-        rlang::warn(sprintf("bode_index(): capped %d extreme input values into allowed ranges.", total),
-                    class = "healthmarkers_bode_warn_extremes_capped")
-      }
-    }
+  if (any(is.finite(d_fev1) & (d_fev1 < 0 | d_fev1 > 150))) {
+    rlang::warn("bode_index(): FEV1 % predicted values outside 0-150 detected.",
+                class = "healthmarkers_bode_warn_fev1pct_range")
+  }
+  if (any(is.finite(d_walk) & (d_walk < 0 | d_walk > 1500))) {
+    rlang::warn("bode_index(): 6MWD values outside plausible range detected.",
+                class = "healthmarkers_bode_warn_sixmwd_range")
+  }
+  if (any(is.finite(d_bmi) & (d_bmi < 10 | d_bmi > 80))) {
+    rlang::warn("bode_index(): BMI values outside plausible range detected.",
+                class = "healthmarkers_bode_warn_bmi_range")
   }
 
   hm_inform(level = "debug", msg = "bode_index(): computing score")
@@ -262,10 +215,13 @@ bode_index <- function(
     out <- res
   }
 
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "bode_index")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
 
   out
 }

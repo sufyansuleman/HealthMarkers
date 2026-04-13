@@ -162,43 +162,22 @@ test_that("na_action policies", {
   expect_equal(nrow(out_omit), 1L)
 })
 
-test_that("extreme detection 'cap' and 'NA' adjust and warn", {
-  df_ext <- mutate(base_df,
-                   G0 = 40,
-                   I0 = 5000,
-                   TG = 30,
-                   HDL_c = 0.1,
-                   FFA = 5,
-                   waist = 400,
-                   bmi = 100)
-  expect_warning(
-    out_cap <- run_adipo(df_ext, check_extreme = TRUE, extreme_action = "cap"),
-    "adipo_is\\(\\): adjusted .* extreme input values \\(cap\\)\\."
-  )
-  expect_warning(
-    out_na <- run_adipo(df_ext, check_extreme = TRUE, extreme_action = "NA"),
-    "adipo_is\\(\\): adjusted .* extreme input values \\(NA\\)\\."
-  )
-  expect_false(isTRUE(all.equal(out_cap$Revised_QUICKI, out_na$Revised_QUICKI)))
-})
-
-test_that("zero denominator yields NA without error", {
-  df_zero <- mutate(base_df, HDL_c = 0, TG = 0)
-  out_zero <- run_adipo(df_zero)
+test_that("extreme inputs produce NA in sensitive outputs", {
+  df_ext <- mutate(base_df, HDL_c = 0, TG = 0)
+  out_zero <- run_adipo(df_ext, verbose = FALSE)
   expect_true(is.na(out_zero$TG_HDL_C_inv))
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
-  expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): preparing inputs")
-  expect_message(run_adipo(base_df, verbose = TRUE), "column map")
+  expect_message(run_adipo(base_df, verbose = TRUE), "column mapping")
   expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): results")
 })
 
 test_that("verbose column map lists all required keys", {
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
-  map_msg <- msgs[grepl("column map", msgs)]
+  map_msg <- msgs[grepl("column mapping", msgs)]
   expect_length(map_msg, 1L)
   for (key in c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "bmi")) {
     expect_true(grepl(key, map_msg), info = paste("key missing from column map msg:", key))
@@ -218,9 +197,8 @@ test_that("verbose results line reports correct non-NA counts", {
 test_that("verbose = TRUE with inform option emits messages exactly once (no double-fire)", {
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
-  expect_equal(sum(grepl("preparing",  msgs)), 1L)
-  expect_equal(sum(grepl("column map", msgs)), 1L)
-  expect_equal(sum(grepl("results:",   msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_equal(sum(grepl("results:",      msgs)), 1L)
 })
 
 test_that("verbose = FALSE suppresses messages even at inform global level", {

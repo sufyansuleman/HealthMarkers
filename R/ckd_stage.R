@@ -9,12 +9,7 @@
 #'   - "keep"  (retain rows; stages become NA where inputs missing)
 #'   - "omit"  (drop rows with any missing eGFR/UACR that are mapped)
 #'   - "error" (abort if any mapped input missing)
-#' @param check_extreme Logical; if TRUE, screen eGFR/UACR for extreme values.
-#' @param extreme_action One of:
-#'   - "cap"   - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
-#'   - "NA"    - replace out-of-range with NA
-#'   - "error" - abort on any out-of-range value
-#' @param verbose Logical; if TRUE, emits progress messages via `hm_inform()`.
+#' @param verbose Logical; if TRUE (default), emits progress messages via `hm_inform()`.
 #'
 #' @return Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 #' @references \insertRef{kdigo2012ckd}{HealthMarkers}
@@ -26,12 +21,11 @@ ckd_stage <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap","NA","error"),
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "ckd_stage"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   # Auto-fill col_map when not supplied
   col_map <- .hm_autofill_col_map(col_map, data, c("eGFR","UACR"), fn = "ckd_stage")
@@ -64,10 +58,12 @@ ckd_stage <- function(
   keys_for_policy <- c("eGFR", if (has_uacr_col) "UACR")
 
   hm_inform(level = "debug", msg = "ckd_stage(): computing stages")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[intersect(c("eGFR","UACR"), names(col_map))], "ckd_stage")
-  )
+  if (isTRUE(verbose)) {
+    active_keys <- intersect(c("eGFR", "UACR"), names(col_map))
+    map_parts <- vapply(active_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  CKD_stage          [eGFR G-stage]\n  Albuminuria_stage  [UACR A-stage]\n  KDIGO_risk         [combined KDIGO risk category]", fn_name), level = "inform")
+  }
 
   # Coerce to numeric; warn on NA introduction; non-finite -> NA
   eGFR <- data[[col_map$eGFR]]
@@ -107,6 +103,8 @@ ckd_stage <- function(
     rows_with_na <- rep(FALSE, length(eGFR))
   }
 
+  keep <- rep(TRUE, nrow(data))
+
   if (na_action == "error" && any(rows_with_na)) {
     rlang::abort("ckd_stage(): missing/non-finite values in mapped inputs (na_action='error').",
                  class = "healthmarkers_ckd_error_missing_values")
@@ -114,37 +112,6 @@ ckd_stage <- function(
     keep <- !rows_with_na
     eGFR <- eGFR[keep]
     UACR <- UACR[keep]
-  }
-
-  # Optional extremes handling
-  if (isTRUE(check_extreme)) {
-    rules <- list(eGFR = c(0, 200), UACR = c(0, 5000))
-    if (length(eGFR)) {
-      bad_g <- is.finite(eGFR) & (eGFR < rules$eGFR[1] | eGFR > rules$eGFR[2])
-      if (any(bad_g)) {
-        if (extreme_action == "error") {
-          rlang::abort("ckd_stage(): eGFR out of range.", class = "healthmarkers_ckd_error_extreme")
-        } else if (extreme_action == "NA") {
-          eGFR[bad_g] <- NA_real_
-        } else if (extreme_action == "cap") {
-          eGFR[bad_g & eGFR < rules$eGFR[1]] <- rules$eGFR[1]
-          eGFR[bad_g & eGFR > rules$eGFR[2]] <- rules$eGFR[2]
-        }
-      }
-    }
-    if ("UACR" %in% keys_for_policy && length(UACR)) {
-      bad_a <- is.finite(UACR) & (UACR < rules$UACR[1] | UACR > rules$UACR[2])
-      if (any(bad_a)) {
-        if (extreme_action == "error") {
-          rlang::abort("ckd_stage(): UACR out of range.", class = "healthmarkers_ckd_error_extreme")
-        } else if (extreme_action == "NA") {
-          UACR[bad_a] <- NA_real_
-        } else if (extreme_action == "cap") {
-          UACR[bad_a & UACR < rules$UACR[1]] <- rules$UACR[1]
-          UACR[bad_a & UACR > rules$UACR[2]] <- rules$UACR[2]
-        }
-      }
-    }
   }
 
   # G stage
@@ -184,11 +151,12 @@ ckd_stage <- function(
     KDIGO_risk = factor(KDIGO, levels = c("Low","Moderate","High","Very High"))
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = "ckd_stage(): completed")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "ckd_stage")
-  )
+  if (!is.null(id_col)) {
+    out[[id_col]] <- data[[id_col]][keep]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
+
   out
 }

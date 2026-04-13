@@ -16,13 +16,18 @@
 #' @param col_map Named list mapping the required keys to column names:
 #'   total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4,
 #'   aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.
-#' @param na_action One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore; omit drops rows with any NA in used inputs.
-#' @param na_warn_prop Proportion in \eqn{[0,1]} for high-missingness warnings when na_action="warn". Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.
-#' @param extreme_action One of "warn","cap","error","ignore","NA" when check_extreme=TRUE. "cap" truncates to range; "NA" sets out-of-range to NA.
-#' @param extreme_rules Optional list of c(min,max) per key to override defaults.
-#' @param verbose Logical; print progress and completion summary.
-#' @return Tibble with the nine ratio markers.
+#' @param na_action One of `c("keep","omit","error","warn","ignore")`. `"keep"`/`"ignore"` leave NAs;
+#'   `"omit"` drops rows with any NA in used inputs; `"error"` aborts;
+#'   `"warn"` also warns about high missingness.
+#' @param na_warn_prop Proportion in \eqn{[0,1]} for high-missingness warnings
+#'   when `na_action = "warn"`. Default 0.2.
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, input
+#'   availability, inference notes, physiological range information
+#'   (informational only, values not altered), computing markers, and a
+#'   per-column results summary.
+#' @return Tibble with one column per computable ratio. If an ID column is
+#'   detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
+#'   as the first output column.
 #'
 #' @examples
 #' df <- data.frame(
@@ -44,17 +49,17 @@
 #' @export
 hormone_markers <- function(
   data,
-  col_map = NULL,
-  na_action = c("ignore","warn","error","keep","omit"),
+  col_map      = NULL,
+  na_action    = c("keep", "omit", "error", "warn", "ignore"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose      = TRUE
 ) {
-  na_action_raw <- match.arg(na_action)
-  na_action <- if (na_action_raw == "keep") "ignore" else na_action_raw
-  extreme_action <- match.arg(extreme_action)
+  fn_name   <- "hormone_markers"
+  na_action <- match.arg(na_action)
+  if (na_action == "keep") na_action <- "ignore"
+
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
 
   # Per-ratio input dependencies
   ratio_defs <- list(
@@ -111,7 +116,7 @@ hormone_markers <- function(
     c("total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
       "free_T3","free_T4","TSH","aldosterone","renin",
       "insulin","IGF1","prolactin","cortisol_0","cortisol_30"),
-    fn = "hormone_markers")
+    fn = fn_name)
 
   if (is.null(col_map) || !is.list(col_map)) {
     rlang::abort("hormone_markers(): `col_map` must be a named list.", class = "healthmarkers_horm_error_colmap_type")
@@ -134,10 +139,10 @@ hormone_markers <- function(
   # Determine which ratios can be computed from the supplied col_map
   avail_ratios <- vapply(ratio_defs, function(keys) all(keys %in% names(col_map)), logical(1))
   skipped_ratios <- names(ratio_defs)[!avail_ratios]
-  if (length(skipped_ratios) > 0L)
-    hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-              msg = sprintf("hormone_markers(): skipping %d ratio(s) with unmapped inputs: %s",
-                            length(skipped_ratios), paste(skipped_ratios, collapse = ", ")))
+  if (length(skipped_ratios) > 0L && isTRUE(verbose))
+    hm_inform(sprintf("%s(): skipping %d ratio(s) with unmapped inputs: %s",
+                      fn_name, length(skipped_ratios), paste(skipped_ratios, collapse = ", ")),
+              level = "inform")
   if (!any(avail_ratios))
     rlang::abort("hormone_markers(): no computable ratios; supply at least one pair of mapped inputs.",
                  class = "healthmarkers_horm_error_no_ratios")
@@ -165,9 +170,35 @@ hormone_markers <- function(
                  class = "healthmarkers_horm_error_na_warn_prop")
   }
 
-  hm_inform("hormone_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[used_keys], "hormone_markers"))
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(used_keys,
+                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: optional inputs (ratio availability)
+  if (isTRUE(verbose)) {
+    all_needed <- unique(unlist(ratio_defs, use.names = FALSE))
+    avail_k    <- names(col_map)[vapply(names(col_map), function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    absent_k   <- setdiff(all_needed, avail_k)
+    lines      <- sprintf("%s(): optional inputs", fn_name)
+    if (length(avail_k))
+      lines <- c(lines, sprintf("  present:  %s", paste(intersect(all_needed, avail_k), collapse = ", ")))
+    if (length(absent_k))
+      lines <- c(lines, sprintf("  missing:  %s", paste(absent_k, collapse = ", ")))
+    if (length(skipped_ratios))
+      lines <- c(lines, sprintf("  ratios skipped (missing inputs): %s",
+                                paste(skipped_ratios, collapse = ", ")))
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
   # Coerce to numeric; warn if NAs introduced; sanitize non-finite to NA
   for (cn in used_cols) {
@@ -184,8 +215,11 @@ hormone_markers <- function(
   }
 
   # HM-CS: omit rows with any NA in used inputs
-  if (na_action_raw == "omit") {
+  if (na_action == "omit") {
     keep_rows <- stats::complete.cases(data[, used_cols, drop = FALSE])
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep_rows)),
+                level = "inform")
     data <- data[keep_rows, , drop = FALSE]
   }
 
@@ -206,34 +240,40 @@ hormone_markers <- function(
                  class = "healthmarkers_horm_error_missing_values")
   }
 
-  # Extreme scan/handling
-  if (isTRUE(check_extreme)) {
-    rules <- .hor_default_extreme_rules()
-    if (is.list(extreme_rules)) for (nm in names(extreme_rules)) rules[[nm]] <- extreme_rules[[nm]]
-    flags <- .hor_extreme_scan(data, col_map, rules)
-    flagged_total <- sum(vapply(flags, function(x) sum(x, na.rm = TRUE), integer(1)))
-    if (flagged_total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("hormone_markers(): %d extreme input values detected.", flagged_total),
-                     class = "healthmarkers_horm_error_extremes")
-      } else if (extreme_action == "cap") {
-        data <- .hor_cap_inputs(data, flags, col_map, rules)
-        rlang::warn(sprintf("hormone_markers(): capped %d extreme input values into allowed ranges.", flagged_total),
-                    class = "healthmarkers_horm_warn_extremes_capped")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("hormone_markers(): detected %d extreme input values (not altered).", flagged_total),
-                    class = "healthmarkers_horm_warn_extremes_detected")
-      } else if (extreme_action == "NA") {
-        for (nm in names(flags)) {
-          cn <- col_map[[nm]]
-          if (is.null(cn) || !(cn %in% names(data))) next
-          bad <- flags[[nm]]
-          xi <- data[[cn]]
-          xi[bad] <- NA_real_
-          data[[cn]] <- xi
-        }
-      }
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    rules_info   <- .hor_default_extreme_rules()
+    flagged_info <- .hor_extreme_scan(data, col_map, rules_info)
+    total_flagged_info <- sum(vapply(flagged_info, function(x) sum(x, na.rm = TRUE), integer(1)))
+    if (total_flagged_info > 0L) {
+      details <- vapply(names(flagged_info), function(nm) {
+        nb <- sum(flagged_info[[nm]], na.rm = TRUE)
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", nm, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
+  }
+
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    status <- vapply(names(ratio_defs), function(idx) {
+      keys_for_idx <- ratio_defs[[idx]]
+      if (avail_ratios[idx])
+        sprintf("  %-12s [%s]", idx, paste(keys_for_idx, collapse = ", "))
+      else {
+        miss_k <- setdiff(keys_for_idx, names(col_map))
+        sprintf("  %-12s NA [missing: %s]", idx, paste(miss_k, collapse = ", "))
+      }
+    }, character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
   }
 
   # Extract only the vectors actually needed
@@ -264,9 +304,19 @@ hormone_markers <- function(
     attr(out, "inferred_ratios") <- inferred_ratios
   }
 
-  # Completion summary
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "hormone_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    keep_cols     <- c(id_col, setdiff(names(out), id_col))
+    out           <- out[, keep_cols, drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }
@@ -318,19 +368,4 @@ hormone_markers <- function(
     flags[[nm]] <- is.finite(x) & (x < rng[1] | x > rng[2])
   }
   flags
-}
-
-.hor_cap_inputs <- function(df, flags, col_map, rules) {
-  for (nm in names(flags)) {
-    cn <- col_map[[nm]]
-    if (is.null(cn) || !(cn %in% names(df))) next
-    bad <- flags[[nm]]
-    if (!any(bad, na.rm = TRUE)) next
-    lo <- rules[[nm]][1]; hi <- rules[[nm]][2]
-    x <- df[[cn]]
-    x[bad & x < lo] <- lo
-    x[bad & x > hi] <- hi
-    df[[cn]] <- x
-  }
-  df
 }

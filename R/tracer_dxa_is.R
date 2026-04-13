@@ -30,10 +30,6 @@
 #' @param normalize Ignored (kept for backward compatibility).
 #' @param na_action One of c("keep","omit","error") for NA handling on required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings on required inputs. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds for inputs (keys as in col_map).
-#'   If NULL, broad defaults are used.
 #' @param verbose Logical; if TRUE, prints progress messages and a completion summary.
 #'
 #' @return
@@ -67,12 +63,10 @@ tracer_dxa_is <- function(data, col_map = NULL,
                           normalize = NULL,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
-                          check_extreme = FALSE,
-                          extreme_action = c("warn","cap","error","ignore"),
-                          extreme_rules = NULL,
-                          verbose = FALSE) {
+                          verbose = TRUE) {
+  fn_name <- "tracer_dxa_is"
+  id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
   if (!is.null(normalize)) {
     # maintain signature compatibility; explicitly ignore
@@ -130,8 +124,12 @@ tracer_dxa_is <- function(data, col_map = NULL,
 
   # High-missingness warnings on required inputs
   .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[required_keys], "tracer_dxa_is"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(required_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    marker_list <- if (adipose_only) "LIRI_inv, Lipo_inv, ATIRI_inv" else "I_AUC, FFA_AUC, tracer_palmitate_SI, tracer_glycerol_SI, LIRI_inv, Lipo_inv, ATIRI_inv"
+    hm_inform(sprintf("%s(): computing markers:\n  %s", fn_name, marker_list), level = "inform")
+  }
 
   # NA policy on required inputs
   if (na_action == "error") {
@@ -166,37 +164,6 @@ tracer_dxa_is <- function(data, col_map = NULL,
         Lipo_inv            = numeric(),
         ATIRI_inv           = numeric()
       ))
-    }
-  }
-
-  # Optional input extremes scan/cap based on keys present
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .tx_default_extreme_rules(adipose_only) else extreme_rules
-    ex_counts <- integer(0)
-    for (key in intersect(names(rules), required_keys)) {
-      cn <- col_map[[key]]
-      rng <- rules[[key]]
-      x <- data[[cn]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      ex_counts[key] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
-        x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-        x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-        data[[cn]] <- x
-      }
-    }
-    total_ex <- sum(ex_counts, na.rm = TRUE)
-    if (total_ex > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("tracer_dxa_is(): detected %d extreme input values.", total_ex),
-                     class = "healthmarkers_tracer_error_extremes")
-      } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("tracer_dxa_is(): capped %d extreme input values into allowed ranges.", total_ex))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("tracer_dxa_is(): detected %d extreme input values (not altered).", total_ex))
-      }
     }
   }
 
@@ -290,8 +257,16 @@ tracer_dxa_is <- function(data, col_map = NULL,
     rlang::warn(sprintf("tracer_dxa_is(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "tracer_dxa_is"))
+  if (!is.null(id_col)) {
+    # id_col comes from original data (before omit); need the kept rows
+    id_vec <- data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

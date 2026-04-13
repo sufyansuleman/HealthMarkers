@@ -73,10 +73,10 @@ test_that("missing optional biomarkers yield NA columns", {
   expect_true(all(is.na(out$Osteocalcin)))
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "bone_markers")
-  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "column map")
+  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "column mapping")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "results:")
 })
 
@@ -85,7 +85,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     bone_markers(df_full, col_map = cm_full, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -119,20 +119,11 @@ test_that("argument constraints are enforced (height > 0, ref_sd > 0)", {
   expect_error(bone_markers(df_sd0, col_map = cm_full), "BMD_ref_sd' must be positive")
 })
 
-test_that("SDS extremes via check_extreme can cap/NA/error", {
-  df_sds <- df_full
-  df_sds$ALMI_sds <- c(0, 7)  # one extreme value > 6
-  cm_sds <- cm_full
-  cm_sds$ALMI_sds <- "ALMI_sds"
-  # cap
-  out_cap <- bone_markers(df_sds, col_map = cm_sds, check_extreme = TRUE, sds_limit = 6, extreme_action = "cap")
-  expect_equal(nrow(out_cap), 2L)
-  # NA
-  out_na <- bone_markers(df_sds, col_map = cm_sds, check_extreme = TRUE, sds_limit = 6, extreme_action = "NA")
-  expect_equal(nrow(out_na), 2L)
-  # error
-  expect_error(
-    bone_markers(df_sds, col_map = cm_sds, check_extreme = TRUE, sds_limit = 6, extreme_action = "error"),
-    "extreme SDS-like values detected"
-  )
+test_that("extra numeric columns in col_map are passed through", {
+  df_extra <- df_full
+  df_extra$ALMI_sds <- c(0, 2)
+  cm_extra <- cm_full
+  cm_extra$ALMI_sds <- "ALMI_sds"
+  out <- bone_markers(df_extra, col_map = cm_extra)
+  expect_equal(nrow(out), 2L)
 })

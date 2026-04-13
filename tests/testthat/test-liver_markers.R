@@ -91,10 +91,10 @@ test_that("custom column mapping works with renamed inputs", {
   expect_equal(out$FLI, exp(L) / (1 + exp(L)) * 100, tolerance = 1e-8)
 })
 
-test_that("extreme capping count is reflected in verbose summary", {
+test_that("verbose emits range note for out-of-range values", {
   df <- tibble(
     BMI = 24, waist = 80,
-    TG = 5000,  # extreme -> cap
+    TG = 5000,  # above plausible range -> range note in verbose
     GGT = 30, age = 30, AST = 25, ALT = 20,
     platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
@@ -102,27 +102,27 @@ test_that("extreme capping count is reflected in verbose summary", {
   cm <- as.list(names(df)); names(cm) <- names(df)
 
   withr::local_options(healthmarkers.verbose = "inform")
-  expect_warning(
-    expect_message(
-      liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap", verbose = TRUE),
-      "preparing inputs"
-    ),
-    "capped .* extreme input values"
+  expect_message(
+    liver_markers(df, col_map = cm, verbose = TRUE),
+    "range note"
   )
 })
 
-test_that("extreme_action='NA' sets flagged inputs to NA affecting outputs (e.g., FLI)", {
+test_that("extreme values are not altered; non-positive inputs propagate NaN to outputs", {
   df <- tibble(
     BMI = 24, waist = 80,
-    TG = -5,   # out-of-range -> NA
+    TG = -5,   # negative -> log(-5) = NaN -> FLI = NaN
     GGT = 30, age = 30, AST = 25, ALT = 20,
     platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
-  out <- liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(is.na(out$FLI))
+  expect_warning(
+    out <- liver_markers(df, col_map = cm, verbose = FALSE),
+    "log\\(\\) undefined"
+  )
+  expect_true(!is.finite(out$FLI))
 })
 
 test_that("numeric coercion warns when NAs introduced", {
@@ -294,60 +294,61 @@ test_that("na_action='keep' propagates NA to outputs", {
   expect_true(is.na(out$MELD_XI))
 })
 
-test_that("check_extreme='cap' caps out-of-range values and warns", {
+test_that("extreme values compute without error when outside plausible range", {
   df <- tibble(
-    BMI = 80,              # cap to 70
-    waist = 300,           # cap to 200
-    TG = 5000,  # cap to 1500
-    GGT = 5000,            # cap to 2000
-    age = 150,             # cap to 120
-    AST = 6000,            # cap to 5000
-    ALT = 6000,            # cap to 5000
-    platelets = 5,         # cap to 10
-    albumin = 5,           # cap to 15
+    BMI = 80,              # above range
+    waist = 300,           # above range
+    TG = 5000,  # above range
+    GGT = 5000,            # above range
+    age = 150,             # above range
+    AST = 6000,            # above range
+    ALT = 6000,            # above range
+    platelets = 5,         # below range
+    albumin = 5,           # below range
     diabetes = FALSE,
-    bilirubin = 0.05,      # cap to 0.1
-    creatinine = 50        # cap to 20
+    bilirubin = 0.05,      # below range
+    creatinine = 50        # above range
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_warning(
-    out <- liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values"
-  )
+  out <- liver_markers(df, col_map = cm, verbose = FALSE)
   expect_s3_class(out, "tbl_df")
   expect_equal(ncol(out), 7L)
 })
 
-test_that("check_extreme='error' aborts on out-of-range", {
+test_that("extreme values produce finite or NaN/Inf outputs without error", {
   df <- tibble(
     BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
     bilirubin = 0.05, creatinine = 50
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
-  expect_error(
-    liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "error"),
-    "detected .* extreme input values"
-  )
+  out <- liver_markers(df, col_map = cm, verbose = FALSE)
+  expect_s3_class(out, "tbl_df")
+  expect_equal(ncol(out), 7L)
 })
 
-test_that("extreme_action='warn' emits detection warning without capping", {
-  # Avoid unrelated log() warnings by keeping positives where not needed
+test_that("verbose range note is informational and does not warn or cap", {
+  # All values positive so no log/sqrt warnings; only range note emitted in verbose
   df <- tibble(
-    BMI = 5, waist = 30, TG = 2, GGT = 1,  # GGT>0 to avoid log warning
-    age = 10, AST = 1, ALT = 1,                       # keep >0 to avoid extra transforms
+    BMI = 5, waist = 30, TG = 2000, GGT = 3000,
+    age = 10, AST = 1, ALT = 1,
     platelets = 5, albumin = 5, diabetes = FALSE,
-    bilirubin = 0.05, creatinine = 0.1
+    bilirubin = 0.09, creatinine = 0.1
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
-  expect_warning(
-    liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
+  # No warning emitted; range note visible only in verbose messages
+  expect_no_warning(liver_markers(df, col_map = cm, verbose = FALSE))
+
+  # Verbose mode emits range note message
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    liver_markers(df, col_map = cm, verbose = TRUE),
+    "range note"
   )
 })
 
-test_that("extreme_action='ignore' does not warn on extremes", {
+test_that("no warning emitted for extreme values in non-verbose mode", {
   df <- tibble(
     BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
@@ -355,25 +356,40 @@ test_that("extreme_action='ignore' does not warn on extremes", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
 
-  expect_warning(
-    liver_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "ignore"),
-    NA
-  )
+  expect_no_warning(liver_markers(df, col_map = cm, verbose = FALSE))
 })
 
-test_that("invalid extreme_rules aborts with informative error", {
+test_that("BMI pre-computed from weight and height when BMI absent", {
   df <- tibble(
-    BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
+    weight = 70, height = 170,  # BMI = 70 / (1.70)^2 = 24.22
+    waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
     bilirubin = 1.0, creatinine = 0.9
   )
-  cm <- as.list(names(df)); names(cm) <- names(df)
-
-  bad_rules <- list(ALT = c(5, 1)) # min > max
-  expect_error(
-    liver_markers(df, col_map = cm, extreme_rules = bad_rules),
-    "extreme_rules\\[\\['ALT'\\]\\]` must be numeric length-2 with min <= max\\."
+  df_bmi <- tibble(
+    BMI = 70 / (170 / 100)^2,
+    waist = 80, TG = 150, GGT = 30, age = 30,
+    AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
+    bilirubin = 1.0, creatinine = 0.9
   )
+  out_precomp  <- liver_markers(df,     verbose = FALSE)
+  out_explicit <- liver_markers(df_bmi, verbose = FALSE)
+  expect_equal(out_precomp$FLI, out_explicit$FLI, tolerance = 1e-6)
+  expect_equal(out_precomp$NFS, out_explicit$NFS, tolerance = 1e-6)
+})
+
+test_that("ID column is detected and prepended to output", {
+  df <- tibble(
+    id  = c("p1", "p2"),
+    BMI = c(24, 28), waist = c(80, 90), TG = c(150, 200), GGT = c(30, 40),
+    age = c(30, 45), AST = c(25, 35), ALT = c(20, 30), platelets = c(250, 200),
+    albumin = c(45, 42), diabetes = c(FALSE, TRUE),
+    bilirubin = c(1.0, 1.5), creatinine = c(0.9, 1.1)
+  )
+  out <- liver_markers(df, verbose = FALSE)
+  expect_equal(names(out)[1], "id")
+  expect_equal(out$id, c("p1", "p2"))
+  expect_equal(ncol(out), 8L)  # id + 7 markers
 })
 
 test_that("denominator and transform warnings fire (isolated tests)", {

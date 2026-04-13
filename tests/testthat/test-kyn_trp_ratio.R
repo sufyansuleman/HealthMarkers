@@ -25,7 +25,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
   expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "kyn_trp_ratio")
-  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "column map")
+  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "column mapping")
   expect_message(suppressWarnings(kyn_trp_ratio(df, cm, verbose = TRUE)), "results:")
 })
 
@@ -35,7 +35,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     kyn_trp_ratio(df, cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -81,56 +81,10 @@ test_that("ratio computation and high ratio warning", {
   )
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
-  df <- data.frame(
-    Kyn_nM = c(50, 25000, 3000, 15000),
-    Trp_uM = c(5, 200, 60, 50)
-  )
-
-  suppress_ratio_high <- function(expr) {
-    withCallingHandlers(
-      expr,
-      warning = function(w) {
-        if (inherits(w, "healthmarkers_ktr_warn_ratio_high")) {
-          invokeRestart("muffleWarning")
-        }
-      }
-    )
-  }
-
-  # warn: we want only the extremes_detected warning to reach expect_warning
-  expect_warning(
-    suppress_ratio_high(
-      kyn_trp_ratio(df, cm, check_extreme = TRUE, extreme_action = "warn")
-    ),
-    class = "healthmarkers_ktr_warn_extremes_detected"
-  )
-
-  # cap: hide ratio_high and extremes_capped warnings entirely
-  out_cap <- suppressWarnings(
-    suppress_ratio_high(
-      kyn_trp_ratio(df, cm, check_extreme = TRUE, extreme_action = "cap")
-    )
-  )
-  expect_true(all(is.finite(out_cap$kyn_trp_ratio) | is.na(out_cap$kyn_trp_ratio)))
-
-  # NA: hide all warnings, just check NA introduction
-  out_na <- suppressWarnings(
-    suppress_ratio_high(
-      kyn_trp_ratio(df, cm, check_extreme = TRUE, extreme_action = "NA")
-    )
-  )
-  expect_true(any(is.na(out_na$kyn_trp_ratio)))
-
-  # error: hide warnings, assert on error class
-  expect_error(
-    suppressWarnings(
-      suppress_ratio_high(
-        kyn_trp_ratio(df, cm, check_extreme = TRUE, extreme_action = "error")
-      )
-    ),
-    class = "healthmarkers_ktr_error_extremes"
-  )
+test_that("extreme inputs produce NA ratios via zero/invalid denominator", {
+  df <- data.frame(Kyn_nM = c(50, 25000, 3000, 15000), Trp_uM = c(0, 200, 60, 50))
+  out <- suppressWarnings(kyn_trp_ratio(df, cm, verbose = FALSE))
+  expect_true(any(is.na(out$kyn_trp_ratio)))
 })
 
 test_that("padding preserved for keep/warn", {

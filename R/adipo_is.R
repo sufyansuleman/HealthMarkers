@@ -23,15 +23,15 @@
 #' @param col_map Named list mapping keys to columns: G0, I0, TG, HDL_c, FFA, waist, bmi
 #' @param normalize One of c("none","z","inverse","range","robust"); default "none"
 #' @param na_action One of c("keep","omit","error"); default "keep"
-#' @param check_extreme Logical; if TRUE, applies range checks before computing
-#' @param extreme_action One of c("cap","NA","error"); default "cap" when `check_extreme = TRUE`
-#' @param extreme_rules Optional named list of c(min,max) per key (in original units)
-#' @param verbose Logical; when TRUE, emits progress via `hm_inform()`
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, the list
+#'   of indices being computed, and a per-column results summary.
 #' @param ... Reserved
 #'
 #' @return A tibble with columns:
 #' `Revised_QUICKI`, `VAI_Men_inv`, `VAI_Women_inv`, `TG_HDL_C_inv`, `TyG_inv`,
-#' `LAP_Men_inv`, `LAP_Women_inv`, `McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`
+#' `LAP_Men_inv`, `LAP_Women_inv`, `McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`.
+#' If an ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`), it
+#' is prepended as the first output column.
 #'
 #' @references
 #' \insertRef{katz2000quicki}{HealthMarkers};
@@ -54,19 +54,16 @@
 #' )
 #' cm <- as.list(names(df)); names(cm) <- names(df)
 #' out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
-#' head(out)
 #' @export
 adipo_is <- function(data,
                      col_map = NULL,
                      normalize = "none",
                      na_action = c("keep","omit","error"),
-                     check_extreme = FALSE,
-                     extreme_action = c("cap","NA","error"),
-                     extreme_rules = NULL,
-                     verbose = FALSE,
+                     verbose = TRUE,
                      ...) {
+  fn_name   <- "adipo_is"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
+  id_col    <- .hm_detect_id_col(data)
 
   # Validate normalize up front
   allowed_norm <- c("none","z","inverse","range","robust")
@@ -104,13 +101,36 @@ adipo_is <- function(data,
     )
   }
 
-  # Progress message — respect local verbose arg (inform) or fall back to debug
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "adipo_is(): preparing inputs")
-  # Column-resolution report: which data column each key was mapped to
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[req], "adipo_is")
-  )
+  # Progress message — verbose column mapping
+  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = paste0(fn_name, "(): preparing inputs"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    indices <- list(
+      c("Revised_QUICKI",   "G0, I0, FFA"),
+      c("VAI_Men_inv",      "waist, bmi, TG, HDL_c"),
+      c("VAI_Women_inv",    "waist, bmi, TG, HDL_c"),
+      c("TG_HDL_C_inv",     "TG, HDL_c"),
+      c("TyG_inv",          "TG, G0"),
+      c("LAP_Men_inv",      "waist, TG"),
+      c("LAP_Women_inv",    "waist, TG"),
+      c("McAuley_index",    "I0, TG"),
+      c("Adipo_inv",        "FFA, I0"),
+      c("Belfiore_inv_FFA", "I0, FFA")
+    )
+    status <- vapply(indices, function(x) sprintf("  %-20s [%s]", x[1], x[2]), character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Coerce to numeric when needed (warn once per column on NA introduction)
   for (key in req) {
@@ -139,6 +159,9 @@ adipo_is <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped_cols, function(cn) is.na(data[[cn]])))
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
   if (nrow(data) == 0L) {
@@ -154,51 +177,6 @@ adipo_is <- function(data,
       Adipo_inv = numeric(),
       Belfiore_inv_FFA = numeric()
     ))
-  }
-
-  # Optional extremes check
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      list(
-        G0 = c(2, 30),       # mmol/L
-        I0 = c(5, 3000),     # pmol/L
-        TG = c(0.1, 20),     # mmol/L
-        HDL_c = c(0.2, 5),   # mmol/L
-        FFA = c(0.05, 3),    # mmol/L
-        waist = c(30, 250),  # cm
-        bmi = c(10, 80)      # kg/m^2
-      )
-    } else extreme_rules
-
-    cap_to <- function(x, lo, hi) pmax(lo, pmin(hi, x))
-    total_ex <- 0L
-    for (key in intersect(names(rules), req)) {
-      cn <- col_map[[key]]
-      rng <- rules[[key]]
-      x <- data[[cn]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      nbad <- sum(bad, na.rm = TRUE)
-      if (nbad > 0) {
-        total_ex <- total_ex + nbad
-        if (extreme_action == "error") {
-          rlang::abort(
-            sprintf("adipo_is(): values out of range for '%s' (%d cases).", key, nbad),
-            class = "healthmarkers_adipo_is_error_extreme_values"
-          )
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-          data[[cn]] <- x
-        } else if (extreme_action == "cap") {
-          data[[cn]] <- cap_to(x, rng[1], rng[2])
-        }
-      }
-    }
-    if (total_ex > 0 && extreme_action %in% c("cap","NA")) {
-      rlang::warn(
-        sprintf("adipo_is(): adjusted %d extreme input values (%s).", total_ex, extreme_action),
-        class = "healthmarkers_adipo_is_warn_extreme_adjust"
-      )
-    }
   }
 
   # Extract and convert units
@@ -261,10 +239,18 @@ adipo_is <- function(data,
     out[] <- lapply(out, function(x) do.call(norm_fun, list(x = x, method = normalize)))
   }
 
-  # Results summary: non-NA count per output column
+  # Results summary
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+  # --- Verbose: results summary
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "adipo_is")
+    msg   = hm_result_summary(out, fn_name)
   )
   out
 }

@@ -20,13 +20,6 @@
 #'   - "keep"  - keep rows with NA (propagates to outputs)
 #'   - "omit"  - drop rows with NA in any required variable
 #'   - "error" - abort if any required variable has NA
-#' @param check_extreme Logical; if TRUE, screen raw variables for extremes before SDS
-#' @param extreme_action One of:
-#'   - "cap"   - winsorize to bounds
-#'   - "NA"    - set out-of-range to NA
-#'   - "error" - abort on out-of-range
-#' @param extreme_rules Optional named list of c(min, max) per variable (raw scale).
-#'   If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).
 #' @param allow_partial If TRUE, skip variables absent in data (with a warning); if FALSE error
 #' @param prefix Optional prefix for output columns (default "")
 #' @param verbose Logical; when TRUE emit progress via package logger; by default logging is controlled by options(healthmarkers.verbose)
@@ -53,14 +46,12 @@ adiposity_sds_strat <- function(data,
                                 col_map,
                                 ref,
                                 na_action = c("keep","omit","error"),
-                                check_extreme = FALSE,
-                                extreme_action = c("cap","NA","error"),
-                                extreme_rules = NULL,
                                 allow_partial = FALSE,
                                 prefix = "",
-                                verbose = FALSE) {
+                                verbose = TRUE) {
+  fn_name <- "adiposity_sds_strat"
+  id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
   # Custom checks so tests see the expected error messages
   if (!is.list(col_map) || is.null(col_map$sex) || !nzchar(col_map$sex)) {
@@ -145,12 +136,11 @@ adiposity_sds_strat <- function(data,
                  class = "healthmarkers_adiposds_error_no_vars")
   }
 
-  hm_inform(level = "inform", msg = sprintf("adiposity_sds_strat(): preparing inputs (%d vars, %d rows)",
-                                            length(vars), nrow(data)))
-  hm_inform(
-    level = "inform",
-    msg   = hm_fmt_col_map(as.list(stats::setNames(unname(unlist(var_map)), names(var_map))), "adiposity_sds_strat")
-  )
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  %s", fn_name, paste(paste0(prefix, vars, "_SDS"), collapse = ", ")), level = "inform")
+  }
 
   # Coerce to numeric (warn on NA introduction)
   for (v in vars) {
@@ -182,49 +172,6 @@ adiposity_sds_strat <- function(data,
   }
   if (nrow(data) == 0L) return(tibble::tibble())
 
-  # Extreme scan (raw scale)
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      list(
-        BMI = c(5, 80),
-        waist = c(20, 250),
-        weight = c(2, 400),
-        height = c(40, 250),
-        hip = c(30, 250),
-        WC = c(20, 250),
-        HC = c(30, 250)
-      )
-    } else extreme_rules
-
-    total_adj <- 0L
-    for (v in intersect(names(rules), vars)) {
-      cn <- var_map[[v]]
-      rng <- rules[[v]]
-      x <- data[[cn]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      nbad <- sum(bad, na.rm = TRUE)
-      if (nbad > 0) {
-        if (extreme_action == "error") {
-          rlang::abort(sprintf("adiposity_sds_strat(): %d extreme values in '%s'.", nbad, v),
-                       class = "healthmarkers_adiposds_error_extremes")
-        } else if (extreme_action == "NA") {
-          x[bad] <- NA_real_
-          data[[cn]] <- x
-          total_adj <- total_adj + nbad
-        } else if (extreme_action == "cap") {
-          x[bad & x < rng[1]] <- rng[1]
-          x[bad & x > rng[2]] <- rng[2]
-          data[[cn]] <- x
-          total_adj <- total_adj + nbad
-        }
-      }
-    }
-    if (total_adj > 0 && extreme_action %in% c("cap","NA")) {
-      rlang::warn(sprintf("adiposity_sds_strat(): adjusted %d extreme input values (%s).",
-                          total_adj, extreme_action))
-    }
-  }
-
   # Compute SDS
   out_list <- lapply(vars, function(v) {
     stats_M <- ref$M[[v]]
@@ -236,9 +183,14 @@ adiposity_sds_strat <- function(data,
   names(out_list) <- paste0(prefix, vars, "_SDS")
   out <- tibble::as_tibble(out_list)
 
-  hm_inform(
-    level = "inform",
-    msg   = hm_result_summary(out, "adiposity_sds_strat")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
   out
 }

@@ -17,12 +17,14 @@
 #'   - "omit"  (drop rows with any missing/non-finite required inputs)
 #'   - "error" (abort if any required input is missing/non-finite)
 #'   - "warn"  (emit a warning for rows with missing inputs, then keep them)
-#' @param check_extreme Logical; if TRUE, scan computed indices for large magnitudes.
-#' @param extreme_limit Positive numeric threshold used when check_extreme = TRUE.
-#' @param extreme_action One of: "cap","NA","error".
-#' @param verbose Logical; if TRUE, emit progress/completion messages.
+#' @param check_extreme Defunct; ignored. Physiological range checking is
+#'   informational only and shown in `verbose` mode.
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, the list
+#'   of indices being computed, and a per-column results summary.
 #'
-#' @return Tibble with 10 columns (indices listed above).
+#' @return Tibble with 10 columns (indices listed above). If an ID column is
+#'   detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
+#'   as the first output column.
 #' @references
 #' \insertRef{matthews1985homa}{HealthMarkers};
 #' \insertRef{katz2000quicki}{HealthMarkers};
@@ -40,23 +42,19 @@
 #' res <- fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))
 #' head(res)
 #'
-#' # With NA handling and extreme checking
+#' # With NA handling
 #' df2 <- data.frame(G0 = c(5.0, NA), I0 = c(90, 150))
-#' fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep",
-#'            check_extreme = TRUE, extreme_limit = 1e3, extreme_action = "cap")
+#' fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep")
 #' @export
 fasting_is <- function(
   data,
-  col_map = NULL,
-  normalize = c("none","z","inverse","range","robust"),
-  na_action = c("keep","omit","error","warn"),
-  check_extreme = FALSE,
-  extreme_limit = 1e3,
-  extreme_action = c("cap","NA","error"),
-  verbose = FALSE
+  col_map     = NULL,
+  normalize   = c("none", "z", "inverse", "range", "robust"),
+  na_action   = c("keep", "omit", "error", "warn"),
+  verbose     = TRUE
 ) {
-  # Validate normalize early
-  allowed_norm <- c("none","z","inverse","range","robust")
+  fn_name     <- "fasting_is"
+  allowed_norm <- c("none", "z", "inverse", "range", "robust")
   if (length(normalize) == 1L && !normalize %in% allowed_norm) {
     rlang::abort(
       sprintf("`normalize` must be one of: %s", paste(allowed_norm, collapse = ", ")),
@@ -65,13 +63,15 @@ fasting_is <- function(
   }
   normalize <- match.arg(normalize, allowed_norm)
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
-  # Explicit input validation (HM-CS v3)
+  # Explicit input validation
   if (!is.data.frame(data)) {
     rlang::abort("fasting_is(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_fi_error_data_type")
   }
+
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
   col_map <- .hm_autofill_col_map(col_map, data, c("G0","I0"), fn = "fasting_is")
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("fasting_is(): `col_map` must be a named list with entries for G0 and I0.",
@@ -94,16 +94,27 @@ fasting_is <- function(
     )
   }
 
-  if (!(is.logical(check_extreme) && length(check_extreme) == 1L && !is.na(check_extreme))) {
-    rlang::abort("`check_extreme` must be a single logical.", class = "healthmarkers_fi_error_checkextreme")
-  }
-  if (!(is.numeric(extreme_limit) && length(extreme_limit) == 1L && is.finite(extreme_limit) && extreme_limit > 0)) {
-    rlang::abort("`extreme_limit` must be a single positive numeric.", class = "healthmarkers_fi_error_extremlimit")
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req_keys,
+                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "fasting_is(): preparing inputs")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req_keys], "fasting_is"))
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    indices <- c("Fasting_inv","Raynaud","HOMA_IR_inv","FIRI","QUICKI",
+                 "Belfiore_basal","Ig_ratio_basal","Isi_basal","Bennett","HOMA_IR_rev_inv")
+    status <- vapply(indices, function(m) sprintf("  %-20s [G0, I0]", m), character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Coerce to numeric; warn if NAs introduced; non-finite -> NA
   for (nm in req_keys) {
@@ -134,15 +145,18 @@ fasting_is <- function(
                 class = "healthmarkers_fi_warn_na")
   } else if (na_action == "omit" && any(rows_with_na)) {
     keep <- !rows_with_na
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     G0 <- G0[keep]; I0 <- I0[keep]
   }
 
-  hm_inform("fasting_is(): converting units (mmol/L->mg/dL; pmol/L->muU/mL)", level = "debug")
+  hm_inform(sprintf("%s(): converting units (mmol/L->mg/dL; pmol/L->muU/mL)", fn_name), level = "debug")
 
   G0_mg <- G0 * 18
   I0_u  <- I0 / 6
 
-  hm_inform("fasting_is(): computing indices", level = "debug")
+  hm_inform(sprintf("%s(): computing indices", fn_name), level = "debug")
 
   lg <- function(x) {
     y <- x
@@ -169,26 +183,6 @@ fasting_is <- function(
     Bennett         = sdiv(1, lg(I0_u) * lg(G0_mg)),
     HOMA_IR_rev_inv = -sdiv(I0_u * G0_mg, 405)
   )
-
-  # Optional extreme handling on outputs
-  if (isTRUE(check_extreme)) {
-    m <- as.matrix(out)
-    ext_mask <- is.finite(m) & abs(m) > extreme_limit
-    n_ext <- sum(ext_mask)
-    if (n_ext > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("fasting_is(): %d extreme values beyond +/-%g.", n_ext, extreme_limit),
-                     class = "healthmarkers_fi_error_extreme")
-      } else if (extreme_action == "NA") {
-        m[ext_mask] <- NA_real_
-        out[] <- m
-      } else if (extreme_action == "cap") {
-        m[ext_mask & m > 0] <-  extreme_limit
-        m[ext_mask & m < 0] <- -extreme_limit
-        out[] <- m
-      }
-    }
-  }
 
   # Inline normalization
   if (normalize != "none") {
@@ -223,9 +217,18 @@ fasting_is <- function(
     out[] <- lapply(out, normalize_vec, method = normalize)
   }
 
-  # Completion summary
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "fasting_is"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

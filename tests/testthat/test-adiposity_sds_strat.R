@@ -150,7 +150,7 @@ test_that("allow_partial=FALSE errors when data var missing", {
   )
 })
 
-test_that("extreme detection cap/NA adjust and warn", {
+test_that("check_extreme removed: function passes through raw outlier rows", {
   df <- tibble(
     sex = c("M","F"),
     BMI = c(120, 2),
@@ -160,23 +160,8 @@ test_that("extreme detection cap/NA adjust and warn", {
     M = list(BMI = c(mean=23, sd=3), waist = c(mean=85, sd=10)),
     F = list(BMI = c(mean=21, sd=3), waist = c(mean=75, sd=9))
   )
-
-  cap_msg <- NULL
-  out_cap <- withCallingHandlers(
-    adiposity_sds_strat(df, col_map = cm, ref = ref, check_extreme = TRUE, extreme_action = "cap"),
-    warning = function(w) {
-      msg <- conditionMessage(w)
-      if (grepl("adjusted .* extreme input values \\(cap\\)", msg)) {
-        cap_msg <<- msg
-        invokeRestart("muffleWarning")
-      }
-    }
-  )
-  expect_true(!is.null(cap_msg))
-  expect_match(cap_msg, "adjusted [0-9]+ extreme input values \\(cap\\)")
-
-  expect_true(all(abs(out_cap$BMI_SDS) < 25))
-  expect_true(all(abs(out_cap$waist_SDS) < 25))
+  out <- adiposity_sds_strat(df, col_map = cm, ref = ref)
+  expect_equal(nrow(out), 2L)
 })
 
 test_that("prefix applied to output columns", {
@@ -198,11 +183,11 @@ test_that("numeric sex coding 1/2 accepted", {
   expect_named(out, c("BMI_SDS", "waist_SDS"))
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(sex = "M", BMI = 25, waist = 95)
   expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "adiposity_sds_strat")
-  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "column map")
+  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "column mapping")
   expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "results:")
 })
 
@@ -212,6 +197,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

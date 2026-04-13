@@ -40,31 +40,28 @@
 #'   in used inputs before computing markers. Default "ignore".
 #' @param na_warn_prop Proportion (0-1) threshold for high-missingness warnings
 #'   among used columns when `na_action = "warn"`. Default 0.2.
-#' @param check_extreme Logical; if `TRUE`, scan selected input variables for values
-#'   outside plausible ranges defined in `extreme_rules`. Default `FALSE`.
-#' @param extreme_action One of `c("warn","cap","error","ignore","NA")` controlling
-#'   how to handle extremes when `check_extreme = TRUE`. If "cap", values are
-#'   truncated to the allowed range; if "NA", out-of-range values become NA.
-#'   Default "warn".
-#' @param extreme_rules Named list of numeric length-2 ranges for inputs to scan when
-#'   `check_extreme = TRUE`. Defaults are broad medical plausibility ranges:
-#'   - HDL_c: c(0.1, 5), TG: c(0.1, 20), BMI: c(10, 80),
-#'   - glucose: c(2, 30), HbA1c: c(20, 200), C_peptide: c(0, 5000),
-#'   - G0: c(2, 30), I0: c(0, 3000), leptin: c(0, 200), adiponectin: c(0, 300).
-#'   Only variables present in `data` are checked.
-#' @param verbose Logical; if `TRUE`, prints progress and a completion summary. Default FALSE.
+#' @param verbose Logical; if `TRUE` (default), prints step-by-step progress
+#'   including column mapping, optional input availability, pre-computation
+#'   notes, physiological range information (informational only, values are not
+#'   altered), the list of markers being computed with their inputs, and a
+#'   per-column results summary.
 #'
 #' @return A tibble with columns:
 #'   - SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index
+#'   If an ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`),
+#'   it is prepended as the first output column.
 #'
 #' @details
-#' Optional marker detection:
-#' When `col_map = NULL` (default), an identity map for all 10 keys is built
-#' automatically. The seven optional keys (glucose, HbA1c, C_peptide, G0, I0,
-#' leptin, adiponectin) are computed only when the corresponding column exists
-#' in `data`. When `verbose = TRUE`, any optional markers whose columns are
-#' absent are listed in an informational message so the caller knows which
-#' derived metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+#' Optional marker detection and pre-computation (one level deep):
+#' When `col_map = NULL` (default), column names are inferred automatically.
+#' The seven optional keys (glucose, HbA1c, C_peptide, G0, I0, leptin,
+#' adiponectin) are computed only when present in `data`. If `BMI` is absent
+#' but `weight` (kg) and `height` (m or cm) are present, BMI is computed
+#' automatically. If `glucose` is absent but `G0` column exists (or vice
+#' versa), the missing key is derived via alias. With `verbose = TRUE`
+#' (default), the function reports: column mapping, what is missing and which
+#' raw inputs could provide it, which indices will be NA and why, any
+#' physiological range notes, and a per-column results summary.
 #'
 #' Notes on HOMA_CP:
 #' - This function retains the package's existing operational formula:
@@ -96,100 +93,171 @@
 #'   leptin      = c(10, 20),
 #'   adiponectin = c(8, 5)
 #' )
-#' # Quiet defaults
+#' # Full verbose output (default — shows mapping, missing notes, results)
 #' glycemic_markers(df)
-#' # Warn on missingness and scan for extremes with capping
-#' glycemic_markers(df,
-#'   na_action = "warn", na_warn_prop = 0.1,
-#'   check_extreme = TRUE, extreme_action = "cap",
-#'   verbose = TRUE
-#' )
+#' # Suppress messaging for batch use
+#' glycemic_markers(df, verbose = FALSE)
+#' # Drop rows with any missing input
+#' glycemic_markers(df, na_action = "omit", verbose = FALSE)
 glycemic_markers <- function(
   data,
-  col_map = NULL,
-  na_action = c("ignore","warn","error","keep","omit"),
+  col_map      = NULL,
+  na_action    = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose      = TRUE
 ) {
+  fn_name   <- "glycemic_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
-  hm_inform("glycemic_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-
-  # Normalize col_map to identity if NULL
-  if (is.null(col_map)) {
-    col_map <- list(
-      HDL_c = "HDL_c", TG = "TG", BMI = "BMI",
-      glucose = "glucose", HbA1c = "HbA1c", C_peptide = "C_peptide",
-      G0 = "G0", I0 = "I0", leptin = "leptin", adiponectin = "adiponectin"
-    )
-  }
-
-  # HM-CS v3: explicit input validation (no hm_validate_inputs)
   if (!is.data.frame(data)) {
-    stop("glycemic_markers(): `data` must be a data.frame or tibble.", call. = FALSE)
+    stop(sprintf("%s(): `data` must be a data.frame or tibble.", fn_name), call. = FALSE)
   }
 
-  # Fill in identity mappings for required keys not supplied by the user
+  # --- Detect and preserve ID column -----------------------------------------
+  id_col <- .hm_detect_id_col(data)
+
+  # --- Build col_map ----------------------------------------------------------
+  all_gm_keys <- c("HDL_c", "TG", "BMI", "HbA1c", "C_peptide", "G0", "I0",
+                   "leptin", "adiponectin", "glucose")
   req_keys <- c("HDL_c", "TG", "BMI")
-  for (k in req_keys) {
-    if (is.null(col_map[[k]])) col_map[[k]] <- k
+  opt_keys <- c("glucose", "HbA1c", "C_peptide", "G0", "I0", "leptin", "adiponectin")
+
+  col_map <- .hm_autofill_col_map(col_map, data, all_gm_keys, fn = fn_name)
+  for (k in all_gm_keys) {
+    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
   }
 
-  # Pre-check required columns to match expected error message
-  req_cols <- unname(unlist(col_map[req_keys]))
-  miss <- setdiff(req_cols, names(data))
-  if (length(miss)) {
-    stop(sprintf("missing required columns: %s", paste(miss, collapse = ", ")), call. = FALSE)
-  }
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req_keys], "glycemic_markers"))
-
-  # Determine used keys present in data
-  all_keys <- c(req_keys, "glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")
-  present <- vapply(all_keys, function(k) {
-    nm <- col_map[[k]]
-    !is.null(nm) && nm %in% names(data)
-  }, logical(1))
-  used_keys <- all_keys[present]
-
-  # Notify user about omitted optional markers when verbose
-  opt_keys <- c("glucose","HbA1c","C_peptide","G0","I0","leptin","adiponectin")
-  omitted_opt <- setdiff(opt_keys, used_keys)
-  if (length(omitted_opt) > 0L && isTRUE(verbose)) {
+  # --- Verbose: column mapping ------------------------------------------------
+  if (isTRUE(verbose)) {
+    found_keys <- intersect(all_gm_keys, names(col_map))
+    map_parts  <- vapply(found_keys,
+                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                         character(1))
     hm_inform(
-      sprintf("glycemic_markers(): optional markers not computed (columns absent): %s",
-              paste(omitted_opt, collapse = ", ")),
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
       level = "inform"
     )
   }
 
+  # --- Pre-computation: fill missing required keys from raw inputs ------------
+  missing_req <- setdiff(req_keys, names(col_map))
+  if (length(missing_req) > 0L) {
+    pc      <- .hm_precompute_from_deps(data, .gm_precompute_deps(),
+                                        missing_req, fn = fn_name, verbose = verbose)
+    data    <- pc$data
+    for (k in missing_req) {
+      if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+    }
+    missing_req <- setdiff(req_keys, names(col_map))
+  }
+  if (length(missing_req)) {
+    stop(sprintf("%s(): missing required columns: %s",
+                 fn_name, paste(missing_req, collapse = ", ")), call. = FALSE)
+  }
+
+  req_cols <- unname(unlist(col_map[req_keys]))
+  miss     <- setdiff(req_cols, names(data))
+  if (length(miss)) {
+    stop(sprintf("%s(): missing required columns: %s",
+                 fn_name, paste(miss, collapse = ", ")), call. = FALSE)
+  }
+
+  # --- Determine which optional keys are present ------------------------------
+  present_opt <- vapply(opt_keys, function(k) {
+    nm <- col_map[[k]]
+    !is.null(nm) && nm %in% names(data)
+  }, logical(1))
+  used_opt_keys <- opt_keys[present_opt]
+
+  # --- Pre-computation: fill derivable optional keys (one-level) -------------
+  missing_opt <- setdiff(opt_keys, used_opt_keys)
+  if (length(missing_opt) > 0L) {
+    pc          <- .hm_precompute_from_deps(data, .gm_precompute_deps(),
+                                            missing_opt, fn = fn_name, verbose = verbose)
+    newly_added <- setdiff(names(pc$data), names(data))
+    if (length(newly_added) > 0L) {
+      data <- pc$data
+      for (k in newly_added) {
+        if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
+      }
+      present_opt <- vapply(opt_keys, function(k) {
+        nm <- col_map[[k]]
+        !is.null(nm) && nm %in% names(data)
+      }, logical(1))
+      used_opt_keys <- opt_keys[present_opt]
+      missing_opt   <- setdiff(opt_keys, used_opt_keys)
+    }
+  }
+
+  used_keys <- c(req_keys, used_opt_keys)
   used_cols <- unname(unlist(col_map[used_keys]))
 
-  hm_inform("glycemic_markers(): coercing used columns to numeric", level = "debug")
+  # --- Verbose: optional inputs + what each missing key affects ---------------
+  if (isTRUE(verbose)) {
+    idx_deps <- list(
+      METS_IR     = c("glucose"),
+      prediabetes = c("HbA1c"),
+      diabetes    = c("HbA1c"),
+      HOMA_CP     = c("C_peptide", "G0"),
+      LAR         = c("leptin", "adiponectin"),
+      ASI         = c("adiponectin", "I0"),
+      TyG_index   = c("glucose")
+    )
+    na_indices <- character(0)
+    for (idx in names(idx_deps)) {
+      still_missing <- setdiff(idx_deps[[idx]], used_opt_keys)
+      if (length(still_missing)) {
+        na_indices <- c(na_indices,
+          sprintf("  %s -> NA  [missing: %s]", idx, paste(still_missing, collapse = ", ")))
+      }
+    }
+    deps_all        <- .gm_precompute_deps()
+    derivable_hints <- character(0)
+    for (k in missing_opt) {
+      dep <- deps_all[[k]]
+      if (!is.null(dep)) {
+        prereqs_absent <- setdiff(dep$needs, names(data))
+        if (length(prereqs_absent) == 0L) {
+          derivable_hints <- c(derivable_hints,
+            sprintf("  %s can be derived from: %s", k, paste(dep$needs, collapse = ", ")))
+        } else {
+          derivable_hints <- c(derivable_hints,
+            sprintf("  %s: provide %s to enable", k, paste(dep$needs, collapse = ", ")))
+        }
+      }
+    }
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(used_opt_keys))
+      lines <- c(lines, sprintf("  present:  %s", paste(used_opt_keys, collapse = ", ")))
+    if (length(missing_opt))
+      lines <- c(lines, sprintf("  missing:  %s", paste(missing_opt, collapse = ", ")))
+    if (length(na_indices))
+      lines <- c(lines, "  indices -> NA:", na_indices)
+    if (length(derivable_hints))
+      lines <- c(lines, "  derivable:", derivable_hints)
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
-  # Coerce used columns to numeric and report NAs introduced
+  # --- Coerce used columns to numeric -----------------------------------------
   for (cn in used_cols) {
     if (!is.numeric(data[[cn]])) {
-      old <- data[[cn]]
-      suppressWarnings(data[[cn]] <- as.numeric(old))
-      introduced_na <- sum(is.na(data[[cn]]) & !is.na(old))
+      old_vals <- data[[cn]]
+      suppressWarnings(data[[cn]] <- as.numeric(old_vals))
+      introduced_na <- sum(is.na(data[[cn]]) & !is.na(old_vals))
       if (introduced_na > 0) {
-        warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d", cn, introduced_na), call. = FALSE)
+        warning(sprintf("Column '%s' coerced to numeric; NAs introduced: %d",
+                        cn, introduced_na), call. = FALSE)
       }
     }
   }
 
-  # Extract vectors via mapping
+  # --- Extract vectors --------------------------------------------------------
   getv <- function(key) if (key %in% used_keys) data[[col_map[[key]]]] else NULL
 
-  HDL_c <- data[[col_map$HDL_c]]
-  TG    <- data[[col_map$TG]]
-  BMI   <- data[[col_map$BMI]]
-
+  HDL_c       <- data[[col_map$HDL_c]]
+  TG          <- data[[col_map$TG]]
+  BMI         <- data[[col_map$BMI]]
   glucose     <- getv("glucose")
   HbA1c       <- getv("HbA1c")
   C_peptide   <- getv("C_peptide")
@@ -198,19 +266,19 @@ glycemic_markers <- function(
   leptin      <- getv("leptin")
   adiponectin <- getv("adiponectin")
 
-  # NA handling
-  used_df <- data[, used_cols, drop = FALSE]
+  # --- NA handling ------------------------------------------------------------
+  used_df     <- data[, used_cols, drop = FALSE]
   nonfin_mask <- vapply(used_cols, function(cn) any(!is.finite(data[[cn]])), logical(1))
   if (na_action == "warn" && any(nonfin_mask)) {
-    wvars <- paste(used_cols[nonfin_mask], collapse = ", ")
-    warning(sprintf("Non-finite values detected in: %s; treated as NA.", wvars), call. = FALSE)
+    warning(sprintf("Non-finite values detected in: %s; treated as NA.",
+                    paste(used_cols[nonfin_mask], collapse = ", ")), call. = FALSE)
   }
   if (na_action == "error" && any(!stats::complete.cases(used_df))) {
-    stop("glycemic_markers(): missing or non-finite values in required inputs with na_action='error'.", call. = FALSE)
+    stop(sprintf("%s(): missing or non-finite values in required inputs with na_action='error'.",
+                 fn_name), call. = FALSE)
   } else if (na_action == "omit") {
-    keep <- stats::complete.cases(used_df)
-    data <- data[keep, , drop = FALSE]
-    # re-extract after filtering
+    keep  <- stats::complete.cases(used_df)
+    data  <- data[keep, , drop = FALSE]
     HDL_c <- HDL_c[keep]; TG <- TG[keep]; BMI <- BMI[keep]
     if (!is.null(glucose))     glucose     <- glucose[keep]
     if (!is.null(HbA1c))       HbA1c       <- HbA1c[keep]
@@ -221,91 +289,74 @@ glycemic_markers <- function(
     if (!is.null(adiponectin)) adiponectin <- adiponectin[keep]
   }
 
-  # Extreme-value scan and optional handling
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .gm_default_extreme_rules() else {
-      # overlay defaults with user-supplied ranges
-      def <- .gm_default_extreme_rules()
-      if (is.list(extreme_rules)) {
-        for (nm in names(extreme_rules)) def[[nm]] <- extreme_rules[[nm]]
-      }
-      def
+  # --- Verbose: physiological range check (informational, values not altered) --
+  if (isTRUE(verbose)) {
+    rules         <- .gm_default_extreme_rules()
+    remapped_rules <- list()
+    for (nm in names(rules)) {
+      cn <- if (!is.null(col_map[[nm]])) col_map[[nm]] else nm
+      remapped_rules[[cn]] <- rules[[nm]]
     }
-    # Remap rule names (keys) to actual column names to support col_map
-    if (!is.null(names(rules))) {
-      remapped <- list()
-      for (nm in names(rules)) {
-        col_nm <- if (!is.null(col_map[[nm]])) col_map[[nm]] else nm
-        remapped[[col_nm]] <- rules[[nm]]
-      }
-      rules <- remapped
-    }
-    vars_to_scan <- intersect(used_cols, names(rules))
-    ex <- .gm_extreme_scan(data, vars_to_scan, rules)
+    scan_vars <- intersect(used_cols, names(remapped_rules))
+    ex        <- .gm_extreme_scan(data, scan_vars, remapped_rules)
     if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        stop(sprintf("glycemic_markers(): %d extreme input values detected.", ex$count), call. = FALSE)
-      } else if (extreme_action == "cap") {
-        data <- .gm_cap_inputs(data, ex$flags, rules)
-        warning(sprintf("glycemic_markers(): capped %d extreme input values into allowed ranges.", ex$count), call. = FALSE)
-      } else if (extreme_action == "warn") {
-        warning(sprintf("glycemic_markers(): detected %d extreme input values (not altered).", ex$count), call. = FALSE)
-      } else if (extreme_action == "NA") {
-        # set out-of-range to NA
-        for (v in names(ex$flags)) {
-          cn <- v
-          bad <- ex$flags[[v]]
-          x <- data[[cn]]
-          x[bad] <- NA_real_
-          data[[cn]] <- x
-        }
-      }
+      details <- vapply(names(ex$flags), function(v) {
+        nb <- sum(ex$flags[[v]])
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", v, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
-    # refresh vectors from possibly modified data
-    HDL_c <- data[[col_map$HDL_c]]
-    TG    <- data[[col_map$TG]]
-    BMI   <- data[[col_map$BMI]]
-    if (!is.null(glucose))     glucose     <- data[[col_map$glucose]]
-    if (!is.null(HbA1c))       HbA1c       <- data[[col_map$HbA1c]]
-    if (!is.null(C_peptide))   C_peptide   <- data[[col_map$C_peptide]]
-    if (!is.null(G0))          G0          <- data[[col_map$G0]]
-    if (!is.null(I0))          I0          <- data[[col_map$I0]]
-    if (!is.null(leptin))      leptin      <- data[[col_map$leptin]]
-    if (!is.null(adiponectin)) adiponectin <- data[[col_map$adiponectin]]
   }
 
-  hm_inform("glycemic_markers(): computing markers", level = "debug")
+  # --- Verbose: which markers will be computed and from what ------------------
+  if (isTRUE(verbose)) {
+    status <- c(
+      "  SPISE           [HDL_c, TG, BMI]",
+      sprintf("  METS_IR         %s",
+              if (!is.null(glucose)) "[glucose, TG, BMI, HDL_c]" else "NA [glucose missing]"),
+      sprintf("  prediabetes     %s",
+              if (!is.null(HbA1c))  "[HbA1c]"                    else "NA [HbA1c missing]"),
+      sprintf("  diabetes        %s",
+              if (!is.null(HbA1c))  "[HbA1c]"                    else "NA [HbA1c missing]"),
+      sprintf("  HOMA_CP         %s",
+              if (!is.null(C_peptide) && !is.null(G0)) "[G0, C_peptide]"
+              else "NA [C_peptide/G0 missing]"),
+      sprintf("  LAR             %s",
+              if (!is.null(leptin) && !is.null(adiponectin)) "[leptin, adiponectin]"
+              else "NA [leptin/adiponectin missing]"),
+      sprintf("  ASI             %s",
+              if (!is.null(adiponectin) && !is.null(I0)) "[adiponectin, I0]"
+              else "NA [adiponectin/I0 missing]"),
+      sprintf("  TyG_index       %s",
+              if (!is.null(glucose)) "[TG, glucose]" else "NA [glucose missing]")
+    )
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
-  # helpers for safe math
+  # --- Compute markers --------------------------------------------------------
   lg <- function(x) .gm_log(x)
   dv <- function(a, b) .gm_safe_div(a, b)
 
-  # Unit conversions for indices that require mg/dL
-  TG_mgdl  <- TG * 88.57
+  TG_mgdl <- TG * 88.57
 
-  # compute markers
   SPISE <- dv(600 * (HDL_c ^ 0.185), ((TG ^ 0.2) * (BMI ^ 1.338)))
 
-  # METS-IR (use mmol/L as in tests; denominator ln(HDL_c) -> NA if HDL_c == 1)
   METS_IR <- if (!is.null(glucose)) {
-    num <- lg(2 * glucose + TG)
-    den <- lg(HDL_c)
-    dv(num * BMI, den)
+    dv(lg(2 * glucose + TG) * BMI, lg(HDL_c))
   } else {
     rep(NA_real_, NROW(HDL_c))
   }
 
-  prediabetes <- if (!is.null(HbA1c)) {
-    as.integer(HbA1c >= 42)
-  } else {
-    rep(NA_integer_, NROW(HDL_c))
-  }
-
-  diabetes <- if (!is.null(HbA1c)) {
-    as.integer(HbA1c >= 48)
-  } else {
-    rep(NA_integer_, NROW(HDL_c))
-  }
+  prediabetes <- if (!is.null(HbA1c)) as.integer(HbA1c >= 42) else rep(NA_integer_, NROW(HDL_c))
+  diabetes    <- if (!is.null(HbA1c)) as.integer(HbA1c >= 48) else rep(NA_integer_, NROW(HDL_c))
 
   HOMA_CP <- if (!is.null(C_peptide) && !is.null(G0)) {
     dv(G0 * (C_peptide / 6), 22.5)
@@ -326,66 +377,66 @@ glycemic_markers <- function(
   }
 
   TyG_index <- if (!is.null(glucose)) {
-    Glu_mgdl <- glucose * 18
-    lg((TG_mgdl * Glu_mgdl) / 2)
+    lg((TG_mgdl * (glucose * 18)) / 2)
   } else {
     rep(NA_real_, NROW(HDL_c))
   }
 
   out <- tibble::tibble(
-    SPISE = SPISE,
-    METS_IR = METS_IR,
+    SPISE       = SPISE,
+    METS_IR     = METS_IR,
     prediabetes = prediabetes,
-    diabetes = diabetes,
-    HOMA_CP = HOMA_CP,
-    LAR = LAR,
-    ASI = ASI,
-    TyG_index = TyG_index
+    diabetes    = diabetes,
+    HOMA_CP     = HOMA_CP,
+    LAR         = LAR,
+    ASI         = ASI,
+    TyG_index   = TyG_index
   )
 
-  # Completion summary
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "glycemic_markers"))
+  # --- Prepend ID column if detected ------------------------------------------
+  if (!is.null(id_col)) {
+    id_vec         <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]]  <- id_vec
+    out            <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out            <- tibble::as_tibble(out)
+  }
 
-  return(out)
+  # --- Verbose: results summary -----------------------------------------------
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
+
+  out
 }
 
 # ---- internal helpers (not exported) ----------------------------------------
 
-.gm_validate_args <- function(na_warn_prop, check_extreme, extreme_rules, verbose) {
-  if (!(is.numeric(na_warn_prop) && length(na_warn_prop) == 1L && is.finite(na_warn_prop) &&
-        na_warn_prop >= 0 && na_warn_prop <= 1)) {
-    stop("`na_warn_prop` must be a single numeric in [0, 1].", call. = FALSE)
-  }
-  if (!(is.logical(check_extreme) && length(check_extreme) == 1L && !is.na(check_extreme))) {
-    stop("`check_extreme` must be a single logical value.", call. = FALSE)
-  }
-  if (!is.null(extreme_rules) && !is.list(extreme_rules)) {
-    stop("`extreme_rules` must be NULL or a named list of length-2 numeric ranges.", call. = FALSE)
-  }
-  if (!(is.logical(verbose) && length(verbose) == 1L && !is.na(verbose))) {
-    stop("`verbose` must be a single logical value.", call. = FALSE)
-  }
-  invisible(TRUE)
-}
-
-.gm_quality_scan <- function(df, vars, .warn = FALSE, na_warn_prop = 0.2) {
-  any_na <- character(0); high_na <- character(0); nonfin <- character(0)
-  for (v in vars) {
-    x <- df[[v]]
-    n_nonfin <- sum(!is.finite(x))
-    if (n_nonfin > 0L) nonfin <- c(nonfin, sprintf("%s(%d non-finite)", v, n_nonfin))
-    x_na <- sum(is.na(x))
-    if (length(x) > 0L && x_na > 0L) any_na <- c(any_na, v)
-    if (length(x) > 0L && (x_na / length(x)) >= na_warn_prop && x_na > 0L) {
-      high_na <- c(high_na, sprintf("%s(%.1f%% NA)", v, 100 * x_na / length(x)))
-    }
-  }
-  if (.warn) {
-    if (length(nonfin)) warning(sprintf("Non-finite values: %s; treated as NA.", paste(nonfin, collapse = ", ")), call. = FALSE)
-    if (length(high_na)) warning(sprintf("High missingness (>= %.0f%%): %s.", 100 * na_warn_prop, paste(high_na, collapse = ", ")), call. = FALSE)
-  }
-  list(any_na = unique(any_na), high_na = unique(high_na), nonfin = unique(nonfin))
+# Dependency map for one-level pre-computation inside glycemic_markers().
+# Each entry: list(needs, describe, compute). `needs` are literal column names
+# that must exist in data; `compute(data)` returns a numeric vector.
+.gm_precompute_deps <- function() {
+  list(
+    BMI = list(
+      needs    = c("weight", "height"),
+      describe = "weight_kg / height_m^2",
+      compute  = function(data) {
+        w   <- as.numeric(data[["weight"]])
+        h   <- as.numeric(data[["height"]])
+        h_m <- ifelse(is.finite(h) & h > 3, h / 100, h)  # cm -> m if needed
+        w / (h_m ^ 2)
+      }
+    ),
+    glucose = list(
+      needs    = "G0",
+      describe = "alias: fasting glucose (G0)",
+      compute  = function(data) as.numeric(data[["G0"]])
+    ),
+    G0 = list(
+      needs    = "glucose",
+      describe = "alias: fasting glucose (glucose)",
+      compute  = function(data) as.numeric(data[["glucose"]])
+    )
+  )
 }
 
 .gm_default_extreme_rules <- function() {
@@ -413,19 +464,6 @@ glycemic_markers <- function(
   })
   names(flags) <- vars
   list(count = sum(vapply(flags, sum, integer(1))), flags = flags)
-}
-
-.gm_cap_inputs <- function(df, flags, rules) {
-  for (v in names(flags)) {
-    if (is.null(rules[[v]])) next
-    rng <- rules[[v]]
-    x <- df[[v]]
-    bad <- flags[[v]]
-    x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-    x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-    df[[v]] <- x
-  }
-  df
 }
 
 .gm_safe_div <- function(num, den) {

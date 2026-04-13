@@ -51,32 +51,21 @@ test_that("ckd_stage na_action = error aborts on missing mapped inputs", {
   )
 })
 
-test_that("extreme scan: cap, NA, error on eGFR/UACR", {
+test_that("extreme eGFR/UACR values stage correctly without error", {
   df <- data.frame(eGFR = c(250, 60), UACR = c(10, 6000))
-  res_cap <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
-                       check_extreme = TRUE, extreme_action = "cap")
-  # eGFR 250 capped at 200 -> still G1; UACR 6000 capped at 5000 -> A3
-  expect_equal(as.character(res_cap$CKD_stage[1]), "G1")
-  expect_equal(as.character(res_cap$Albuminuria_stage[2]), "A3")
-
-  res_na <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
-                      check_extreme = TRUE, extreme_action = "NA")
-  expect_true(is.na(res_na$CKD_stage[1]))
-  expect_true(is.na(res_na$Albuminuria_stage[2]))
-
-  expect_error(
-    ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"),
-              check_extreme = TRUE, extreme_action = "error"),
-    class = "healthmarkers_ckd_error_extreme"
-  )
+  res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
+  # eGFR 250 > G1 threshold, maps to G1
+  expect_equal(as.character(res$CKD_stage[1]), "G1")
+  # UACR 6000 > 300 -> A3
+  expect_equal(as.character(res$Albuminuria_stage[2]), "A3")
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
   cm2 <- list(eGFR = "eGFR", UACR = "UACR")
   expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "ckd_stage")
-  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "column map")
+  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "column mapping")
   expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "results:")
 })
 
@@ -87,6 +76,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     ckd_stage(df, col_map = cm2, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

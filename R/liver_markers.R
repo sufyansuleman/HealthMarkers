@@ -26,18 +26,18 @@
 #'   - `age` (years), `AST` (U/L), `ALT` (U/L), `platelets` (10^9/L),
 #'   - `albumin` (g/L), `diabetes` (0/1 or logical),
 #'   - `bilirubin` (mg/dL), `creatinine` (mg/dL).
-#' @param verbose Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.
-#' @param na_action One of c("keep","omit","error") controlling missing-data policy. Default "keep" (preserves prior behavior).
-#'   - "keep": leave NAs; they propagate to outputs.
-#'   - "omit": drop rows with NA in any required input.
-#'   - "error": abort if any required input contains NA.
-#' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes are detected (only used if `check_extreme = TRUE`).
-#'   - "warn": only warn (default), "cap": truncate to allowed range, "error": abort, "ignore": do nothing.
-#' @param extreme_rules Optional named list of c(min,max) ranges for keys in `col_map`. If NULL, broad defaults are used.
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, input
+#'   availability, physiological range information (informational only, values
+#'   not altered), the list of markers being computed with their inputs, and a
+#'   per-column results summary.
+#' @param na_action One of `c("keep","omit","error")` controlling missing-data
+#'   policy. Default "keep".
+#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for
+#'   high-missingness warnings. Default 0.2.
 #'
-#' @return A tibble with one column per marker: `FLI`, `NFS`, `APRI`, `FIB4`, `BARD`, `ALBI`, `MELD_XI`.
+#' @return A tibble with one column per marker: `FLI`, `NFS`, `APRI`, `FIB4`,
+#'   `BARD`, `ALBI`, `MELD_XI`. If an ID column is detected in `data` (e.g.
+#'   `id`, `IID`, `participant_id`), it is prepended as the first output column.
 #'
 #' @details
 #' Formulas 
@@ -67,17 +67,8 @@
 #'   bilirubin     = 1.0, # mg/dL
 #'   creatinine    = 0.9  # mg/dL
 #' )
-#' liver_markers(df, verbose = TRUE)
-#'
-#' \donttest{
-#' # With extreme-value capping and diagnostics
-#' liver_markers(
-#'   df,
-#'   check_extreme = TRUE,
-#'   extreme_action = "cap",
-#'   verbose = TRUE
-#' )
-#' }
+#' liver_markers(df)
+#' liver_markers(df, verbose = FALSE)
 #'
 #' @references
 #' \insertRef{bedogni2006fli}{HealthMarkers}
@@ -92,25 +83,37 @@
 #' @importFrom rlang abort warn inform
 #' @export
 liver_markers <- function(data,
-                          col_map = NULL,
-                          verbose = FALSE,
-                          na_action = c("keep","omit","error","ignore","warn"),
-                          na_warn_prop = 0.2,
-                          check_extreme = FALSE,
-                          extreme_action = c("warn","cap","error","ignore","NA"),
-                          extreme_rules = NULL) {
-  .na <- .hm_normalize_na_action(match.arg(na_action))
-  na_action_raw <- .na$na_action_raw
-  na_action <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+                          col_map      = NULL,
+                          verbose      = TRUE,
+                          na_action    = c("keep", "omit", "error"),
+                          na_warn_prop = 0.2) {
+  fn_name   <- "liver_markers"
+  na_action <- match.arg(na_action)
 
-  hm_inform("liver_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  if (!is.data.frame(data))
+    stop(sprintf("%s(): `data` must be a data.frame or tibble.", fn_name), call. = FALSE)
+
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
 
   required <- c("BMI","waist","TG","GGT","age","AST","ALT",
                 "platelets","albumin","diabetes","bilirubin","creatinine")
 
-  explicit_col_map <- !is.null(col_map)  # was a non-NULL col_map explicitly supplied?
-  col_map <- .hm_autofill_col_map(col_map, data, required, fn = "liver_markers")
+  explicit_col_map <- !is.null(col_map)
+  col_map <- .hm_autofill_col_map(col_map, data, required, fn = fn_name)
+
+  # --- Pre-computation: BMI from weight + height if absent
+  if ((is.null(col_map[["BMI"]]) || !(col_map[["BMI"]] %in% names(data))) &&
+      all(c("weight", "height") %in% names(data))) {
+    h   <- as.numeric(data[["height"]])
+    w   <- as.numeric(data[["weight"]])
+    h_m <- ifelse(is.finite(h) & h > 3, h / 100, h)
+    data[["BMI"]] <- w / (h_m ^ 2)
+    col_map[["BMI"]] <- "BMI"
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): pre-computation: BMI computed from weight, height", fn_name),
+                level = "inform")
+  }
 
   if (explicit_col_map) {
     # Strict mode: error if a mapped column is absent, error if required key missing
@@ -147,7 +150,7 @@ liver_markers <- function(data,
 
   # Additional robust validation (structural only)
   .lm_validate_args(data, if (length(col_map) > 0L) col_map else list(placeholder = "x"),
-                    na_warn_prop, extreme_rules)
+                    na_warn_prop, NULL)
 
   # Helper: pull column as numeric vector, NA if key unavailable
   .lm_col <- function(k) {
@@ -155,10 +158,20 @@ liver_markers <- function(data,
     if (is.null(cn)) rep(NA_real_, nrow(data)) else data[[cn]]
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[intersect(required, names(col_map))], "liver_markers"))
-
   avail_cols <- unlist(col_map[intersect(required, names(col_map))], use.names = FALSE)
+
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    found_keys <- intersect(required, names(col_map))
+    map_parts  <- vapply(found_keys,
+                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                         character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
 
   # HM-CS v3: coerce to numeric for all available required inputs
   for (cn in avail_cols) {
@@ -172,8 +185,8 @@ liver_markers <- function(data,
     }
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
-  # Missingness warnings only when na_action_raw == "warn"
-  if (identical(na_action_raw, "warn")) {
+  # Missingness warnings only when na_action == "warn"
+  if (identical(na_action, "warn")) {
     .lm_warn_high_missing(data, avail_cols, na_warn_prop = na_warn_prop)
   }
 
@@ -188,46 +201,88 @@ liver_markers <- function(data,
   } else if (identical(na_action, "omit")) {
     avail_req <- intersect(required, names(col_map))
     keep <- !Reduce(`|`, lapply(avail_req, function(k) is.na(data[[col_map[[k]]]])))
-    hm_inform(sprintf("liver_markers(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   } # "keep" leaves NA as-is
 
-  # Optional extreme scan/cap
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .lm_default_extreme_rules() else extreme_rules
-    ex <- .lm_extreme_scan(data, col_map, rules, required)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("liver_markers(): detected %d extreme input values.", ex$count),
-          class = "healthmarkers_liver_error_extremes"
-        )
-      } else if (extreme_action == "cap") {
-        data <- .lm_cap_inputs(data, ex$flags, col_map, rules)
-        capped_n <- ex$count
-        rlang::warn(sprintf("liver_markers(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("liver_markers(): detected %d extreme input values (not altered).", ex$count))
-      } else if (extreme_action == "NA") {
-        # Set flagged extreme inputs to NA in-place
-        for (nm in names(ex$flags)) {
-          bad <- ex$flags[[nm]]
-          if (!is.null(col_map[[nm]])) {
-            cn <- col_map[[nm]]
-            if (!is.null(cn) && cn %in% names(data)) {
-              xi <- data[[cn]]
-              xi[bad] <- NA_real_
-              data[[cn]] <- xi
-            }
-          }
-        }
-      }
-      # "ignore": do nothing
+  # --- Verbose: inputs present/absent and which markers will be NA
+  if (isTRUE(verbose)) {
+    avail_keys <- names(col_map)[vapply(names(col_map), function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    absent_keys <- setdiff(required, avail_keys)
+    idx_deps <- list(
+      FLI     = c("BMI", "waist", "TG", "GGT"),
+      NFS     = c("age", "BMI", "diabetes", "AST", "ALT", "platelets", "albumin"),
+      APRI    = c("AST", "platelets"),
+      FIB4    = c("age", "AST", "platelets", "ALT"),
+      BARD    = c("BMI", "AST", "ALT", "diabetes"),
+      ALBI    = c("bilirubin", "albumin"),
+      MELD_XI = c("bilirubin", "creatinine")
+    )
+    na_indices <- character(0)
+    for (idx in names(idx_deps)) {
+      miss_for_idx <- setdiff(idx_deps[[idx]], avail_keys)
+      if (length(miss_for_idx))
+        na_indices <- c(na_indices,
+          sprintf("  %s -> NA  [missing: %s]", idx, paste(miss_for_idx, collapse = ", ")))
+    }
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(avail_keys))
+      lines <- c(lines, sprintf("  present:  %s", paste(intersect(required, avail_keys), collapse = ", ")))
+    if (length(absent_keys))
+      lines <- c(lines, sprintf("  missing:  %s", paste(absent_keys, collapse = ", ")))
+    if (length(na_indices))
+      lines <- c(lines, "  indices -> NA:", na_indices)
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
+
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    rules_info <- .lm_default_extreme_rules()
+    ex_info    <- .lm_extreme_scan(data, col_map, rules_info, required)
+    if (ex_info$count > 0L) {
+      details <- vapply(names(ex_info$flags), function(cn) {
+        nb <- sum(ex_info$flags[[cn]], na.rm = TRUE)
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", cn, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
   }
 
-  hm_inform("liver_markers(): computing indices", level = "debug")
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    avail_keys <- names(col_map)[vapply(names(col_map), function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    idx_deps2 <- list(
+      FLI     = c("BMI", "waist", "TG", "GGT"),
+      NFS     = c("age", "BMI", "diabetes", "AST", "ALT", "platelets", "albumin"),
+      APRI    = c("AST", "platelets"),
+      FIB4    = c("age", "AST", "platelets", "ALT"),
+      BARD    = c("BMI", "AST", "ALT", "diabetes"),
+      ALBI    = c("bilirubin", "albumin"),
+      MELD_XI = c("bilirubin", "creatinine")
+    )
+    status <- vapply(names(idx_deps2), function(idx) {
+      miss_in <- setdiff(idx_deps2[[idx]], avail_keys)
+      if (length(miss_in) == 0L)
+        sprintf("  %-10s [%s]", idx, paste(idx_deps2[[idx]], collapse = ", "))
+      else
+        sprintf("  %-10s NA [missing: %s]", idx, paste(miss_in, collapse = ", "))
+    }, character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Pull vectors (NA vector when column unavailable)
   BMI        <- .lm_col("BMI")
@@ -308,15 +363,25 @@ liver_markers <- function(data,
     MELD_XI = MELD_XI
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "liver_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   return(out)
 }
 
 # ---- internal helpers (not exported) -----------------------------------------
 
-.lm_validate_args <- function(data, col_map, na_warn_prop, extreme_rules) {
+.lm_validate_args <- function(data, col_map, na_warn_prop, extreme_rules = NULL) {
   if (!is.data.frame(data)) {
     rlang::abort("liver_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_liver_error_data_type")
@@ -329,19 +394,6 @@ liver_markers <- function(data,
         is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
     rlang::abort("liver_markers(): `na_warn_prop` must be a single numeric in [0, 1].",
                  class = "healthmarkers_liver_error_na_warn_prop")
-  }
-  if (!is.null(extreme_rules)) {
-    if (!is.list(extreme_rules)) {
-      rlang::abort("liver_markers(): `extreme_rules` must be NULL or a named list of c(min,max).",
-                   class = "healthmarkers_liver_error_extreme_rules_type")
-    }
-    for (nm in names(extreme_rules)) {
-      rng <- extreme_rules[[nm]]
-      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)) && rng[1] <= rng[2])) {
-        rlang::abort(sprintf("liver_markers(): `extreme_rules[['%s']]` must be numeric length-2 with min <= max.", nm),
-                     class = "healthmarkers_liver_error_extreme_rules_value")
-      }
-    }
   }
   invisible(TRUE)
 }
@@ -375,21 +427,6 @@ liver_markers <- function(data,
     count <- count + sum(bad, na.rm = TRUE)
   }
   list(count = count, flags = flags)
-}
-
-.lm_cap_inputs <- function(df, flags, col_map, rules) {
-  for (cn in names(flags)) {
-    rn <- names(col_map)[match(cn, unlist(col_map, use.names = FALSE))]
-    rn <- rn[!is.na(rn)][1]
-    if (is.na(rn) || is.null(rules[[rn]])) next
-    rng <- rules[[rn]]
-    x <- df[[cn]]
-    bad <- flags[[cn]]
-    x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-    x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-    df[[cn]] <- x
-  }
-  df
 }
 
 .lm_warn_high_missing <- function(df, cols, na_warn_prop = 0.2) {

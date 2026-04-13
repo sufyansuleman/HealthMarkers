@@ -37,13 +37,7 @@
 #'   - "error": abort if any required input contains NA.
 #'   - "ignore"/"warn": aliases of "keep"; "warn" also emits missingness diagnostics.
 #' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for out-of-range values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when extremes are detected
-#'   (only when `check_extreme = TRUE`).
-#'   - "warn": only warn (default), "cap": truncate to range and warn,
-#'   - "error": abort, "ignore": do nothing, "NA": set flagged inputs to NA.
-#' @param extreme_rules Optional named list of c(min,max) ranges for required keys. If NULL, broad defaults are used.
-#' @param verbose Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #'
 #' @return A tibble with four factor columns (levels c("0","1")):
 #' - dyslipidemia
@@ -70,19 +64,15 @@ metabolic_risk_features <- function(
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "metabolic_risk_features"
+  id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
 
-  hm_inform("metabolic_risk_features(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-
-  .mrf_validate_args(data, col_map, na_warn_prop, extreme_rules)
+  .mrf_validate_args(data, col_map, na_warn_prop)
 
   # Required keys and column mapping
   required_cols <- c(
@@ -124,8 +114,13 @@ metabolic_risk_features <- function(
     )
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[required_cols], "metabolic_risk_features"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(required_cols, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf(
+      "%s(): computing markers:\n  dyslipidemia       [chol_total, chol_ldl, chol_hdl, triglycerides, age_year]\n  insulin_resistance [z_HOMA]\n  hyperglycemia      [glucose, HbA1c]\n  hypertension       [bp_sys_z, bp_dia_z]",
+      fn_name), level = "inform")
+  }
 
   # HM-CS v2: numeric coercion for required inputs; warn if NAs introduced; set non-finite to NA
   for (cn in mapped_cols) {
@@ -156,36 +151,6 @@ metabolic_risk_features <- function(
     hm_inform(sprintf("metabolic_risk_features(): omitting %d rows with NA in required inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
-
-  # Optional extreme scan/capping
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .mrf_default_extreme_rules() else extreme_rules
-    ex <- .mrf_extreme_scan(data, col_map, rules, required_cols)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("metabolic_risk_features(): detected %d extreme input values.", ex$count),
-                     class = "healthmarkers_mrf_error_extremes")
-      } else if (extreme_action == "cap") {
-        data <- .mrf_cap_inputs(data, ex$flags, col_map, rules)
-        capped_n <- ex$count
-        rlang::warn(sprintf("metabolic_risk_features(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("metabolic_risk_features(): detected %d extreme input values (not altered).", ex$count))
-      } else if (extreme_action == "NA") {
-        for (cn in names(ex$flags)) {
-          bad <- ex$flags[[cn]]
-          if (cn %in% names(data)) {
-            xi <- data[[cn]]
-            xi[bad] <- NA_real_
-            data[[cn]] <- xi
-          }
-        }
-      }
-    }
-  }
-
-  hm_inform("metabolic_risk_features(): computing flags", level = "debug")
 
   # Shorthand for mapped columns
   CT  <- data[[col_map$chol_total]]
@@ -231,15 +196,19 @@ metabolic_risk_features <- function(
     )
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(tibble::as_tibble(out), "metabolic_risk_features"))
-
-  return(tibble::as_tibble(out))
+  out <- tibble::as_tibble(out)
+  if (!is.null(id_col)) {
+    out[[id_col]] <- data[[id_col]]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
+  out
 }
 
 # ---- internal helpers (not exported) -----------------------------------------
 
-.mrf_validate_args <- function(data, col_map, na_warn_prop, extreme_rules) {
+.mrf_validate_args <- function(data, col_map, na_warn_prop) {
   if (!is.data.frame(data)) {
     rlang::abort("metabolic_risk_features(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_mrf_error_data_type")
@@ -254,19 +223,6 @@ metabolic_risk_features <- function(
         is.finite(na_warn_prop) && na_warn_prop >= 0 && na_warn_prop <= 1)) {
     rlang::abort("metabolic_risk_features(): `na_warn_prop` must be a single numeric in [0, 1].",
                  class = "healthmarkers_mrf_error_na_warn_prop")
-  }
-  if (!is.null(extreme_rules)) {
-    if (!is.list(extreme_rules)) {
-      rlang::abort("metabolic_risk_features(): `extreme_rules` must be NULL or a named list of c(min,max).",
-                   class = "healthmarkers_mrf_error_extreme_rules_type")
-    }
-    for (nm in names(extreme_rules)) {
-      rng <- extreme_rules[[nm]]
-      if (!(is.numeric(rng) && length(rng) == 2L && all(is.finite(rng)) && rng[1] <= rng[2])) {
-        rlang::abort(sprintf("metabolic_risk_features(): `extreme_rules[['%s']]` must be numeric length-2 with min <= max.", nm),
-                     class = "healthmarkers_mrf_error_extreme_rules_value")
-      }
-    }
   }
   invisible(TRUE)
 }

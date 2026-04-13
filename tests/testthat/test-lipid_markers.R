@@ -15,7 +15,7 @@ test_that("lipid_markers computes core lipid markers", {
     LDL_c = "LDL_c",
     ApoB  = "ApoB",
     ApoA1 = "ApoA1"
-  ))
+  ), verbose = FALSE)
 
   expect_named(out, c(
     "non_HDL_c", "remnant_c", "ratio_TC_HDL",
@@ -29,14 +29,21 @@ test_that("lipid_markers computes core lipid markers", {
   expect_equal(out$ApoB_ApoA1, 1.1 / 1.5)
 })
 
-test_that("lipid_markers estimates LDL via Friedewald when LDL_c missing", {
+test_that("lipid_markers estimates LDL via Friedewald when LDL_c absent, no warning", {
   df2 <- tibble(TC = 5, HDL_c = 1, TG = 1.5)
-  expect_warning(
-    out2 <- lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG")),
-    "estimating LDL_c via Friedewald"
+  expect_no_warning(
+    out2 <- lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG"), verbose = FALSE)
   )
   # LDL = 5 - 1 - (1.5/5) = 3.7
   expect_equal(out2$ratio_LDL_HDL, 3.7 / 1)
+})
+
+test_that("lipid_markers emits informational message for Friedewald LDL", {
+  df2 <- tibble(TC = 5, HDL_c = 1, TG = 1.5)
+  msgs <- testthat::capture_messages(
+    lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG"), verbose = TRUE)
+  )
+  expect_true(any(grepl("Friedewald", msgs)))
 })
 
 test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provided", {
@@ -54,7 +61,7 @@ test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provide
     ApoA1 = "ApoA1",
     waist = "waist",
     BMI   = "BMI"
-  ))
+  ), verbose = FALSE)
   expect_true(all(c("VAI_Men", "VAI_Women") %in% names(out3)))
   exp_men <- (85 / (39.68 + 1.88 * 26)) * (1.3 / 1.03) * (1.31 / 1)
   exp_wom <- (85 / (36.58 + 1.89 * 26)) * (1.3 / 0.81) * (1.52 / 1)
@@ -64,28 +71,22 @@ test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provide
 
 test_that("lipid_markers omits VAI when waist or BMI missing", {
   df4a <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 85) # BMI missing
-  expect_warning(
-    out4a <- lipid_markers(df4a, col_map = list(
-      TC    = "TC",
-      HDL_c = "HDL_c",
-      TG    = "TG",
-      waist = "waist"
-    )),
-    "estimating LDL_c via Friedewald"
-  )
+  out4a <- lipid_markers(df4a, col_map = list(
+    TC    = "TC",
+    HDL_c = "HDL_c",
+    TG    = "TG",
+    waist = "waist"
+  ), verbose = FALSE)
   expect_false("VAI_Men" %in% names(out4a))
   expect_false("VAI_Women" %in% names(out4a))
 
   df4b <- tibble(TC = 5, HDL_c = 1, TG = 1.3, BMI = 26) # waist missing
-  expect_warning(
-    out4b <- lipid_markers(df4b, col_map = list(
-      TC    = "TC",
-      HDL_c = "HDL_c",
-      TG    = "TG",
-      BMI   = "BMI"
-    )),
-    "estimating LDL_c via Friedewald"
-  )
+  out4b <- lipid_markers(df4b, col_map = list(
+    TC    = "TC",
+    HDL_c = "HDL_c",
+    TG    = "TG",
+    BMI   = "BMI"
+  ), verbose = FALSE)
   expect_false("VAI_Men" %in% names(out4b))
   expect_false("VAI_Women" %in% names(out4b))
 })
@@ -96,15 +97,12 @@ test_that("lipid_markers omits VAI when waist or BMI missing", {
 
 test_that("lipid_markers computes LAP_Men and LAP_Women when waist provided", {
   df_lap <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 100)
-  expect_warning(
-    out_lap <- lipid_markers(df_lap, col_map = list(
-      TC    = "TC",
-      HDL_c = "HDL_c",
-      TG    = "TG",
-      waist = "waist"
-    )),
-    "estimating LDL_c via Friedewald"
-  )
+  out_lap <- lipid_markers(df_lap, col_map = list(
+    TC    = "TC",
+    HDL_c = "HDL_c",
+    TG    = "TG",
+    waist = "waist"
+  ), verbose = FALSE)
   expect_true(all(c("LAP_Men", "LAP_Women") %in% names(out_lap)))
 
   exp_lap_men <- (100 - 65) * 1.3
@@ -115,14 +113,11 @@ test_that("lipid_markers computes LAP_Men and LAP_Women when waist provided", {
 
 test_that("lipid_markers omits LAP when waist missing", {
   df_no_lap <- tibble(TC = 5, HDL_c = 1, TG = 1.3)
-  expect_warning(
-    out_no_lap <- lipid_markers(df_no_lap, col_map = list(
-      TC    = "TC",
-      HDL_c = "HDL_c",
-      TG    = "TG"
-    )),
-    "estimating LDL_c via Friedewald"
-  )
+  out_no_lap <- lipid_markers(df_no_lap, col_map = list(
+    TC    = "TC",
+    HDL_c = "HDL_c",
+    TG    = "TG"
+  ), verbose = FALSE)
   expect_false("LAP_Men" %in% names(out_no_lap))
   expect_false("LAP_Women" %in% names(out_no_lap))
 })
@@ -133,7 +128,7 @@ test_that("lipid_markers omits LAP when waist missing", {
 
 test_that("na_action='omit' drops rows with NA in required inputs", {
   df <- tibble(TC = c(5, NA), HDL_c = c(1, 1), TG = c(1.3, 1.4), LDL_c = c(3.7, 3.8))
-  out <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"), na_action = "omit")
+  out <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"), na_action = "omit", verbose = FALSE)
   expect_equal(nrow(out), 1L)
   expect_equal(out$ratio_TC_HDL, 5/1)
 })
@@ -141,50 +136,76 @@ test_that("na_action='omit' drops rows with NA in required inputs", {
 test_that("na_action='error' aborts on NA in required inputs", {
   df <- tibble(TC = c(5, NA), HDL_c = c(1, 1), TG = c(1.3, 1.4))
   expect_error(
-    lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG"), na_action = "error"),
+    lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG"), na_action = "error", verbose = FALSE),
     "missing or non-finite"
   )
 })
 
-test_that("extreme handling: cap and NA", {
+test_that("extreme values produce no warning/error; range note appears in verbose", {
   df <- tibble(TC = 5, HDL_c = 1, TG = -3, LDL_c = 3) # negative TG out-of-range
-   # cap -> TG becomes 0, ratio_TG_HDL = 0/1 = 0
-   expect_warning(
-    out_cap <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"),
-                             check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values"
+  expect_no_warning(
+    out <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"),
+                         verbose = FALSE)
   )
-  expect_equal(out_cap$ratio_TG_HDL, 0)
-  # NA -> TG becomes NA, ratio_TG_HDL becomes NA
-  out_na <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"),
-                           check_extreme = TRUE, extreme_action = "NA")
-  expect_true(is.na(out_na$ratio_TG_HDL))
+  # TG = -3 propagates; no alteration
+  expect_false(is.na(out$ratio_TG_HDL))
+  # Range note appears in verbose output
+  msgs <- testthat::capture_messages(
+    lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"),
+                  verbose = TRUE)
+  )
+  expect_true(any(grepl("range note", msgs)))
 })
 
 test_that("numeric coercion warns when NAs introduced", {
   df <- tibble(TC = c("5","oops"), HDL_c = c("1","1"), TG = c("1.3","1.4"), LDL_c = c(3, 3))
-   expect_warning(
-    lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c")),
+  expect_warning(
+    lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"), verbose = FALSE),
     "coerced to numeric; NAs introduced"
   )
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
-  withr::local_options(healthmarkers.verbose = "inform")
+test_that("verbose emits column mapping, optional inputs, computing markers, and results messages", {
   df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
   cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
-  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "lipid_markers")
-  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "column map")
-  expect_message(lipid_markers(df_v, cm_v, verbose = TRUE), "results:")
+  msgs <- testthat::capture_messages(lipid_markers(df_v, cm_v, verbose = TRUE))
+  expect_true(any(grepl("column mapping", msgs)))
+  expect_true(any(grepl("optional inputs", msgs)))
+  expect_true(any(grepl("computing markers", msgs)))
+  expect_true(any(grepl("results:", msgs)))
 })
 
 test_that("verbose double-fire guard", {
-  withr::local_options(healthmarkers.verbose = "inform")
   df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
   cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
   msgs <- testthat::capture_messages(
     lipid_markers(df_v, cm_v, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
-  expect_equal(sum(grepl("results:",   msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_equal(sum(grepl("results:",        msgs)), 1L)
+  expect_equal(sum(grepl("optional inputs", msgs)), 1L)
+  expect_equal(sum(grepl("computing markers", msgs)), 1L)
+})
+
+test_that("ID column is prepended to output when detected", {
+  df_id <- tibble::tibble(
+    id = 1:3, TC = c(5, 5.5, 6), HDL_c = c(1, 1.1, 1.2),
+    TG = c(1.3, 1.4, 1.5), LDL_c = c(3, 3.2, 3.4)
+  )
+  out <- lipid_markers(df_id, verbose = FALSE)
+  expect_equal(names(out)[1L], "id")
+  expect_equal(out$id, 1:3)
+})
+
+test_that("BMI is pre-computed from weight and height enabling VAI and TyG_BMI", {
+  df_bmi <- tibble::tibble(
+    TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3,
+    waist = 85, weight = 70, height = 175, glucose = 5.5
+  )
+  out <- lipid_markers(df_bmi, verbose = FALSE)
+  bmi_expected <- 70 / (1.75) ^ 2
+  vai_men_expected <- (85 / (39.68 + 1.88 * bmi_expected)) * (1.3 / 1.03) * (1.31 / 1)
+  expect_true("VAI_Men" %in% names(out))
+  expect_equal(out$VAI_Men, vai_men_expected, tolerance = 1e-6)
+  expect_true("TyG_BMI" %in% names(out))
 })

@@ -215,7 +215,7 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
     progesterone = "progesterone", free_T3 = "free_T3",
     aldosterone  = "aldosterone", renin = "renin",
     IGF1         = "IGF1",      prolactin = "prolactin",
-    cortisol_0   = "Cortisol",  cortisol_30 = "Cortisol",
+    cortisol_0   = "cortisol_0",  cortisol_30 = "cortisol_30",
     insulin      = "fasting_insulin",
     # Sarcopenia
     strength     = "strength",  walking = "walking",
@@ -267,6 +267,86 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
                             paste(names(out), unlist(out), sep = "->", collapse = ", ")))
   }
   out
+}
+
+#' Detect a participant/sample ID column in a data frame
+#'
+#' Checks column names against common patterns (case-insensitive exact match):
+#' id, iid, participant_id, subject_id, sample_id, pid, sid, record_id.
+#' Returns the first matching column name, or NULL if none found.
+#' @keywords internal
+.hm_detect_id_col <- function(data) {
+  nms       <- names(data)
+  nms_lower <- tolower(nms)
+  candidates <- c("id", "iid", "participant_id", "participantid",
+                  "subject_id",  "subjectid",  "sample_id",  "sampleid",
+                  "pid",         "sid",         "record_id")
+  for (cand in candidates) {
+    m <- which(nms_lower == cand)
+    if (length(m)) return(nms[m[1L]])
+  }
+  NULL
+}
+
+#' One-level pre-computation of missing keys from existing raw columns
+#'
+#' Given a dependency map (\code{deps}), for each key in \code{missing_keys}
+#' checks whether its prerequisite columns are present in \code{data}. If yes,
+#' the key is computed and added as a new column; otherwise an informational
+#' message is emitted (when \code{verbose = TRUE}) indicating what to provide.
+#'
+#' @param data         data.frame to augment.
+#' @param deps         Named list of dependency definitions, each with:
+#'   \describe{
+#'     \item{needs}{character vector of prerequisite column names}
+#'     \item{describe}{short human-readable formula string}
+#'     \item{compute}{function(data) returning a numeric vector}
+#'   }
+#' @param missing_keys character vector of key names to attempt to compute.
+#' @param fn           calling function name (for messages).
+#' @param verbose      logical.
+#' @return A list with \code{$data} (augmented data.frame) and
+#'   \code{$log} (character vector of per-key messages).
+#' @keywords internal
+.hm_precompute_from_deps <- function(data, deps, missing_keys,
+                                     fn = "", verbose = FALSE) {
+  if (length(missing_keys) == 0L) return(list(data = data, log = character(0)))
+  log_msgs <- character(0)
+
+  for (key in missing_keys) {
+    dep <- deps[[key]]
+    if (is.null(dep)) next
+
+    prereqs_absent <- setdiff(dep$needs, names(data))
+
+    if (length(prereqs_absent) == 0L) {
+      computed <- tryCatch(dep$compute(data), error = function(e) NULL)
+      if (!is.null(computed) && length(computed) == nrow(data)) {
+        data[[key]] <- computed
+        n_ok <- sum(!is.na(computed))
+        msg  <- sprintf("  -> %s computed from %s [%s]: %d/%d valid",
+                        key, paste(dep$needs, collapse = ", "),
+                        dep$describe, n_ok, nrow(data))
+        log_msgs <- c(log_msgs, msg)
+        if (isTRUE(verbose)) {
+          hm_inform(
+            paste0(sprintf("%s(): pre-computation:\n", fn), msg),
+            level = "inform"
+          )
+        }
+      }
+    } else {
+      if (isTRUE(verbose)) {
+        hm_inform(
+          sprintf("%s(): pre-computation: %s cannot be derived — provide: %s",
+                  fn, key, paste(prereqs_absent, collapse = ", ")),
+          level = "inform"
+        )
+      }
+    }
+  }
+
+  list(data = data, log = log_msgs)
 }
 
 #' Summarise a result tibble: count non-NA rows per output column

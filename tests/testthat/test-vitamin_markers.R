@@ -92,34 +92,28 @@ test_that("verbose double-fire guard", {
   cm <- cm_id(df)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(vitamin_markers(df, col_map = cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
-  expect_equal(sum(grepl("results:",   msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_equal(sum(grepl("results:",       msgs)), 1L)
 })
 
-test_that("extreme detection: ignore=no warning (unchanged), warn warns (unchanged), cap warns (changed)", {
+test_that("extreme values produce range note in verbose; no warning in non-verbose mode", {
   base <- make_full_df(1)
   df <- base
   df$VitD <- 1000
   df$Ferritin <- 5000
   cm <- cm_id(df)
 
-  out0 <- vitamin_markers(base, col_map = cm_id(base))
-  expect_warning(
-    out_ignore <- vitamin_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "ignore"),
-    NA
-  )
-  expect_equal(out_ignore$VitD_Z, (1000 - 40) / 5, tolerance = 1e-8)
+  # No warning emitted in non-verbose mode
+  expect_no_warning(vitamin_markers(df, col_map = cm, verbose = FALSE))
 
-  expect_warning(
-    out_warn <- vitamin_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "warn"),
-    "extreme input values"
-  )
-  expect_equal(out_warn, out_ignore, tolerance = 1e-12)
+  # VitD_Z is computed from the extreme value (unaltered)
+  out <- vitamin_markers(df, col_map = cm, verbose = FALSE)
+  expect_equal(out$VitD_Z, (1000 - 40) / 5, tolerance = 1e-8)
 
-  expect_warning(
-    out_cap <- vitamin_markers(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values into allowed ranges"
+  # Verbose mode emits a range note informational message
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(
+    vitamin_markers(df, col_map = cm, verbose = TRUE),
+    "range note"
   )
-  expect_false(isTRUE(all.equal(out_cap, out_warn)))
-  expect_false(isTRUE(all.equal(out0, out_warn)))
 })

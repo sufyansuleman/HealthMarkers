@@ -12,11 +12,8 @@
 #'
 #' @param data A data.frame or tibble with an NfL concentration column.
 #' @param col_map Named list with `nfl` indicating the NfL column name.
-#' @param verbose Logical; if TRUE, emits progress messages.
+#' @param verbose Logical; if TRUE (default), emits progress messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides; default: list(nfl = c(0, 1e6)) in input units.
 #'
 #' @return A tibble with one column: nfl_value (numeric; same units as input).
 #'
@@ -30,16 +27,14 @@
 nfl_marker <- function(
   data,
   col_map = NULL,
-  verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 ) {
+  fn_name <- "nfl_marker"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   # --- validate data and col_map (HM-CS style) -------------------------------
   if (!is.data.frame(data)) {
@@ -49,6 +44,7 @@ nfl_marker <- function(
     )
   }
 
+  was_null_cm <- is.null(col_map)
   col_map <- .hm_autofill_col_map(col_map, data, "nfl", fn = "nfl_marker")
   if (is.null(col_map)) col_map <- list()
 
@@ -59,16 +55,13 @@ nfl_marker <- function(
     )
   }
 
-  if (length(col_map) == 0L || is.null(names(col_map))) {
+  if (!("nfl" %in% names(col_map))) {
+    # Graceful NA only when caller passed nothing and autofill found nothing
+    if (was_null_cm && length(col_map) == 0L) {
+      return(tibble::tibble(nfl_value = rep(NA_real_, nrow(data))))
+    }
     rlang::abort(
       "nfl_marker(): missing or empty `col_map`.",
-      class = "healthmarkers_nfl_error_missing_map"
-    )
-  }
-
-  if (!("nfl" %in% names(col_map))) {
-    rlang::abort(
-      "nfl_marker(): missing col_map entry for: nfl",
       class = "healthmarkers_nfl_error_missing_map"
     )
   }
@@ -88,10 +81,11 @@ nfl_marker <- function(
     )
   }
 
-  # --- verbose / debug messages ---------------------------------------------
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "nfl_marker(): preparing inputs")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map["nfl"], "nfl_marker"))
+  # --- verbose messages -----------------------------------------------------
+  if (isTRUE(verbose)) {
+    hm_inform(sprintf("%s(): column mapping: nfl -> '%s'", fn_name, col_map[["nfl"]]), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  nfl_value  [passthrough of NfL input]", fn_name), level = "inform")
+  }
 
   # --- coerce to numeric; warn on NA introduction ---------------------------
   cn <- mapped
@@ -139,43 +133,6 @@ nfl_marker <- function(
     )
   }
 
-  # --- optional extreme scan ------------------------------------------------
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(nfl = c(0, 1e6))
-    if (is.list(extreme_rules) && "nfl" %in% names(extreme_rules)) {
-      rules_def$nfl <- extreme_rules$nfl
-    }
-    lo <- rules_def$nfl[1]; hi <- rules_def$nfl[2]
-    bad <- is.finite(d_nfl) & (d_nfl < lo | d_nfl > hi)
-    n_bad <- sum(bad)
-
-    if (n_bad > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("nfl_marker(): %d extreme input values detected.", n_bad),
-          class = "healthmarkers_nfl_error_extremes"
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf("nfl_marker(): detected %d extreme input values (not altered).", n_bad),
-          class = "healthmarkers_nfl_warn_extremes_detected"
-        )
-      } else if (extreme_action == "cap") {
-        d_nfl[bad & d_nfl < lo] <- lo
-        d_nfl[bad & d_nfl > hi] <- hi
-        rlang::warn(
-          sprintf("nfl_marker(): capped %d extreme input values into allowed range.", n_bad),
-          class = "healthmarkers_nfl_warn_extremes_capped"
-        )
-      } else if (extreme_action == "NA") {
-        d_nfl[bad] <- NA_real_
-      }
-      # extreme_action == "ignore": do nothing
-    }
-  }
-
-  hm_inform(level = "debug", msg = "nfl_marker(): computing")
-
   out <- tibble::tibble(nfl_value = d_nfl)
 
   # --- pad back if not omitting ---------------------------------------------
@@ -185,8 +142,14 @@ nfl_marker <- function(
     out <- res
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "nfl_marker"))
+  # --- ID prepend + verbose results -----------------------------------------
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
 
   out
 }

@@ -42,19 +42,11 @@
 #'   Default `"ignore"` (retained for backward compatibility; equivalent to `"keep"`).
 #' @param na_warn_prop Proportion in \eqn{[0,1]} above which a high-missingness warning
 #'   is emitted (per column) when na_action = "warn". Default 0.2.
-#' @param check_extreme NULL/TRUE/FALSE gate for out-of-range scan:
-#'   - NULL (default): legacy behavior (scan only when rescale = FALSE)
-#'   - TRUE: always scan selected deficits for values < 0 or > 1 before di::di
-#'   - FALSE: never scan for extremes
-#' @param extreme_action One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
-#'   - "cap": truncate to \eqn{[0,1]}
-#'   - "NA": set out-of-range to NA
-#'   Default "warn".
 #' @param return One of c("list","data"). "list" (default) returns the original
 #'   di::di result (backward compatible). "data" returns a tibble with one row
 #'   per individual, columns: di (the frailty index) plus the selected deficit
 #'   columns (post-capping if applied). Age is included if present.
-#' @param verbose Logical; if TRUE, prints progress and a completion summary. Default FALSE.
+#' @param verbose Logical; if TRUE, prints progress and a completion summary.
 #'
 #' @return
 #' - If return = "list" (default): the object returned by di::di (typically a list
@@ -96,12 +88,9 @@ frailty_index <- function(data,
                           visible = FALSE,
                           na_action = c("ignore","warn","error","keep","omit"),
                           na_warn_prop = 0.2,
-                          check_extreme = NULL,
-                          extreme_action = c("warn","ignore","error","cap","NA"),
                           return = c("list","data"),
-                          verbose = FALSE) {
+                          verbose = TRUE) {
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
   return <- match.arg(return)
 
   .need_pkg_di()
@@ -138,10 +127,9 @@ frailty_index <- function(data,
   if (!is.null(rescale.avoid))  .assert_character(rescale.avoid,  "rescale.avoid")
 
   # Backward-compatible na_action aliases ('ignore'/'warn' behave like 'keep')
-  if (na_action %in% c("keep","omit") || identical(extreme_action, "NA")) {
+  if (na_action %in% c("keep","omit")) {
     hm_inform(
-      sprintf("frailty_index(): na_action=%s%s",
-              na_action, if (identical(extreme_action, "NA")) ", extreme_action=NA" else ""),
+      sprintf("frailty_index(): na_action=%s", na_action),
       level = "debug"
     )
   }
@@ -167,7 +155,7 @@ frailty_index <- function(data,
                       nrow(df), length(cols),
                       if (!is.null(age)) ", age provided" else ""),
               level = "inform")
-    hm_inform(sprintf("frailty_index(): column map: %s%s",
+    hm_inform(sprintf("frailty_index(): column mapping: %s%s",
                       paste(head(cols, 8), collapse = ", "),
                       if (length(cols) > 8) sprintf(" ... and %d more", length(cols) - 8) else ""),
               level = "inform")
@@ -197,29 +185,11 @@ frailty_index <- function(data,
     stop(sprintf("Missing values present in selected deficits: %s.", paste(qa_all$any_na_cols, collapse = ", ")))
   }
 
-  # Extremes gating: HM-CS check_extreme overrides legacy rescale gating
-  do_extreme <- if (is.null(check_extreme)) !isTRUE(rescale) else isTRUE(check_extreme)
-  oor_cols <- if (do_extreme) qa_all$out_of_range_cols else qa_legacy$out_of_range_cols
-
-  if (do_extreme && length(oor_cols) > 0L) {
-    if (extreme_action == "error") {
-      stop(sprintf("Out-of-range values (<0 or >1) found in: %s.", paste(oor_cols, collapse = ", ")))
-    } else if (extreme_action == "warn") {
-      warning(sprintf("Out-of-range values (<0 or >1) found in: %s (not altered).",
-                      paste(oor_cols, collapse = ", ")), call. = FALSE)
-    } else if (extreme_action == "cap") {
-      sel_df <- .cap_01(sel_df)
-      df[, cols] <- sel_df
-      if (verbose) hm_inform("frailty_index(): capped out-of-range values to [0,1]", level = "debug")
-    } else if (extreme_action == "NA") {
-      for (v in oor_cols) {
-        x <- sel_df[[v]]
-        x[is.finite(x) & (x < 0 | x > 1)] <- NA_real_
-        sel_df[[v]] <- x
-      }
-      df[, cols] <- sel_df
-      if (verbose) hm_inform("frailty_index(): set out-of-range values to NA", level = "debug")
-    } # "ignore": do nothing
+  # Out-of-range scan: check for values outside [0,1] and warn
+  oor_cols <- qa_all$out_of_range_cols
+  if (length(oor_cols) > 0L && !isTRUE(rescale)) {
+    warning(sprintf("Out-of-range values (<0 or >1) found in: %s (not altered).",
+                    paste(oor_cols, collapse = ", ")), call. = FALSE)
   }
 
   # Call di::di() safely
@@ -255,7 +225,7 @@ frailty_index <- function(data,
               msg = hm_result_summary(out_tbl["di"], "frailty_index"))
     return(out_tbl)
   } else {
-    if (verbose) {
+    if (isTRUE(verbose)) {
       di_vec <- tryCatch(di_res$di, error = function(e) NULL)
       if (is.numeric(di_vec)) {
         rng <- if (any(is.finite(di_vec))) range(di_vec, na.rm = TRUE) else c(NA_real_, NA_real_)
@@ -298,12 +268,9 @@ plot_frailty_age <- function(data,
                              bins = 7,
                              na_action = c("ignore","warn","error","keep","omit"),
                              na_warn_prop = 0.2,
-                             check_extreme = NULL,
-                             extreme_action = c("warn","ignore","error","cap","NA"),
                              return = c("list","data"),
-                             verbose = FALSE) {
+                             verbose = TRUE) {
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
   return <- match.arg(return)
   frailty_index(
     data            = data,
@@ -317,8 +284,6 @@ plot_frailty_age <- function(data,
     visible         = TRUE,
     na_action       = na_action,
     na_warn_prop    = na_warn_prop,
-    check_extreme   = check_extreme,
-    extreme_action  = extreme_action,
     return          = return,
     verbose         = verbose
   )

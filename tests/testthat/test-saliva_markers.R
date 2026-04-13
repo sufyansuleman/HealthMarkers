@@ -126,24 +126,22 @@ test_that("invalid `times` argument errors clearly", {
   )
 })
 
-test_that("extreme_action behaviors and rules keyed by input keys", {
+test_that("extreme values produce range note in verbose; no warning in non-verbose mode", {
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
     saliva_cort3    = 10,
-    saliva_amylase  = 100000,  # extreme vs default cap 50,000
+    saliva_amylase  = 100000,  # above plausible range of 50000
     saliva_glucose  = 5.0
   )
-  # ignore -> no warning
-  expect_warning(saliva_markers(df, check_extreme = TRUE, extreme_action = "ignore"), NA)
-  # warn -> warning
-  expect_warning(saliva_markers(df, check_extreme = TRUE, extreme_action = "warn"), "extreme input values")
-  # cap -> warning and capped effect on log_amylase
-  out_cap <- suppressWarnings(saliva_markers(df, check_extreme = TRUE, extreme_action = "cap"))
-  expect_equal(out_cap$log_amylase, log(50000), tolerance = 1e-12)
+  # No warning emitted in non-verbose mode
+  expect_no_warning(saliva_markers(df, verbose = FALSE))
 
-  # Rules keyed by input key name should be honored (cap amylase at 10)
-  out_keycap <- suppressWarnings(saliva_markers(df, check_extreme = TRUE, extreme_action = "cap",
-                                                extreme_rules = list(amylase = c(0, 10))))
-  expect_equal(out_keycap$log_amylase, log(10), tolerance = 1e-12)
+  # Values are not altered; log_amylase uses original extreme value
+  out <- saliva_markers(df, verbose = FALSE)
+  expect_equal(out$log_amylase, log(100000), tolerance = 1e-12)
+
+  # Verbose mode emits a range note informational message
+  withr::local_options(healthmarkers.verbose = "inform")
+  expect_message(saliva_markers(df, verbose = TRUE), "range note")
 })

@@ -69,11 +69,30 @@ test_that("metabolic_markers liver + mets produce key outputs", {
   expect_true(any(grepl("^MetS", names(m_lm))) || "MetSSS" %in% names(m_lm))
 })
 
-test_that("all_health_markers('all') returns many derived columns", {
-  out <- suppressWarnings(all_health_markers(df_ins, col_map, which="all",
-                            normalize="none", mode="both", verbose=FALSE, na_action = "keep"))
+test_that("all_health_markers with fast groups returns many derived columns", {
+  # Exclude slow/blocking external-package groups (QRISK3, PooledCohort, rspiro)
+  # Those are covered by their own test files.
+  fast_groups <- c("insulin_fasting", "insulin_ogtt", "lipid", "atherogenic", "glycemic",
+                   "liver", "liver_fat", "mets", "renal", "urine",
+                   "nutrient", "hormone", "inflammatory",
+                   "vitamin_d_status", "calcium_corrected")
+  out <- suppressWarnings(all_health_markers(df_ins, col_map,
+                            which = fast_groups,
+                            normalize = "none", mode = "both",
+                            verbose = FALSE, na_action = "keep"))
   expect_gt(ncol(out), ncol(df_ins) + 25)
   expect_true(any(grepl("^IR_", names(out))))
+})
+
+test_that("all_health_markers which='all' is smoke-tested on CI (slow; skipped on CRAN)", {
+  skip_on_cran()
+  skip_if_not_installed("QRISK3")
+  skip_if_not_installed("PooledCohort")
+  out <- suppressWarnings(all_health_markers(df_ins, col_map, which = "all",
+                            normalize = "none", mode = "both",
+                            verbose = FALSE, na_action = "keep"))
+  expect_s3_class(out, "data.frame")
+  expect_gte(ncol(out), ncol(df_ins))
 })
 
 test_that("all_health_markers can select subset categories", {

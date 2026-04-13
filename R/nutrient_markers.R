@@ -106,21 +106,19 @@
 #' @export
 nutrient_markers <- function(
   data,
-  col_map = NULL,
-  na_action = c("keep","omit","error"),
+  col_map      = NULL,
+  na_action    = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose      = TRUE
 ) {
+  fn_name   <- "nutrient_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
-  hm_inform("nutrient_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
 
   # HM-CS v2 validation hook; no strictly required keys for this summarizer
-  hm_validate_inputs(data, col_map, required_keys = character(0), fn = "nutrient_markers")
+  hm_validate_inputs(data, col_map, required_keys = character(0), fn = fn_name)
 
   keys <- c(
     "ferritin","transferrin_sat","albumin","total_protein",
@@ -141,11 +139,36 @@ nutrient_markers <- function(
     }
   }
 
-  mapped <- unlist(col_map, use.names = TRUE)
+  mapped    <- unlist(col_map, use.names = TRUE)
   used_cols <- intersect(unname(mapped), names(data))
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[intersect(names(col_map), names(data))], "nutrient_markers"))
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    avail_map <- col_map[vapply(col_map, function(cn)
+      !is.null(cn) && cn %in% names(data), logical(1))]
+    map_parts <- vapply(names(avail_map),
+                        function(k) sprintf("%s -> '%s'", k, avail_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: optional inputs
+  if (isTRUE(verbose)) {
+    avail_keys <- names(col_map)[vapply(names(col_map), function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    absent_keys <- setdiff(keys, avail_keys)
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(avail_keys))
+      lines <- c(lines, sprintf("  present:  %s", paste(avail_keys, collapse = ", ")))
+    if (length(absent_keys))
+      lines <- c(lines, sprintf("  missing:  %s", paste(absent_keys, collapse = ", ")))
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
   # Coerce used inputs to numeric; NA on non-finite
   for (cn in used_cols) {
@@ -171,40 +194,59 @@ nutrient_markers <- function(
     }
   } else if (na_action == "omit" && length(used_cols)) {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    hm_inform(sprintf("nutrient_markers(): omitting %d rows with NA in used inputs", sum(!keep)), level = if (isTRUE(verbose)) "inform" else "debug")
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in used inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
-  # Optional extreme scan/capping on used inputs
-  capped_n <- 0L
-  if (isTRUE(check_extreme) && length(used_cols)) {
-    rules <- if (is.null(extreme_rules)) .nm_default_extreme_rules() else extreme_rules
-    ex <- .nm_extreme_scan(data, col_map, rules, keys)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("nutrient_markers(): detected %d extreme input values.", ex$count),
-                     class = "healthmarkers_nm_error_extremes")
-      } else if (extreme_action == "cap") {
-        data <- .nm_cap_inputs(data, ex$flags, col_map, rules)
-        capped_n <- ex$count
-        rlang::warn(sprintf("nutrient_markers(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("nutrient_markers(): detected %d extreme input values (not altered).", ex$count))
-      } else if (extreme_action == "NA") {
-        for (cn in names(ex$flags)) {
-          bad <- ex$flags[[cn]]
-          if (cn %in% names(data)) {
-            xi <- data[[cn]]
-            xi[bad] <- NA_real_
-            data[[cn]] <- xi
-          }
-        }
-      }
-      # "ignore": no-op
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    rules_info <- .nm_default_extreme_rules()
+    ex_info    <- .nm_extreme_scan(data, col_map, rules_info, keys)
+    if (ex_info$count > 0L) {
+      details <- vapply(names(ex_info$flags), function(cn) {
+        nb <- sum(ex_info$flags[[cn]], na.rm = TRUE)
+        if (nb > 0L) sprintf("  %s: %d value(s) outside plausible range", cn, nb) else ""
+      }, character(1))
+      details <- details[nzchar(details)]
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                details), collapse = "\n"),
+        level = "inform"
+      )
     }
   }
 
-  hm_inform("nutrient_markers(): computing markers", level = "debug")
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    marker_deps <- list(
+      FerritinTS         = c("ferritin", "transferrin_sat"),
+      AGR                = c("albumin", "total_protein"),
+      Omega3Index        = c("EPA", "DHA"),
+      Mg_Cr_Ratio        = c("Mg", "creatinine"),
+      GlycatedAlbuminPct = c("glycated_albumin", "albumin"),
+      UA_Cr_Ratio        = c("uric_acid", "creatinine"),
+      BUN_Cr_Ratio       = c("BUN", "creatinine"),
+      Ca_x_Phosphate     = c("calcium", "phosphate"),
+      AnionGap           = c("Na", "K", "Cl", "HCO3"),
+      Tyr_Phe_Ratio      = c("Tyr", "Phe")
+    )
+    avail_keys2 <- names(col_map)[vapply(names(col_map), function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    status <- vapply(names(marker_deps), function(m) {
+      miss_k <- setdiff(marker_deps[[m]], avail_keys2)
+      if (length(miss_k) == 0L)
+        sprintf("  %-20s [%s]", m, paste(marker_deps[[m]], collapse = ", "))
+      else
+        sprintf("  %-20s NA [missing: %s]", m, paste(miss_k, collapse = ", "))
+    }, character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   n <- nrow(data)
   getcol <- function(key) {
@@ -288,8 +330,18 @@ nutrient_markers <- function(
     rlang::warn(sprintf("nutrient_markers(): zero denominators detected in %d cases (%s).", dz_total, which_str))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "nutrient_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
   out
 }
 
@@ -344,19 +396,4 @@ nutrient_markers <- function(
     count <- count + sum(bad, na.rm = TRUE)
   }
   list(count = count, flags = flags)
-}
-
-.nm_cap_inputs <- function(df, flags, col_map, rules) {
-  for (cn in names(flags)) {
-    key <- names(col_map)[match(cn, unlist(col_map, use.names = FALSE))]
-    key <- key[!is.na(key)][1]
-    if (is.na(key) || is.null(rules[[key]])) next
-    rng <- rules[[key]]
-    x <- df[[cn]]
-    bad <- flags[[cn]]
-    x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-    x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-    df[[cn]] <- x
-  }
-  df
 }

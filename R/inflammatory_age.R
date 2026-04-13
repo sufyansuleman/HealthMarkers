@@ -29,7 +29,7 @@
 #'   - TNFa -> column name for tumor necrosis factor-alpha (pg/mL)
 #' @param weights Named numeric vector of weights for each marker (must sum to 1).
 #'   Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).
-#' @param verbose Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.
+#' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn") controlling how missing inputs affect iAge:
 #'   - "keep": return NA for rows where any required marker is NA (default; consistent with other functions).
 #'   - "omit": ignore NAs in the weighted sum (treat missing markers as 0).
@@ -95,18 +95,15 @@
 iAge <- function(data,
                  col_map = NULL,
                  weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
-                 verbose = FALSE,
+                 verbose = TRUE,
                  na_action = c("keep", "omit", "error", "ignore", "warn"),
-                 na_warn_prop = 0.2,
-                 check_extreme = FALSE,
-                 extreme_action = c("warn","cap","error","ignore","NA"),
-                 extreme_rules = NULL) {
+                 na_warn_prop = 0.2) {
+  fn_name <- "iAge"
+  id_col <- .hm_detect_id_col(data)
   na_action_raw <- match.arg(na_action)
   na_action <- if (na_action_raw %in% c("ignore","warn")) "omit" else na_action_raw
-  extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) rlang::abort("iAge(): `data` must be a data.frame or tibble.")
-  hm_inform("iAge(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
   markers <- c("CRP","IL6","TNFa")
   col_map <- .hm_autofill_col_map(col_map, data, markers, fn = "iAge")
@@ -124,9 +121,6 @@ iAge <- function(data,
     rlang::abort(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]))
   }
   used_cols_named <- stats::setNames(unname(used_cols), markers)
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[markers], "iAge"))
-
   # Validate weights
   if (is.null(weights)) rlang::abort("iAge(): `weights` must be a numeric vector.")
   if (!is.numeric(weights)) rlang::abort("iAge(): `weights` must be numeric.")
@@ -139,7 +133,13 @@ iAge <- function(data,
   if (any(!is.finite(weights))) rlang::abort("iAge(): `weights` must be finite numeric values.")
   if (abs(sum(weights) - 1) > 1e-8) rlang::abort("iAge(): `weights` must sum to 1.")
 
-  hm_inform("iAge(): coercing inputs to numeric", level = "debug")
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(markers, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  iAge  [weighted sum: CRP*%.2f + IL6*%.2f + TNFa*%.2f]",
+      fn_name, weights[1], weights[2], weights[3]), level = "inform")
+  }
+
   for (cn in unname(used_cols)) {
     if (!is.numeric(data[[cn]])) {
       old <- data[[cn]]
@@ -160,35 +160,6 @@ iAge <- function(data,
     }
   }
 
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) .ia_default_extreme_rules() else {
-      def <- .ia_default_extreme_rules()
-      for (nm in intersect(names(extreme_rules), names(def))) def[[nm]] <- extreme_rules[[nm]]
-      def
-    }
-    ex <- .ia_extreme_scan(data, used_cols_named, rules)
-    if (ex$count > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("iAge(): detected %d extreme input values.", ex$count))
-      } else if (extreme_action == "cap") {
-        data <- .ia_cap_inputs(data, ex$flags, used_cols_named, rules)
-        rlang::warn(sprintf("iAge(): capped %d extreme input values into allowed ranges.", ex$count))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("iAge(): detected %d extreme input values (not altered).", ex$count))
-      } else if (extreme_action == "NA") {
-        for (mk in names(ex$flags)) {
-          cn <- used_cols_named[[mk]]
-          bad <- ex$flags[[mk]]
-          xi <- data[[cn]]
-          xi[bad] <- NA_real_
-          data[[cn]] <- xi
-        }
-      }
-    }
-  }
-
-  hm_inform("iAge(): computing weighted sum", level = "debug")
-
   M <- as.matrix(data[, unname(used_cols), drop = FALSE])
   w <- as.numeric(weights)
   if (na_action == "keep") {
@@ -205,8 +176,12 @@ iAge <- function(data,
   }
 
   out <- tibble::tibble(iAge = iage)
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "iAge"))
+  if (!is.null(id_col)) {
+    out[[id_col]] <- data[[id_col]]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
   out
 }
 

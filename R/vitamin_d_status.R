@@ -19,9 +19,6 @@
 #'   - omit: drop rows with NA in required input
 #'   - error: abort if required input contains NA
 #'   - warn: like keep, but emit missingness warnings
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional named list overriding defaults; default: list(vitamin_d = c(0, 250)).
 #' @param verbose Logical; if TRUE, emits progress via rlang::inform.
 #' @return A tibble with one column: vitamin_d_status (ordered factor with levels "Deficient","Insufficient","Sufficient").
 #'
@@ -36,21 +33,19 @@ vitamin_d_status <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
 
   # Validate data
   if (!is.data.frame(data)) {
     rlang::abort("vitamin_d_status(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitd_error_data_type")
   }
+  fn_name <- "vitamin_d_status"
+  id_col  <- .hm_detect_id_col(data)
   # Validate col_map: list vs. missing keys
   if (!is.list(col_map) && !is.null(col_map)) {
     rlang::abort("vitamin_d_status(): `col_map` must be a named list.",
@@ -90,9 +85,11 @@ vitamin_d_status <- function(
     )
   }
 
-  hm_inform("vitamin_d_status(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[key_used], "vitamin_d_status"))
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(names(col_map[key_used]), function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  vitamin_d_status [%s]", fn_name, vitd_col), level = "inform")
+  }
 
   # Coerce numeric
   vitd <- data[[vitd_col]]
@@ -119,43 +116,14 @@ vitamin_d_status <- function(
   keep <- if (na_action_eff == "omit") !row_na else rep(TRUE, length(vitd))
   d_vitd <- vitd[keep]
 
-  # Domain warnings (suppress during extreme scan)
-  if (!isTRUE(check_extreme)) {
-    if (any(is.finite(d_vitd) & d_vitd < 0)) {
-      rlang::warn("vitamin_d_status(): negative 25(OH)D values detected; check units/lab results.",
-                  class = "healthmarkers_vitd_warn_negative_values")
-    }
-    if (is.finite(stats::median(d_vitd, na.rm = TRUE)) && stats::median(d_vitd, na.rm = TRUE) > 150) {
-      rlang::warn("vitamin_d_status(): values appear high; ensure units are ng/mL (nmol/L -> divide by 2.5).",
-                  class = "healthmarkers_vitd_warn_units_suspicious")
-    }
+  # Domain warnings (always-on)
+  if (any(is.finite(d_vitd) & d_vitd < 0)) {
+    rlang::warn("vitamin_d_status(): negative 25(OH)D values detected; check units/lab results.",
+                class = "healthmarkers_vitd_warn_negative_values")
   }
-
-  # Extreme scan
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(vitamin_d = c(0, 250))
-    if (is.list(extreme_rules) && "vitamin_d" %in% names(extreme_rules)) {
-      rules_def$vitamin_d <- extreme_rules$vitamin_d
-    }
-    lo <- rules_def$vitamin_d[1]; hi <- rules_def$vitamin_d[2]
-    bad <- is.finite(d_vitd) & (d_vitd < lo | d_vitd > hi)
-    n_bad <- sum(bad)
-    if (n_bad > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("vitamin_d_status(): %d extreme input values detected.", n_bad),
-                     class = "healthmarkers_vitd_error_extremes")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("vitamin_d_status(): detected %d extreme input values (not altered).", n_bad),
-                    class = "healthmarkers_vitd_warn_extremes_detected")
-      } else if (extreme_action == "cap") {
-        d_vitd[bad & d_vitd < lo] <- lo
-        d_vitd[bad & d_vitd > hi] <- hi
-        rlang::warn(sprintf("vitamin_d_status(): capped %d extreme input values into allowed range.", n_bad),
-                    class = "healthmarkers_vitd_warn_extremes_capped")
-      } else if (extreme_action == "NA") {
-        d_vitd[bad] <- NA_real_
-      }
-    }
+  if (is.finite(stats::median(d_vitd, na.rm = TRUE)) && stats::median(d_vitd, na.rm = TRUE) > 150) {
+    rlang::warn("vitamin_d_status(): values appear high; ensure units are ng/mL (nmol/L -> divide by 2.5).",
+                class = "healthmarkers_vitd_warn_units_suspicious")
   }
 
   hm_inform("vitamin_d_status(): computing status", level = "debug")
@@ -176,8 +144,13 @@ vitamin_d_status <- function(
     out <- res
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "vitamin_d_status"))
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(out, fn_name), level = "inform")
   out
  
 }

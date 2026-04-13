@@ -28,14 +28,16 @@
 #'   PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper.
 #' @param na_action One of c("keep","omit","error") for required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness debug notices. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore") when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds keyed by input keys or column names.
-#' @param verbose Logical; if TRUE, prints progress messages via hm_inform().
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, input
+#'   availability, physiological range information (informational only, values
+#'   not altered), the list of markers being computed with their inputs, and a
+#'   per-column results summary.
 #'
 #' @return A tibble with columns:
 #'   VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R, T_E2_Ratio, TSH_fT4_R,
-#'   Retinol_Z, Toco_Lip_R, PIVKA_II, VitC, Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R
+#'   Retinol_Z, Toco_Lip_R, PIVKA_II, VitC, Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R.
+#'   If an ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`),
+#'   it is prepended as the first output column.
 #'
 #' @examples
 #' df <- tibble::tibble(
@@ -63,20 +65,20 @@
 #' @importFrom rlang abort warn inform
 #' @export
 vitamin_markers <- function(data,
-                            col_map = NULL,
-                            na_action = c("keep","omit","error"),
+                            col_map      = NULL,
+                            na_action    = c("keep", "omit", "error"),
                             na_warn_prop = 0.2,
-                            check_extreme = FALSE,
-                            extreme_action = c("warn","cap","error","ignore"),
-                            extreme_rules = NULL,
-                            verbose = FALSE) {
+                            verbose      = TRUE) {
+  fn_name   <- "vitamin_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) {
     rlang::abort("vitamin_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitamin_error_data_type")
   }
+
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
   required_keys <- c(
     "VitD","VitD_ref_mean","VitD_ref_sd","B12","Folate","Ferritin","TSat",
     "Cortisol","DHEAS","Testosterone","Estradiol","TSH","free_T4",
@@ -87,8 +89,36 @@ vitamin_markers <- function(data,
   col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = "vitamin_markers")
 
   # HM-CS v2: standardized validation
-  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "vitamin_markers")
-  hm_inform("vitamin_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = fn_name)
+
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    avail_map <- col_map[vapply(required_keys, function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    map_parts <- vapply(names(avail_map),
+                        function(k) sprintf("%s -> '%s'", k, avail_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name,
+              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: optional inputs
+  if (isTRUE(verbose)) {
+    avail_keys  <- required_keys[vapply(required_keys, function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    absent_keys <- setdiff(required_keys, avail_keys)
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(avail_keys))
+      lines <- c(lines, sprintf("  present:  %s", paste(avail_keys, collapse = ", ")))
+    if (length(absent_keys))
+      lines <- c(lines, sprintf("  missing:  %s", paste(absent_keys, collapse = ", ")))
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
   # Ensure mapped columns exist
   req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
@@ -138,9 +168,9 @@ vitamin_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(used_cols, function(cn) is.na(data[[cn]])))
-    if (sum(!keep) > 0L)
-      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-                msg   = sprintf("vitamin_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -164,10 +194,9 @@ vitamin_markers <- function(data,
     ))
   }
 
-  # Optional extremes scan/cap (allow rules keyed by keys or by column names)
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    default_rules <- list(
+  # Optional extremes scan (informational range check via verbose)
+  if (isTRUE(verbose)) {
+    default_rules_info <- list(
       VitD = c(0, 250), VitD_ref_mean = c(-Inf, Inf), VitD_ref_sd = c(0.01, Inf),
       B12 = c(0, 2000), Folate = c(0, 100),
       Ferritin = c(0, 3000), TSat = c(0, 1),
@@ -179,47 +208,59 @@ vitamin_markers <- function(data,
       PIVKA_II = c(0, 10000), VitC = c(0, 1000), Homocysteine = c(0, 200), MMA = c(0, 20),
       Magnesium = c(0, 10), Zinc = c(0, 1000), Copper = c(0, 1000)
     )
-    rules <- if (is.null(extreme_rules)) default_rules else extreme_rules
-
-    # Remap if rules keyed by required_keys
-    key_to_col <- stats::setNames(req_cols, required_keys)
-    if (!is.null(names(rules))) {
-      remapped <- list()
-      for (nm in names(rules)) {
-        col_nm <- if (nm %in% names(key_to_col)) key_to_col[[nm]] else nm
-        remapped[[col_nm]] <- rules[[nm]]
-      }
-      rules <- remapped
+    flagged_details <- character(0)
+    for (key in required_keys) {
+      rng <- default_rules_info[[key]]
+      if (is.null(rng) || !is.finite(rng[1]) || !is.finite(rng[2])) next
+      cn <- col_map[[key]]
+      if (is.null(cn) || !(cn %in% names(data))) next
+      x <- data[[cn]]
+      bad <- sum(is.finite(x) & (x < rng[1] | x > rng[2]), na.rm = TRUE)
+      if (bad > 0L)
+        flagged_details <- c(flagged_details,
+          sprintf("  %s: %d value(s) outside plausible range", key, bad))
     }
-
-    ex_counts <- integer(0)
-    for (nm in intersect(names(rules), names(data))) {
-      rng <- rules[[nm]]
-      x <- data[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      ex_counts[nm] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap" && any(bad, na.rm = TRUE)) {
-        x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-        x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-        data[[nm]] <- x
-      }
-    }
-    total_ex <- sum(ex_counts, na.rm = TRUE)
-    if (total_ex > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("vitamin_markers(): detected %d extreme input values.", total_ex),
-                     class = "healthmarkers_vitamin_error_extremes")
-      } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("vitamin_markers(): capped %d extreme input values into allowed ranges.", total_ex))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("vitamin_markers(): detected %d extreme input values (not altered).", total_ex))
-      }
-      # ignore: no-op
-    }
+    if (length(flagged_details))
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                flagged_details), collapse = "\n"),
+        level = "inform"
+      )
   }
 
-  hm_inform("vitamin_markers(): computing markers", level = "debug")
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    marker_deps <- list(
+      VitD_Z        = c("VitD", "VitD_ref_mean", "VitD_ref_sd"),
+      B12_Fol_Ratio = c("B12", "Folate"),
+      Ferr_TSat_R   = c("Ferritin", "TSat"),
+      Cort_DHEA_R   = c("Cortisol", "DHEAS"),
+      T_E2_Ratio    = c("Testosterone", "Estradiol"),
+      TSH_fT4_R     = c("TSH", "free_T4"),
+      Retinol_Z     = c("Retinol", "Retinol_ref_mean", "Retinol_ref_sd"),
+      Toco_Lip_R    = c("Tocopherol", "Total_lipids"),
+      PIVKA_II      = c("PIVKA_II"),
+      VitC          = c("VitC"),
+      Homocysteine  = c("Homocysteine"),
+      MMA           = c("MMA"),
+      Mg_Zn_R       = c("Magnesium", "Zinc"),
+      Cu_Zn_R       = c("Copper", "Zinc")
+    )
+    avail_keys2 <- required_keys[vapply(required_keys, function(k) {
+      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
+    }, logical(1))]
+    status <- vapply(names(marker_deps), function(m) {
+      miss_k <- setdiff(marker_deps[[m]], avail_keys2)
+      if (length(miss_k) == 0L)
+        sprintf("  %-16s [%s]", m, paste(marker_deps[[m]], collapse = ", "))
+      else
+        sprintf("  %-16s NA [missing: %s]", m, paste(miss_k, collapse = ", "))
+    }, character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Safe division with consolidated zero-denominator tracking
   dz_env <- new.env(parent = emptyenv()); dz_env$counts <- list()
@@ -270,8 +311,18 @@ vitamin_markers <- function(data,
     rlang::warn(sprintf("vitamin_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "vitamin_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

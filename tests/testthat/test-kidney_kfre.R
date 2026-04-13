@@ -98,33 +98,20 @@ test_that("invalid sex coding errors", {
   )
 })
 
-test_that("check_extreme='cap' caps values and warns", {
+test_that("extreme input values pass through without error", {
   df <- tibble(age = 10, sex = 1, eGFR = 0.5, UACR = 20000)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
-  expect_warning(
-    out <- kidney_failure_risk(df, col_map = cm, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values"
-  )
-  # Default caps: age=18, eGFR=1, UACR=10000
+  out <- suppressWarnings(kidney_failure_risk(df, col_map = cm))
   expect_true(is.numeric(out$KFRE_2yr))
   expect_true(is.numeric(out$KFRE_5yr))
 })
 
-test_that("check_extreme='error' aborts on out-of-range", {
-  df <- tibble(age = 10, sex = 1, eGFR = 0.5, UACR = 20000)
-  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
-  expect_error(
-    kidney_failure_risk(df, col_map = cm, check_extreme = TRUE, extreme_action = "error"),
-    "detected .* out-of-range values"
-  )
-})
-
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "kidney_failure_risk")
-  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "column mapping")
   expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -135,7 +122,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     kidney_failure_risk(df, col_map = cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

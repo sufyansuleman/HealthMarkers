@@ -17,12 +17,12 @@
 #'   - cort3   -> "saliva_cort3" (nmol/L ~60 min)
 #'   - amylase -> "saliva_amylase" (U/mL)
 #'   - glucose -> "saliva_glucose" (mg/dL)
-#' @param verbose Logical; if `TRUE`, prints progress messages via hm_inform().
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, input
+#'   availability, physiological range information (informational only, values
+#'   not altered), the list of markers being computed with their inputs, and a
+#'   per-column results summary.
 #' @param na_action One of `c("keep","omit","error")` for required-input NA handling. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness diagnostics (debug). Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-#' @param extreme_action One of `c("warn","cap","error","ignore")` when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds. If NULL, broad defaults are used (keyed by mapped column names).
 #' @param times Numeric vector of sampling times (minutes) for CAR AUC. Must align with cort1/2/3. Default c(0,30,60).
 #'
 #' @return A tibble with columns:
@@ -30,6 +30,9 @@
 #'   - `CAR_AUC`
 #'   - `log_amylase`
 #'   - `saliva_glucose`
+#'
+#'   If an ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`),
+#'   it is prepended as the first output column.
 #'
 #' @examples
 #' df <- tibble::tibble(
@@ -60,26 +63,43 @@
 #' @importFrom rlang abort warn inform
 #' @export
 saliva_markers <- function(data,
-                           col_map = NULL,
-                           verbose = FALSE,
-                           na_action = c("keep","omit","error"),
+                           col_map      = NULL,
+                           verbose      = TRUE,
+                           na_action    = c("keep", "omit", "error"),
                            na_warn_prop = 0.2,
-                           check_extreme = FALSE,
-                           extreme_action = c("warn","cap","error","ignore"),
-                           extreme_rules = NULL,
-                           times = c(0, 30, 60)) {
+                           times        = c(0, 30, 60)) {
+  fn_name   <- "saliva_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
   if (!is.data.frame(data)) {
     rlang::abort("saliva_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_saliva_error_data_type")
   }
 
+  # --- Detect and preserve ID column
+  id_col <- .hm_detect_id_col(data)
+
   # HM-CS v2: standardized validation
   required_keys <- c("cort1","cort2","cort3","amylase","glucose")
-  hm_inform("saliva_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
-  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = "saliva_markers")
-  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "saliva_markers")
+  was_null_cm <- is.null(col_map)
+  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = fn_name)
+  missing_keys <- setdiff(required_keys, names(col_map))
+  if (length(missing_keys)) {
+    # Graceful NA only when caller passed nothing and autofill found nothing at all
+    if (was_null_cm && length(col_map) == 0L) {
+      return(tibble::tibble(
+        log_cortisol_wake = rep(NA_real_, nrow(data)),
+        CAR_AUC           = rep(NA_real_, nrow(data)),
+        log_amylase       = rep(NA_real_, nrow(data)),
+        saliva_glucose    = rep(NA_real_, nrow(data))
+      ))
+    }
+    rlang::abort(
+      paste0("saliva_markers(): missing required col_map entries for: ",
+             paste(missing_keys, collapse = ", ")),
+      class = "healthmarkers_saliva_error_missing_map"
+    )
+  }
+  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = fn_name)
 
   # Ensure mapped columns exist
   mapped <- unname(unlist(col_map[required_keys], use.names = FALSE))
@@ -114,8 +134,28 @@ saliva_markers <- function(data,
     }
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[required_keys], "saliva_markers"))
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(required_keys,
+                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: optional inputs / availability
+  if (isTRUE(verbose)) {
+    avail_keys  <- required_keys[required_keys %in% names(col_map)]
+    absent_keys <- setdiff(required_keys, avail_keys)
+    lines <- sprintf("%s(): optional inputs", fn_name)
+    if (length(avail_keys))
+      lines <- c(lines, sprintf("  present:  %s", paste(avail_keys, collapse = ", ")))
+    if (length(absent_keys))
+      lines <- c(lines, sprintf("  missing:  %s", paste(absent_keys, collapse = ", ")))
+    hm_inform(paste(lines, collapse = "\n"), level = "inform")
+  }
 
   # NA policy on required inputs
   if (na_action == "error") {
@@ -126,9 +166,9 @@ saliva_markers <- function(data,
     }
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped, function(cn) is.na(data[[cn]])))
-    if (sum(!keep) > 0L)
-      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-                msg   = sprintf("saliva_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -142,56 +182,51 @@ saliva_markers <- function(data,
     ))
   }
 
-  # Optional extremes scan/cap on inputs (keyed by mapped column names)
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    rules <- if (is.null(extreme_rules)) {
-      setNames(
-        list(c(0, 2000), c(0, 2000), c(0, 2000), c(0, 50000), c(0, 1000)),
-        mapped
+  # --- Verbose: physiological range check (informational, values not altered)
+  if (isTRUE(verbose)) {
+    default_ranges <- list(
+      cort1   = c(0, 2000), cort2 = c(0, 2000), cort3 = c(0, 2000),
+      amylase = c(0, 50000), glucose = c(0, 1000)
+    )
+    flagged_details <- character(0)
+    for (key in required_keys) {
+      rng <- default_ranges[[key]]
+      cn  <- col_map[[key]]
+      if (is.null(rng) || is.null(cn) || !(cn %in% names(data))) next
+      bad <- sum(is.finite(data[[cn]]) & (data[[cn]] < rng[1] | data[[cn]] > rng[2]), na.rm = TRUE)
+      if (bad > 0L)
+        flagged_details <- c(flagged_details,
+          sprintf("  %s: %d value(s) outside plausible range", key, bad))
+    }
+    if (length(flagged_details))
+      hm_inform(
+        paste(c(sprintf("%s(): range note (informational, values not altered):", fn_name),
+                flagged_details), collapse = "\n"),
+        level = "inform"
       )
-    } else extreme_rules
-
-    # Allow rules to be keyed by input keys (cort1/cort2/...) or by actual column names
-    if (!is.null(names(rules))) {
-      key_to_col <- stats::setNames(mapped, required_keys)
-      remapped <- list()
-      for (nm in names(rules)) {
-        col_nm <- if (nm %in% names(key_to_col)) key_to_col[[nm]] else nm
-        remapped[[col_nm]] <- rules[[nm]]
-      }
-      rules <- remapped
-    }
-
-    total_ex <- 0L
-    for (nm in names(rules)) {
-      if (!nm %in% names(data)) next
-      rng <- rules[[nm]]
-      x <- data[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      nbad <- sum(bad, na.rm = TRUE)
-      total_ex <- total_ex + nbad
-      if (extreme_action == "cap" && nbad > 0) {
-        x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-        x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-        data[[nm]] <- x
-      }
-    }
-    if (total_ex > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("saliva_markers(): detected %d extreme input values.", total_ex),
-                     class = "healthmarkers_saliva_error_extremes")
-      } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("saliva_markers(): capped %d extreme input values into allowed ranges.", total_ex))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("saliva_markers(): detected %d extreme input values (not altered).", total_ex))
-      }
-      # "ignore": no-op
-    }
   }
 
-  hm_inform("saliva_markers(): computing markers", level = "debug")
+  # --- Verbose: computing markers
+  if (isTRUE(verbose)) {
+    marker_deps <- list(
+      log_cortisol_wake = c("cort1"),
+      CAR_AUC           = c("cort1", "cort2", "cort3"),
+      log_amylase       = c("amylase"),
+      saliva_glucose    = c("glucose")
+    )
+    avail_keys2 <- names(col_map)
+    status <- vapply(names(marker_deps), function(m) {
+      miss_k <- setdiff(marker_deps[[m]], avail_keys2)
+      if (length(miss_k) == 0L)
+        sprintf("  %-20s [%s]", m, paste(marker_deps[[m]], collapse = ", "))
+      else
+        sprintf("  %-20s NA [missing: %s]", m, paste(miss_k, collapse = ", "))
+    }, character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
 
   # Helpers
   safe_log <- function(x) {
@@ -232,8 +267,18 @@ saliva_markers <- function(data,
     saliva_glucose    = as.numeric(glu)
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "saliva_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

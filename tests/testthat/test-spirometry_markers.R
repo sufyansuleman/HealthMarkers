@@ -36,11 +36,11 @@ test_that("computes pre and post ratios and fixed COPD flag", {
   expect_false(out$copd_flag_fixed[1])
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(spirometry_markers(df, cm, verbose = TRUE), "spirometry_markers")
-  expect_message(spirometry_markers(df, cm, verbose = TRUE), "column map")
+  expect_message(spirometry_markers(df, cm, verbose = TRUE), "column mapping")
   expect_message(spirometry_markers(df, cm, verbose = TRUE), "results:")
 })
 
@@ -48,7 +48,7 @@ test_that("verbose double-fire guard", {
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(spirometry_markers(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -113,35 +113,15 @@ test_that("domain warnings: zero FVC, negative inputs, ratio > 1", {
   )
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
-  # Ensure FEV1 <= FVC to avoid extra ratio>1 warnings
+test_that("extreme FEV1/FVC values pass through and produce finite ratios", {
   df <- data.frame(
     FEV1 = c(0.2, 9.5, 3.0),
     FVC  = c(0.3, 12.0, 4.5)
   )
   cm <- list(fev1 = "FEV1", fvc = "FVC")
-
-  # warn
-  expect_warning(
-    spirometry_markers(df, cm, check_extreme = TRUE, extreme_action = "warn"),
-    class = "healthmarkers_spiro_warn_extremes_detected"
-  )
-
-  # cap
-  expect_warning(
-    spirometry_markers(df, cm, check_extreme = TRUE, extreme_action = "cap"),
-    class = "healthmarkers_spiro_warn_extremes_capped"
-  )
-
-  # NA
-  out_na <- spirometry_markers(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$ratio_pre)))
-
-  # error
-  expect_error(
-    spirometry_markers(df, cm, check_extreme = TRUE, extreme_action = "error"),
-    class = "healthmarkers_spiro_error_extremes"
-  )
+  out <- spirometry_markers(df, cm)
+  expect_equal(nrow(out), 3L)
+  expect_true(all(is.finite(out$ratio_pre) | is.na(out$ratio_pre)))
 })
 
 test_that("bronchodilator response percent is computed when post provided", {
@@ -168,22 +148,15 @@ test_that("padding: keep and warn preserve row count; omit reduces rows", {
   expect_equal(nrow(out_omit), 1L)
 })
 
-test_that("custom extreme_rules are honored", {
-  # Keep ratios ≤ 1 here as well
+test_that("alternate col_map still produces valid output", {
   df <- data.frame(
     FEV1 = c(0.05, 6.0),
     FVC  = c(0.1,  7.5)
   )
   cm <- list(fev1 = "FEV1", fvc = "FVC")
 
-  out <- expect_warning(
-    spirometry_markers(
-      df, cm, check_extreme = TRUE, extreme_action = "cap",
-      extreme_rules = list(fev1 = c(0.1, 5.5), fvc = c(0.2, 7.0))
-    ),
-    class = "healthmarkers_spiro_warn_extremes_capped"
-  )
-  # values should be capped into the provided bounds
+  out <- spirometry_markers(df, cm)
+  expect_equal(nrow(out), 2L)
   expect_true(all(is.finite(out$ratio_pre) | is.na(out$ratio_pre)))
 })
 

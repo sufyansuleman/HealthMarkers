@@ -13,11 +13,11 @@ test_that("mapping validation and missing columns error", {
   expect_error(frax_score(df, list(age="Age", sex="SexX")), class = "healthmarkers_frax_error_missing_columns")
 })
 
-test_that("verbose emits preparing, column map, and results messages", {
+test_that("verbose emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Age = 65, Sex = "Female")
   expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "frax_score")
-  expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "column map")
+  expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "column mapping")
   expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "results:")
 })
 
@@ -27,7 +27,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -110,33 +110,16 @@ test_that("capping at 95% works", {
   expect_lte(out$frax_hip_percent, 95)
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
+test_that("check_extreme removed: function passes through outlier rows", {
   cm <- list(age = "Age", sex = "Sex", bmd_t = "BMD")
   df <- data.frame(
     Age = c(20, 85, 100, 60),
     Sex = c("male","female","male","female"),
     BMD = c(-7, 0, 3, -10)
   )
-
-  expect_warning(
-    frax_score(df, cm, check_extreme = TRUE, extreme_action = "warn"),
-    class = "healthmarkers_frax_warn_extremes_detected"
-  )
-
-  # Capture the cap warning so it doesn't show as unexpected
-  out_cap <- expect_warning(
-    frax_score(df, cm, check_extreme = TRUE, extreme_action = "cap"),
-    class = "healthmarkers_frax_warn_extremes_capped"
-  )
-  expect_true(all(is.finite(out_cap$frax_major_percent) | is.na(out_cap$frax_major_percent)))
-
-  out_na <- frax_score(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$frax_major_percent) | is.na(out_na$frax_hip_percent)))
-
-  expect_error(
-    frax_score(df, cm, check_extreme = TRUE, extreme_action = "error"),
-    class = "healthmarkers_frax_error_extremes"
-  )
+  # age-range warning still fires; no extreme-scan error
+  out <- suppressWarnings(frax_score(df, cm))
+  expect_equal(nrow(out), 4L)
 })
 
 test_that("padding preserved for keep/warn", {

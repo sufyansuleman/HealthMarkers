@@ -124,25 +124,15 @@ test_that("na_action policies: error and omit behave as expected", {
   expect_equal(nrow(out_omit), 1L)
 })
 
-test_that("extreme input detection and capping warn as expected", {
+test_that("extreme inputs pass through without error (check_extreme removed)", {
   df_ext <- tibble(
-    urine_albumin    = 1e6,  # > default bound
-    urine_creatinine = 1e-6, # < default bound
+    urine_albumin    = 1e6,
+    urine_creatinine = 1e-6,
     urine_protein    = 1e6
   )
-  # warn: detect but do not alter
-  expect_warning(
-    out_warn <- urine_markers(df_ext, check_extreme = TRUE, extreme_action = "warn"),
-    "detected .* extreme input values \\(not altered\\)"
-  )
-  # cap: detect and cap
-  expect_warning(
-    out_cap <- urine_markers(df_ext, check_extreme = TRUE, extreme_action = "cap"),
-    "capped .* extreme input values into allowed ranges"
-  )
-  # Outputs likely differ after capping
-  expect_false(isTRUE(all.equal(out_warn$UACR, out_cap$UACR)))
-  expect_false(isTRUE(all.equal(out_warn$UPCR, out_cap$UPCR)))
+  out <- suppressWarnings(urine_markers(df_ext))
+  expect_s3_class(out, "tbl_df")
+  expect_true("UACR" %in% names(out))
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA in ratios", {

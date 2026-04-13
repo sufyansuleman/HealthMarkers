@@ -26,9 +26,6 @@
 #' @param verbose Logical; if `TRUE`, prints progress messages and a completion summary. Default FALSE.
 #' @param na_action One of `c("keep","omit","error")` for handling missing values in required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-#' @param extreme_action One of `c("warn","cap","error","ignore")` when extremes detected. Default "warn".
-#' @param extreme_rules Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.
 #'
 #' @return A tibble with columns:
 #'   UACR, albuminuria_stage, microalbuminuria, UPCR, U_Na_K_ratio,
@@ -68,20 +65,17 @@
 #' - Portilla D, Dent C, Sugaya T, et al. Liver fatty acid-binding protein as a biomarker of acute kidney injury after cardiac surgery. 
 #'   Kidney Int. 2008;73(4):465-472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
 urine_markers <- function(data,
-                          verbose = FALSE,
+                          verbose = TRUE,
                           na_action = c("keep","omit","error"),
-                          na_warn_prop = 0.2,
-                          check_extreme = FALSE,
-                          extreme_action = c("warn","cap","error","ignore"),
-                          extreme_rules = NULL) {
+                          na_warn_prop = 0.2) {
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
 
   if (!is.data.frame(data)) {
     rlang::abort("urine_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_urine_error_data_type")
   }
-  hm_inform("urine_markers(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
+  fn_name <- "urine_markers"
+  id_col  <- .hm_detect_id_col(data)
 
   # 1) required columns (urine-only core)
   req <- c("urine_albumin", "urine_creatinine")
@@ -116,9 +110,11 @@ urine_markers <- function(data,
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map_id[req], "urine_markers"))
-
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, k), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  UACR, albuminuria_stage, microalbuminuria [urine_albumin, urine_creatinine]\n  UPCR [urine_protein, urine_creatinine]\n  U_Na_K_ratio [urine_Na, urine_K]\n  NGAL/KIM1/NAG/Beta2Micro/A1Micro/IL18/L_FABP per gCr [optional]", fn_name), level = "inform")
+  }
   # 3) High-missingness diagnostics on required inputs (debug level)
   for (cn in req) {
     x <- data[[cn]]
@@ -140,8 +136,8 @@ urine_markers <- function(data,
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(req, function(cn) is.na(data[[cn]])))
     if (sum(!keep) > 0L)
-      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-                msg   = sprintf("urine_markers(): omitting %d rows with NA in required inputs", sum(!keep)))
+      hm_inform(sprintf("urine_markers(): omitting %d rows with NA in required inputs", sum(!keep)),
+                level = "inform")
     data <- data[keep, , drop = FALSE]
   }
 
@@ -161,51 +157,6 @@ urine_markers <- function(data,
       IL18_per_gCr = numeric(),
       L_FABP_per_gCr = numeric()
     ))
-  }
-
-  # 5) Optional extremes scan/cap (broad plausibility)
-  capped_n <- 0L
-  if (isTRUE(check_extreme)) {
-    default_rules <- list(
-      urine_albumin    = c(0, 100000), # mg/L
-      urine_creatinine = c(0.01, 500), # mg/dL
-      urine_protein    = c(0, 100000), # mg/L
-      urine_Na         = c(0, 400),    # mmol/L
-      urine_K          = c(0, 200),    # mmol/L
-      NGAL             = c(0, 100000), # mg/L
-      KIM1             = c(0, 100000),
-      NAG              = c(0, 100000),
-      beta2_micro      = c(0, 100000),
-      a1_micro         = c(0, 100000),
-      IL18             = c(0, 100000),
-      L_FABP           = c(0, 100000)
-    )
-    rules <- if (is.null(extreme_rules)) default_rules else extreme_rules
-
-    ex_counts <- integer(0)
-    for (nm in intersect(names(rules), names(data))) {
-      rng <- rules[[nm]]
-      x <- data[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      ex_counts[nm] <- sum(bad, na.rm = TRUE)
-      if (extreme_action == "cap") {
-        x[bad & is.finite(x) & x < rng[1]] <- rng[1]
-        x[bad & is.finite(x) & x > rng[2]] <- rng[2]
-        data[[nm]] <- x
-      }
-    }
-    total_ex <- sum(ex_counts, na.rm = TRUE)
-    if (total_ex > 0) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("urine_markers(): detected %d extreme input values.", total_ex),
-                     class = "healthmarkers_urine_error_extremes")
-      } else if (extreme_action == "cap") {
-        capped_n <- total_ex
-        rlang::warn(sprintf("urine_markers(): capped %d extreme input values into allowed ranges.", total_ex))
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("urine_markers(): detected %d extreme input values (not altered).", total_ex))
-      }
-    }
   }
 
   hm_inform("urine_markers(): computing markers", level = "debug")
@@ -286,8 +237,12 @@ urine_markers <- function(data,
     rlang::warn(sprintf("urine_markers(): zero denominators detected in %d cases (%s).", dz_total, lbl))
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "urine_markers"))
+  if (!is.null(id_col)) {
+    out[[id_col]] <- data[[id_col]]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) hm_inform(hm_result_summary(out, fn_name), level = "inform")
 
   out
 }

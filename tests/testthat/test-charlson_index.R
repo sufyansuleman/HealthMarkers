@@ -27,11 +27,11 @@ test_that("mapping validation and missing columns error", {
   expect_error(charlson_index(data.frame(x=1), cm), class = "healthmarkers_cci_error_missing_columns")
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- make_df(list())
   expect_message(charlson_index(df, cm, verbose = TRUE), "charlson_index")
-  expect_message(charlson_index(df, cm, verbose = TRUE), "column map")
+  expect_message(charlson_index(df, cm, verbose = TRUE), "column mapping")
   expect_message(charlson_index(df, cm, verbose = TRUE), "results:")
 })
 
@@ -39,7 +39,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- make_df(list())
   msgs <- testthat::capture_messages(charlson_index(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -75,43 +75,11 @@ test_that("domain warnings for non-binary indicators", {
                  class = "healthmarkers_cci_warn_out_of_range")
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
+test_that("check_extreme removed: function passes through numeric outlier rows", {
   df <- make_df(list(mi = -1, chf = 2, pvd = 0.5), n = 3)
-
-  suppress_out_of_range <- function(expr) {
-    withCallingHandlers(
-      expr,
-      warning = function(w) {
-        if (inherits(w, "healthmarkers_cci_warn_out_of_range")) {
-          invokeRestart("muffleWarning")
-        }
-      }
-    )
-  }
-
-  expect_warning(
-    suppress_out_of_range(
-      charlson_index(df, cm, check_extreme = TRUE, extreme_action = "warn")
-    ),
-    class = "healthmarkers_cci_warn_extremes_detected"
-  )
-
-  out_cap <- suppressWarnings(
-    charlson_index(df, cm, check_extreme = TRUE, extreme_action = "cap")
-  )
-  expect_true(all(out_cap$charlson_index >= 0 | is.na(out_cap$charlson_index)))
-
-  out_na <- suppressWarnings(
-    charlson_index(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  )
-  expect_true(any(is.na(out_na$charlson_index)))
-
-  expect_error(
-    suppressWarnings(
-      charlson_index(df, cm, check_extreme = TRUE, extreme_action = "error")
-    ),
-    class = "healthmarkers_cci_error_extremes"
-  )
+  # domain warning for non-binary is still emitted, but no extreme-scan error
+  out <- suppressWarnings(charlson_index(df, cm))
+  expect_equal(nrow(out), 3L)
 })
 
 test_that("base 1-, 2-, and 6-point weights computed correctly", {

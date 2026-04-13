@@ -14,12 +14,10 @@
 #'   - kynurenine: column for kynurenine (nmol/L)
 #'   - tryptophan: column for tryptophan (mumol/L)
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides; defaults:
-#'   list(kynurenine_nmolL = c(100, 20000), tryptophan_umolL = c(10, 150), ratio = c(0, 200)).
-#' @param verbose Logical; if TRUE, emits progress via rlang::inform.
-#' @return A tibble with one column: kyn_trp_ratio (numeric).
+#' @param verbose Logical; if `TRUE` (default), prints column mapping and a
+#'   per-column results summary.
+#' @return A tibble with one column: kyn_trp_ratio (numeric). If an ID column
+#'   is detected, it is prepended.
 #'
 #' @examples
 #' df <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
@@ -32,15 +30,13 @@ kyn_trp_ratio <- function(
   data,
   col_map = NULL,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name  <- "kyn_trp_ratio"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col   <- .hm_detect_id_col(data)
 
   # Validate
   if (!is.data.frame(data)) {
@@ -48,13 +44,20 @@ kyn_trp_ratio <- function(
                  class = "healthmarkers_ktr_error_data_type")
   }
 
+  was_null_cm <- is.null(col_map)
   col_map <- .hm_autofill_col_map(col_map, data, c("kynurenine","tryptophan"), fn = "kyn_trp_ratio")
   if (is.null(col_map)) col_map <- list()
+
+  # Graceful NA only when caller passed nothing and autofill found nothing at all
+  if (was_null_cm && length(col_map) == 0L) {
+    return(tibble::tibble(kyn_trp_ratio = rep(NA_real_, nrow(data))))
+  }
 
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("kyn_trp_ratio(): `col_map` must be a named list.",
                  class = "healthmarkers_ktr_error_colmap_type")
   }
+
   req <- c("kynurenine","tryptophan")
   missing_keys <- setdiff(req, names(col_map))
   if (length(missing_keys)) {
@@ -78,8 +81,22 @@ kyn_trp_ratio <- function(
 
   hm_inform("kyn_trp_ratio(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_fmt_col_map(col_map[req], "kyn_trp_ratio"))
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    hm_inform(
+      sprintf("%s(): computing markers:\n  kyn_trp_ratio  [kynurenine (nmol/L) / tryptophan (mumol/L)]", fn_name),
+      level = "inform"
+    )
+  }
 
   # Coerce numeric; warn if NAs introduced; sanitize
   for (cn in mapped) {
@@ -121,41 +138,6 @@ kyn_trp_ratio <- function(
     d_trp[is.finite(d_trp) & d_trp <= 0] <- NA_real_
   }
 
-  # Optional extreme scan
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(kynurenine_nmolL = c(100, 20000), tryptophan_umolL = c(10, 150), ratio = c(0, 200))
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) rules_def[[nm]] <- extreme_rules[[nm]]
-    }
-    total <- 0L
-    cap_vec <- function(x, lo, hi) {
-      bad <- is.finite(x) & (x < lo | x > hi)
-      total <<- total + sum(bad)
-      if (extreme_action == "cap") {
-        x[bad & x < lo] <- lo
-        x[bad & x > hi] <- hi
-      } else if (extreme_action == "NA") {
-        x[bad] <- NA_real_
-      }
-      list(x = x, bad = bad)
-    }
-    ck <- cap_vec(d_kyn, rules_def$kynurenine_nmolL[1], rules_def$kynurenine_nmolL[2]); d_kyn <- ck$x
-    ct <- cap_vec(d_trp, rules_def$tryptophan_umolL[1], rules_def$tryptophan_umolL[2]); d_trp <- ct$x
-
-    if (total > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(sprintf("kyn_trp_ratio(): %d extreme input values detected.", total),
-                     class = "healthmarkers_ktr_error_extremes")
-      } else if (extreme_action == "warn") {
-        rlang::warn(sprintf("kyn_trp_ratio(): detected %d extreme input values (not altered).", total),
-                    class = "healthmarkers_ktr_warn_extremes_detected")
-      } else if (extreme_action == "cap") {
-        rlang::warn(sprintf("kyn_trp_ratio(): capped %d extreme input values into allowed ranges.", total),
-                    class = "healthmarkers_ktr_warn_extremes_capped")
-      }
-    }
-  }
-
   hm_inform("kyn_trp_ratio(): computing", level = "debug")
 
   ratio <- d_kyn / d_trp
@@ -169,15 +151,24 @@ kyn_trp_ratio <- function(
 
   out <- tibble::tibble(kyn_trp_ratio = ratio)
 
-  # Pad if not omitting
+  # Pad back to full length when not omitting (preserve row alignment)
   if (na_action_eff != "omit") {
     res <- tibble::tibble(kyn_trp_ratio = rep(NA_real_, length(kyn)))
     res$kyn_trp_ratio[keep] <- out$kyn_trp_ratio
     out <- res
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = hm_result_summary(out, "kyn_trp_ratio"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    out[[id_col]] <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

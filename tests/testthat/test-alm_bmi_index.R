@@ -22,11 +22,11 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   expect_message(alm_bmi_index(df, cm, verbose = TRUE), "alm_bmi_index")
-  expect_message(alm_bmi_index(df, cm, verbose = TRUE), "column map")
+  expect_message(alm_bmi_index(df, cm, verbose = TRUE), "column mapping")
   expect_message(alm_bmi_index(df, cm, verbose = TRUE), "results:")
 })
 
@@ -34,7 +34,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   msgs <- testthat::capture_messages(alm_bmi_index(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -136,54 +136,16 @@ test_that("sex normalization and unknown sex warning", {
   )
 })
 
-test_that("extreme scan behaviors: warn, cap, NA, error", {
+test_that("extreme ALM/BMI values trigger domain warnings", {
   df <- data.frame(
     ALM_kg = c(2, 18, 45),
     BMI    = c(8, 25, 70),
     Sex    = c("Male", "Female", "Male")
   )
-
-  # suppress domain warnings so we assert only on extreme_* classes
-  suppress_domain <- function(expr) {
-    withCallingHandlers(
-      expr,
-      warning = function(w) {
-        if (inherits(w, c("healthmarkers_alm_bmi_warn_bmi_range",
-                          "healthmarkers_alm_bmi_warn_alm_range",
-                          "healthmarkers_alm_bmi_warn_bmi_nonpositive"))) {
-          invokeRestart("muffleWarning")
-        }
-      }
-    )
-  }
-
-  # warn
-  expect_warning(
-    suppress_domain(
-      alm_bmi_index(df, cm, check_extreme = TRUE, extreme_action = "warn")
-    ),
-    class = "healthmarkers_alm_bmi_warn_extremes_detected"
-  )
-
-  # cap
-  out_cap <- suppressWarnings(
-    alm_bmi_index(df, cm, check_extreme = TRUE, extreme_action = "cap")
-  )
-  expect_true(all(is.na(out_cap$alm_bmi_ratio) | out_cap$alm_bmi_ratio > 0))
-
-  # NA
-  out_na <- suppressWarnings(
-    alm_bmi_index(df, cm, check_extreme = TRUE, extreme_action = "NA")
-  )
-  expect_true(any(is.na(out_na$alm_bmi_ratio)))
-
-  # error
-  expect_error(
-    suppressWarnings(
-      alm_bmi_index(df, cm, check_extreme = TRUE, extreme_action = "error")
-    ),
-    class = "healthmarkers_alm_bmi_error_extremes"
-  )
+  expect_warning(alm_bmi_index(df, cm), class = "healthmarkers_alm_bmi_warn_alm_range")
+  out <- suppressWarnings(alm_bmi_index(df, cm))
+  expect_equal(nrow(out), 3L)
+  expect_true(all(is.na(out$alm_bmi_ratio) | out$alm_bmi_ratio > 0))
 })
 
 test_that("thresholds: low muscle mass flagged correctly by sex", {

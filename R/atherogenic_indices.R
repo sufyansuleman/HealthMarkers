@@ -16,13 +16,12 @@
 #' @param data data.frame/tibble with lipid columns.
 #' @param col_map named list mapping keys to columns, e.g. list(TG="TG", HDL_c="HDL_c", TC="TC", LDL_c="LDL_c").
 #' @param na_action one of c("keep","omit","error").
-#' @param check_extreme logical; if TRUE, screen inputs for extremes using `extreme_rules`.
-#' @param extreme_action one of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules optional named list of bounds per key or column, each c(min, max).
 #' @param normalize one of c("none","log10"). Reserved; AIP always uses log10(TG/HDL_c).
-#' @param verbose logical; prints step messages via hm_inform when TRUE.
+#' @param verbose Logical; if `TRUE` (default), prints column mapping, the list
+#'   of indices being computed, and a per-column results summary.
 #'
-#' @return tibble with columns AIP, CRI_I, CRI_II
+#' @return tibble with columns AIP, CRI_I, CRI_II. If an ID column is detected
+#'   in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended.
 #'
 #' @references
 #' \insertRef{dobiasova2004aip}{HealthMarkers};
@@ -36,30 +35,17 @@
 #'   LDL_c = c(120, 150)
 #' )
 #' cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
-#' atherogenic_indices(df, col_map = cm, verbose = FALSE)
+#' atherogenic_indices(df, col_map = cm)
 #'
 #' @export
 atherogenic_indices <- function(data,
                                 col_map = NULL,
                                 na_action = c("keep","omit","error"),
-                                check_extreme = FALSE,
-                                extreme_action = c("warn","cap","error","ignore","NA"),
-                                extreme_rules = NULL,
                                 normalize = c("none","log10"),
-                                verbose = FALSE) {
+                                verbose = TRUE) {
+  fn_name   <- "atherogenic_indices"
   na_action <- match.arg(na_action)
-
-  # Validate choices with clearer messages than base match.arg errors
-  allowed_ext <- c("warn","cap","error","ignore","NA")
-  if (length(extreme_action) == 0L) {
-    rlang::abort("`extreme_action` must be one of: warn, cap, error, ignore, NA",
-                 class = "healthmarkers_atherogenic_indices_error_extreme_action")
-  }
-  extreme_action <- extreme_action[1L]
-  if (!(extreme_action %in% allowed_ext)) {
-    rlang::abort("`extreme_action` must be one of: warn, cap, error, ignore, NA",
-                 class = "healthmarkers_atherogenic_indices_error_extreme_action")
-  }
+  id_col    <- .hm_detect_id_col(data)
 
   allowed_norm <- c("none","log10")
   if (length(normalize) == 0L) {
@@ -77,14 +63,33 @@ atherogenic_indices <- function(data,
 
   col_map <- .hm_autofill_col_map(col_map, data, c(req, opt), fn = "atherogenic_indices")
   hm_validate_inputs(data, col_map, required_keys = req, fn = "atherogenic_indices")
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "atherogenic_indices(): preparing inputs")
 
   # Required columns presence
   req_cols <- unname(unlist(col_map[req], use.names = FALSE))
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[intersect(c(req, opt), names(col_map))], "atherogenic_indices")
-  )
+
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    all_keys  <- intersect(c(req, opt), names(col_map))
+    map_parts <- vapply(all_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    indices <- list(
+      c("AIP",    "log10(TG / HDL_c)"),
+      c("CRI_I",  "TC / HDL_c [if TC available]"),
+      c("CRI_II", "LDL_c / HDL_c [if LDL_c available]")
+    )
+    status <- vapply(indices, function(x) sprintf("  %-10s [%s]", x[1], x[2]), character(1))
+    hm_inform(
+      paste(c(sprintf("%s(): computing markers:", fn_name), status), collapse = "\n"),
+      level = "inform"
+    )
+  }
   missing_req <- setdiff(req_cols, names(data))
   if (length(missing_req)) {
     rlang::abort(
@@ -129,66 +134,6 @@ atherogenic_indices <- function(data,
     return(tibble::tibble(AIP = numeric(), CRI_I = numeric(), CRI_II = numeric()))
   }
 
-  # Extreme screening
-  if (isTRUE(check_extreme)) {
-    default_rules <- list(
-      TG = c(0, 10000),
-      HDL_c = c(0, 1000),
-      LDL_c = c(0, 10000),
-      TC = c(0, 10000)
-    )
-    rules <- if (is.null(extreme_rules)) default_rules else extreme_rules
-
-    # Robust key->column map (avoid setNames(NULL, ...))
-    key_to_col <- list()
-    for (i in seq_along(req)) key_to_col[[req[i]]] <- req_cols[i]
-    opt_keys <- intersect(opt, names(col_map))
-    if (length(opt_keys)) {
-      for (k in opt_keys) {
-        key_to_col[[k]] <- col_map[[k]]
-      }
-    }
-
-    # Remap any rule names that match keys to actual column names
-    if (!is.null(names(rules))) {
-      remapped <- list()
-      for (nm in names(rules)) {
-        col_nm <- if (!is.null(key_to_col[[nm]])) key_to_col[[nm]] else nm
-        remapped[[col_nm]] <- rules[[nm]]
-      }
-      rules <- remapped
-    }
-
-    total_ex <- 0L
-    for (nm in intersect(names(rules), names(data))) {
-      rng <- rules[[nm]]
-      x <- data[[nm]]
-      bad <- is.finite(x) & (x < rng[1] | x > rng[2])
-      n_bad <- sum(bad, na.rm = TRUE)
-      if (n_bad > 0) {
-        total_ex <- total_ex + n_bad
-        if (identical(extreme_action, "cap")) {
-          x[bad & x < rng[1]] <- rng[1]
-          x[bad & x > rng[2]] <- rng[2]
-          data[[nm]] <- x
-        } else if (identical(extreme_action, "NA")) {
-          x[bad] <- NA_real_
-          data[[nm]] <- x
-        }
-      }
-    }
-    if (total_ex > 0) {
-      if (identical(extreme_action, "error")) {
-        rlang::abort("atherogenic_indices(): values out of range.",
-                     class = "healthmarkers_atherogenic_indices_error_extremes")
-      } else if (identical(extreme_action, "warn")) {
-        rlang::warn(sprintf("atherogenic_indices(): detected %d extreme input values (not altered).", total_ex),
-                    class = "healthmarkers_atherogenic_indices_warn_extremes")
-      }
-      # cap/NA are silent; 'ignore' makes no changes and no warning
-    }
-  }
-
   hm_inform(level = "debug", msg = "atherogenic_indices(): computing indices")
 
   # Accessor and safe division
@@ -229,9 +174,17 @@ atherogenic_indices <- function(data,
     }
   }
 
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
   hm_inform(
     level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "atherogenic_indices")
+    msg   = hm_result_summary(out, fn_name)
   )
 
   out

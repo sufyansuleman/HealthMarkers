@@ -55,11 +55,11 @@ test_that("iAge NA handling gives zero for all-NA row with na_action='omit'", {
 })
 
 # 4) Verbose message
-test_that("iAge verbose emits preparing, column map, and results messages", {
+test_that("iAge verbose emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
   expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "iAge")
-  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "column map")
+  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "column mapping")
   expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "results:")
 })
 
@@ -67,7 +67,7 @@ test_that("iAge verbose double-fire guard", {
   withr::local_options(healthmarkers.verbose = "inform")
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
   msgs <- testthat::capture_messages(iAge(df_ok, col_map = col_map, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

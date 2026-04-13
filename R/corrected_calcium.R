@@ -10,12 +10,8 @@
 #'
 #' @param data A data.frame or tibble containing serum calcium and albumin.
 #' @param col_map Named list with `calcium` and `albumin` indicating column names.
-#' @param verbose Logical; if TRUE, emits progress via hm_inform().
+#' @param verbose Logical; if TRUE (default), emits progress via hm_inform().
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges (applied on working units).
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional overrides for defaults in working units:
-#'   list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5)).
 #' @param units One of c("auto","conventional","si"). "auto" attempts unit detection.
 #'
 #' @return A tibble with one column: corrected_calcium (numeric, in mg/dL for
@@ -31,16 +27,14 @@ corrected_calcium <- function(
   col_map = NULL,
   units = c("auto", "conventional", "si"),
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "corrected_calcium"
   units         <- match.arg(units)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   ## --- Basic validation -----------------------------------------------------
   if (!is.data.frame(data)) {
@@ -88,11 +82,10 @@ corrected_calcium <- function(
     )
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "corrected_calcium(): preparing inputs")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(list(calcium = ca_col, albumin = alb_col), "corrected_calcium")
-  )
+  if (isTRUE(verbose)) {
+    hm_inform(sprintf("%s(): column mapping: calcium -> '%s', albumin -> '%s'", fn_name, ca_col, alb_col), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  corrected_calcium  [Payne formula: Ca + 0.8 * (4.0 - Alb)]", fn_name), level = "inform")
+  }
 
   ## --- Coercion to numeric --------------------------------------------------
   coerce_num <- function(x, nm) {
@@ -167,54 +160,11 @@ corrected_calcium <- function(
   ca_work_mgdl <- if (ca_unit == "mmol/L") d_ca * 4.0 else d_ca
   alb_work_gdl <- if (alb_unit == "g/L")  d_alb / 10.0 else d_alb
 
-  ## --- Extreme scan in working units ---------------------------------------
-  if (isTRUE(check_extreme)) {
-    limits <- list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5))
-    if (is.list(extreme_rules)) {
-      if (!is.null(extreme_rules$ca_mgdl)) limits$ca_mgdl <- extreme_rules$ca_mgdl
-      if (!is.null(extreme_rules$alb_gdl)) limits$alb_gdl <- extreme_rules$alb_gdl
-    }
-
-    bad_ca  <- is.finite(ca_work_mgdl)  & (ca_work_mgdl  < limits$ca_mgdl[1]  | ca_work_mgdl  > limits$ca_mgdl[2])
-    bad_alb <- is.finite(alb_work_gdl)  & (alb_work_gdl  < limits$alb_gdl[1]  | alb_work_gdl  > limits$alb_gdl[2])
-    n_bad <- sum(bad_ca) + sum(bad_alb)
-
-    if (n_bad > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("corrected_calcium(): %d extreme input values detected.", n_bad),
-          class = "healthmarkers_calcium_error_extremes"
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf("corrected_calcium(): detected %d extreme input values (not altered).", n_bad),
-          class = "healthmarkers_calcium_warn_extremes_detected"
-        )
-      } else if (extreme_action == "cap") {
-        if (any(bad_ca)) {
-          ca_work_mgdl[bad_ca & ca_work_mgdl < limits$ca_mgdl[1]] <- limits$ca_mgdl[1]
-          ca_work_mgdl[bad_ca & ca_work_mgdl > limits$ca_mgdl[2]] <- limits$ca_mgdl[2]
-        }
-        if (any(bad_alb)) {
-          alb_work_gdl[bad_alb & alb_work_gdl < limits$alb_gdl[1]] <- limits$alb_gdl[1]
-          alb_work_gdl[bad_alb & alb_work_gdl > limits$alb_gdl[2]] <- limits$alb_gdl[2]
-        }
-        rlang::warn(
-          sprintf("corrected_calcium(): capped %d extreme input values into allowed ranges.", n_bad),
-          class = "healthmarkers_calcium_warn_extremes_capped"
-        )
-      } else if (extreme_action == "NA") {
-        ca_work_mgdl[bad_ca]  <- NA_real_
-        alb_work_gdl[bad_alb] <- NA_real_
-      }
-    }
-  }
-
   ## --- Payne correction in mg/dL -------------------------------------------
   corr_mgdl <- ca_work_mgdl + 0.8 * (4.0 - alb_work_gdl)
 
   ## --- Domain warnings (explicit conventional only, no extreme scan) -------
-  if (units == "conventional" && !si_inferred && !isTRUE(check_extreme)) {
+  if (units == "conventional" && !si_inferred) {
     if (any(is.finite(alb_work_gdl) & (alb_work_gdl < 2 | alb_work_gdl > 5))) {
       rlang::warn(
         "corrected_calcium(): albumin outside typical 2-5 g/dL range; correction accuracy may be affected.",
@@ -243,13 +193,13 @@ corrected_calcium <- function(
     result <- padded
   }
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = sprintf("corrected_calcium(): completed %d rows.", nrow(result)))
-
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(result, "corrected_calcium")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep_idx] else data[[id_col]]
+    result[[id_col]] <- id_vec
+    result <- result[, c(id_col, setdiff(names(result), id_col)), drop = FALSE]
+    result <- tibble::as_tibble(result)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(result, fn_name), level = "inform") }
 
   return(result)
 }

@@ -114,77 +114,47 @@ test_that("domain warnings for albumin and corrected calcium ranges (no extreme 
   )
 })
 
-test_that("domain warnings suppressed when extreme scan active (only extreme warnings)", {
+test_that("domain warnings triggered for out-of-range albumin/calcium (conventional)", {
   df <- data.frame(
     Ca  = c(4.5, 16),
     Alb = c(1.5, 6.0)
   )
 
   expect_warning(
-    corrected_calcium(df, cm, units = "conventional",
-                      check_extreme = TRUE, extreme_action = "warn"),
-    class = "healthmarkers_calcium_warn_extremes_detected"
+    corrected_calcium(df, cm, units = "conventional"),
+    class = "healthmarkers_calcium_warn_albumin_range"
   )
 })
 
-test_that("extreme scan behaviors: warn / cap / NA / error", {
+test_that("extreme input values pass through and produce finite output", {
   df <- data.frame(
-    Ca  = c(-1, 25, 9, 0.5),
-    Alb = c(-0.5, 10, 3.5, 7)
+    Ca  = c(25, 9),
+    Alb = c(3.5, 3.5)
   )
 
-  expect_warning(
-    corrected_calcium(df, cm, units = "conventional",
-                      check_extreme = TRUE, extreme_action = "warn"),
-    class = "healthmarkers_calcium_warn_extremes_detected"
-  )
-
-  expect_warning(
-    out_cap <- corrected_calcium(df, cm, units = "conventional",
-                                 check_extreme = TRUE, extreme_action = "cap"),
-    class = "healthmarkers_calcium_warn_extremes_capped"
-  )
-  expect_true(all(is.finite(out_cap$corrected_calcium) | is.na(out_cap$corrected_calcium)))
-
-  out_na <- corrected_calcium(df, cm, units = "conventional",
-                              check_extreme = TRUE, extreme_action = "NA")
-  expect_true(any(is.na(out_na$corrected_calcium)))
-
-  expect_error(
-    corrected_calcium(df, cm, units = "conventional",
-                      check_extreme = TRUE, extreme_action = "error"),
-    class = "healthmarkers_calcium_error_extremes"
-  )
+  out <- suppressWarnings(corrected_calcium(df, cm, units = "conventional"))
+  expect_equal(nrow(out), 2L)
+  expect_true(all(is.finite(out$corrected_calcium)))
 })
 
-test_that("custom extreme_rules override defaults (capping within new bounds)", {
+test_that("standard input produces correct Payne formula output", {
   df <- data.frame(
-    Ca  = c(0, 30),
-    Alb = c(0.5, 9)
+    Ca  = c(9.0, 9.0),
+    Alb = c(4.0, 2.0)
   )
 
-  expect_warning(
-    out <- corrected_calcium(
-      df, cm,
-      units = "conventional",
-      check_extreme = TRUE,
-      extreme_action = "cap",
-      extreme_rules = list(
-        ca_mgdl = c(5, 18),
-        alb_gdl = c(2.5, 6)
-      )
-    ),
-    class = "healthmarkers_calcium_warn_extremes_capped"
-  )
-
-  expect_true(all(is.finite(out$corrected_calcium) | is.na(out$corrected_calcium)))
+  out <- corrected_calcium(df, cm, units = "conventional")
+  # Row 1: 9.0 + 0.8*(4.0-4.0) = 9.0
+  expect_equal(out$corrected_calcium[1], 9.0)
+  # Row 2: 9.0 + 0.8*(4.0-2.0) = 10.6
+  expect_equal(out$corrected_calcium[2], 10.6)
 })
 
-test_that("verbose = TRUE emits preparing, column map, and results messages", {
+test_that("verbose = TRUE emits column mapping and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Ca = 9.0, Alb = 3.5)
   expect_message(corrected_calcium(df, cm, verbose = TRUE), "corrected_calcium")
-  expect_message(corrected_calcium(df, cm, verbose = TRUE), "column map")
+  expect_message(corrected_calcium(df, cm, verbose = TRUE), "column mapping")
   expect_message(corrected_calcium(df, cm, verbose = TRUE), "results:")
 })
 
@@ -192,7 +162,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(Ca = 9.0, Alb = 3.5)
   msgs <- testthat::capture_messages(corrected_calcium(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("column mapping", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

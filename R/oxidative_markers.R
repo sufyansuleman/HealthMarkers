@@ -5,8 +5,10 @@
 #' @param data Data frame with columns for GSH and GSSG (per col_map).
 #' @param col_map Named list with required keys GSH and GSSG. Defaults assume same names.
 #' @param na_action One of c("keep","omit","error").
-#' @param verbose Logical; if TRUE, emits progress via hm_inform().
-#' @return A tibble with column GSH_GSSG_Ratio.
+#' @param verbose Logical; if `TRUE` (default), prints column mapping and a
+#'   per-column results summary.
+#' @return A tibble with column GSH_GSSG_Ratio. If an ID column is detected,
+#'   it is prepended.
 #'
 #' @references
 #' \insertRef{glutathione_redox_review}{HealthMarkers}
@@ -22,12 +24,11 @@ oxidative_markers <- function(
   data,
   col_map = list(GSH = "GSH", GSSG = "GSSG"),
   na_action = c("keep","omit","error"),
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name   <- "oxidative_markers"
   na_action <- match.arg(na_action)
-
-  hm_inform("oxidative_markers(): preparing inputs",
-            level = if (isTRUE(verbose)) "inform" else "debug")
+  id_col    <- .hm_detect_id_col(data)
 
   # HM-CS v2 validation
   hm_validate_inputs(
@@ -66,8 +67,25 @@ oxidative_markers <- function(
       hm_inform(level = "debug", msg = sprintf("oxidative_markers(): column '%s' has high missingness (%.1f%%).", cn, 100 * pna))
     }
   }
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_fmt_col_map(col_map[c("GSH", "GSSG")], "oxidative_markers"))
+
+  # --- Verbose: column mapping
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(c("GSH","GSSG"),
+                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
+                        character(1))
+    hm_inform(
+      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
+      level = "inform"
+    )
+  }
+
+  # --- Verbose: computing markers list
+  if (isTRUE(verbose)) {
+    hm_inform(
+      sprintf("%s(): computing markers:\n  GSH_GSSG_Ratio  [GSH / GSSG]", fn_name),
+      level = "inform"
+    )
+  }
 
   # NA policy
   if (na_action == "error") {
@@ -79,7 +97,7 @@ oxidative_markers <- function(
   } else if (na_action == "omit") {
     keep <- !Reduce(`|`, lapply(mapped, function(cn) is.na(data[[cn]])))
     if (sum(!keep) > 0L)
-      hm_inform(sprintf("oxidative_markers(): omitting %d rows with NA in required inputs", sum(!keep)),
+      hm_inform(sprintf("%s(): omitting %d rows with NA in required inputs", fn_name, sum(!keep)),
                 level = if (isTRUE(verbose)) "inform" else "debug")
     data <- data[keep, , drop = FALSE]
   }
@@ -99,8 +117,18 @@ oxidative_markers <- function(
 
   out <- tibble::tibble(GSH_GSSG_Ratio = sdiv(GSH, GSSG))
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg   = hm_result_summary(out, "oxidative_markers"))
+  # --- Prepend ID column if detected
+  if (!is.null(id_col)) {
+    id_vec        <- data[[id_col]][seq_len(nrow(out))]
+    out[[id_col]] <- id_vec
+    out           <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out           <- tibble::as_tibble(out)
+  }
+
+  # --- Verbose: results summary
+  if (isTRUE(verbose)) {
+    hm_inform(hm_result_summary(out, fn_name), level = "inform")
+  }
 
   out
 }

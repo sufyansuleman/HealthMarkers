@@ -15,12 +15,8 @@
 #'   - alm: appendicular lean mass column name (kg)
 #'   - bmi: body mass index column name (kg/m^2)
 #'   - sex: sex column name ("Male"/"Female" or m/f; case-insensitive)
-#' @param verbose Logical; if TRUE, emits progress messages.
+#' @param verbose Logical; if TRUE (default), emits progress messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn").
-#' @param check_extreme Logical; if TRUE, scan inputs for plausible ranges.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA").
-#' @param extreme_rules Optional list with bounds for `alm` and `bmi`
-#'   (defaults: alm = c(5, 40), bmi = c(10, 60)).
 #'
 #' @return A tibble with:
 #'   - alm_bmi_ratio   (numeric)
@@ -36,16 +32,14 @@
 alm_bmi_index <- function(
   data,
   col_map = NULL,
-  verbose = FALSE,
   na_action = c("keep","omit","error","ignore","warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn","cap","error","ignore","NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 ) {
+  fn_name <- "alm_bmi_index"
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   # --- validate data / mapping ------------------------------------------------
   if (!is.data.frame(data)) {
@@ -93,12 +87,12 @@ alm_bmi_index <- function(
     )
   }
 
-  # --- verbose / debug --------------------------------------------------------
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = "alm_bmi_index(): preparing inputs")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[req], "alm_bmi_index")
-  )
+  # --- verbose messages -------------------------------------------------------
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  alm_bmi_ratio    [ALM / BMI]\n  low_muscle_mass  [ratio < sex-specific FNIH cut-point]", fn_name), level = "inform")
+  }
 
   # --- coerce ALM/BMI numeric; sex as character ------------------------------
   num_cols <- unname(unlist(col_map[c("alm","bmi")]))
@@ -177,53 +171,6 @@ alm_bmi_index <- function(
     )
   }
 
-  # --- optional extreme scan --------------------------------------------------
-  if (isTRUE(check_extreme)) {
-    rules_def <- list(alm = c(5, 40), bmi = c(10, 60))
-    if (is.list(extreme_rules)) {
-      for (nm in intersect(names(extreme_rules), names(rules_def))) {
-        rules_def[[nm]] <- extreme_rules[[nm]]
-      }
-    }
-
-    total_extreme <- 0L
-    cap_vec <- function(x, lo, hi) {
-      bad <- is.finite(x) & (x < lo | x > hi)
-      nb  <- sum(bad)
-      total_extreme <<- total_extreme + nb
-      if (extreme_action == "cap") {
-        x[bad & x < lo] <- lo
-        x[bad & x > hi] <- hi
-      } else if (extreme_action == "NA") {
-        x[bad] <- NA_real_
-      }
-      x
-    }
-
-    d_alm <- cap_vec(d_alm, rules_def$alm[1], rules_def$alm[2])
-    d_bmi <- cap_vec(d_bmi, rules_def$bmi[1], rules_def$bmi[2])
-
-    if (total_extreme > 0L) {
-      if (extreme_action == "error") {
-        rlang::abort(
-          sprintf("alm_bmi_index(): %d extreme input values detected.", total_extreme),
-          class = "healthmarkers_alm_bmi_error_extremes"
-        )
-      } else if (extreme_action == "warn") {
-        rlang::warn(
-          sprintf("alm_bmi_index(): detected %d extreme input values (not altered).", total_extreme),
-          class = "healthmarkers_alm_bmi_warn_extremes_detected"
-        )
-      } else if (extreme_action == "cap") {
-        rlang::warn(
-          sprintf("alm_bmi_index(): capped %d extreme input values into allowed ranges.", total_extreme),
-          class = "healthmarkers_alm_bmi_warn_extremes_capped"
-        )
-      }
-      # extreme_action == "NA": silently NA, no extra warn
-    }
-  }
-
   # --- compute ratio and low-muscle flag -------------------------------------
   hm_inform(level = "debug", msg = "alm_bmi_index(): computing")
 
@@ -251,10 +198,13 @@ alm_bmi_index <- function(
     out <- out_core
   }
 
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(out, "alm_bmi_index")
-  )
+  if (!is.null(id_col)) {
+    id_vec <- if (na_action_eff == "omit") data[[id_col]][keep] else data[[id_col]]
+    out[[id_col]] <- id_vec
+    out <- out[, c(id_col, setdiff(names(out), id_col)), drop = FALSE]
+    out <- tibble::as_tibble(out)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
 
   out
 }

@@ -18,11 +18,7 @@
 #'   Optional (passed-through if present and found in data): `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin`.
 #' @param na_action One of "keep", "omit", or "error" controlling how
 #'   missing/non-finite input values are treated.
-#' @param check_extreme Logical; if `TRUE`, scan mapped columns whose key
-#'   names contain "sds" (case-insensitive) for absolute values > `sds_limit`.
-#' @param sds_limit Positive numeric; SDS magnitude limit used when `check_extreme` is TRUE.
-#' @param extreme_action One of "cap", "NA", or "error" for handling extreme SDS-like values.
-#' @param verbose Logical; if TRUE, emits progress messages via `hm_inform()`.
+#' @param verbose Logical; if TRUE (default), emits progress messages via `hm_inform()`.
 #'
 #' @return A tibble with columns: `OSTA`, `ALMI`, `FMI`, `BMD_Tscore`, and
 #'   optionally `TBS`, `HSA`, `PINP`, `CTX`, `BSAP`, `Osteocalcin` (in that order).
@@ -49,13 +45,11 @@ bone_markers <- function(
   data,
   col_map,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  sds_limit = 6,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 ) {
+  fn_name <- "bone_markers"
   na_action <- match.arg(na_action)
-  extreme_action <- match.arg(extreme_action)
+  id_col <- .hm_detect_id_col(data)
 
   required <- c("age", "weight", "height", "ALM", "FM", "BMD", "BMD_ref_mean", "BMD_ref_sd")
   optional <- c("TBS", "HSA", "PINP", "CTX", "BSAP", "Osteocalcin")
@@ -73,10 +67,11 @@ bone_markers <- function(
   }
 
   hm_inform(level = "debug", msg = "bone_markers(): computing bone markers")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_fmt_col_map(col_map[required], "bone_markers")
-  )
+  if (isTRUE(verbose)) {
+    map_parts <- vapply(required, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): computing markers:\n  OSTA       [(weight - age) * 0.2]\n  ALMI       [ALM / height^2]\n  FMI        [FM / height^2]\n  BMD_Tscore [(BMD - ref_mean) / ref_sd]", fn_name), level = "inform")
+  }
 
   # Coerce required and present optional columns to numeric; warn if NAs introduced
   present_opt_cols <- intersect(unname(unlist(col_map[intersect(optional, names(col_map))], use.names = FALSE)), names(data))
@@ -131,40 +126,6 @@ bone_markers <- function(
     n <- nrow(data)
   }
 
-  # Optional extreme SDS-like check for mapped keys containing 'sds'
-  if (isTRUE(check_extreme)) {
-    sds_keys <- names(col_map)[grepl("sds", names(col_map), ignore.case = TRUE)]
-    total_adj <- 0L
-    for (k in sds_keys) {
-      cn <- col_map[[k]]
-      if (!is.null(cn) && cn %in% names(data)) {
-        x <- data[[cn]]
-        if (!is.numeric(x)) suppressWarnings(x <- as.numeric(x))
-        bad <- is.finite(x) & abs(x) > sds_limit
-        nbad <- sum(bad, na.rm = TRUE)
-        if (nbad > 0) {
-          if (extreme_action == "error") {
-            rlang::abort(
-              sprintf("bone_markers(): extreme SDS-like values detected: %s(%d values > |%g|).",
-                      k, nbad, sds_limit),
-              class = "healthmarkers_bone_error_extreme_sds"
-            )
-          } else if (extreme_action == "NA") {
-            x[bad] <- NA_real_; data[[cn]] <- x; total_adj <- total_adj + nbad
-          } else if (extreme_action == "cap") {
-            x[bad & x > 0] <-  sds_limit
-            x[bad & x < 0] <- -sds_limit
-            data[[cn]] <- x; total_adj <- total_adj + nbad
-          }
-        }
-      }
-    }
-    if (total_adj > 0 && extreme_action %in% c("cap","NA")) {
-      hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-               msg = sprintf("bone_markers(): adjusted %d SDS-like extreme values (%s).", total_adj, extreme_action))
-    }
-  }
-
   # compute core indices
   OSTA <- (weight - age) * 0.2
   ALMI <- ALM / (height^2)
@@ -199,11 +160,11 @@ bone_markers <- function(
     Osteocalcin = Osteocalcin
   )
 
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug",
-            msg = "bone_markers(): completed")
-  hm_inform(
-    level = if (isTRUE(verbose)) "inform" else "debug",
-    msg   = hm_result_summary(result, "bone_markers")
-  )
+  if (!is.null(id_col)) {
+    result[[id_col]] <- data[[id_col]]
+    result <- result[, c(id_col, setdiff(names(result), id_col)), drop = FALSE]
+    result <- tibble::as_tibble(result)
+  }
+  if (isTRUE(verbose)) { hm_inform(hm_result_summary(result, fn_name), level = "inform") }
   result
 }
