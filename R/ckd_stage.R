@@ -23,17 +23,17 @@ ckd_stage <- function(
   na_action = c("keep","omit","error"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "ckd_stage"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   id_col <- .hm_detect_id_col(data)
 
   # Auto-fill col_map when not supplied
-  col_map <- .hm_autofill_col_map(col_map, data, c("eGFR","UACR"), fn = "ckd_stage")
+  cm      <- .hm_build_col_map(data, col_map, c("eGFR","UACR"), fn = "ckd_stage")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
-  # Identity fill
-  for (k in c("eGFR","UACR")) {
-    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-  }
 
   # Validate mapping and columns (explicit; no hm_validate_inputs)
   if (!is.list(col_map) || is.null(names(col_map))) {
@@ -58,12 +58,9 @@ ckd_stage <- function(
   keys_for_policy <- c("eGFR", if (has_uacr_col) "UACR")
 
   hm_inform(level = "debug", msg = "ckd_stage(): computing stages")
-  if (isTRUE(verbose)) {
-    active_keys <- intersect(c("eGFR", "UACR"), names(col_map))
-    map_parts <- vapply(active_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  CKD_stage          [eGFR G-stage]\n  Albuminuria_stage  [UACR A-stage]\n  KDIGO_risk         [combined KDIGO risk category]", fn_name), level = "inform")
-  }
 
   # Coerce to numeric; warn on NA introduction; non-finite -> NA
   eGFR <- data[[col_map$eGFR]]
@@ -160,3 +157,4 @@ ckd_stage <- function(
 
   out
 }
+

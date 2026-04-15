@@ -25,9 +25,9 @@ Description: Computes over 50 specialist health marker functions covering
     markers and fracture risk (Fracture Risk Assessment Tool (FRAX)),
     frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating
     scales, and biomarker panels from alternative biofluids (urine, saliva,
-    sweat). Missing value imputation helpers and a unified
-    all_health_markers() dispatcher that returns all requested marker groups
-    as a single wide tibble are included.
+    sweat). Missing value imputation helpers, pre or post computation
+    normalization and a unified all_health_markers() dispatcher that returns
+    all requested marker groups as a single wide tibble are included.
     Goff et al. (2014) <doi:10.1161/01.cir.0000437741.48606.98>,
     Hippisley-Cox et al. (2017) <doi:10.1136/bmj.j2099>,
     Tangri et al. (2011) <doi:10.1001/jama.2011.451>,

@@ -50,20 +50,13 @@
 #' Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4-S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
 #' Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51-S60. \doi{10.1007/s40279-015-0395-7}
 sweat_markers <- function(data,
-                          col_map = list(
-                            sweat_chloride    = "sweat_chloride",
-                            sweat_Na          = "sweat_Na",
-                            sweat_K           = "sweat_K",
-                            sweat_lactate     = "sweat_lactate",
-                            weight_before     = "weight_before",
-                            weight_after      = "weight_after",
-                            duration          = "duration",
-                            body_surface_area = "body_surface_area"
-                          ),
+                          col_map = NULL,
                           verbose = TRUE,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "sweat_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
 
@@ -77,17 +70,22 @@ sweat_markers <- function(data,
     "sweat_chloride", "sweat_Na", "sweat_K", "sweat_lactate",
     "weight_before", "weight_after", "duration", "body_surface_area"
   )
-  hm_validate_inputs(data, col_map, required_keys = required_keys, fn = "sweat_markers")
+  hm_validate_inputs(data, col_map, required_keys = character(0), fn = "sweat_markers")
+  cm      <- .hm_build_col_map(data, col_map, keys = required_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
-  # Ensure mapped columns exist
-  req_cols <- unname(unlist(col_map[required_keys], use.names = FALSE))
-  missing_cols <- setdiff(req_cols, names(data))
+  # Ensure mapped columns exist — detect both unmapped keys and mapped-but-absent columns
+  missing_cols <- required_keys[!vapply(required_keys, function(k) {
+    !is.null(col_map[[k]]) && isTRUE(col_map[[k]] %in% names(data))
+  }, logical(1))]
   if (length(missing_cols)) {
     rlang::abort(
       paste0("sweat_markers(): missing columns: ", paste(missing_cols, collapse = ", ")),
       class = "healthmarkers_sweat_error_missing_columns"
     )
   }
+  req_cols <- unname(vapply(required_keys, function(k) col_map[[k]], character(1)))
 
   # Coerce to numeric where needed; warn on NAs introduced; non-finite -> NA
   for (cn in req_cols) {
@@ -112,11 +110,9 @@ sweat_markers <- function(data,
     }
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(required_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  sweat_chloride [sweat_chloride]\n  Na_K_ratio [sweat_Na, sweat_K]\n  sweat_lactate [sweat_lactate]\n  sweat_rate [weight_before, weight_after, duration, body_surface_area]", fn_name), level = "inform")
-  }
 
   # NA policy
   if (na_action == "error") {
@@ -201,3 +197,4 @@ sweat_markers <- function(data,
 
   out
 }
+

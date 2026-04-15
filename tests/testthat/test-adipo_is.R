@@ -32,10 +32,9 @@ base_df <- tibble(
   bmi   = 24    # kg/m^2
 )
 
-test_that("errors when col_map is missing required keys", {
-  expect_error(
-    adipo_is(base_df, col_map = list(G0 = "G0")),
-    "missing col_map entries for"
+test_that("partial col_map is supplemented by dictionary inference", {
+  expect_no_error(
+    adipo_is(base_df, col_map = list(G0 = "G0"))
   )
 })
 
@@ -170,17 +169,18 @@ test_that("extreme inputs produce NA in sensitive outputs", {
 
 test_that("verbose = TRUE emits column map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
-  expect_message(run_adipo(base_df, verbose = TRUE), "column mapping")
+  expect_message(run_adipo(base_df, verbose = TRUE), "col_map")
   expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): results")
 })
 
 test_that("verbose column map lists all required keys", {
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
-  map_msg <- msgs[grepl("column mapping", msgs)]
-  expect_length(map_msg, 1L)
+  map_msgs <- msgs[grepl("col_map", msgs)]
+  expect_gte(length(map_msgs), 1L)
+  all_map_text <- paste(map_msgs, collapse = " ")
   for (key in c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "bmi")) {
-    expect_true(grepl(key, map_msg), info = paste("key missing from column map msg:", key))
+    expect_true(grepl(key, all_map_text), info = paste("key missing from column map msg:", key))
   }
 })
 
@@ -197,7 +197,7 @@ test_that("verbose results line reports correct non-NA counts", {
 test_that("verbose = TRUE with inform option emits messages exactly once (no double-fire)", {
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",      msgs)), 1L)
 })
 

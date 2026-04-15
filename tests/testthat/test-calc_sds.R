@@ -155,7 +155,7 @@ test_that("verbose = TRUE emits starting, column map, and results messages", {
   expect_message(
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
              warn_thresholds = list(na_prop = 1, extreme_prop = 1)),
-    "column map"
+    "col_map"
   )
   expect_message(
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
@@ -170,6 +170,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
              warn_thresholds = list(na_prop = 1, extreme_prop = 1))
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

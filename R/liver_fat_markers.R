@@ -34,7 +34,9 @@ liver_fat_markers <- function(data,
                               na_action = c("keep", "omit", "error", "ignore", "warn"),
                               na_warn_prop = 0.2,
                               verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "liver_fat_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -43,10 +45,9 @@ liver_fat_markers <- function(data,
   # Validate required mapping and data
   all_lfm_keys <- c("ALT","AST","BMI","sex","diabetes","MetS","insulin",
                     "I0","waist","TG","HDL_c","sbp","bp_sys","bp_treated","glucose","G0")
-  col_map <- .hm_autofill_col_map(col_map, data, all_lfm_keys, fn = "liver_fat_markers")
-  for (k in all_lfm_keys) {
-    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-  }
+  cm      <- .hm_build_col_map(data, col_map, all_lfm_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
   req <- c("ALT", "AST", "BMI")
   hm_validate_inputs(data, col_map, required_keys = req, fn = "liver_fat_markers")
   mapped_req <- unname(unlist(col_map[req]))
@@ -56,14 +57,12 @@ liver_fat_markers <- function(data,
       "liver_fat_markers(): missing required columns:",
       paste(miss, collapse = ", ")
     ))
-  
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf(
       "%s(): computing markers:\n  HSI        [8*(ALT/AST) + BMI + sex + diabetes]\n  NAFLD_LFS  [MetS/insulin/diabetes required; NA if unavailable]",
       fn_name), level = "inform")
-  }
 
   # Columns potentially used directly in formulas
   direct_keys <- c("ALT", "AST", "BMI", "sex", "diabetes", "MetS", "insulin", "I0")
@@ -273,3 +272,4 @@ liver_fat_markers <- function(data,
   if (isTRUE(verbose)) { hm_inform(hm_result_summary(out, fn_name), level = "inform") }
   out
 }
+

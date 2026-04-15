@@ -78,7 +78,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(ferritin = 50, transferrin_sat = 25)
   expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "nutrient_markers")
-  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "column map")
+  expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "col_map")
   expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "results:")
 })
 
@@ -88,7 +88,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     nutrient_markers(df, col_map = cm_id(df), verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

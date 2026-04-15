@@ -30,7 +30,9 @@ sarc_f_score <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "sarc_f_score"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -50,9 +52,10 @@ sarc_f_score <- function(
     )
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("strength","walking","chair","stairs","falls"),
-    fn = "sarc_f_score")
+  req <- c("strength","walking","chair","stairs","falls")
+  cm      <- .hm_build_col_map(data, col_map, req, fn = "sarc_f_score")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map)) {
@@ -69,7 +72,6 @@ sarc_f_score <- function(
     )
   }
 
-  req <- c("strength","walking","chair","stairs","falls")
   missing_keys <- setdiff(req, names(col_map))
   if (length(missing_keys)) {
     rlang::abort(
@@ -98,11 +100,9 @@ sarc_f_score <- function(
     )
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  sarc_f_score      [0-10 sum]\n  sarc_f_high_risk  [score >= 4]", fn_name), level = "inform")
-  }
 
   for (cn in mapped) {
     if (!is.numeric(data[[cn]])) {
@@ -185,3 +185,4 @@ sarc_f_score <- function(
 
   out
 }
+

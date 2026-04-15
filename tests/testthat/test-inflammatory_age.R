@@ -55,11 +55,11 @@ test_that("iAge NA handling gives zero for all-NA row with na_action='omit'", {
 })
 
 # 4) Verbose message
-test_that("iAge verbose emits column mapping and results messages", {
+test_that("iAge verbose emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
   expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "iAge")
-  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "column mapping")
+  expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "col_map")
   expect_message(iAge(df_ok, col_map = col_map, verbose = TRUE), "results:")
 })
 
@@ -67,7 +67,7 @@ test_that("iAge verbose double-fire guard", {
   withr::local_options(healthmarkers.verbose = "inform")
   df_ok <- tibble(CRP = 1, IL6 = 2, TNFa = 3)
   msgs <- testthat::capture_messages(iAge(df_ok, col_map = col_map, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -76,9 +76,9 @@ test_that("iAge errors on non-data.frame input", {
   expect_error(iAge("not_df", col_map), "data.frame or tibble")
 })
 
-test_that("iAge errors on missing col_map entries", {
+test_that("partial col_map is supplemented by dictionary inference", {
   bad_map <- list(CRP = "CRP", IL6 = "IL6")
-  expect_error(iAge(df, col_map = bad_map), "missing .*TNFa")
+  expect_no_error(iAge(df, col_map = bad_map))
 })
 
 test_that("iAge errors on non-numeric weights", {

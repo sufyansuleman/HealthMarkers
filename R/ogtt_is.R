@@ -86,33 +86,27 @@ ogtt_is <- function(data,
                     verbose = TRUE,
                     na_action = c("keep","omit","error"),
                     na_warn_prop = 0.2) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name    <- "ogtt_is"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action  <- match.arg(na_action)
   id_col     <- .hm_detect_id_col(data)
   .ogtt_validate_args(normalize, na_warn_prop, verbose)
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex"),
-    fn = "ogtt_is")
+  req_keys <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
+  cm      <- .hm_build_col_map(data, col_map, req_keys, fn = "ogtt_is")
+  data    <- cm$data
+  col_map <- cm$col_map
 
   # HM-CS v2: required keys validation
   hm_validate_inputs(
     data, col_map,
-    required_keys = c("G0", "I0", "G30", "I30", "G120", "I120", "weight", "bmi", "age", "sex"),
+    required_keys = req_keys,
     fn = "ogtt_is"
   )
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    req_keys  <- c("G0","I0","G30","I30","G120","I120","weight","bmi","age","sex")
-    map_parts <- vapply(req_keys,
-                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {
@@ -309,4 +303,5 @@ ogtt_is <- function(data,
   out[!is.finite(out)] <- NA_real_
   out
 }
+
 

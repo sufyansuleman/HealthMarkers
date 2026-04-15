@@ -34,7 +34,9 @@ frax_score <- function(
     country <- as.character(country)[1L]
   }
 
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "frax_score"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -45,15 +47,15 @@ frax_score <- function(
     rlang::abort("frax_score(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_frax_error_data_type")
   }
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("age","sex","bmd_t","prior_fracture","parent_fracture",
-      "steroids","smoker","alcohol"),
-    fn = "frax_score")
+  req <- c("age","sex")
+  all_frax_keys <- c("age","sex","bmd_t","prior_fracture","parent_fracture","steroids","smoker","alcohol")
+  cm      <- .hm_build_col_map(data, col_map, all_frax_keys, fn = "frax_score")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("frax_score(): `col_map` must be a named list.",
                  class = "healthmarkers_frax_error_colmap_type")
   }
-  req <- c("age","sex")
   missing_keys <- setdiff(req, names(col_map))
   if (length(missing_keys)) {
     rlang::abort(paste0("frax_score(): missing col_map entries for: ",
@@ -74,11 +76,9 @@ frax_score <- function(
                  class = "healthmarkers_frax_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  frax_major_percent [age, sex, risk factors, bmd]\n  frax_hip_percent [age, sex, risk factors, bmd]", fn_name), level = "inform")
-  }
 
   # Build list of used columns that are present in data
   opt_keys <- c("prior_fracture","parent_fracture","steroids","rheumatoid",
@@ -242,3 +242,4 @@ frax_score <- function(
 
   out
 }
+

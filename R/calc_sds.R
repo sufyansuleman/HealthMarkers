@@ -165,7 +165,7 @@ calc_sds <- function(
     hm_inform(sprintf("calc_sds: starting on %d row(s), %d variable(s)%s",
                       total_rows, length(vars), msg_id), level = "inform")
     map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, k), character(1))
-    hm_inform(sprintf("calc_sds(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("calc_sds(): col_map: %s", paste(map_parts, collapse = ", ")), level = "inform")
   }
 
   warns <- character(0)

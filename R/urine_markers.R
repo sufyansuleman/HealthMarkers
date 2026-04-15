@@ -65,6 +65,7 @@
 #' - Portilla D, Dent C, Sugaya T, et al. Liver fatty acid-binding protein as a biomarker of acute kidney injury after cardiac surgery. 
 #'   Kidney Int. 2008;73(4):465-472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
 urine_markers <- function(data,
+                          col_map = NULL,
                           verbose = TRUE,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2) {
@@ -74,14 +75,20 @@ urine_markers <- function(data,
     rlang::abort("urine_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_urine_error_data_type")
   }
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "urine_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
 
   # 1) required columns (urine-only core)
   req <- c("urine_albumin", "urine_creatinine")
-  # HM-CS v2: standardized validation using an identity col_map (key -> same-named column)
-  col_map_id <- stats::setNames(as.list(req), req)
-  hm_validate_inputs(data, col_map = col_map_id, required_keys = req, fn = "urine_markers")
+  all_keys <- c(req, "urine_protein", "urine_Na", "urine_K",
+                "NGAL", "KIM1", "NAG", "beta2_micro", "a1_micro", "IL18", "L_FABP")
+  # HM-CS v2: standardized validation and column inference
+  hm_validate_inputs(data, col_map, required_keys = character(0), fn = "urine_markers")
+  cm      <- .hm_build_col_map(data, col_map, keys = all_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
   missing_cols <- setdiff(req, names(data))
   if (length(missing_cols)) {
@@ -110,11 +117,9 @@ urine_markers <- function(data,
     data[[cn]][!is.finite(data[[cn]])] <- NA_real_
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, k), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  UACR, albuminuria_stage, microalbuminuria [urine_albumin, urine_creatinine]\n  UPCR [urine_protein, urine_creatinine]\n  U_Na_K_ratio [urine_Na, urine_K]\n  NGAL/KIM1/NAG/Beta2Micro/A1Micro/IL18/L_FABP per gCr [optional]", fn_name), level = "inform")
-  }
   # 3) High-missingness diagnostics on required inputs (debug level)
   for (cn in req) {
     x <- data[[cn]]
@@ -246,3 +251,4 @@ urine_markers <- function(data,
 
   out
 }
+

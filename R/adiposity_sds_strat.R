@@ -49,7 +49,9 @@ adiposity_sds_strat <- function(data,
                                 allow_partial = FALSE,
                                 prefix = "",
                                 verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "adiposity_sds_strat"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
 
@@ -96,13 +98,11 @@ adiposity_sds_strat <- function(data,
     check_ref_comp(ref$F[[v]])
   }
 
-  # Build variable mapping (user mapping overrides defaults)
-  var_map <- if (!is.null(col_map$vars)) {
-    stopifnot(is.list(col_map$vars))
-    c(col_map$vars, setNames(vars, vars))[vars]
-  } else {
-    setNames(vars, vars)
-  }
+  # Build variable mapping with inference support; backward-compat col_map$vars
+  flat_vars_map <- if (!is.null(col_map$vars)) col_map$vars else NULL
+  cm      <- .hm_build_col_map(data, flat_vars_map, keys = vars, fn = fn_name)
+  data    <- cm$data
+  var_map <- cm$col_map
 
   # Sex normalization
   sex_raw <- data[[sex_col]]
@@ -115,19 +115,22 @@ adiposity_sds_strat <- function(data,
   }
 
   # Ensure variable columns exist (respect allow_partial)
-  missing_in_data <- setdiff(unname(unlist(var_map, use.names = FALSE)), names(data))
+  # Check both: key present in var_map AND mapped column exists in data
+  missing_in_data <- vars[!vapply(vars, function(v) {
+    !is.null(var_map[[v]]) && isTRUE(var_map[[v]] %in% names(data))
+  }, logical(1))]
   if (length(missing_in_data)) {
     if (isTRUE(allow_partial)) {
       hm_inform(sprintf(
         "adiposity_sds_strat(): skipping %d ref vars absent in data: %s",
         length(missing_in_data), paste(missing_in_data, collapse = ", ")
       ), level = "inform")
-      keep_vars <- vars[unname(unlist(var_map)) %in% names(data)]
+      keep_vars <- vars[vars %in% names(var_map)]
       vars <- keep_vars
       var_map <- var_map[vars]
     } else {
       rlang::abort(sprintf("adiposity_sds_strat(): variables not found in data: %s",
-                           paste(setdiff(names(var_map), names(var_map)[unname(unlist(var_map)) %in% names(data)]), collapse = ", ")),
+                           paste(missing_in_data, collapse = ", ")),
                    class = "healthmarkers_adiposds_error_missing_vars")
     }
   }
@@ -136,11 +139,9 @@ adiposity_sds_strat <- function(data,
                  class = "healthmarkers_adiposds_error_no_vars")
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, var_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  %s", fn_name, paste(paste0(prefix, vars, "_SDS"), collapse = ", ")), level = "inform")
-  }
 
   # Coerce to numeric (warn on NA introduction)
   for (v in vars) {
@@ -194,3 +195,4 @@ adiposity_sds_strat <- function(data,
   }
   out
 }
+

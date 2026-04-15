@@ -99,8 +99,10 @@ cvd_risk_ascvd <- function(data, year = 10, col_map = NULL, na_warn_prop = 0.2, 
     stop("`year` must be 10 or 30.")
   }
   keys <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
-  col_map <- .hm_autofill_col_map(col_map, data, keys, fn = "cvd_risk_ascvd")
-  # fall back to identity mapping for any key not matched by autofill
+  cm_ascvd <- .hm_build_col_map(data, col_map, keys, fn = "cvd_risk_ascvd")
+  data    <- cm_ascvd$data
+  col_map <- cm_ascvd$col_map
+  # fall back to identity mapping for any key not matched
   for (k in keys) if (is.null(col_map[[k]])) col_map[[k]] <- k
   # validate all mapped columns exist in data
   miss <- setdiff(unlist(col_map[keys]), names(data))
@@ -261,8 +263,10 @@ cvd_risk_stroke <- function(data, col_map = NULL, na_warn_prop = 0.2, verbose = 
   .need_pkg("PooledCohort")
   if (!is.data.frame(data)) stop("`data` must be a data.frame or tibble.")
   keys <- c("age","sex","race","smoker","total_chol","HDL_c","sbp","bp_treated","diabetes","bmi")
-  col_map <- .hm_autofill_col_map(col_map, data, keys, fn = "cvd_risk_stroke")
-  # fall back to identity mapping for any key not matched by autofill
+  cm_stroke <- .hm_build_col_map(data, col_map, keys, fn = "cvd_risk_stroke")
+  data    <- cm_stroke$data
+  col_map <- cm_stroke$col_map
+  # fall back to identity mapping for any key not matched
   for (k in keys) if (is.null(col_map[[k]])) col_map[[k]] <- k
   # validate all mapped columns exist in data
   miss <- setdiff(unlist(col_map[keys]), names(data))
@@ -368,11 +372,12 @@ cvd_marker_aip <- function(data,
     rlang::abort("cvd_marker_aip(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_aip_data_type")
   }
-  was_null <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, c("TG", "HDL_c"), fn = "cvd_marker_aip")
+  cm_aip  <- .hm_build_col_map(data, col_map, c("TG", "HDL_c"), fn = "cvd_marker_aip")
+  data    <- cm_aip$data
+  col_map <- cm_aip$col_map
   req_keys <- c("TG","HDL_c")
   if (!all(req_keys %in% names(col_map))) {
-    if (!was_null) {
+    if (length(cm_aip$user_keys)) {
       hm_validate_inputs(data, col_map, required_keys = req_keys, fn = "cvd_marker_aip")
     }
     return(tibble::tibble(model = "AIP", value = rep(NA_real_, nrow(data))))
@@ -387,8 +392,14 @@ cvd_marker_aip <- function(data,
   }
 
   if (isTRUE(verbose)) {
-    map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("cvd_marker_aip(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
+    if (length(cm_aip$user_keys)) {
+      parts <- vapply(cm_aip$user_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+      hm_inform(sprintf("cvd_marker_aip(): col_map (user-provided): %s", paste(parts, collapse = ", ")), level = "inform")
+    }
+    if (length(cm_aip$inferred_keys)) {
+      parts <- vapply(cm_aip$inferred_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
+      hm_inform(sprintf("cvd_marker_aip(): col_map (inferred): %s", paste(parts, collapse = ", ")), level = "inform")
+    }
     hm_inform("cvd_marker_aip(): computing markers:\n  AIP [TG, HDL_c]", level = "inform")
   }
 
@@ -459,10 +470,11 @@ cvd_marker_ldl_particle_number <- function(data,
     rlang::abort("cvd_marker_ldl_particle_number(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_cvd_error_ldlpn_data_type")
   }
-  was_null <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, c("ApoB"), fn = "cvd_marker_ldl_particle_number")
+  cm_ldlpn <- .hm_build_col_map(data, col_map, c("ApoB"), fn = "cvd_marker_ldl_particle_number")
+  data    <- cm_ldlpn$data
+  col_map <- cm_ldlpn$col_map
   if (!("ApoB" %in% names(col_map))) {
-    if (!was_null) {
+    if (length(cm_ldlpn$user_keys)) {
       hm_validate_inputs(data, col_map, required_keys = c("ApoB"), fn = "cvd_marker_ldl_particle_number")
     }
     return(tibble::tibble(model = "LDL_PN", value = rep(NA_real_, nrow(data))))
@@ -474,7 +486,11 @@ cvd_marker_ldl_particle_number <- function(data,
   }
 
   if (isTRUE(verbose)) {
-    hm_inform(sprintf("cvd_marker_ldl_particle_number(): column mapping: ApoB -> '%s'", apob_col), level = "inform")
+    if (length(cm_ldlpn$user_keys)) {
+      hm_inform(sprintf("cvd_marker_ldl_particle_number(): col_map (user-provided): ApoB -> '%s'", apob_col), level = "inform")
+    } else if (length(cm_ldlpn$inferred_keys)) {
+      hm_inform(sprintf("cvd_marker_ldl_particle_number(): col_map (inferred): ApoB -> '%s'", apob_col), level = "inform")
+    }
     hm_inform("cvd_marker_ldl_particle_number(): computing markers:\n  LDL_PN [ApoB]", level = "inform")
   }
 

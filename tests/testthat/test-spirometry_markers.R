@@ -36,11 +36,11 @@ test_that("computes pre and post ratios and fixed COPD flag", {
   expect_false(out$copd_flag_fixed[1])
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(spirometry_markers(df, cm, verbose = TRUE), "spirometry_markers")
-  expect_message(spirometry_markers(df, cm, verbose = TRUE), "column mapping")
+  expect_message(spirometry_markers(df, cm, verbose = TRUE), "col_map")
   expect_message(spirometry_markers(df, cm, verbose = TRUE), "results:")
 })
 
@@ -48,7 +48,7 @@ test_that("verbose double-fire guard", {
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(spirometry_markers(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

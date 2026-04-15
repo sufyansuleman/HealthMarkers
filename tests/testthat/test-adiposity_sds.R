@@ -86,11 +86,11 @@ test_that("SDS extreme handling respects sds_cap and extreme_action", {
   expect_error(adiposity_sds(df, ref = ref, extreme_action = "error", sds_cap = 6), "SDS beyond")
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(BMI = 23, waist = 80)
   expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "adiposity_sds")
-  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "column mapping")
+  expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "col_map")
   expect_message(adiposity_sds(df, ref = ref, verbose = TRUE), "results:")
 })
 
@@ -98,6 +98,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(BMI = 23, waist = 80)
   msgs <- testthat::capture_messages(adiposity_sds(df, ref = ref, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping",  msgs)), 1L)
+  expect_equal(sum(grepl("col_map",  msgs)), 1L)
   expect_equal(sum(grepl("results:",    msgs)), 1L)
 })

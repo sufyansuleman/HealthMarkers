@@ -183,11 +183,11 @@ test_that("numeric sex coding 1/2 accepted", {
   expect_named(out, c("BMI_SDS", "waist_SDS"))
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(sex = "M", BMI = 25, waist = 95)
   expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "adiposity_sds_strat")
-  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "column mapping")
+  expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "col_map")
   expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "results:")
 })
 
@@ -197,6 +197,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

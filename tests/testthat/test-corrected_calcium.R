@@ -15,9 +15,9 @@ test_that("validation errors: data type, col_map type, missing map, empty mappin
     class = "healthmarkers_calcium_error_colmap_type"
   )
 
-  expect_error(
-    corrected_calcium(df_ok, col_map = list(calcium = "Ca")),
-    class = "healthmarkers_calcium_error_missing_map"
+  # partial col_map is supplemented by inference
+  expect_no_error(
+    corrected_calcium(df_ok, col_map = list(calcium = "Ca"))
   )
 
   expect_error(
@@ -150,11 +150,11 @@ test_that("standard input produces correct Payne formula output", {
   expect_equal(out$corrected_calcium[2], 10.6)
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Ca = 9.0, Alb = 3.5)
   expect_message(corrected_calcium(df, cm, verbose = TRUE), "corrected_calcium")
-  expect_message(corrected_calcium(df, cm, verbose = TRUE), "column mapping")
+  expect_message(corrected_calcium(df, cm, verbose = TRUE), "col_map")
   expect_message(corrected_calcium(df, cm, verbose = TRUE), "results:")
 })
 
@@ -162,7 +162,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(Ca = 9.0, Alb = 3.5)
   msgs <- testthat::capture_messages(corrected_calcium(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

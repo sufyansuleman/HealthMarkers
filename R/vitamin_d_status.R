@@ -44,7 +44,9 @@ vitamin_d_status <- function(
     rlang::abort("vitamin_d_status(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitd_error_data_type")
   }
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "vitamin_d_status"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   # Validate col_map: list vs. missing keys
   if (!is.list(col_map) && !is.null(col_map)) {
@@ -52,7 +54,9 @@ vitamin_d_status <- function(
                  class = "healthmarkers_vitd_error_colmap_type")
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data, c("vitd","vitamin_d"), fn = "vitamin_d_status")
+  cm      <- .hm_build_col_map(data, col_map, c("vitd","vitamin_d"), fn = "vitamin_d_status")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map)) {
@@ -85,11 +89,9 @@ vitamin_d_status <- function(
     )
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(names(col_map[key_used]), function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  vitamin_d_status [%s]", fn_name, vitd_col), level = "inform")
-  }
 
   # Coerce numeric
   vitd <- data[[vitd_col]]
@@ -154,3 +156,4 @@ vitamin_d_status <- function(
   out
  
 }
+

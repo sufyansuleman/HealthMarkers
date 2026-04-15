@@ -131,10 +131,10 @@ test_that("output is vectorized and contains all expected columns", {
   )
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   expect_message(glycemic_markers(df, verbose = TRUE), "glycemic_markers")
-  expect_message(glycemic_markers(df, verbose = TRUE), "column map")
+  expect_message(glycemic_markers(df, verbose = TRUE), "col_map")
   expect_message(glycemic_markers(df, verbose = TRUE), "optional inputs")
   expect_message(glycemic_markers(df, verbose = TRUE), "computing markers")
   expect_message(glycemic_markers(df, verbose = TRUE), "results:")
@@ -204,7 +204,7 @@ test_that("Coercion to numeric warns when NAs introduced", {
 test_that("verbose double-fire guard", {
   df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   msgs <- testthat::capture_messages(glycemic_markers(df, verbose = TRUE))
-  expect_equal(sum(grepl("column map",  msgs)), 1L)
+  expect_equal(sum(grepl("col_map",  msgs)), 1L)
   expect_equal(sum(grepl("results:",    msgs)), 1L)
   expect_equal(sum(grepl("optional inputs", msgs)), 1L)
   expect_equal(sum(grepl("computing markers", msgs)), 1L)
@@ -260,3 +260,54 @@ test_that("glucose derived from G0 when glucose absent", {
   expect_false(is.na(out$METS_IR))
   expect_false(is.na(out$TyG_index))
 })
+
+test_that("glucose derived from mapped G0 column via col_map redirect", {
+  # Physical column is "pglu0" — col_map maps G0 -> "pglu0".
+  # .hm_build_col_map materializes data[["G0"]], then precompute derives glucose.
+  # METS_IR and TyG_index should be non-NA.
+  df <- tibble::tibble(
+    HDL_c = 1.2,
+    TG    = 1.3,
+    BMI   = 24,
+    pglu0 = 5.5    # non-standard name for fasting glucose
+  )
+  cm  <- list(HDL_c = "HDL_c", TG = "TG", BMI = "BMI", G0 = "pglu0")
+  out <- glycemic_markers(df, col_map = cm, verbose = FALSE)
+  expect_false(is.na(out$METS_IR),    info = "METS_IR requires glucose derived from mapped G0")
+  expect_false(is.na(out$TyG_index),  info = "TyG_index requires glucose derived from mapped G0")
+})
+
+test_that("BMI derived from mapped weight/height with non-standard column names", {
+  # Physical columns are "wt_kg" and "ht_cm" — must be resolved via col_map.
+  # .hm_build_col_map materializes data[["weight"]] and data[["height"]],
+  # then .hm_precompute_from_deps derives BMI and SPISE computes.
+  df <- tibble::tibble(
+    hdlc   = 1.0,
+    trig   = 1.3,
+    wt_kg  = 70,
+    ht_cm  = 175
+  )
+  cm  <- list(HDL_c = "hdlc", TG = "trig", weight = "wt_kg", height = "ht_cm")
+  out <- glycemic_markers(df, col_map = cm, verbose = FALSE)
+  expected_bmi   <- 70 / (175 / 100)^2
+  expected_spise <- 600 * 1.0^0.185 / (1.3^0.2 * expected_bmi^1.338)
+  expect_equal(out$SPISE, expected_spise, tolerance = 1e-6,
+               info = "SPISE should use BMI precomputed from mapped weight/height")
+})
+
+test_that("partial col_map is filled from dictionary for remaining keys", {
+  # User provides only G0 mapping; HDL_c, TG, BMI should be inferred from
+  # dictionary matching column names (pglu0 -> G0, hdlc -> HDL_c, etc.).
+  df <- tibble::tibble(
+    hdlc  = 1.2,
+    trig  = 1.3,
+    bmi   = 24,
+    pglu0 = 5.5
+  )
+  cm  <- list(G0 = "pglu0")  # partial — only G0 explicitly provided
+  out <- glycemic_markers(df, col_map = cm, verbose = FALSE)
+  expect_false(is.na(out$SPISE),     info = "SPISE should compute: HDL_c/TG/BMI inferred by dict")
+  expect_false(is.na(out$METS_IR),   info = "METS_IR should compute: glucose derived from G0")
+  expect_false(is.na(out$TyG_index), info = "TyG_index should compute: glucose derived from G0")
+})
+

@@ -862,12 +862,12 @@ psych_markers <- function(data,
   if ("mdq"  %in% which) parts$mdq  <- mdq_score(base,  col_map = col_map$mdq,  na_action = na_action, missing_prop_max = missing_prop_max, prefix = "MDQ", verbose = FALSE)
   if ("asrs" %in% which) parts$asrs <- asrs_score(base, col_map = col_map$asrs, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "ASRS", verbose = FALSE)
 
-  if ("bis" %in% which) parts$bis <- bis_score(base, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS", verbose = FALSE)
-  if ("spq" %in% which) parts$spq <- spq_score(base, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ", verbose = FALSE)
+  if ("bis" %in% which && !is.null(bis_key)) parts$bis <- bis_score(base, col_map = col_map$bis, key = bis_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "BIS", verbose = FALSE)
+  if ("spq" %in% which && !is.null(spq_key)) parts$spq <- spq_score(base, col_map = col_map$spq, key = spq_key, na_action = na_action, missing_prop_max = missing_prop_max, impute = impute, prefix = "SPQ", verbose = FALSE)
 
-  if ("cognitive" %in% which) parts$cognitive <- cognitive_score(base, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
-  if ("dx_flags"  %in% which) parts$dx_flags  <- psych_dx_flags(base,  col_map = col_map$dx_flags,  na_action = na_action, prefix = "dx")
-  if ("med_flags" %in% which) parts$med_flags <- psych_med_flags(base, col_map = col_map$med_flags, na_action = na_action, prefix = "med")
+  if ("cognitive" %in% which && !is.null(col_map$cognitive)) parts$cognitive <- cognitive_score(base, col_map = col_map$cognitive, na_action = na_action, missing_prop_max = missing_prop_max, method = cognitive_method, prefix = "cog")
+  if ("dx_flags"  %in% which && !is.null(col_map$dx_flags))  parts$dx_flags  <- psych_dx_flags(base,  col_map = col_map$dx_flags,  na_action = na_action, prefix = "dx")
+  if ("med_flags" %in% which && !is.null(col_map$med_flags)) parts$med_flags <- psych_med_flags(base, col_map = col_map$med_flags, na_action = na_action, prefix = "med")
 
   out <- if (length(parts)) do.call(dplyr::bind_cols, parts) else tibble::tibble(.rows = nrow(base))
 

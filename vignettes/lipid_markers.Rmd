@@ -51,6 +51,30 @@ lm_out <- lipid_markers(
 lm_out |> dplyr::slice_head(n = 5)
 ```
 
+## Non-standard column names
+
+When your data frame uses different column names, supply a `col_map` to redirect any key that differs. Keys you omit are auto-inferred from common synonym patterns (e.g. `total_chol`, `total_cholesterol`, `tc` all resolve to `TC`).
+
+```{r}
+# Columns use non-standard names for weight and height
+df_mapped <- data.frame(
+  TC = 5.0, HDL_c = 1.3, TG = 1.5, LDL_c = 3.0,
+  body_weight = 80,    # kg
+  body_height = 175,   # cm
+  waist = 92,
+  glucose = 5.8
+)
+lm_mapped <- lipid_markers(
+  df_mapped,
+  col_map = list(weight = "body_weight", height = "body_height"),
+  verbose = FALSE
+)
+# BMI was derived from body_weight / body_height; VAI and TyG-BMI are now available
+lm_mapped[, c("VAI_Men", "TyG_BMI")]
+```
+
+Only `weight` and `height` had to be overridden; `TC`, `HDL_c`, `TG`, `LDL_c`, `waist`, and `glucose` were matched by the built-in synonym dictionary.
+
 ## Missing data & extremes
 
 - `na_action`: `keep/ignore` retain rows with missing inputs (derived outputs become `NA`); `omit` drops them; `error` aborts; `warn` retains with warnings. `na_warn_prop` flags high missingness when warning.

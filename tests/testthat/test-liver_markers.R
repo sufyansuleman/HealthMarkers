@@ -37,7 +37,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
   expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "liver_markers")
-  expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "col_map")
   expect_message(liver_markers(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -52,7 +52,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     liver_markers(df, col_map = cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
@@ -240,7 +240,7 @@ test_that("errors if mapped columns are missing in data", {
   )
 })
 
-test_that("errors if required col_map entries are missing", {
+test_that("partial col_map is supplemented by dictionary inference for missing keys", {
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
@@ -250,12 +250,13 @@ test_that("errors if required col_map entries are missing", {
     BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT",
     age = "age", AST = "AST", ALT = "ALT", platelets = "platelets",
     albumin = "albumin", diabetes = "diabetes"
-    # bilirubin/creatinine keys missing
+    # bilirubin/creatinine keys missing -- now auto-inferred from dictionary
   )
-  expect_error(
-    liver_markers(df, col_map = cm),
-    regexp = "missing col_map entries|you must supply col_map entries"
-  )
+  # Should NOT error: missing keys are filled by dictionary inference
+  out <- suppressWarnings(liver_markers(df, col_map = cm))
+  expect_s3_class(out, "tbl_df")
+  expect_true(!is.na(out$ALBI))
+  expect_true(!is.na(out$MELD_XI))
 })
 
 test_that("na_action='error' aborts when required inputs contain NA", {

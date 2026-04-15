@@ -54,7 +54,9 @@ charlson_index <- function(
   verbose = TRUE,
   na_action = c("keep","omit","error","ignore","warn")
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "charlson_index"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -119,7 +121,7 @@ charlson_index <- function(
   # --- verbose / debug ------------------------------------------------------
   if (isTRUE(verbose)) {
     map_parts <- vapply(keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): col_map: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
     hm_inform(sprintf("%s(): computing markers:\n  charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]", fn_name), level = "inform")
   }
 
@@ -209,3 +211,4 @@ charlson_index <- function(
 
   out
 }
+

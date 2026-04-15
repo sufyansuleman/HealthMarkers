@@ -1,7 +1,0 @@
-devtools::load_all(quiet=TRUE)
-d <- readRDS("inst/extdata/simulated_hm_data.rds")
-res <- suppressWarnings(all_health_markers(d, include_insulin=FALSE, verbose=TRUE))
-cat("\n=== RESULT ===\n")
-cat("Original cols:", ncol(d), "\nResult cols:", ncol(res), "\n")
-new_cols <- setdiff(names(res), names(d))
-cat("New cols added:", length(new_cols), "\n")

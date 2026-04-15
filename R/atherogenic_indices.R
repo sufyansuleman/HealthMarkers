@@ -43,7 +43,9 @@ atherogenic_indices <- function(data,
                                 na_action = c("keep","omit","error"),
                                 normalize = c("none","log10"),
                                 verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "atherogenic_indices"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   id_col    <- .hm_detect_id_col(data)
 
@@ -61,21 +63,16 @@ atherogenic_indices <- function(data,
   req <- c("TG", "HDL_c")
   opt <- c("TC", "LDL_c")
 
-  col_map <- .hm_autofill_col_map(col_map, data, c(req, opt), fn = "atherogenic_indices")
+  cm      <- .hm_build_col_map(data, col_map, c(req, opt), fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
   hm_validate_inputs(data, col_map, required_keys = req, fn = "atherogenic_indices")
 
   # Required columns presence
   req_cols <- unname(unlist(col_map[req], use.names = FALSE))
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    all_keys  <- intersect(c(req, opt), names(col_map))
-    map_parts <- vapply(all_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {
@@ -189,3 +186,4 @@ atherogenic_indices <- function(data,
 
   out
 }
+

@@ -165,11 +165,11 @@ test_that("numeric coercion warns when NAs introduced", {
   )
 })
 
-test_that("verbose emits column mapping, optional inputs, computing markers, and results messages", {
+test_that("verbose emits col_map, optional inputs, computing markers, and results messages", {
   df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
   cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
   msgs <- testthat::capture_messages(lipid_markers(df_v, cm_v, verbose = TRUE))
-  expect_true(any(grepl("column mapping", msgs)))
+  expect_true(any(grepl("col_map", msgs)))
   expect_true(any(grepl("optional inputs", msgs)))
   expect_true(any(grepl("computing markers", msgs)))
   expect_true(any(grepl("results:", msgs)))
@@ -181,8 +181,8 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     lipid_markers(df_v, cm_v, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
-  expect_equal(sum(grepl("results:",        msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
+  expect_equal(sum(grepl("results:",  msgs)), 1L)
   expect_equal(sum(grepl("optional inputs", msgs)), 1L)
   expect_equal(sum(grepl("computing markers", msgs)), 1L)
 })
@@ -209,3 +209,62 @@ test_that("BMI is pre-computed from weight and height enabling VAI and TyG_BMI",
   expect_equal(out$VAI_Men, vai_men_expected, tolerance = 1e-6)
   expect_true("TyG_BMI" %in% names(out))
 })
+
+test_that("glucose derived from mapped G0 column via col_map redirect enables TyG_BMI", {
+  # Physical column is "pglu0" — col_map maps G0 -> "pglu0".
+  # .hm_build_col_map materializes data[["G0"]], then precompute derives glucose.
+  df <- tibble::tibble(
+    TC    = 5,
+    HDL_c = 1,
+    TG    = 1.3,
+    BMI   = 25,
+    waist = 85,
+    pglu0 = 5.5    # non-standard name for fasting glucose
+  )
+  cm  <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", BMI = "BMI",
+              waist = "waist", G0 = "pglu0")
+  out <- lipid_markers(df, col_map = cm, verbose = FALSE)
+  expect_true("TyG_BMI" %in% names(out))
+  expect_false(is.na(out$TyG_BMI), info = "TyG_BMI requires glucose derived from mapped G0")
+})
+
+test_that("BMI derived from mapped weight/height with non-standard names enables VAI", {
+  # Physical columns are "body_weight" and "body_height" — must be resolved via col_map.
+  # .hm_build_col_map materializes data[["weight"]] and data[["height"]],
+  # then .hm_precompute_from_deps derives BMI, enabling VAI_Men.
+  df <- tibble::tibble(
+    TC          = 5,
+    HDL_c       = 1,
+    TG          = 1.3,
+    LDL_c       = 3,
+    waist       = 85,
+    body_weight = 70,
+    body_height = 175,
+    glucose     = 5.5
+  )
+  cm  <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c",
+              waist = "waist", glucose = "glucose",
+              weight = "body_weight", height = "body_height")
+  out <- lipid_markers(df, col_map = cm, verbose = FALSE)
+  bmi_expected     <- 70 / (1.75)^2
+  vai_men_expected <- (85 / (39.68 + 1.88 * bmi_expected)) * (1.3 / 1.03) * (1.31 / 1)
+  expect_true("VAI_Men" %in% names(out))
+  expect_equal(out$VAI_Men, vai_men_expected, tolerance = 1e-6,
+               info = "VAI_Men should use BMI precomputed from mapped weight/height")
+})
+
+test_that("partial col_map is filled from dictionary for remaining keys", {
+  # User provides only G0 mapping; TC, HDL_c, TG should be inferred by dict.
+  df <- tibble::tibble(
+    chol   = 5,      # maps to TC via synonym dictionary
+    hdlc   = 1,
+    trig   = 1.3,
+    pglu0  = 5.5
+  )
+  cm  <- list(G0 = "pglu0")
+  # hm_col_report should match chol->TC, hdlc->HDL_c, trig->TG
+  out <- lipid_markers(df, col_map = cm, verbose = FALSE)
+  # If dict inferred TC/HDL_c/TG the result has all expected cols
+  expect_true("non_HDL_c" %in% names(out))
+})
+

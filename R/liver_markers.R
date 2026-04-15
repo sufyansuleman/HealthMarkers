@@ -87,7 +87,9 @@ liver_markers <- function(data,
                           verbose      = TRUE,
                           na_action    = c("keep", "omit", "error"),
                           na_warn_prop = 0.2) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "liver_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
 
   if (!is.data.frame(data))
@@ -99,8 +101,22 @@ liver_markers <- function(data,
   required <- c("BMI","waist","TG","GGT","age","AST","ALT",
                 "platelets","albumin","diabetes","bilirubin","creatinine")
 
-  explicit_col_map <- !is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, required, fn = fn_name)
+  # --- Build col_map (infer from dictionary + materialise aliases) ---
+  all_lm_keys <- c(required, "weight", "height")
+  cm      <- .hm_build_col_map(data, col_map, all_lm_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
+
+  # Strict check: error if a user-provided mapping points to a column not in data
+  if (length(cm$user_keys)) {
+    bad_cols <- setdiff(
+      unlist(col_map[cm$user_keys], use.names = FALSE),
+      names(data))
+    if (length(bad_cols))
+      rlang::abort(
+        paste0(fn_name, "(): mapped columns not found in data: ", paste(bad_cols, collapse = ", ")),
+        class = "healthmarkers_liver_error_missing_columns")
+  }
 
   # --- Pre-computation: BMI from weight + height if absent
   if ((is.null(col_map[["BMI"]]) || !(col_map[["BMI"]] %in% names(data))) &&
@@ -115,39 +131,6 @@ liver_markers <- function(data,
                 level = "inform")
   }
 
-  if (explicit_col_map) {
-    # Strict mode: error if a mapped column is absent, error if required key missing
-    miss_cols <- setdiff(
-      unlist(col_map[intersect(required, names(col_map))], use.names = FALSE),
-      names(data))
-    if (length(miss_cols)) {
-      rlang::abort(
-        paste0("liver_markers(): mapped columns not found in data: ", paste(miss_cols, collapse = ", ")),
-        class = "healthmarkers_liver_error_missing_columns")
-    }
-    miss_keys <- setdiff(required, names(col_map))
-    if (length(miss_keys)) {
-      rlang::abort(
-        paste0("liver_markers(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-        class = "healthmarkers_liver_error_missing_map")
-    }
-  } else {
-    # Lenient mode: identity fill any key whose column exists in data
-    for (k in required) {
-      if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-    }
-    # Drop keys whose mapped column is still absent (grace: produce NA for those indices)
-    for (k in names(col_map)) {
-      if (!is.null(col_map[[k]]) && !col_map[[k]] %in% names(data)) col_map[[k]] <- NULL
-    }
-    miss_keys <- setdiff(required, names(col_map))
-    if (length(miss_keys) > 0L) {
-      hm_inform(level = "debug",
-                msg = sprintf("liver_markers(): columns not found, affected indices will be NA: %s",
-                              paste(miss_keys, collapse = ", ")))
-    }
-  }
-
   # Additional robust validation (structural only)
   .lm_validate_args(data, if (length(col_map) > 0L) col_map else list(placeholder = "x"),
                     na_warn_prop, NULL)
@@ -160,18 +143,8 @@ liver_markers <- function(data,
 
   avail_cols <- unlist(col_map[intersect(required, names(col_map))], use.names = FALSE)
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    found_keys <- intersect(required, names(col_map))
-    map_parts  <- vapply(found_keys,
-                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                         character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map (user-provided and inferred)
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # HM-CS v3: coerce to numeric for all available required inputs
   for (cn in avail_cols) {
@@ -482,3 +455,4 @@ liver_markers <- function(data,
   }
   invisible(TRUE)
 }
+

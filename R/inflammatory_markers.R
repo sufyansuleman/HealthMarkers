@@ -59,7 +59,9 @@ inflammatory_markers <- function(data, col_map = NULL,
                                  panel      = c("auto", "classic", "eos", "both"),
                                  na_action  = c("keep", "omit", "error"),
                                  verbose    = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "inflammatory_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   panel     <- match.arg(panel)
   na_action <- match.arg(na_action)
 
@@ -71,27 +73,17 @@ inflammatory_markers <- function(data, col_map = NULL,
   # --- Detect and preserve ID column
   id_col <- .hm_detect_id_col(data)
 
-  was_null_cm <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("neutrophils","lymphocytes","monocytes","platelets","WBC",
-      "CRP","albumin","eosinophils","ESR"),
-    fn = fn_name)
+  all_im_keys <- c("neutrophils","lymphocytes","monocytes","platelets","WBC",
+    "CRP","albumin","eosinophils","ESR")
+  cm      <- .hm_build_col_map(data, col_map, all_im_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map) || !is.list(col_map)) col_map <- list()
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    found_keys <- names(col_map)[nzchar(names(col_map))]
-    map_parts  <- vapply(found_keys,
-                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                         character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
-  if (!was_null_cm && (is.null(names(col_map)) || any(!nzchar(names(col_map))))) {
+  if (!is.list(col_map) || (!is.null(names(col_map)) && any(!nzchar(names(col_map))))) {
     rlang::abort("inflammatory_markers(): `col_map` must be a named list.",
                  class = "healthmarkers_inflammatory_markers_error_map_type")
   }
@@ -106,7 +98,7 @@ inflammatory_markers <- function(data, col_map = NULL,
     c("neutrophils","lymphocytes")
   )
   missing_keys <- setdiff(req_keys, names(col_map))
-  if (!was_null_cm && length(missing_keys)) {
+  if (length(missing_keys)) {
     rlang::abort(
       paste0("inflammatory_markers(): missing col_map entries for: ",
              paste(missing_keys, collapse = ", ")),
@@ -118,14 +110,14 @@ inflammatory_markers <- function(data, col_map = NULL,
       (is.atomic(v) && length(v) == 1L && (is.na(v) || identical(v, "") || !nzchar(as.character(v))))
   }
   empty_keys <- names(Filter(is_empty_map, col_map))
-  if (!was_null_cm && length(empty_keys)) {
+  if (length(empty_keys)) {
     rlang::abort(
       paste0("inflammatory_markers(): `col_map` has empty mapping for: ",
              paste(empty_keys, collapse = ", ")),
       class = "healthmarkers_inflammatory_markers_error_missing_map"
     )
   }
-  if (!was_null_cm && panel == "eos" && ("CRP" %in% names(col_map)) && !("albumin" %in% names(col_map))) {
+  if (panel == "eos" && ("CRP" %in% names(col_map)) && !("albumin" %in% names(col_map))) {
     rlang::abort("inflammatory_markers(): missing col_map entries for: albumin",
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
@@ -298,3 +290,4 @@ inflammatory_markers <- function(data, col_map = NULL,
   }
   out
 }
+

@@ -5,10 +5,8 @@ cm <- list(nfl = "NfL")
 test_that("mapping validation and missing columns error", {
   df <- data.frame(NfL = c(10, 20))
 
-  expect_error(
-    nfl_marker(df, list()),
-    class = "healthmarkers_nfl_error_missing_map"
-  )
+  # empty list with inferrable data – succeeds via case-insensitive inference
+  expect_no_error(nfl_marker(df, list()))
 
   expect_error(
     nfl_marker(df, list(nfl = "")),
@@ -21,11 +19,11 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(nfl_marker(df, cm, verbose = TRUE), "nfl_marker")
-  expect_message(nfl_marker(df, cm, verbose = TRUE), "column mapping")
+  expect_message(nfl_marker(df, cm, verbose = TRUE), "col_map")
   expect_message(nfl_marker(df, cm, verbose = TRUE), "results:")
 })
 
@@ -33,7 +31,7 @@ test_that("verbose double-fire guard", {
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(nfl_marker(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

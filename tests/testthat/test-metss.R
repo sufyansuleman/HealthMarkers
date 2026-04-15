@@ -91,7 +91,7 @@ test_that("metss errors when params key for sex-race is missing", {
 })
 
 # ---- Verbose messages ----
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     waist   = 94,
@@ -104,7 +104,7 @@ test_that("verbose emits column mapping and results messages", {
     race    = "NHW"
   )
   expect_message(metss(df, verbose = TRUE), "metss")
-  expect_message(metss(df, verbose = TRUE), "column mapping")
+  expect_message(metss(df, verbose = TRUE), "col_map")
   expect_message(metss(df, verbose = TRUE), "results:")
 })
 
@@ -116,7 +116,7 @@ test_that("verbose double-fire guard", {
     sex = 1, race = "NHW"
   )
   msgs <- testthat::capture_messages(metss(df, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

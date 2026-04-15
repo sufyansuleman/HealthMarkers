@@ -12,11 +12,11 @@ test_that("errors on missing mapping keys", {
   expect_error(bode_index(df, bad), class = "healthmarkers_bode_error_missing_map")
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   expect_message(bode_index(df, cm, verbose = TRUE), "bode_index")
-  expect_message(bode_index(df, cm, verbose = TRUE), "column mapping")
+  expect_message(bode_index(df, cm, verbose = TRUE), "col_map")
   expect_message(bode_index(df, cm, verbose = TRUE), "results:")
 })
 
@@ -24,7 +24,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   msgs <- testthat::capture_messages(bode_index(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

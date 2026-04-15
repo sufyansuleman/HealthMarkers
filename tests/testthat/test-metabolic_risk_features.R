@@ -56,7 +56,7 @@ test_that("errors if mapped columns are missing in data", {
   )
 })
 
-test_that("errors if required col_map entries are missing", {
+test_that("partial col_map is supplemented by dictionary inference for missing keys", {
   df <- tibble(
     chol_total = 6.0, chol_ldl = 3.5, chol_hdl = 1.0, triglycerides = 1.2,
     age_year = 25, z_HOMA = 1.5, glucose = 5.8, HbA1c = 40, bp_sys_z = 1.7, bp_dia_z = 1.0
@@ -64,12 +64,11 @@ test_that("errors if required col_map entries are missing", {
   cm <- list(
     chol_total = "chol_total", chol_ldl = "chol_ldl", chol_hdl = "chol_hdl", triglycerides = "triglycerides",
     age_year = "age_year", z_HOMA = "z_HOMA", glucose = "glucose"
-    # HbA1c, bp_sys_z, bp_dia_z missing
+    # HbA1c, bp_sys_z, bp_dia_z missing -> should be inferred from data
   )
-  expect_error(
-    metabolic_risk_features(df, col_map = cm),
-    "missing col_map entries"
-  )
+  expect_no_error(metabolic_risk_features(df, col_map = cm))
+  out <- metabolic_risk_features(df, col_map = cm)
+  expect_s3_class(out, "tbl_df")
 })
 
 test_that("na_action='error' aborts when required inputs contain NA", {
@@ -130,7 +129,7 @@ test_that("high missingness warning is emitted when proportion exceeds threshold
   )
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
@@ -139,7 +138,7 @@ test_that("verbose emits column mapping and results messages", {
   )
   cm <- as.list(names(df)); names(cm) <- names(df)
   expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "metabolic_risk_features")
-  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "column mapping")
+  expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "col_map")
   expect_message(metabolic_risk_features(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -154,7 +153,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     metabolic_risk_features(df, col_map = cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

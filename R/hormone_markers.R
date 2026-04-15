@@ -54,7 +54,9 @@ hormone_markers <- function(
   na_warn_prop = 0.2,
   verbose      = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "hormone_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   if (na_action == "keep") na_action <- "ignore"
 
@@ -112,11 +114,12 @@ hormone_markers <- function(
     rlang::abort("hormone_markers(): `data` must be a data.frame or tibble.", class = "healthmarkers_horm_error_data_type")
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
-      "free_T3","free_T4","TSH","aldosterone","renin",
-      "insulin","IGF1","prolactin","cortisol_0","cortisol_30"),
-    fn = fn_name)
+  all_hm_keys <- c("total_testosterone","SHBG","LH","FSH","estradiol","progesterone",
+    "free_T3","free_T4","TSH","aldosterone","renin",
+    "insulin","IGF1","prolactin","cortisol_0","cortisol_30")
+  cm_hm   <- .hm_build_col_map(data, col_map, all_hm_keys, fn = fn_name)
+  data    <- cm_hm$data
+  col_map <- cm_hm$col_map
 
   if (is.null(col_map) || !is.list(col_map)) {
     rlang::abort("hormone_markers(): `col_map` must be a named list.", class = "healthmarkers_horm_error_colmap_type")
@@ -170,17 +173,8 @@ hormone_markers <- function(
                  class = "healthmarkers_horm_error_na_warn_prop")
   }
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(used_keys,
-                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm_hm, col_map, fn_name, verbose)
 
   # --- Verbose: optional inputs (ratio availability)
   if (isTRUE(verbose)) {
@@ -369,3 +363,4 @@ hormone_markers <- function(
   }
   flags
 }
+

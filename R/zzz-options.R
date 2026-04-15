@@ -31,6 +31,9 @@ hm_inform <- function(level = c("inform","info","debug"), msg = NULL, verbose = 
     debug  = hm_get_verbosity() %in% c("debug"),
     FALSE
   )
-  if (emit && !is.null(msg) && nzchar(msg)) message(msg)
+  if (emit && !is.null(msg)) {
+    if (length(msg) != 1L) msg <- paste(msg, collapse = "\n")
+    if (nzchar(msg)) message(msg)
+  }
   invisible(NULL)
 }

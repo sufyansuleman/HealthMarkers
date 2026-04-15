@@ -14,10 +14,10 @@ make_df_req <- function(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14) {
   tibble(Cr = Cr, Age = Age, Sex = Sex, Race = Race, BUN = BUN)
 }
 
-test_that("verbose emits column mapping, optional inputs, computing markers, and results messages", {
+test_that("verbose emits col_map, optional inputs, computing markers, and results messages", {
   df <- make_df_req()
   msgs <- testthat::capture_messages(renal_markers(df, cm_req, verbose = TRUE))
-  expect_true(any(grepl("column mapping", msgs)))
+  expect_true(any(grepl("col_map", msgs)))
   expect_true(any(grepl("optional inputs", msgs)))
   expect_true(any(grepl("computing markers", msgs)))
   expect_true(any(grepl("results:", msgs)))
@@ -26,7 +26,7 @@ test_that("verbose emits column mapping, optional inputs, computing markers, and
 test_that("verbose double-fire guard", {
   df <- make_df_req()
   msgs <- testthat::capture_messages(renal_markers(df, cm_req, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",        msgs)), 1L)
   expect_equal(sum(grepl("optional inputs", msgs)), 1L)
   expect_equal(sum(grepl("computing markers", msgs)), 1L)

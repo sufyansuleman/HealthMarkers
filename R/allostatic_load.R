@@ -48,7 +48,9 @@ allostatic_load <- function(
   return_summary = FALSE,
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "allostatic_load"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
 
@@ -76,27 +78,23 @@ allostatic_load <- function(
 
   vars <- names(thresholds)
 
-  # Build effective var -> column mapping (user-provided names in col_map override defaults)
-  var_map <- setNames(vars, vars)
-  if (!is.null(col_map)) {
-    stopifnot(is.list(col_map))
-    var_map <- c(col_map, var_map)[vars]
-  }
+  # Build effective var -> column mapping with inference support
+  cm      <- .hm_build_col_map(data, col_map, keys = vars, fn = fn_name)
+  data    <- cm$data
+  var_map <- cm$col_map
 
   # Confirm required columns exist in data
-  req_cols <- unname(unlist(var_map, use.names = FALSE))
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, var_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  AllostaticLoad [%s]", fn_name, paste(vars, collapse = ", ")), level = "inform")
-  }
-  missing_cols <- setdiff(req_cols, names(data))
-  if (length(missing_cols)) {
+  missing_vars <- setdiff(vars, names(var_map))
+  if (length(missing_vars)) {
     rlang::abort(
-      paste0("allostatic_load(): missing required columns in data: ", paste(missing_cols, collapse = ", ")),
+      paste0("allostatic_load(): missing required columns in data: ", paste(missing_vars, collapse = ", ")),
       class = "healthmarkers_allo_error_missing_columns"
     )
   }
+  req_cols <- unname(unlist(var_map[vars], use.names = FALSE))
 
   # Coerce required columns to numeric; non-finite -> NA
   for (cn in req_cols) {
@@ -181,3 +179,4 @@ allostatic_load <- function(
 
   out
 }
+

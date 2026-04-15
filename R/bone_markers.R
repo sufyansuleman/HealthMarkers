@@ -43,18 +43,23 @@
 #' @export
 bone_markers <- function(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "bone_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   id_col <- .hm_detect_id_col(data)
 
   required <- c("age", "weight", "height", "ALM", "FM", "BMD", "BMD_ref_mean", "BMD_ref_sd")
   optional <- c("TBS", "HSA", "PINP", "CTX", "BSAP", "Osteocalcin")
 
-  hm_validate_inputs(data, col_map, required_keys = required, fn = "bone_markers")
+  hm_validate_inputs(data, col_map, required_keys = character(0), fn = "bone_markers")
+  cm      <- .hm_build_col_map(data, col_map, keys = c(required, optional), fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
   # Required columns exist in data
   req_cols <- unname(unlist(col_map[required], use.names = FALSE))
@@ -67,11 +72,9 @@ bone_markers <- function(
   }
 
   hm_inform(level = "debug", msg = "bone_markers(): computing bone markers")
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(required, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  OSTA       [(weight - age) * 0.2]\n  ALMI       [ALM / height^2]\n  FMI        [FM / height^2]\n  BMD_Tscore [(BMD - ref_mean) / ref_sd]", fn_name), level = "inform")
-  }
 
   # Coerce required and present optional columns to numeric; warn if NAs introduced
   present_opt_cols <- intersect(unname(unlist(col_map[intersect(optional, names(col_map))], use.names = FALSE)), names(data))
@@ -168,3 +171,4 @@ bone_markers <- function(
   if (isTRUE(verbose)) { hm_inform(hm_result_summary(result, fn_name), level = "inform") }
   result
 }
+

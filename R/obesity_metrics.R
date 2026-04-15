@@ -93,7 +93,9 @@ obesity_indices <- function(data,
                             na_action = c("keep","omit","error"),
                             na_warn_prop = 0.2,
                             verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "obesity_indices"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   # Match args
   weight_unit <- match.arg(weight_unit)
@@ -116,7 +118,7 @@ obesity_indices <- function(data,
         sprintf("waist -> '%s'", wst_name), sprintf("hip -> '%s'", hp_name),
         if (!is.null(sx_name)) sprintf("sex -> '%s'", sx_name) else NULL),
       collapse = ", ")
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, col_mapping_str), level = "inform")
+    hm_inform(sprintf("%s(): col_map: %s", fn_name, col_mapping_str), level = "inform")
     hm_inform(sprintf(
       "%s(): computing markers:\n  BMI, BMI_cat, WHR, WHtR, AVI, BAI, ABSI, BRI, CI%s",
       fn_name,
@@ -369,3 +371,4 @@ obesity_indices <- function(data,
   }
   df
 }
+

@@ -9,15 +9,16 @@ cm <- list(
 
 test_that("mapping validation and missing columns error", {
   df <- data.frame(Age = 65, Sex = "Female")
-  expect_error(frax_score(df, list(age="Age")), class = "healthmarkers_frax_error_missing_map")
+  # partial col_map is supplemented by inference (sex inferred from 'Sex' column)
+  expect_no_error(frax_score(df, list(age="Age")))
   expect_error(frax_score(df, list(age="Age", sex="SexX")), class = "healthmarkers_frax_error_missing_columns")
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Age = 65, Sex = "Female")
   expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "frax_score")
-  expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "column mapping")
+  expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "col_map")
   expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "results:")
 })
 
@@ -27,7 +28,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

@@ -52,7 +52,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   )
   cm <- setNames(as.list(names(df)), names(df))
   expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "hormone_markers")
-  expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "column map")
+  expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "col_map")
   expect_message(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"), "results:")
 })
 
@@ -66,7 +66,7 @@ test_that("verbose double-fire guard", {
   )
   cm <- setNames(as.list(names(df)), names(df))
   msgs <- testthat::capture_messages(hormone_markers(df, col_map = cm, verbose = TRUE, na_action = "keep"))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

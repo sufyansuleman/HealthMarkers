@@ -111,7 +111,9 @@ nutrient_markers <- function(
   na_warn_prop = 0.2,
   verbose      = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "nutrient_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
 
   # --- Detect and preserve ID column
@@ -126,9 +128,7 @@ nutrient_markers <- function(
     "BUN","phosphate","calcium","Na","K","Cl","HCO3","Tyr","Phe"
   )
 
-  if (is.null(col_map)) {
-    col_map <- as.list(keys); names(col_map) <- keys
-  } else {
+  if (is.list(col_map) && length(col_map) > 0L) {
     extra <- setdiff(names(col_map), keys)
     if (length(extra)) {
       rlang::warn(
@@ -138,23 +138,15 @@ nutrient_markers <- function(
       col_map[extra] <- NULL
     }
   }
+  cm      <- .hm_build_col_map(data, col_map, keys = keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
   mapped    <- unlist(col_map, use.names = TRUE)
   used_cols <- intersect(unname(mapped), names(data))
 
   # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    avail_map <- col_map[vapply(col_map, function(cn)
-      !is.null(cn) && cn %in% names(data), logical(1))]
-    map_parts <- vapply(names(avail_map),
-                        function(k) sprintf("%s -> '%s'", k, avail_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: optional inputs
   if (isTRUE(verbose)) {
@@ -397,3 +389,4 @@ nutrient_markers <- function(
   }
   list(count = count, flags = flags)
 }
+

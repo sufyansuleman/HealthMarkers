@@ -89,7 +89,7 @@ test_that("verbose = TRUE emits preparing, column map, and results messages", {
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   cm <- list(G0 = "G0", I0 = "I0")
   expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "fasting_is")
-  expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "column map")
+  expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "col_map")
   expect_message(fasting_is(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -98,6 +98,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   df   <- tibble::tibble(G0 = 5.5, I0 = 60)
   cm   <- list(G0 = "G0", I0 = "I0")
   msgs <- testthat::capture_messages(fasting_is(df, col_map = cm, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

@@ -155,7 +155,7 @@ frailty_index <- function(data,
                       nrow(df), length(cols),
                       if (!is.null(age)) ", age provided" else ""),
               level = "inform")
-    hm_inform(sprintf("frailty_index(): column mapping: %s%s",
+    hm_inform(sprintf("frailty_index(): col_map: %s%s",
                       paste(head(cols, 8), collapse = ", "),
                       if (length(cols) > 8) sprintf(" ... and %d more", length(cols) - 8) else ""),
               level = "inform")

@@ -20,7 +20,9 @@ spirometry_markers <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "spirometry_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -32,9 +34,10 @@ spirometry_markers <- function(
                  class = "healthmarkers_spiro_error_data_type")
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("fev1","fvc","fev1_post","fvc_post","age","height","sex","ethnicity"),
-    fn = "spirometry_markers")
+  all_spiro_keys <- c("fev1","fvc","fev1_post","fvc_post","age","height","sex","ethnicity")
+  cm      <- .hm_build_col_map(data, col_map, all_spiro_keys, fn = "spirometry_markers")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
   req_keys <- c("fev1","fvc")
@@ -50,11 +53,9 @@ spirometry_markers <- function(
                  class = "healthmarkers_spiro_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  ratio_pre/post  [FEV1/FVC]\n  copd_flag_fixed [ratio < 0.70]\n  obstruction_lln [LLN-based]\n  fev1_pp/fvc_pp  [%% predicted]\n  gold_grade      [GOLD severity]", fn_name), level = "inform")
-  }
 
   # Coerce numeric for volumes; sanitize
   vol_cols <- c(col_map$fev1, col_map$fvc, col_map$fev1_post, col_map$fvc_post)
@@ -246,3 +247,4 @@ spirometry_markers <- function(
 
   out
 }
+

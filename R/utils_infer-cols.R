@@ -691,7 +691,8 @@ hm_infer_cols <- function(data, patterns, required_keys = names(patterns), verbo
   lymphocytes = c("lymphocytes","Lymphocytes","LYMPH","lymph"),
   eosinophils = c("eosinophils","Eosinophils","eos","EOS","EOSIN"),
   monocytes   = c("monocytes","Monocytes","MONO","mono","monocyte_count"),
-  platelets   = c("platelets","Platelets","PLT","plt","thrombocytes"),
+  platelets   = c("platelets","Platelets","PLT","plt","thrombocytes","platelet_count","Platelet_Count","PLATELET"),
+
   Hgb         = c("Hgb","hgb","Hb","hb","hemoglobin","haemoglobin","HGB","HB"),
   inflammatory_age     = c("inflammatory_age","iAge_raw","inf_age",
                            "immune_age","inflammaging_score"),

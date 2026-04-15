@@ -84,7 +84,9 @@ lipid_markers <- function(
   na_warn_prop = 0.2,
   verbose      = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "lipid_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
 
   if (!is.data.frame(data))
@@ -93,30 +95,19 @@ lipid_markers <- function(
   # --- Detect and preserve ID column -----------------------------------------
   id_col <- .hm_detect_id_col(data)
 
-  # --- Build col_map ----------------------------------------------------------
+  # --- Build col_map: infer missing keys, materialize aliases ----------------
   all_lm_keys <- c("TC", "HDL_c", "TG", "LDL_c", "ApoB", "ApoA1", "waist", "BMI", "glucose")
   req_keys    <- c("TC", "HDL_c", "TG")
   opt_keys    <- c("LDL_c", "ApoB", "ApoA1", "waist", "BMI", "glucose")
 
-  col_map <- .hm_autofill_col_map(col_map, data, all_lm_keys, fn = fn_name)
-  for (k in all_lm_keys) {
-    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-  }
+  cm      <- .hm_build_col_map(data, col_map, all_lm_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
-  # --- Verbose: column mapping ------------------------------------------------
-  if (isTRUE(verbose)) {
-    found_keys <- intersect(all_lm_keys, names(col_map))
-    map_parts  <- vapply(found_keys,
-                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                         character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: column mapping (user-provided vs inferred) -------------------
+  .hm_log_cols(cm, col_map, fn_name, verbose, keys = all_lm_keys)
 
-  # --- Pre-computation: fill missing required keys from raw inputs ------------
+  # --- Pre-computation: fill still-missing required keys from raw inputs -----
   deps <- .lm_precompute_deps()
   is_missing_key <- function(k) is.null(col_map[[k]]) || !(col_map[[k]] %in% names(data))
   missing_req <- req_keys[vapply(req_keys, is_missing_key, logical(1))]
@@ -398,3 +389,4 @@ lipid_markers <- function(
     glucose = c(0, 50)
   )
 }
+

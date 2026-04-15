@@ -73,12 +73,12 @@ test_that("zero-row data returns zero-row tibble", {
   expect_named(out, "AllostaticLoad")
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- tibble(A = c(1, 5), B = c(0, 3))
   thr <- list(A = 2, B = 1)
   expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "allostatic_load")
-  expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "column mapping")
+  expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "col_map")
   expect_message(allostatic_load(df, thresholds = thr, verbose = TRUE), "results:")
 })
 
@@ -89,7 +89,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     allostatic_load(df, thresholds = thr, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

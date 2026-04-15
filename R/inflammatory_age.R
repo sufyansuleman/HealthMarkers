@@ -98,7 +98,9 @@ iAge <- function(data,
                  verbose = TRUE,
                  na_action = c("keep", "omit", "error", "ignore", "warn"),
                  na_warn_prop = 0.2) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "iAge"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   na_action_raw <- match.arg(na_action)
   na_action <- if (na_action_raw %in% c("ignore","warn")) "omit" else na_action_raw
@@ -106,7 +108,9 @@ iAge <- function(data,
   if (!is.data.frame(data)) rlang::abort("iAge(): `data` must be a data.frame or tibble.")
 
   markers <- c("CRP","IL6","TNFa")
-  col_map <- .hm_autofill_col_map(col_map, data, markers, fn = "iAge")
+  cm_iage <- .hm_build_col_map(data, col_map, markers, fn = "iAge")
+  data    <- cm_iage$data
+  col_map <- cm_iage$col_map
   if (is.null(col_map) || !is.list(col_map)) rlang::abort("iAge(): `col_map` must be a named list.")
   missing_keys <- setdiff(markers, names(col_map))
   if (length(missing_keys)) rlang::abort(paste0("missing required columns: ", paste(missing_keys, collapse = ", ")))
@@ -133,12 +137,10 @@ iAge <- function(data,
   if (any(!is.finite(weights))) rlang::abort("iAge(): `weights` must be finite numeric values.")
   if (abs(sum(weights) - 1) > 1e-8) rlang::abort("iAge(): `weights` must sum to 1.")
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(markers, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm_iage, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  iAge  [weighted sum: CRP*%.2f + IL6*%.2f + TNFa*%.2f]",
       fn_name, weights[1], weights[2], weights[3]), level = "inform")
-  }
 
   for (cn in unname(used_cols)) {
     if (!is.numeric(data[[cn]])) {
@@ -236,3 +238,4 @@ iAge <- function(data,
   }
   df
 }
+

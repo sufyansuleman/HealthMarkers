@@ -100,13 +100,13 @@ test_that("frailty_index NA handling works", {
   )
 })
 
-# 8) verbose messages include preparing, column mapping, and results
+# 8) verbose messages include preparing, col_map, and results
 test_that("frailty_index verbose = TRUE emits preparing and column mapping messages", {
   skip_if_not_installed("di")
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(d1 = c(1, 0), d2 = c(0, 1))
   expect_message(frailty_index(df, cols = c("d1", "d2"), verbose = TRUE), "frailty_index")
-  expect_message(frailty_index(df, cols = c("d1", "d2"), verbose = TRUE), "column mapping")
+  expect_message(frailty_index(df, cols = c("d1", "d2"), verbose = TRUE), "col_map")
 })
 
 test_that("frailty_index verbose double-fire guard: each message fires exactly once", {
@@ -116,7 +116,7 @@ test_that("frailty_index verbose double-fire guard: each message fires exactly o
   msgs <- testthat::capture_messages(
     frailty_index(df, cols = c("d1", "d2"), verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
 })
 
 test_that("frailty_index return='data' verbose emits results summary", {

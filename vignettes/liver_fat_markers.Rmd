@@ -1,0 +1,170 @@
+---
+title: "Liver fat markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{liver_fat_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+
+Compute HSI (Hepatic Steatosis Index) and NAFLD Liver Fat Score (NAFLD-LFS) from routine liver enzymes, anthropometry, and optional metabolic inputs.
+
+- **HSI** = 8 × (ALT/AST) + BMI + 2 (if female) + 2 (if diabetes); validated as a non-invasive screen for non-alcoholic fatty liver disease.
+- **NAFLD-LFS** = −2.89 + 1.18×MetS + 0.45×T2DM + 0.15×Insulin (µU/mL) + 0.04×AST − 0.94×(AST/ALT); estimates liver fat percentage.
+
+## When to use
+
+- You have ALT, AST, and BMI and want a quick steatosis screen (HSI).
+- You can supply sex, diabetes status, and fasting insulin (or I0) for the richer NAFLD-LFS.
+- MetS is taken directly when mapped, or derived from waist, TG, HDL_c, blood pressure, and fasting glucose when available.
+
+## Inputs
+
+- **Required** (for HSI): `ALT`, `AST` (U/L), `BMI` (kg/m²).
+- **Optional**:
+  - `sex` (1 = male, 2 = female, or character "male"/"female").
+  - `diabetes` (0/1 or logical).
+  - `MetS` (0/1); if absent, derived from `waist`, `TG`, `HDL_c`, `sbp` (or `bp_sys`), `bp_treated`, `glucose` (or `G0`) when all are available.
+  - `insulin` (µU/mL) or `I0` (pmol/L; converted as I0/6).
+- `na_action`: `keep` (default) / `omit` / `error` / `warn`. `omit` drops rows missing ALT, AST, or BMI.
+- `check_extreme`: not implemented in this function; `na_action = "warn"` with `na_warn_prop` flags high-missingness columns.
+
+## Quick start
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+fat <- tibble::tibble(
+  ALT      = c(30, 42, 25),
+  AST      = c(20, 35, 30),
+  BMI      = c(25, 32, 28),
+  sex      = c(1, 2, 1),
+  diabetes = c(0, 1, 0),
+  insulin  = c(10, 22, 14)   # µU/mL
+)
+
+liver_fat_markers(
+  data    = fat,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI",
+    sex = "sex", diabetes = "diabetes", insulin = "insulin"
+  ),
+  verbose = FALSE
+)
+```
+
+## Non-standard column names
+
+Only supply `col_map` entries for keys that differ from expected names. Remaining keys (`ALT`, `AST`, `BMI`, `sex`, `diabetes`, `HDL_c`, `TG`, `waist`, etc.) are matched automatically.
+
+```{r}
+df_ns <- data.frame(
+  liver_alt   = 38,
+  liver_ast   = 28,
+  body_mass_index = 29,
+  female_sex  = 1L,
+  has_dm      = 0L,
+  fasting_ins = 16
+)
+
+liver_fat_markers(
+  df_ns,
+  col_map = list(
+    ALT      = "liver_alt",
+    AST      = "liver_ast",
+    BMI      = "body_mass_index",
+    sex      = "female_sex",
+    diabetes = "has_dm",
+    insulin  = "fasting_ins"
+  ),
+  verbose = FALSE
+)
+```
+
+## MetS derivation
+
+When `MetS` is not directly mapped, it is computed from NCEP-ATP III criteria if `waist`, `TG`, `HDL_c`, a blood pressure measure, and `glucose` (or `G0`) are all available; otherwise `NAFLD_LFS` is `NA` unless insulin or MetS is directly supplied.
+
+```{r}
+fat2 <- tibble::tibble(
+  ALT      = c(30, 42),
+  AST      = c(20, 35),
+  BMI      = c(25, 32),
+  sex      = c(1, 2),
+  diabetes = c(0, 1),
+  waist    = c(88, 100),  # cm
+  TG       = c(1.5, 2.3), # mmol/L
+  HDL_c    = c(1.2, 1.0), # mmol/L
+  sbp      = c(118, 134), # mmHg
+  glucose  = c(5.2, 6.1)  # mmol/L
+)
+
+liver_fat_markers(
+  data    = fat2,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes = "diabetes",
+    waist = "waist", TG = "TG", HDL_c = "HDL_c", sbp = "sbp", glucose = "glucose"
+  ),
+  verbose = FALSE
+)
+```
+
+## Missing data handling
+
+```{r}
+fat_na <- fat
+fat_na$ALT[2] <- NA
+
+liver_fat_markers(
+  data    = fat_na,
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI"),
+  na_action = "keep",
+  verbose = FALSE
+)
+
+liver_fat_markers(
+  data    = fat_na,
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI"),
+  na_action = "omit",
+  verbose = FALSE
+)
+```
+
+With `na_action = "omit"`, any row missing ALT, AST, or BMI is dropped.
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+liver_fat_markers(
+  data    = fat,
+  col_map = list(
+    ALT = "ALT", AST = "AST", BMI = "BMI",
+    sex = "sex", diabetes = "diabetes", insulin = "insulin"
+  ),
+  verbose = TRUE
+)
+options(old_opt)
+```
+
+## Outputs
+
+Returns a tibble with two columns:
+
+- `HSI`: always computed when ALT, AST, BMI are present (sex and diabetes default to 0 when absent).
+- `NAFLD_LFS`: computed when MetS and insulin (or I0) can be obtained; otherwise `NA`.
+
+## Tips
+
+- Provide `insulin` in µU/mL or `I0` in pmol/L (auto-converted); prefer `insulin` when available.
+- Supply `sex` to properly encode the +2 female contribution in HSI and apply sex-specific HDL thresholds in MetS derivation.
+- To get `NAFLD_LFS` without a direct `MetS` column, ensure all five MetS components (`waist`, `TG`, `HDL_c`, a blood pressure measure, `glucose`) are present and mapped.
+- See `?liver_fat_markers` for full argument details and formula references.

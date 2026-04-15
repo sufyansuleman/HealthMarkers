@@ -30,7 +30,9 @@ nfl_marker <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "nfl_marker"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -44,8 +46,9 @@ nfl_marker <- function(
     )
   }
 
-  was_null_cm <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, "nfl", fn = "nfl_marker")
+  cm      <- .hm_build_col_map(data, col_map, "nfl", fn = "nfl_marker")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map)) {
@@ -56,8 +59,8 @@ nfl_marker <- function(
   }
 
   if (!("nfl" %in% names(col_map))) {
-    # Graceful NA only when caller passed nothing and autofill found nothing
-    if (was_null_cm && length(col_map) == 0L) {
+    # Graceful NA only when nothing provided and inference found nothing
+    if (length(cm$user_keys) == 0L && length(cm$inferred_keys) == 0L) {
       return(tibble::tibble(nfl_value = rep(NA_real_, nrow(data))))
     }
     rlang::abort(
@@ -82,10 +85,9 @@ nfl_marker <- function(
   }
 
   # --- verbose messages -----------------------------------------------------
-  if (isTRUE(verbose)) {
-    hm_inform(sprintf("%s(): column mapping: nfl -> '%s'", fn_name, col_map[["nfl"]]), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  nfl_value  [passthrough of NfL input]", fn_name), level = "inform")
-  }
 
   # --- coerce to numeric; warn on NA introduction ---------------------------
   cn <- mapped
@@ -153,3 +155,4 @@ nfl_marker <- function(
 
   out
 }
+

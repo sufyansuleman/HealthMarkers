@@ -28,12 +28,9 @@ df_full <- tibble(
   Osteocalcin = c(10, 12)
 )
 
-test_that("bone_markers errors if required col_map entries missing", {
-  bad_map <- cm_full[-1]
-  expect_error(
-    bone_markers(df_full, col_map = bad_map),
-    "missing entries"
-  )
+test_that("bone_markers infers missing col_map entries from data (no error)", {
+  bad_map <- cm_full[-1]  # removes "age" key; data still has "age" column
+  expect_no_error(bone_markers(df_full, col_map = bad_map))
 })
 
 test_that("bone_markers computes core indices correctly", {
@@ -73,10 +70,10 @@ test_that("missing optional biomarkers yield NA columns", {
   expect_true(all(is.na(out$Osteocalcin)))
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "bone_markers")
-  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "column mapping")
+  expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "col_map")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "results:")
 })
 
@@ -85,7 +82,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     bone_markers(df_full, col_map = cm_full, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

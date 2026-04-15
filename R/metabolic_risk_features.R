@@ -66,7 +66,9 @@ metabolic_risk_features <- function(
   na_warn_prop = 0.2,
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "metabolic_risk_features"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -80,28 +82,23 @@ metabolic_risk_features <- function(
     "age_year", "z_HOMA", "glucose", "HbA1c", "bp_sys_z", "bp_dia_z"
   )
 
-  explicit_col_map <- !is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, required_cols,
-                                   fn = "metabolic_risk_features")
-  if (explicit_col_map) {
-    # Strict: error if any required key is missing from the user-supplied col_map
-    miss_keys <- setdiff(required_cols, names(col_map))
-    if (length(miss_keys)) {
-      rlang::abort(
-        paste0("metabolic_risk_features(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-        class = "healthmarkers_mrf_error_missing_map")
-    }
-  } else {
-    # Lenient: identity fill any key whose column exists in data
-    for (k in required_cols) {
-      if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-    }
-    miss_keys <- setdiff(required_cols, names(col_map))
-    if (length(miss_keys)) {
-      rlang::abort(
-        paste0("metabolic_risk_features(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
-        class = "healthmarkers_mrf_error_missing_map")
-    }
+  cm      <- .hm_build_col_map(data, col_map, required_cols, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
+
+  # Strict check: error if user-provided key points to column not in data
+  if (length(cm$user_keys)) {
+    bad_cols <- setdiff(unlist(col_map[cm$user_keys], use.names = FALSE), names(data))
+    if (length(bad_cols))
+      rlang::abort(paste0("metabolic_risk_features(): mapped columns not found in data: ", paste(bad_cols, collapse = ", ")),
+                   class = "healthmarkers_mrf_error_missing_columns")
+  }
+
+  miss_keys <- setdiff(required_cols, names(col_map))
+  if (length(miss_keys)) {
+    rlang::abort(
+      paste0("metabolic_risk_features(): missing col_map entries for: ", paste(miss_keys, collapse = ", ")),
+      class = "healthmarkers_mrf_error_missing_map")
   }
 
   # Ensure mapped columns exist
@@ -114,13 +111,11 @@ metabolic_risk_features <- function(
     )
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(required_cols, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf(
       "%s(): computing markers:\n  dyslipidemia       [chol_total, chol_ldl, chol_hdl, triglycerides, age_year]\n  insulin_resistance [z_HOMA]\n  hyperglycemia      [glucose, HbA1c]\n  hypertension       [bp_sys_z, bp_dia_z]",
       fn_name), level = "inform")
-  }
 
   # HM-CS v2: numeric coercion for required inputs; warn if NAs introduced; set non-finite to NA
   for (cn in mapped_cols) {
@@ -305,3 +300,4 @@ metabolic_risk_features <- function(
   }
   df
 }
+

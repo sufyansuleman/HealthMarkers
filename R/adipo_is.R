@@ -61,7 +61,9 @@ adipo_is <- function(data,
                      na_action = c("keep","omit","error"),
                      verbose = TRUE,
                      ...) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "adipo_is"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   id_col    <- .hm_detect_id_col(data)
 
@@ -77,7 +79,9 @@ adipo_is <- function(data,
   # Centralized validation
   req <- c("G0","I0","TG","HDL_c","FFA","waist","bmi")
 
-  col_map <- .hm_autofill_col_map(col_map, data, req, fn = "adipo_is")
+  cm      <- .hm_build_col_map(data, col_map, req, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
   # Emit test-aligned error before any generic helper
   nm <- names(col_map)
@@ -101,15 +105,8 @@ adipo_is <- function(data,
     )
   }
 
-  # Progress message — verbose column mapping
-  hm_inform(level = if (isTRUE(verbose)) "inform" else "debug", msg = paste0(fn_name, "(): preparing inputs"))
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  # Progress message — verbose col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {
@@ -254,3 +251,4 @@ adipo_is <- function(data,
   )
   out
 }
+

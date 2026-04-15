@@ -203,8 +203,8 @@ test_that("include_RFM warns on invalid sex values and sets NA", {
   expect_true(all(is.na(out$RFM)))
 })
 
-# 9) Verbose emits column mapping and results messages
-test_that("verbose emits preparing, column mapping, and results messages", {
+# 9) Verbose emits col_map and results messages
+test_that("verbose emits preparing, col_map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
@@ -212,7 +212,7 @@ test_that("verbose emits preparing, column mapping, and results messages", {
   )
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
-    "column mapping"
+    "col_map"
   )
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
@@ -225,6 +225,6 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

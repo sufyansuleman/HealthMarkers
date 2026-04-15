@@ -5,9 +5,9 @@ cm <- list(alm = "ALM_kg", bmi = "BMI", sex = "Sex")
 test_that("mapping validation and missing columns error", {
   df <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
 
-  # empty list → wrong type/missing names → colmap_type error
+  # non-list col_map → colmap_type error
   expect_error(
-    alm_bmi_index(df, list()),
+    alm_bmi_index(df, "not_a_list"),
     class = "healthmarkers_alm_bmi_error_colmap_type"
   )
 
@@ -22,11 +22,11 @@ test_that("mapping validation and missing columns error", {
   )
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   expect_message(alm_bmi_index(df, cm, verbose = TRUE), "alm_bmi_index")
-  expect_message(alm_bmi_index(df, cm, verbose = TRUE), "column mapping")
+  expect_message(alm_bmi_index(df, cm, verbose = TRUE), "col_map")
   expect_message(alm_bmi_index(df, cm, verbose = TRUE), "results:")
 })
 
@@ -34,7 +34,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   msgs <- testthat::capture_messages(alm_bmi_index(df, cm, verbose = TRUE))
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

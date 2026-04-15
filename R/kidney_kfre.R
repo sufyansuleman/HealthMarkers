@@ -85,7 +85,9 @@ kidney_failure_risk <- function(data,
                                 na_action = c("keep","error","omit","warn"),
                                 na_warn_prop = 0.2,
                                 verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "kidney_failure_risk"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
 
@@ -107,7 +109,7 @@ kidney_failure_risk <- function(data,
 
   if (isTRUE(verbose)) {
     map_parts <- vapply(req_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+    hm_inform(sprintf("%s(): col_map: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
     hm_inform(sprintf("%s(): computing markers:\n  KFRE_2yr  [age, sex, eGFR, UACR — 2-year kidney failure risk]\n  KFRE_5yr  [age, sex, eGFR, UACR — 5-year kidney failure risk]", fn_name), level = "inform")
   }
 
@@ -257,3 +259,4 @@ keep <- rep(TRUE, nrow(data))
   if (any(flags$UACR)) { UACR[flags$UACR] <- pmin(pmax(UACR[flags$UACR], rules$UACR[1]), rules$UACR[2]) }
   list(age = age, eGFR = eGFR, UACR = UACR)
 }
+

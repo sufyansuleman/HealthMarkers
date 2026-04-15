@@ -94,12 +94,15 @@ metss <- function(data,
                       MAP       = c(mean = 91.0, sd = 11.0, coef = 0.512)
                     )
                   ),
+                  col_map = NULL,
                   verbose = TRUE,
                   na_action = c("keep","omit","error","ignore","warn"),
                   na_warn_prop = 0.2,
                   diagnostics = TRUE) {
 
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "metss"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col <- .hm_detect_id_col(data)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -109,17 +112,18 @@ metss <- function(data,
   .metss_validate_params(params)
 
   req <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose","sex","race")
+  cm  <- .hm_build_col_map(data, col_map, keys = req, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
   miss <- setdiff(req, names(data))
   if (length(miss)) {
     rlang::abort(paste0("metss(): missing required columns: ", paste(miss, collapse = ", ")),
                  class = "healthmarkers_metss_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, k), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  MetSSS  [factor-loading z-score, sex/race-specific params]", fn_name), level = "inform")
-  }
 
   # Coerce numerics and clean non-finite
   num_cols <- c("waist","bp_sys","bp_dia","TG","HDL_c","glucose")
@@ -264,8 +268,8 @@ metss <- function(data,
   race_raw <- toupper(as.character(data$race))
   race_norm <- ifelse(race_raw %in% c("NHW","WHITE"), "NHW",
                  ifelse(race_raw %in% c("NHB","BLACK"), "NHB",
-                   ifelse(race_raw %in% c("HW","HISPANIC","H/L"), "HW",
-                     ifelse(race_raw %in% c("HA","ASIAN"), "HA", race_raw))))
+                   ifelse(race_raw %in% c("HW","HISPANIC","HISP","H/L"), "HW",
+                     ifelse(race_raw %in% c("HA","ASIAN"), "HA", NA_character_))))
   sex_norm <- .hm_normalize_sex(data$sex, to = "MF")
   # Return NA_character_ when sex or race is NA, so those rows are scored as NA
   ifelse(is.na(sex_norm) | is.na(race_norm), NA_character_,
@@ -310,3 +314,4 @@ metss <- function(data,
   if ((nlo+nhi)>0) rlang::warn(sprintf("metss(): '%s' outside [%g,%g] in %d rows; check units.", label, lo, hi, nlo+nhi))
   invisible(TRUE)
 }
+

@@ -120,6 +120,54 @@ gm_alias <- glycemic_markers(df_g0_only, verbose = FALSE)
 c(METS_IR = gm_alias$METS_IR, TyG_index = gm_alias$TyG_index)
 ```
 
+## Non-standard column names
+
+When your data frame uses different column names (e.g. `pglu0` instead of `G0`), pass a `col_map` that redirects them. The function materialises the alias and runs pre-computation normally.
+
+```{r}
+# Data has 'pglu0' instead of 'G0'
+df_mapped <- data.frame(
+  HDL_c = 1.2, TG = 1.3, BMI = 24.0, pglu0 = 5.5
+)
+gm_mapped <- glycemic_markers(
+  df_mapped,
+  col_map = list(G0 = "pglu0"),   # only need to specify what differs
+  verbose = FALSE
+)
+c(METS_IR = gm_mapped$METS_IR, TyG_index = gm_mapped$TyG_index)
+```
+
+Similarly, map `weight` / `height` to differently-named anthropometric columns and BMI is derived automatically:
+
+```{r}
+df_wh <- data.frame(
+  HDL_c = 1.1, TG = 1.4, wt_kg = 80, ht_cm = 175, glucose = 5.8
+)
+gm_wh <- glycemic_markers(
+  df_wh,
+  col_map = list(weight = "wt_kg", height = "ht_cm"),
+  verbose = FALSE
+)
+gm_wh$SPISE   # BMI was derived from wt_kg / ht_cm
+```
+
+## Partial col_map and dictionary inference
+
+You only need to specify the keys that *differ* from dictionary defaults. For any key you omit, `glycemic_markers()` auto-infers the mapping from common synonym patterns (e.g. `hdlc`, `hdl_cholesterol`, `hdl.c` all resolve to `HDL_c`). Provide a partial `col_map` with just the non-standard entries:
+
+```{r}
+# Column names match common synonyms — no col_map needed for those
+df_syn <- data.frame(
+  hdlc = 1.0, trig = 1.3, bmi = 24.0, pglu0 = 5.5
+)
+gm_syn <- glycemic_markers(
+  df_syn,
+  col_map = list(G0 = "pglu0"),   # only override the non-obvious one
+  verbose = FALSE
+)
+c(SPISE = gm_syn$SPISE, METS_IR = gm_syn$METS_IR, TyG_index = gm_syn$TyG_index)
+```
+
 ## Missing data handling
 Show row handling on a small slice.
 

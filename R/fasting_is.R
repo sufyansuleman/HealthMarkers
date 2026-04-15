@@ -53,7 +53,9 @@ fasting_is <- function(
   na_action   = c("keep", "omit", "error", "warn"),
   verbose     = TRUE
 ) {
+  data_name    <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name     <- "fasting_is"
+  .hm_log_input(data, data_name, fn_name, verbose)
   allowed_norm <- c("none", "z", "inverse", "range", "robust")
   if (length(normalize) == 1L && !normalize %in% allowed_norm) {
     rlang::abort(
@@ -72,12 +74,14 @@ fasting_is <- function(
 
   # --- Detect and preserve ID column
   id_col <- .hm_detect_id_col(data)
-  col_map <- .hm_autofill_col_map(col_map, data, c("G0","I0"), fn = "fasting_is")
+  req_keys <- c("G0","I0")
+  cm      <- .hm_build_col_map(data, col_map, req_keys, fn = "fasting_is")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (!is.list(col_map) || is.null(names(col_map))) {
     rlang::abort("fasting_is(): `col_map` must be a named list with entries for G0 and I0.",
                  class = "healthmarkers_fi_error_colmap_type")
   }
-  req_keys <- c("G0","I0")
   missing_keys <- setdiff(req_keys, names(col_map))
   if (length(missing_keys)) {
     rlang::abort(
@@ -94,16 +98,8 @@ fasting_is <- function(
     )
   }
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req_keys,
-                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {
@@ -232,3 +228,4 @@ fasting_is <- function(
 
   out
 }
+

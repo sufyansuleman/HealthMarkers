@@ -106,7 +106,9 @@ glycemic_markers <- function(
   na_warn_prop = 0.2,
   verbose      = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "glycemic_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
 
   if (!is.data.frame(data)) {
@@ -116,40 +118,30 @@ glycemic_markers <- function(
   # --- Detect and preserve ID column -----------------------------------------
   id_col <- .hm_detect_id_col(data)
 
-  # --- Build col_map ----------------------------------------------------------
+  # --- Build col_map: infer missing keys, materialize aliases ----------------
   all_gm_keys <- c("HDL_c", "TG", "BMI", "HbA1c", "C_peptide", "G0", "I0",
                    "leptin", "adiponectin", "glucose")
   req_keys <- c("HDL_c", "TG", "BMI")
   opt_keys <- c("glucose", "HbA1c", "C_peptide", "G0", "I0", "leptin", "adiponectin")
 
-  col_map <- .hm_autofill_col_map(col_map, data, all_gm_keys, fn = fn_name)
-  for (k in all_gm_keys) {
-    if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
-  }
+  cm      <- .hm_build_col_map(data, col_map, all_gm_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
-  # --- Verbose: column mapping ------------------------------------------------
-  if (isTRUE(verbose)) {
-    found_keys <- intersect(all_gm_keys, names(col_map))
-    map_parts  <- vapply(found_keys,
-                         function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                         character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: column mapping (user-provided vs inferred) -------------------
+  .hm_log_cols(cm, col_map, fn_name, verbose, keys = all_gm_keys)
 
-  # --- Pre-computation: fill missing required keys from raw inputs ------------
-  missing_req <- setdiff(req_keys, names(col_map))
+  # --- Pre-computation: fill still-missing required keys from raw inputs -----
+  is_missing_key <- function(k) is.null(col_map[[k]]) || !(col_map[[k]] %in% names(data))
+  missing_req <- req_keys[vapply(req_keys, is_missing_key, logical(1))]
   if (length(missing_req) > 0L) {
-    pc      <- .hm_precompute_from_deps(data, .gm_precompute_deps(),
-                                        missing_req, fn = fn_name, verbose = verbose)
-    data    <- pc$data
+    pc   <- .hm_precompute_from_deps(data, .gm_precompute_deps(),
+                                     missing_req, fn = fn_name, verbose = verbose)
+    data <- pc$data
     for (k in missing_req) {
       if (is.null(col_map[[k]]) && k %in% names(data)) col_map[[k]] <- k
     }
-    missing_req <- setdiff(req_keys, names(col_map))
+    missing_req <- req_keys[vapply(req_keys, is_missing_key, logical(1))]
   }
   if (length(missing_req)) {
     stop(sprintf("%s(): missing required columns: %s",
@@ -164,7 +156,7 @@ glycemic_markers <- function(
   }
 
   # --- Determine which optional keys are present ------------------------------
-  present_opt <- vapply(opt_keys, function(k) {
+  present_opt   <- vapply(opt_keys, function(k) {
     nm <- col_map[[k]]
     !is.null(nm) && nm %in% names(data)
   }, logical(1))
@@ -479,3 +471,4 @@ glycemic_markers <- function(
   out[!is.finite(out)] <- NA_real_
   out
 }
+

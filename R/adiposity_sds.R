@@ -63,6 +63,7 @@ adiposity_sds <- function(
 ) {
 
   # --- Back-compat: allow adiposity_sds(data, ref, ...) positional calls ---
+  fn_name <- "adiposity_sds"
   looks_like_ref <- function(x) {
     is.list(x) && length(x) > 0 &&
       all(vapply(x, function(y) is.numeric(y) && !is.null(names(y)) &&
@@ -136,18 +137,17 @@ adiposity_sds <- function(
     }
   }
 
-  # Effective mapping: default identity; override via col_map$vars
-  var_map <- setNames(vars, vars)
-  if (!is.null(col_map) && !is.null(col_map$vars)) {
-    stopifnot(is.list(col_map$vars))
-    var_map <- c(col_map$vars, var_map)[vars]
-  }
+  # Effective mapping: backward-compat (col_map$vars) or flat col_map; infer rest
+  flat_col_map <- if (!is.null(col_map) && !is.null(col_map$vars)) col_map$vars else col_map
+  cm      <- .hm_build_col_map(data, flat_col_map, keys = vars, fn = fn_name)
+  data    <- cm$data
+  var_map <- cm$col_map
 
   # Pre-check for clearer message expected by tests
-  missing_cols <- setdiff(unname(unlist(var_map, use.names = FALSE)), names(data))
-  if (length(missing_cols)) {
+  missing_vars <- setdiff(vars, names(var_map))
+  if (length(missing_vars)) {
     rlang::abort(
-      sprintf("adiposity_sds(): missing required columns: %s", paste(missing_cols, collapse = ", ")),
+      sprintf("adiposity_sds(): missing required columns: %s", paste(missing_vars, collapse = ", ")),
       class = "healthmarkers_adiposds_error_missing_columns"
     )
   }
@@ -165,11 +165,9 @@ adiposity_sds <- function(
   }
 
   total_rows <- nrow(data)
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(vars, function(k) sprintf("%s -> '%s'", k, var_map[[k]]), character(1))
-    hm_inform(sprintf("adiposity_sds(): column mapping: %s", paste(map_parts, collapse = ", ")), level = "inform")
-    hm_inform(sprintf("adiposity_sds(): computing markers:\n  %s", paste(paste0(vars, "_SDS"), collapse = ", ")), level = "inform")
-  }
+  .hm_log_cols(cm, var_map, fn_name, verbose)
+  if (isTRUE(verbose))
+    hm_inform(sprintf("%s(): computing markers:\n  %s", fn_name, paste(paste0(vars, "_SDS"), collapse = ", ")), level = "inform")
 
   # ---- Copy & numeric coercion ----
   df <- data

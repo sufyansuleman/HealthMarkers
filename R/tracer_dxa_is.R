@@ -64,7 +64,9 @@ tracer_dxa_is <- function(data, col_map = NULL,
                           na_action = c("keep","omit","error"),
                           na_warn_prop = 0.2,
                           verbose = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "tracer_dxa_is"
+  .hm_log_input(data, data_name, fn_name, verbose)
   id_col  <- .hm_detect_id_col(data)
   na_action <- match.arg(na_action)
 
@@ -81,9 +83,10 @@ tracer_dxa_is <- function(data, col_map = NULL,
   else hm_inform("tracer_dxa_is(): preparing inputs", level = "debug")
 
   adipose_keys <- c("I0", "rate_palmitate", "rate_glycerol", "fat_mass", "weight", "HDL_c", "bmi")
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c(adipose_keys, "G0","G30","G120","I30","I120","TG","FFA"),
-    fn = "tracer_dxa_is")
+  all_tracer_keys <- c(adipose_keys, "G0","G30","G120","I30","I120","TG","FFA")
+  cm      <- .hm_build_col_map(data, col_map, all_tracer_keys, fn = "tracer_dxa_is")
+  data    <- cm$data
+  col_map <- cm$col_map
   # Adipose-only when all adipose keys present and not all OGTT keys present
   adipose_only <- all(adipose_keys %in% names(col_map)) &&
     !all(c("G0", "I30") %in% names(col_map))
@@ -124,9 +127,8 @@ tracer_dxa_is <- function(data, col_map = NULL,
 
   # High-missingness warnings on required inputs
   .tx_warn_high_missing(data, mapped_cols, na_warn_prop)
+  .hm_log_cols(cm, col_map, fn_name, verbose)
   if (isTRUE(verbose)) {
-    map_parts <- vapply(required_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
     marker_list <- if (adipose_only) "LIRI_inv, Lipo_inv, ATIRI_inv" else "I_AUC, FFA_AUC, tracer_palmitate_SI, tracer_glycerol_SI, LIRI_inv, Lipo_inv, ATIRI_inv"
     hm_inform(sprintf("%s(): computing markers:\n  %s", fn_name, marker_list), level = "inform")
   }
@@ -313,3 +315,4 @@ tracer_dxa_is <- function(data, col_map = NULL,
     base
   }
 }
+

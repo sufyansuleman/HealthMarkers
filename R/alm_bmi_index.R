@@ -35,7 +35,9 @@ alm_bmi_index <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "alm_bmi_index"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -49,16 +51,17 @@ alm_bmi_index <- function(
     )
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data, c("alm","bmi","sex"),
-                                   fn = "alm_bmi_index")
-  if (!is.list(col_map) || is.null(names(col_map))) {
+  req <- c("alm","bmi","sex")
+  if (!is.null(col_map) && !is.list(col_map)) {
     rlang::abort(
       "alm_bmi_index(): `col_map` must be a named list.",
       class = "healthmarkers_alm_bmi_error_colmap_type"
     )
   }
+  cm      <- .hm_build_col_map(data, col_map, req, fn = "alm_bmi_index")
+  data    <- cm$data
+  col_map <- cm$col_map
 
-  req <- c("alm","bmi","sex")
   missing_keys <- setdiff(req, names(col_map))
   if (length(missing_keys)) {
     rlang::abort(
@@ -88,11 +91,9 @@ alm_bmi_index <- function(
   }
 
   # --- verbose messages -------------------------------------------------------
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  alm_bmi_ratio    [ALM / BMI]\n  low_muscle_mass  [ratio < sex-specific FNIH cut-point]", fn_name), level = "inform")
-  }
 
   # --- coerce ALM/BMI numeric; sex as character ------------------------------
   num_cols <- unname(unlist(col_map[c("alm","bmi")]))
@@ -208,4 +209,5 @@ alm_bmi_index <- function(
 
   out
 }
+
 

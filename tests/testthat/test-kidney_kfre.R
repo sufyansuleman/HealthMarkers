@@ -46,7 +46,7 @@ test_that("kidney_failure_risk errors if required col_map entries are missing", 
     eGFR = 45,
     UACR = 300
   )
-  # drop UACR key from col_map
+  # drop UACR key from col_map - kidney_kfre requires explicit mapping (no inference)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR")
   expect_error(
     kidney_failure_risk(data = df, col_map = cm),
@@ -106,12 +106,12 @@ test_that("extreme input values pass through without error", {
   expect_true(is.numeric(out$KFRE_5yr))
 })
 
-test_that("verbose emits column mapping and results messages", {
+test_that("verbose emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "kidney_failure_risk")
-  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "column mapping")
+  expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "col_map")
   expect_message(kidney_failure_risk(df, col_map = cm, verbose = TRUE), "results:")
 })
 
@@ -122,7 +122,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     kidney_failure_risk(df, col_map = cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

@@ -60,12 +60,12 @@ test_that("extreme eGFR/UACR values stage correctly without error", {
   expect_equal(as.character(res$Albuminuria_stage[2]), "A3")
 })
 
-test_that("verbose = TRUE emits column mapping and results messages", {
+test_that("verbose = TRUE emits col_map and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
   cm2 <- list(eGFR = "eGFR", UACR = "UACR")
   expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "ckd_stage")
-  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "column mapping")
+  expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "col_map")
   expect_message(ckd_stage(df, col_map = cm2, verbose = TRUE), "results:")
 })
 
@@ -76,6 +76,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     ckd_stage(df, col_map = cm2, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

@@ -138,7 +138,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
   expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "pulmo_markers")
-  expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "column map")
+  expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "col_map")
   expect_message(pulmo_markers(df, equation = eq, verbose = TRUE), "results:")
 })
 
@@ -148,7 +148,7 @@ test_that("verbose double-fire guard", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
   msgs <- testthat::capture_messages(pulmo_markers(df, equation = eq, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

@@ -69,12 +69,18 @@ vitamin_markers <- function(data,
                             na_action    = c("keep", "omit", "error"),
                             na_warn_prop = 0.2,
                             verbose      = TRUE) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "vitamin_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
 
   if (!is.data.frame(data)) {
     rlang::abort("vitamin_markers(): `data` must be a data.frame or tibble.",
                  class = "healthmarkers_vitamin_error_data_type")
+  }
+  if (!is.null(col_map) && !is.list(col_map)) {
+    rlang::abort("vitamin_markers(): `col_map` must be a named list.",
+                 class = "healthmarkers_vitamin_error_colmap_type")
   }
 
   # --- Detect and preserve ID column
@@ -86,25 +92,15 @@ vitamin_markers <- function(data,
     "PIVKA_II","VitC","Homocysteine","MMA","Magnesium","Zinc","Copper"
   )
 
-  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = "vitamin_markers")
+  cm      <- .hm_build_col_map(data, col_map, required_keys, fn = "vitamin_markers")
+  data    <- cm$data
+  col_map <- cm$col_map
 
   # HM-CS v2: standardized validation
   hm_validate_inputs(data, col_map, required_keys = required_keys, fn = fn_name)
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    avail_map <- col_map[vapply(required_keys, function(k) {
-      !is.null(col_map[[k]]) && col_map[[k]] %in% names(data)
-    }, logical(1))]
-    map_parts <- vapply(names(avail_map),
-                        function(k) sprintf("%s -> '%s'", k, avail_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name,
-              if (length(map_parts)) paste(map_parts, collapse = ", ") else "none"),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: optional inputs
   if (isTRUE(verbose)) {
@@ -326,3 +322,4 @@ vitamin_markers <- function(data,
 
   out
 }
+

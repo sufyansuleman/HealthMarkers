@@ -68,7 +68,9 @@ saliva_markers <- function(data,
                            na_action    = c("keep", "omit", "error"),
                            na_warn_prop = 0.2,
                            times        = c(0, 30, 60)) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "saliva_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   if (!is.data.frame(data)) {
     rlang::abort("saliva_markers(): `data` must be a data.frame or tibble.",
@@ -80,12 +82,13 @@ saliva_markers <- function(data,
 
   # HM-CS v2: standardized validation
   required_keys <- c("cort1","cort2","cort3","amylase","glucose")
-  was_null_cm <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, required_keys, fn = fn_name)
+  cm      <- .hm_build_col_map(data, col_map, required_keys, fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
   missing_keys <- setdiff(required_keys, names(col_map))
   if (length(missing_keys)) {
-    # Graceful NA only when caller passed nothing and autofill found nothing at all
-    if (was_null_cm && length(col_map) == 0L) {
+    # Graceful NA only when nothing provided and inference found nothing
+    if (length(cm$user_keys) == 0L && length(cm$inferred_keys) == 0L && length(col_map) == 0L) {
       return(tibble::tibble(
         log_cortisol_wake = rep(NA_real_, nrow(data)),
         CAR_AUC           = rep(NA_real_, nrow(data)),
@@ -135,15 +138,7 @@ saliva_markers <- function(data,
   }
 
   # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(required_keys,
-                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: optional inputs / availability
   if (isTRUE(verbose)) {
@@ -282,3 +277,4 @@ saliva_markers <- function(data,
 
   out
 }
+

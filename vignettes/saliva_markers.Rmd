@@ -1,0 +1,131 @@
+---
+title: "Saliva markers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{saliva_markers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+
+Compute four salivary-based markers from cortisol awakening response (CAR) measurements and salivary amylase / glucose:
+
+- **`log_cortisol_wake`**: log(cort1) — log-transformed waking cortisol.
+- **`CAR_AUC`**: trapezoidal area under the cortisol curve over the awakening period (default: 0–60 min using cort1/cort2/cort3).
+- **`log_amylase`**: log(amylase) — log-transformed salivary α-amylase.
+- **`saliva_glucose`**: raw salivary glucose, passed through unchanged.
+
+## When to use
+
+- You collected serial salivary cortisol (wake, +30 min, +60 min), α-amylase, and/or salivary glucose and want standard derived markers.
+- You need NA propagation control and optional verbose diagnostics in a tidy pipeline.
+
+## Inputs
+
+- **Required keys** (all five must be mappable or inferrable): `cort1`, `cort2`, `cort3` (nmol/L), `amylase` (U/mL), `glucose` (mg/dL).
+- Default column names expected: `saliva_cort1`, `saliva_cort2`, `saliva_cort3`, `saliva_amylase`, `saliva_glucose` — matched automatically when no `col_map` is provided.
+- `na_action`: `keep` (default) propagates NA; `omit` drops rows missing any required input; `error` aborts on any NA.
+- `times`: numeric vector of length 3 giving sampling minutes for the trapezoidal AUC. Default `c(0, 30, 60)`.
+
+## Quick start
+
+Data with the default column names — no `col_map` needed:
+
+```{r}
+library(HealthMarkers)
+library(tibble)
+
+sal <- tibble::tibble(
+  saliva_cort1   = c(12.5, 10.0, 15.3),  # nmol/L
+  saliva_cort2   = c(18.0, 20.3, 22.1),
+  saliva_cort3   = c(14.2, 16.0, 18.0),
+  saliva_amylase = c(85, 110, 72),        # U/mL
+  saliva_glucose = c(4.2, 5.0, 3.9)      # mg/dL
+)
+
+saliva_markers(sal, verbose = FALSE)
+```
+
+## Non-standard column names
+
+Only supply `col_map` entries for the keys that differ from default names. Synonym patterns cover common alternatives (`cortisol_wake` → `cort1`, `cortisol_30` → `cort2`, `cortisol_60` → `cort3`).
+
+```{r}
+df_ns <- data.frame(
+  cort_t0   = 11.2,
+  cort_t30  = 17.5,
+  cort_t60  = 13.8,
+  saa       = 95,    # salivary alpha-amylase
+  sal_glu   = 4.6
+)
+
+saliva_markers(
+  df_ns,
+  col_map = list(
+    cort1   = "cort_t0",
+    cort2   = "cort_t30",
+    cort3   = "cort_t60",
+    amylase = "saa",
+    glucose = "sal_glu"
+  ),
+  verbose = FALSE
+)
+```
+
+## Custom sampling times
+
+When cortisol was sampled at different time points, pass the actual minutes via `times`. The AUC is computed with the trapezoidal rule using those intervals.
+
+```{r}
+sal_45 <- tibble::tibble(
+  saliva_cort1 = 12.0,
+  saliva_cort2 = 17.0,
+  saliva_cort3 = 15.0,
+  saliva_amylase = 90,
+  saliva_glucose = 4.5
+)
+
+# Cortisol sampled at 0, 20, and 45 minutes instead of 0/30/60
+saliva_markers(sal_45, times = c(0, 20, 45), verbose = FALSE)
+```
+
+## Missing data handling
+
+```{r}
+sal_na <- sal
+sal_na$saliva_cort2[2] <- NA
+
+saliva_markers(sal_na, verbose = FALSE)             # na_action = "keep": NA propagates into CAR_AUC
+saliva_markers(sal_na, na_action = "omit", verbose = FALSE)  # row 2 dropped
+```
+
+## Verbose diagnostics
+
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
+saliva_markers(
+  sal,
+  verbose = TRUE
+)
+options(old_opt)
+```
+
+## Outputs
+
+Returns a tibble with columns `log_cortisol_wake`, `CAR_AUC`, `log_amylase`, and `saliva_glucose`. An ID column is prepended when detected in `data`.
+
+- Safe-log is applied: zero or negative cortisol/amylase values yield `NA` (not `-Inf`).
+- `CAR_AUC` requires all three cortisol readings to be finite; any NA in cort1/2/3 gives `NA` for that row.
+
+## Tips
+
+- Ensure cortisol values are in nmol/L and amylase in U/mL; no unit conversion is applied.
+- When your protocol uses fewer than three cortisol time points, you cannot obtain `CAR_AUC` — supply `NA` for the missing time point and use `na_action = "keep"`.
+- Pass `times` explicitly when your sampling schedule deviates from 0/30/60.
+- See `?saliva_markers` for full argument details and references.

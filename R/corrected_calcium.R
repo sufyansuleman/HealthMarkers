@@ -29,7 +29,9 @@ corrected_calcium <- function(
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "corrected_calcium"
+  .hm_log_input(data, data_name, fn_name, verbose)
   units         <- match.arg(units)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
@@ -43,14 +45,15 @@ corrected_calcium <- function(
       class = "healthmarkers_calcium_error_data_type"
     )
   }
-  col_map <- .hm_autofill_col_map(col_map, data, c("calcium","albumin"),
-                                   fn = "corrected_calcium")
-  if (!is.list(col_map)) {
+  if (!is.null(col_map) && !is.list(col_map)) {
     rlang::abort(
       "corrected_calcium(): `col_map` must be a named list.",
       class = "healthmarkers_calcium_error_colmap_type"
     )
   }
+  cm      <- .hm_build_col_map(data, col_map, c("calcium","albumin"), fn = "corrected_calcium")
+  data    <- cm$data
+  col_map <- cm$col_map
 
   ca_key  <- intersect(names(col_map), c("calcium", "ca"))
   alb_key <- intersect(names(col_map), c("albumin", "alb"))
@@ -82,10 +85,9 @@ corrected_calcium <- function(
     )
   }
 
-  if (isTRUE(verbose)) {
-    hm_inform(sprintf("%s(): column mapping: calcium -> '%s', albumin -> '%s'", fn_name, ca_col, alb_col), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  corrected_calcium  [Payne formula: Ca + 0.8 * (4.0 - Alb)]", fn_name), level = "inform")
-  }
 
   ## --- Coercion to numeric --------------------------------------------------
   coerce_num <- function(x, nm) {
@@ -203,3 +205,4 @@ corrected_calcium <- function(
 
   return(result)
 }
+

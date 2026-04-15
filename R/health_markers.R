@@ -29,7 +29,9 @@
 .hm_obesity_indices_dispatch <- function(data, col_map = NULL, verbose = FALSE,
                                          na_action = "keep", ...) {
   allkv <- c("weight", "height", "waist", "hip", "sex")
-  col_map2 <- .hm_autofill_col_map(col_map, data, allkv, fn = "obesity_indices")
+  cm2     <- .hm_build_col_map(data, col_map, allkv, fn = "obesity_indices")
+  col_map2 <- cm2$col_map
+  data     <- cm2$data
   for (k in allkv) {
     if (is.null(col_map2[[k]]) && k %in% names(data)) col_map2[[k]] <- k
   }
@@ -401,7 +403,7 @@
 #' ), normalize = "none", mode = "IS", verbose = FALSE, na_action = "keep")
 all_insulin_indices <- function(
   data,
-  col_map,
+  col_map = NULL,
   normalize = c("none","z","inverse","range","robust"),
   mode = c("both","IS","IR"),
   verbose = TRUE,
@@ -412,7 +414,7 @@ all_insulin_indices <- function(
   na_action <- match.arg(na_action)
   hm_inform("all_insulin_indices(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  common_args <- list(normalize = normalize, na_action = na_action)
+  common_args <- list(normalize = normalize, na_action = na_action, verbose = verbose)
 
   pieces <- list(
     fasting_is    = .hm_safe_call(fasting_is,    data, col_map, TRUE, verbose, "fasting",    common_args),
@@ -422,19 +424,27 @@ all_insulin_indices <- function(
   )
   pieces <- Filter(is.data.frame, pieces)
   if (!length(pieces)) return(tibble::tibble())
+  # Drop duplicate id columns — keep only from the first piece
+  id_nm <- .hm_detect_id_col(data)
+  if (!is.null(id_nm)) {
+    for (i in seq_along(pieces)[-1L]) {
+      pieces[[i]] <- pieces[[i]][, setdiff(names(pieces[[i]]), id_nm), drop = FALSE]
+    }
+  }
   is_tbl <- dplyr::bind_cols(pieces)
 
   if (mode == "IS") return(is_tbl)
 
-  # IR inversion
+  # IR inversion -- only numeric columns; skip id/character columns
+  numeric_nms <- names(is_tbl)[vapply(is_tbl, is.numeric, logical(1))]
   ir_tbl <- as.data.frame(
-    lapply(names(is_tbl), function(nm) {
+    lapply(numeric_nms, function(nm) {
       x <- is_tbl[[nm]]
       ifelse(is.na(x) | x == 0, NA_real_, 1 / x)
     }),
     stringsAsFactors = FALSE
   )
-  names(ir_tbl) <- paste0("IR_", names(is_tbl))
+  names(ir_tbl) <- paste0("IR_", numeric_nms)
 
   if (mode == "IR") return(ir_tbl)
 
@@ -472,7 +482,7 @@ all_insulin_indices <- function(
 #'                   normalize = "none", mode = "both", verbose = FALSE, na_action = "keep")
 metabolic_markers <- function(
   data,
-  col_map,
+  col_map = NULL,
   which = c("insulin","adiposity_sds","cardio","lipid","liver","glycemic","mets"),
   normalize = c("none","z","inverse","range","robust"),
   mode = c("both","IS","IR"),
@@ -673,6 +683,12 @@ all_health_markers <- function(
   }
 
   out <- data
+
+  # --- Tier 0: derive globally useful variables (BMI, eGFR, UACR, LDL_c, etc.)
+  # so downstream groups see them without redundant computation
+  gp <- .hm_global_precompute(out, col_map, verbose)
+  out <- gp$data
+
   group_status <- list()
 
   if (isTRUE(include_insulin)) {
@@ -710,7 +726,8 @@ all_health_markers <- function(
       extra_args = list(
         verbose   = verbose,
         na_action = na_action,
-        normalize = normalize
+        normalize = normalize,
+        `return`  = "data"
       )
     )
     status <- list(state = if (is.data.frame(addon)) "ok" else "skipped_or_failed",

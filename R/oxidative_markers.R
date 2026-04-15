@@ -22,20 +22,25 @@
 #' @export
 oxidative_markers <- function(
   data,
-  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  col_map = NULL,
   na_action = c("keep","omit","error"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name   <- "oxidative_markers"
+  .hm_log_input(data, data_name, fn_name, verbose)
   na_action <- match.arg(na_action)
   id_col    <- .hm_detect_id_col(data)
 
   # HM-CS v2 validation
   hm_validate_inputs(
     data, col_map,
-    required_keys = c("GSH","GSSG"),
+    required_keys = character(0),
     fn = "oxidative_markers"
   )
+  cm      <- .hm_build_col_map(data, col_map, keys = c("GSH", "GSSG"), fn = fn_name)
+  data    <- cm$data
+  col_map <- cm$col_map
 
   # Ensure mapped columns exist in data
   mapped <- unname(unlist(col_map[c("GSH","GSSG")], use.names = FALSE))
@@ -69,15 +74,7 @@ oxidative_markers <- function(
   }
 
   # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(c("GSH","GSSG"),
-                        function(k) sprintf("%s -> '%s'", k, col_map[[k]]),
-                        character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {

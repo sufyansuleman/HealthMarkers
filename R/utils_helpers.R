@@ -1,6 +1,81 @@
 # HM-CS v2 utilities
 # Note: hm_inform() and hm_get_verbosity() are defined in zzz-options.R (canonical).
 
+# Verbose stage 1 — input logger ---------------------------------------------
+# Emits: "fn(): reading input 'expr' — N rows x P variables"
+# Capture data_name via deparse(substitute(data)) as the very first line of
+# the calling function, then call here right after fn_name is assigned.
+#' @keywords internal
+.hm_log_input <- function(data, data_name, fn_name, verbose) {
+  if (!isTRUE(verbose)) return(invisible(NULL))
+  if (length(data_name) != 1L || nchar(data_name) > 200L) data_name <- "data"
+  dims <- if (is.data.frame(data)) {
+    sprintf("%d rows \u00d7 %d variables", nrow(data), ncol(data))
+  } else {
+    sprintf("class: %s", paste(class(data), collapse = "/"))
+  }
+  hm_inform(
+    sprintf("%s(): reading input '%s' \u2014 %s", fn_name, data_name, dims),
+    level = "inform"
+  )
+  invisible(NULL)
+}
+
+# Verbose stage 2 — column resolution logger ----------------------------------
+# Replaces the repeated inline col_map verbose blocks in every function.
+# Emits, e.g.:
+#   fn(): resolving 5 columns — 3 specified, 2 inferred from data
+#     TC                ->  'TC'
+#     HDL_c             ->  'HDL_c'
+#     TG                ->  'TG'
+#     LDL_c             ->  'LDL_c'    (inferred)
+#     ApoB              ->  'ApoB'     (inferred)
+#
+# @param cm      result of .hm_build_col_map() — needs $user_keys, $inferred_keys
+# @param col_map the resolved named list key -> column name
+# @param fn_name function name string
+# @param verbose logical
+# @param keys    optional character vector to restrict which keys are shown
+#' @keywords internal
+.hm_log_cols <- function(cm, col_map, fn_name, verbose, keys = NULL) {
+  if (!isTRUE(verbose)) return(invisible(NULL))
+
+  u_keys <- if (!is.null(keys)) intersect(cm$user_keys,     keys) else cm$user_keys
+  i_keys <- if (!is.null(keys)) intersect(cm$inferred_keys, keys) else cm$inferred_keys
+
+  n_user <- length(u_keys)
+  n_inf  <- length(i_keys)
+  total  <- n_user + n_inf
+
+  if (total == 0L) {
+    hm_inform(sprintf("%s(): no columns resolved", fn_name), level = "inform")
+    return(invisible(NULL))
+  }
+
+  parts_desc <- character(0)
+  if (n_user > 0L) parts_desc <- c(parts_desc, sprintf("%d specified",          n_user))
+  if (n_inf  > 0L) parts_desc <- c(parts_desc, sprintf("%d inferred from data", n_inf))
+
+  header <- sprintf("%s(): col_map (%d column%s \u2014 %s)",
+                    fn_name, total,
+                    if (total == 1L) "" else "s",
+                    paste(parts_desc, collapse = ", "))
+
+  fmt_key <- function(k, map, tag) {
+    col <- map[[k]]
+    if (is.null(col)) col <- "(unresolved)"
+    sprintf("  %-18s->  '%s'%s", k, col, tag)
+  }
+
+  lines <- c(
+    if (n_user > 0L) vapply(u_keys, fmt_key, character(1), map = col_map, tag = ""),
+    if (n_inf  > 0L) vapply(i_keys, fmt_key, character(1), map = col_map, tag = "    (inferred)")
+  )
+
+  hm_inform(paste(c(header, lines), collapse = "\n"), level = "inform")
+  invisible(NULL)
+}
+
 # Canonical sex normalizer ----------------------------------------------------
 # Maps any sex encoding to a consistent output:
 #   "MF"  -> "M" or "F"
@@ -349,6 +424,177 @@ hm_fmt_col_map <- function(col_map, fn = NULL) {
   list(data = data, log = log_msgs)
 }
 
+#' Build a complete col_map with dictionary inference and alias materialization
+#'
+#' Combines three previously separate steps into one call:
+#' \enumerate{
+#'   \item User-supplied entries in \code{col_map} are treated as authoritative
+#'         Layer 0 seeds — they are never overwritten.
+#'   \item \code{hm_col_report()} fills any remaining unmatched keys via the
+#'         full synonym dictionary (exact → case-insensitive → contains layers).
+#'   \item Literal-name fallback: if a key in \code{keys} still has no match,
+#'         but the key name exists verbatim as a column in \code{data}, it is
+#'         used directly.
+#'   \item Materialization: for every mapped key \code{k} where
+#'         \code{col_map[[k]] != k} and \code{k} is \emph{not} already a column
+#'         in \code{data}, a copy \code{data[[k]] <- data[[col_map[[k]]]]} is
+#'         added. This ensures that downstream pre-computation helpers (which
+#'         check \code{names(data)} for dependency names) and their
+#'         \code{compute()} closures (which use literal key names) both resolve
+#'         correctly even when the physical column has a non-standard name.
+#' }
+#'
+#' @param data    The data.frame being analysed (modified locally; original
+#'   is not altered outside the function call).
+#' @param col_map Named list of user-supplied key → column-name mappings, or
+#'   \code{NULL} for full auto-inference.
+#' @param keys    Character vector of short internal keys to resolve.
+#' @param fn      Calling function name string (for messages).
+#'
+#' @return A list with four elements:
+#' \describe{
+#'   \item{data}{The (possibly augmented) data.frame.}
+#'   \item{col_map}{Complete named list of key → resolved column name.}
+#'   \item{user_keys}{Keys that were explicitly provided in the original
+#'     \code{col_map} argument.}
+#'   \item{inferred_keys}{Keys resolved by dictionary inference or literal
+#'     fallback (i.e., not in \code{user_keys}).}
+#' }
+#' @keywords internal
+.hm_build_col_map <- function(data, col_map, keys, fn = "") {
+
+  user_keys <- if (is.list(col_map) && length(col_map) > 0L)
+    intersect(names(col_map), keys) else character(0)
+
+  # Step 1+2: run hm_col_report with user seeds as Layer 0 ------------------
+  inferred_full <- tryCatch(
+    hm_col_report(data, col_map = col_map, verbose = FALSE,
+                  fuzzy = FALSE, show_unmatched = FALSE),
+    error = function(e) list()
+  )
+
+  # short_to_dict translation table (same as .hm_autofill_col_map) -----------
+  short_to_dict <- c(
+    G0    = "fasting_glucose",  I0    = "fasting_insulin",
+    G30   = "glucose_30m",      I30   = "insulin_30m",
+    G120  = "glucose_120m",     I120  = "insulin_120m",
+    TC    = "total_cholesterol",
+    HDL_c = "HDL_c",            LDL_c = "LDL_c",
+    TG    = "TG",
+    total_chol = "total_cholesterol", sbp  = "sbp",
+    smoker = "smoking",         bp_treated = "hypertension",
+    diabetes = "diabetes",
+    ApoA1 = "apoA1",            ApoB  = "apoB",
+    ALT   = "ALT",              AST   = "AST",
+    GGT   = "GGT",
+    bilirubin  = "bilirubin",
+    BMI   = "BMI",              bmi   = "BMI",
+    waist = "waist",            weight = "weight",
+    age   = "age",              sex   = "sex",
+    eGFR  = "eGFR",             UACR  = "UACR",
+    FFA   = "FFA",
+    fat_mass     = "fat_mass",
+    rate_palmitate = "rate_palmitate",
+    rate_glycerol  = "rate_glycerol",
+    creatinine   = "creatinine",
+    albumin      = "albumin",   alb   = "albumin",
+    calcium      = "calcium",   ca    = "calcium",
+    platelets    = "platelets",
+    height       = "height",
+    ALM          = "ALM",       alm   = "ALM",
+    bmd_t        = "BMD",       BMD   = "BMD",
+    FEV1         = "FEV1",      FVC   = "FVC",
+    fev1         = "FEV1",      fvc   = "FVC",
+    FEV1pct      = "FEV1pct",
+    kynurenine   = "kynurenine",tryptophan = "tryptophan",
+    vitd         = "vitaminD",  vitaminD = "vitaminD",
+    vitamin_d    = "vitaminD",
+    CRP          = "CRP",       IL6   = "IL6",        TNFa  = "TNFa",
+    WBC          = "WBC",       neutrophils = "neutrophils",
+    lymphocytes  = "lymphocytes", monocytes = "monocytes",
+    eosinophils  = "eosinophils",
+    ESR          = "ESR",
+    BUN          = "BUN",       race  = "ethnicity",
+    cystatin_C   = "cystatin_C",urea_serum = "urea_serum",
+    creatinine_urine = "creatinine_urine", urea_urine = "urea_urine",
+    VitD         = "vitaminD",  B12   = "vitaminB12",
+    Folate       = "folate",    Ferritin = "ferritin",
+    TSat         = "transferrin_sat",
+    Cortisol     = "Cortisol",  DHEAS = "DHEAS",
+    Testosterone = "testosterone",  Estradiol = "estradiol",
+    TSH          = "TSH",       free_T4 = "FT4",
+    Retinol      = "Retinol",   Tocopherol = "Tocopherol",
+    Total_lipids = "Total_lipids",
+    VitC         = "VitC",      Homocysteine = "Homocysteine",
+    MMA          = "MMA",       Magnesium = "magnesium",
+    Zinc         = "zinc",      Copper = "copper",
+    total_testosterone = "testosterone",
+    SHBG         = "SHBG",      LH    = "LH",         FSH   = "FSH",
+    progesterone = "progesterone", free_T3 = "free_T3",
+    aldosterone  = "aldosterone", renin = "renin",
+    IGF1         = "IGF1",      prolactin = "prolactin",
+    cortisol_0   = "cortisol_0",  cortisol_30 = "cortisol_30",
+    insulin      = "fasting_insulin",
+    strength     = "strength",  walking = "walking",
+    chair        = "chair",     stairs  = "stairs",
+    falls        = "falls",
+    fev1_pct     = "FEV1pct",   sixmwd = "sixmwd",    mmrc  = "mmrc",
+    fev1_pp      = "FEV1pct",
+    cort1        = "saliva_cort1", cort2 = "saliva_cort2",
+    cort3        = "saliva_cort3", amylase = "saliva_amylase",
+    glucose      = "saliva_glucose",
+    nfl          = "nfl",
+    GH           = "GH",        glucagon = "glucagon",
+    PIVKA_II     = "PIVKA_II",
+    chol_total   = "total_cholesterol",
+    chol_ldl     = "LDL_c",
+    chol_hdl     = "HDL_c",
+    triglycerides = "TG",
+    age_year     = "age",
+    z_HOMA       = "fasting_insulin",
+    bp_sys_z     = "sbp",
+    bp_dia_z     = "dbp",
+    HbA1c        = "HbA1c",
+    C_peptide    = "C_peptide",
+    leptin       = "leptin",
+    adiponectin  = "adiponectin"
+  )
+
+  # Step 2: assemble resolved col_map from inferred_full + literal fallback --
+  out_map <- if (is.list(col_map) && length(col_map) > 0L) col_map else list()
+
+  for (k in keys) {
+    if (!is.null(out_map[[k]])) next  # user-supplied: keep
+    dict_key <- if (!is.na(short_to_dict[k])) short_to_dict[[k]] else k
+    if (!is.null(inferred_full[[dict_key]])) {
+      out_map[[k]] <- inferred_full[[dict_key]]
+    } else if (!is.null(inferred_full[[k]])) {
+      out_map[[k]] <- inferred_full[[k]]
+    } else if (k %in% names(data)) {
+      # Step 3: literal fallback
+      out_map[[k]] <- k
+    }
+  }
+
+  inferred_keys <- setdiff(names(out_map)[names(out_map) %in% keys], user_keys)
+
+  # Step 4: materialize aliases (col_map[[k]] != k) into data ----------------
+  for (k in names(out_map)) {
+    mapped_col <- out_map[[k]]
+    if (!is.null(mapped_col) && mapped_col != k &&
+        mapped_col %in% names(data) && !k %in% names(data)) {
+      data[[k]] <- data[[mapped_col]]
+    }
+  }
+
+  list(
+    data          = data,
+    col_map       = out_map,
+    user_keys     = user_keys,
+    inferred_keys = inferred_keys
+  )
+}
+
 #' Summarise a result tibble: count non-NA rows per output column
 #'
 #' Produces a single string like:
@@ -366,4 +612,146 @@ hm_result_summary <- function(result, fn = NULL) {
   msg <- paste(parts, collapse = ", ")
   if (!is.null(fn)) msg <- paste0(fn, "(): results: ", msg)
   msg
+}
+
+# ---------------------------------------------------------------------------
+# Global pre-computation — Tier 0 of the DAG pipeline
+# ---------------------------------------------------------------------------
+#' Derive "Tier 0" variables before any marker function runs.
+#'
+#' Computes the following variables **only when they are absent** from `data`:
+#' \describe{
+#'   \item{BMI}{from `weight` (kg) and `height` (m or cm) via `weight / height_m^2`}
+#'   \item{glucose / G0}{bidirectional alias: whichever is absent is filled from the other}
+#'   \item{insulin / I0}{bidirectional alias (pmol/L ↔ µU/mL unchanged — same unit assumed)}
+#'   \item{eGFR}{CKD-EPI 2009 creatinine equation from `creatinine`, `age`, `sex`
+#'               (and optionally `race`). Written as `eGFR` only; downstream
+#'               functions that need `eGFR_cr` receive it via col_map.}
+#'   \item{UACR}{`urine_albumin` / `urine_creatinine` (both in mg/mmol or the
+#'               ratio already in mg/g — no unit conversion; caller's responsibility)}
+#'   \item{LDL_c}{Friedewald: `TC - HDL_c - TG/2.2` (mmol/L); skipped if TG > 4.5}
+#' }
+#'
+#' col_map keys are respected: if the user has mapped e.g.\ `creatinine -> "Cr_serum"`,
+#' the materialized `data[["creatinine"]]` column (placed there by `.hm_build_col_map()`)
+#' is used transparently.
+#'
+#' @param data    data.frame after col_map materialization.
+#' @param col_map Named list of key → column mappings (used only to resolve
+#'   the physical column names when materialization has NOT been run yet).
+#' @param verbose Logical; emit one-line summary per derived variable.
+#'
+#' @return A list:
+#' \describe{
+#'   \item{data}{data.frame with new columns appended.}
+#'   \item{precomputed}{Character vector of variable names that were derived.}
+#' }
+#' @keywords internal
+.hm_global_precompute <- function(data, col_map = NULL, verbose = FALSE) {
+  precomputed <- character(0)
+  fn <- "global_precompute"
+
+  # Helper: resolve a key to actual column name in data (col_map then literal)
+  .resolve <- function(key) {
+    if (!is.null(col_map[[key]]) && col_map[[key]] %in% names(data))
+      return(col_map[[key]])
+    if (key %in% names(data)) return(key)
+    NULL
+  }
+  .get <- function(key) {
+    col <- .resolve(key)
+    if (is.null(col)) return(NULL)
+    as.numeric(data[[col]])
+  }
+  .absent <- function(key) is.null(.resolve(key))
+  .log <- function(nm, src) {
+    precomputed <<- c(precomputed, nm)
+    if (isTRUE(verbose))
+      hm_inform(sprintf("%s(): derived '%s' from %s", fn, nm,
+                        paste(src, collapse = " + ")), level = "inform")
+  }
+
+  # --- 1. BMI -----------------------------------------------------------
+  if (.absent("BMI")) {
+    w <- .get("weight"); h <- .get("height")
+    if (!is.null(w) && !is.null(h)) {
+      h_m <- ifelse(is.finite(h) & h > 3, h / 100, h)
+      bmi  <- w / (h_m ^ 2)
+      data[["BMI"]] <- ifelse(is.finite(bmi) & bmi > 5 & bmi < 150, bmi, NA_real_)
+      .log("BMI", c("weight", "height"))
+    }
+  }
+
+  # --- 2. glucose <-> G0 alias ------------------------------------------
+  if (.absent("glucose") && !.absent("G0")) {
+    data[["glucose"]] <- .get("G0")
+    .log("glucose", "G0")
+  } else if (.absent("G0") && !.absent("glucose")) {
+    data[["G0"]] <- .get("glucose")
+    .log("G0", "glucose")
+  }
+
+  # --- 3. insulin <-> I0 alias ------------------------------------------
+  if (.absent("insulin") && !.absent("I0")) {
+    data[["insulin"]] <- .get("I0")
+    .log("insulin", "I0")
+  } else if (.absent("I0") && !.absent("insulin")) {
+    data[["I0"]] <- .get("insulin")
+    .log("I0", "insulin")
+  }
+
+  # --- 4. eGFR (CKD-EPI 2009 creatinine) --------------------------------
+  if (.absent("eGFR")) {
+    Cr  <- .get("creatinine")
+    age <- .get("age")
+    sex_col <- .resolve("sex")
+    sex_raw <- if (!is.null(sex_col)) data[[sex_col]] else NULL
+    if (!is.null(Cr) && !is.null(age) && !is.null(sex_raw)) {
+      s_up <- toupper(as.character(sex_raw))
+      sexi <- ifelse(startsWith(s_up, "M") | sex_raw %in% c(1, "1"), 1L, 0L)
+      race_col <- .resolve("race")
+      race_raw <- if (!is.null(race_col)) toupper(as.character(data[[race_col]])) else "OTHER"
+      factor_race <- ifelse(grepl("BLACK|NHB|AFRIC", race_raw), 1.159, 1)
+      kappa <- ifelse(sexi == 1L, 0.9, 0.7)
+      alpha <- ifelse(sexi == 1L, -0.411, -0.329)
+      # Female sex multiplier (CKD-EPI 2009)
+      factor_sex  <- ifelse(sexi == 0L, 1.018, 1)
+      ratio <- Cr / kappa
+      min_r <- pmin(ratio, 1); max_r <- pmax(ratio, 1)
+      egfr  <- 141 * (min_r ^ alpha) * (max_r ^ -1.209) *
+        (0.993 ^ age) * factor_race * factor_sex
+      egfr[!is.finite(egfr)] <- NA_real_
+      data[["eGFR"]] <- egfr
+      .log("eGFR", c("creatinine", "age", "sex"))
+    }
+  }
+
+  # --- 5. UACR ----------------------------------------------------------
+  if (.absent("UACR")) {
+    ualb <- .get("urine_albumin")
+    ucr  <- .get("urine_creatinine")
+    if (!is.null(ualb) && !is.null(ucr)) {
+      ratio <- ualb / ucr
+      ratio[!is.finite(ratio)] <- NA_real_
+      data[["UACR"]] <- ratio
+      .log("UACR", c("urine_albumin", "urine_creatinine"))
+    }
+  }
+
+  # --- 6. LDL_c (Friedewald, mmol/L) -----------------------------------
+  if (.absent("LDL_c")) {
+    tc    <- .get("TC")
+    hdl   <- .get("HDL_c")
+    tg    <- .get("TG")
+    if (!is.null(tc) && !is.null(hdl) && !is.null(tg)) {
+      ldl <- tc - hdl - tg / 2.2
+      # Friedewald invalid when TG > 4.5 mmol/L
+      ldl[is.finite(tg) & tg > 4.5] <- NA_real_
+      ldl[!is.finite(ldl)] <- NA_real_
+      data[["LDL_c"]] <- ldl
+      .log("LDL_c", c("TC", "HDL_c", "TG"))
+    }
+  }
+
+  list(data = data, precomputed = precomputed)
 }

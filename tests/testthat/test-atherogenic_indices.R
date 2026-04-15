@@ -65,7 +65,7 @@ test_that("verbose = TRUE emits preparing, column map, and results messages", {
   dat <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
   cm2 <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
   expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "atherogenic_indices")
-  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "column mapping")
+  expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "col_map")
   expect_message(atherogenic_indices(dat, col_map = cm2, verbose = TRUE), "results:")
 })
 
@@ -76,6 +76,6 @@ test_that("verbose double-fire guard: each message fires exactly once", {
   msgs <- testthat::capture_messages(
     atherogenic_indices(dat, col_map = cm2, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })

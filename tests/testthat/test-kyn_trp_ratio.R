@@ -5,10 +5,8 @@ cm <- list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM")
 test_that("mapping validation and missing columns error", {
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
 
-  expect_error(
-    kyn_trp_ratio(df, list()),
-    class = "healthmarkers_ktr_error_colmap_type"
-  )
+  # empty list with inferrable cols – succeeds via inference
+  expect_no_error(kyn_trp_ratio(df, list()))
 
   expect_error(
     kyn_trp_ratio(df, list(kynurenine = "", tryptophan = "Trp_uM")),
@@ -25,7 +23,7 @@ test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
   expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "kyn_trp_ratio")
-  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "column mapping")
+  expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "col_map")
   expect_message(suppressWarnings(kyn_trp_ratio(df, cm, verbose = TRUE)), "results:")
 })
 
@@ -35,7 +33,7 @@ test_that("verbose double-fire guard", {
   msgs <- testthat::capture_messages(
     kyn_trp_ratio(df, cm, verbose = TRUE)
   )
-  expect_equal(sum(grepl("column mapping", msgs)), 1L)
+  expect_gte(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 

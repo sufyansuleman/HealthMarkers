@@ -104,22 +104,21 @@ test_that("invalid normalize argument errors via ogtt_is arg check", {
 test_that("verbose emits preparing, column map, and results messages", {
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(run_ogtt(base_df, verbose = TRUE), "ogtt_is")
-  expect_message(run_ogtt(base_df, verbose = TRUE), "column map")
+  expect_message(run_ogtt(base_df, verbose = TRUE), "col_map")
   expect_message(run_ogtt(base_df, verbose = TRUE), "results:")
 })
 
 test_that("verbose double-fire guard", {
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_ogtt(base_df, verbose = TRUE))
-  expect_equal(sum(grepl("column map", msgs)), 1L)
+  expect_equal(sum(grepl("col_map", msgs)), 1L)
   expect_equal(sum(grepl("results:",   msgs)), 1L)
 })
 
-test_that("error if col_map missing required keys", {
-  bad_map <- list(G0 = "G0", I0 = "I0") # too few entries
-  expect_error(
-    ogtt_is(base_df, col_map = bad_map),
-    "col_map"
+test_that("partial col_map is supplemented by dictionary inference", {
+  bad_map <- list(G0 = "G0", I0 = "I0") # too few entries, rest inferred
+  expect_no_error(
+    ogtt_is(base_df, col_map = bad_map)
   )
 })
 

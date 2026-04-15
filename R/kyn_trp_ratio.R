@@ -32,7 +32,9 @@ kyn_trp_ratio <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name  <- "kyn_trp_ratio"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -44,12 +46,14 @@ kyn_trp_ratio <- function(
                  class = "healthmarkers_ktr_error_data_type")
   }
 
-  was_null_cm <- is.null(col_map)
-  col_map <- .hm_autofill_col_map(col_map, data, c("kynurenine","tryptophan"), fn = "kyn_trp_ratio")
+  req <- c("kynurenine","tryptophan")
+  cm      <- .hm_build_col_map(data, col_map, req, fn = "kyn_trp_ratio")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
-  # Graceful NA only when caller passed nothing and autofill found nothing at all
-  if (was_null_cm && length(col_map) == 0L) {
+  # Graceful NA only when nothing provided and inference found nothing
+  if (length(cm$user_keys) == 0L && length(cm$inferred_keys) == 0L && length(col_map) == 0L) {
     return(tibble::tibble(kyn_trp_ratio = rep(NA_real_, nrow(data))))
   }
 
@@ -81,14 +85,8 @@ kyn_trp_ratio <- function(
 
   hm_inform("kyn_trp_ratio(): preparing inputs", level = if (isTRUE(verbose)) "inform" else "debug")
 
-  # --- Verbose: column mapping
-  if (isTRUE(verbose)) {
-    map_parts <- vapply(req, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(
-      sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")),
-      level = "inform"
-    )
-  }
+  # --- Verbose: col_map
+  .hm_log_cols(cm, col_map, fn_name, verbose)
 
   # --- Verbose: computing markers list
   if (isTRUE(verbose)) {
@@ -172,3 +170,4 @@ kyn_trp_ratio <- function(
 
   out
 }
+

@@ -33,7 +33,9 @@ bode_index <- function(
   na_action = c("keep","omit","error","ignore","warn"),
   verbose = TRUE
 ) {
+  data_name <- (function(.e) if (is.symbol(.e)) as.character(.e) else "data")(substitute(data))
   fn_name <- "bode_index"
+  .hm_log_input(data, data_name, fn_name, verbose)
   .na <- .hm_normalize_na_action(match.arg(na_action))
   na_action_raw <- .na$na_action_raw
   na_action_eff <- .na$na_action_eff
@@ -45,9 +47,10 @@ bode_index <- function(
                  class = "healthmarkers_bode_error_data_type")
   }
 
-  col_map <- .hm_autofill_col_map(col_map, data,
-    c("fev1_pct","fev1_pp","fev1","sixmwd","mmrc","bmi"),
-    fn = "bode_index")
+  all_bode_keys <- c("fev1_pct","fev1_pp","fev1","sixmwd","mmrc","bmi")
+  cm      <- .hm_build_col_map(data, col_map, all_bode_keys, fn = "bode_index")
+  data    <- cm$data
+  col_map <- cm$col_map
   if (is.null(col_map)) col_map <- list()
 
   if (!is.list(col_map) || is.null(names(col_map))) {
@@ -93,12 +96,9 @@ bode_index <- function(
                  class = "healthmarkers_bode_error_missing_columns")
   }
 
-  if (isTRUE(verbose)) {
-    active_keys <- intersect(c("fev1_pct","fev1","fev1_pred","fev1_pp","sixmwd","mmrc","bmi"), names(col_map))
-    map_parts <- vapply(active_keys, function(k) sprintf("%s -> '%s'", k, col_map[[k]]), character(1))
-    hm_inform(sprintf("%s(): column mapping: %s", fn_name, paste(map_parts, collapse = ", ")), level = "inform")
+  .hm_log_cols(cm, col_map, fn_name, verbose)
+  if (isTRUE(verbose))
     hm_inform(sprintf("%s(): computing markers:\n  bode_index  [0-10 COPD severity score]", fn_name), level = "inform")
-  }
 
   # Coercion helper
   coerce_col <- function(cn) {
@@ -225,3 +225,4 @@ bode_index <- function(
 
   out
 }
+
