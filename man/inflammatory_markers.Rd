@@ -9,9 +9,7 @@ inflammatory_markers(
   col_map = NULL,
   panel = c("auto", "classic", "eos", "both"),
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -23,17 +21,15 @@ Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinop
 \item{panel}{one of c("auto","classic","eos","both"). "auto" uses presence of eosinophils key.}
 
 \item{na_action}{one of c("keep","omit","error"). Default "keep" propagates NA
-in outputs where inputs are missing. "omit" drops rows with any NA in required
-inputs. "error" aborts if required inputs contain NA.}
+in outputs where inputs are missing.}
 
-\item{check_extreme}{logical; if TRUE, handle extremes per \code{extreme_action}}
-
-\item{extreme_action}{one of c("warn","cap","error","ignore","NA")}
-
-\item{verbose}{logical; if TRUE, prints progress messages via hm_inform}
+\item{verbose}{logical; if \code{TRUE} (default), prints column mapping, optional input
+availability, physiological range information (informational only), the list of
+markers being computed, and a results summary.}
 }
 \value{
-tibble with selected inflammatory indices
+tibble with selected inflammatory indices, with ID column prepended if
+detected (e.g. \code{id}, \code{IID}, \code{participant_id}).
 }
 \description{
 Panels:
@@ -79,8 +75,7 @@ cm <- list(
 classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
 inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
 # Eosinophil panel
-inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
-                     check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
+inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 
 }
 \references{

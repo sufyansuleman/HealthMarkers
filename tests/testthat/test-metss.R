@@ -23,6 +23,7 @@ test_that("metss errors if missing required columns", {
 
 # ---- Correct computation (default params NHW male) ----
 test_that("metss computes correct score for default NHW male", {
+  skip_on_cran()
   df <- tibble(
     waist   = 94,
     bp_sys  = 120,
@@ -45,6 +46,7 @@ test_that("metss computes correct score for default NHW male", {
 
 # ---- Vectorization ----
 test_that("metss is vectorized over multiple rows", {
+  skip_on_cran()
   df <- tibble(
     waist   = c(94, 100),
     bp_sys  = c(120, 130),
@@ -63,6 +65,7 @@ test_that("metss is vectorized over multiple rows", {
 
 # ---- Missing params key ----
 test_that("metss errors when params key for sex-race is missing", {
+  skip_on_cran()
   df_f <- tibble(
     waist   = 100,
     bp_sys  = 130,
@@ -92,6 +95,7 @@ test_that("metss errors when params key for sex-race is missing", {
 
 # ---- Verbose messages ----
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     waist   = 94,
@@ -109,6 +113,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     waist   = 94, bp_sys = 120, bp_dia = 80,
@@ -122,6 +127,7 @@ test_that("verbose double-fire guard", {
 
 # ---- NA handling policies ----
 test_that("na_action = error and omit behave as expected", {
+  skip_on_cran()
   df <- tibble(
     waist   = c(94, NA_real_),
     bp_sys  = c(120, 120),
@@ -142,6 +148,7 @@ test_that("na_action = error and omit behave as expected", {
 
 # ---- Extreme values pass through unchanged ----
 test_that("extreme input values pass through without error", {
+  skip_on_cran()
   df_ext <- tibble(
     waist   = 400,
     bp_sys  = 500,
@@ -158,6 +165,7 @@ test_that("extreme input values pass through without error", {
 
 # ---- Multiple keys warning ----
 test_that("multiple sex/race keys triggers warning and uses first-row key", {
+  skip_on_cran()
   df <- tibble(
     waist   = c(94, 100),
     bp_sys  = c(120, 130),
@@ -177,6 +185,7 @@ test_that("multiple sex/race keys triggers warning and uses first-row key", {
 
 # ---- Custom params and computation check ----
 test_that("custom params applied correctly", {
+  skip_on_cran()
   custom_params <- list(
     NHW_M = list(
       intercept = 0,

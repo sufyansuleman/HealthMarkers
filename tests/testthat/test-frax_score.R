@@ -15,6 +15,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Age = 65, Sex = "Female")
   expect_message(frax_score(df, list(age = "Age", sex = "Sex"), verbose = TRUE), "frax_score")
@@ -23,6 +24,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Age = 65, Sex = "Female")
   msgs <- testthat::capture_messages(
@@ -33,6 +35,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(Age = c(70, NA), Sex = c("Male", "Female"))
   out_keep <- frax_score(df, list(age="Age", sex="Sex"), na_action = "keep")
   expect_equal(nrow(out_keep), 2L)
@@ -46,12 +49,14 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("coercion warnings on numeric-like inputs", {
+  skip_on_cran()
   df <- data.frame(Age = c("70", "oops"), Sex = c("Male", "Female"))
   expect_warning(frax_score(df, list(age="Age", sex="Sex")),
                  class = "healthmarkers_frax_warn_na_coercion")
 })
 
 test_that("sex normalization warning only", {
+  skip_on_cran()
   df <- data.frame(Age = c(60, 70), Sex = c("X", "u"))  # ages in range
   expect_warning(
     frax_score(df, list(age = "Age", sex = "Sex")),
@@ -60,6 +65,7 @@ test_that("sex normalization warning only", {
 })
 
 test_that("age range warning only", {
+  skip_on_cran()
   df <- data.frame(Age = c(35, 95), Sex = c("male","female"))  # valid sex
   expect_warning(
     frax_score(df, list(age = "Age", sex = "Sex")),
@@ -69,6 +75,7 @@ test_that("age range warning only", {
 
 # If you want to assert both warnings together instead of splitting:
 test_that("sex and age warnings together (optional)", {
+  skip_on_cran()
   df <- data.frame(Age = c(35, 95), Sex = c("x","u"))
   w <- expect_warning(
     expect_warning(
@@ -80,6 +87,7 @@ test_that("sex and age warnings together (optional)", {
 })
 
 test_that("risk increases with added risk factors; hip fraction behaved", {
+  skip_on_cran()
   df <- data.frame(
     Age = rep(70, 3), Sex = rep("Female", 3),
     PriorFx = c(0,1,1), ParentFx = c(0,0,1),
@@ -94,6 +102,7 @@ test_that("risk increases with added risk factors; hip fraction behaved", {
 })
 
 test_that("BMD T-score adjustment applies when in [-5, 0]", {
+  skip_on_cran()
   df <- data.frame(Age = 70, Sex = "Female", BMD = -2.5)
   out_low <- frax_score(df, list(age="Age", sex="Sex", bmd="BMD"))
   df2 <- data.frame(Age = 70, Sex = "Female", BMD = -1.0)
@@ -102,6 +111,7 @@ test_that("BMD T-score adjustment applies when in [-5, 0]", {
 })
 
 test_that("capping at 95% works", {
+  skip_on_cran()
   df <- data.frame(
     Age = 90, Sex = "Female",
     PriorFx = 1, ParentFx = 1, Steroids = 1, RA = 1, SecOP = 1, Smoker = 1, Alcohol = 1
@@ -112,6 +122,7 @@ test_that("capping at 95% works", {
 })
 
 test_that("check_extreme removed: function passes through outlier rows", {
+  skip_on_cran()
   cm <- list(age = "Age", sex = "Sex", bmd_t = "BMD")
   df <- data.frame(
     Age = c(20, 85, 100, 60),
@@ -124,6 +135,7 @@ test_that("check_extreme removed: function passes through outlier rows", {
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(Age = c(70, NA), Sex = c("Female", "Female"))
   out_keep <- frax_score(df, list(age="Age", sex="Sex"), na_action = "keep")
   out_warn <- suppressWarnings(frax_score(df, list(age="Age", sex="Sex"), na_action = "warn"))
@@ -132,6 +144,7 @@ test_that("padding preserved for keep/warn", {
 })
 
 test_that("country argument is accepted and does not error", {
+  skip_on_cran()
   df <- data.frame(Age = 70, Sex = "Female")
   out <- frax_score(df, list(age="Age", sex="Sex"), country = "UK")
   expect_equal(nrow(out), 1L)

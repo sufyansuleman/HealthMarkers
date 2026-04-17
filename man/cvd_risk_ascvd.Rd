@@ -9,7 +9,7 @@ cvd_risk_ascvd(
   year = 10,
   col_map = NULL,
   na_warn_prop = 0.2,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 }

@@ -7,11 +7,8 @@
 nfl_marker(
   data,
   col_map = NULL,
-  verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 )
 }
 \arguments{
@@ -19,15 +16,9 @@ nfl_marker(
 
 \item{col_map}{Named list with \code{nfl} indicating the NfL column name.}
 
-\item{verbose}{Logical; if TRUE, emits progress messages.}
-
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional overrides; default: list(nfl = c(0, 1e6)) in input units.}
+\item{verbose}{Logical; if TRUE (default), emits progress messages.}
 }
 \value{
 A tibble with one column: nfl_value (numeric; same units as input).

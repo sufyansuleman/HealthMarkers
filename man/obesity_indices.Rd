@@ -17,10 +17,7 @@ obesity_indices(
   include_RFM = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -48,13 +45,7 @@ obesity_indices(
 
 \item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (heuristic). Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes are detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) for c("weight_kg","height_m","waist","hip"). NULL uses defaults.}
-
-\item{verbose}{Logical; if TRUE, prints progress messages and a completion summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints column mapping and computing messages.}
 }
 \value{
 A tibble with only the computed indices (slim output):

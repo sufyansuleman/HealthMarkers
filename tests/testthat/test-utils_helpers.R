@@ -16,6 +16,7 @@ test_that(".hm_build_col_map: NULL col_map infers all resolvable keys", {
 })
 
 test_that(".hm_build_col_map: partial col_map — user entries preserved, rest inferred", {
+  skip_on_cran()
   df  <- tibble::tibble(pglu0 = 5.5, hdlc = 1, trig = 1.3, bmi = 24)
   cm  <- list(G0 = "pglu0")  # user supplies only G0
   res <- HealthMarkers:::.hm_build_col_map(df, cm, c("G0", "HDL_c", "TG", "BMI"), fn = "test")
@@ -31,6 +32,7 @@ test_that(".hm_build_col_map: partial col_map — user entries preserved, rest i
 })
 
 test_that(".hm_build_col_map: full col_map — nothing inferred, nothing overwritten", {
+  skip_on_cran()
   df  <- tibble::tibble(pglu0 = 5.5, hdlc = 1, trig = 1.3, bmi = 24)
   cm  <- list(G0 = "pglu0", HDL_c = "hdlc", TG = "trig", BMI = "bmi")
   res <- HealthMarkers:::.hm_build_col_map(df, cm, c("G0", "HDL_c", "TG", "BMI"), fn = "test")
@@ -43,6 +45,7 @@ test_that(".hm_build_col_map: full col_map — nothing inferred, nothing overwri
 })
 
 test_that(".hm_build_col_map: alias materialized into data", {
+  skip_on_cran()
   # col_map maps G0 -> "pglu0"; after call data[["G0"]] should exist
   df  <- tibble::tibble(pglu0 = c(5.5, 6.0), hdlc = c(1, 1.2))
   cm  <- list(G0 = "pglu0")
@@ -54,6 +57,7 @@ test_that(".hm_build_col_map: alias materialized into data", {
 })
 
 test_that(".hm_build_col_map: non-clobbering — existing logical key not overwritten", {
+  skip_on_cran()
   # data already has a column literally named "G0" with different values
   df  <- tibble::tibble(G0 = c(4.0, 5.0), pglu0 = c(9.9, 9.9))
   cm  <- list(G0 = "pglu0")
@@ -63,6 +67,7 @@ test_that(".hm_build_col_map: non-clobbering — existing logical key not overwr
 })
 
 test_that(".hm_build_col_map: literal-name fallback for unrecognised column names", {
+  skip_on_cran()
   # "my_custom_col" is not in the dictionary, but the key is literally named the same
   df  <- tibble::tibble(my_custom_col = 1:3)
   res <- HealthMarkers:::.hm_build_col_map(df, NULL, c("my_custom_col"), fn = "test")
@@ -71,6 +76,7 @@ test_that(".hm_build_col_map: literal-name fallback for unrecognised column name
 })
 
 test_that(".hm_build_col_map: synonym matching works end-to-end", {
+  skip_on_cran()
   df  <- tibble::tibble(insu0 = c(60, 80), pglu0 = c(5.5, 6.0))
   res <- HealthMarkers:::.hm_build_col_map(df, NULL, c("I0", "G0"), fn = "test")
   expect_equal(res$col_map[["I0"]], "insu0")
@@ -80,6 +86,7 @@ test_that(".hm_build_col_map: synonym matching works end-to-end", {
 ## Tests for .hm_global_precompute() -----------------------------------------
 
 test_that(".hm_global_precompute: BMI derived from weight (kg) and height (cm)", {
+  skip_on_cran()
   df  <- data.frame(weight = 70.0, height = 170.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("BMI" %in% names(res$data))
@@ -88,6 +95,7 @@ test_that(".hm_global_precompute: BMI derived from weight (kg) and height (cm)",
 })
 
 test_that(".hm_global_precompute: G0 aliased to glucose when glucose absent", {
+  skip_on_cran()
   df  <- data.frame(G0 = 5.5)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("glucose" %in% names(res$data))
@@ -96,6 +104,7 @@ test_that(".hm_global_precompute: G0 aliased to glucose when glucose absent", {
 })
 
 test_that(".hm_global_precompute: glucose aliased to G0 when G0 absent", {
+  skip_on_cran()
   df  <- data.frame(glucose = 6.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("G0" %in% names(res$data))
@@ -104,6 +113,7 @@ test_that(".hm_global_precompute: glucose aliased to G0 when G0 absent", {
 })
 
 test_that(".hm_global_precompute: I0 aliased to insulin when insulin absent", {
+  skip_on_cran()
   df  <- data.frame(I0 = 12.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("insulin" %in% names(res$data))
@@ -112,6 +122,7 @@ test_that(".hm_global_precompute: I0 aliased to insulin when insulin absent", {
 })
 
 test_that(".hm_global_precompute: eGFR derived from creatinine, age, sex", {
+  skip_on_cran()
   df  <- data.frame(creatinine = 1.0, age = 40, sex = "M")
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("eGFR" %in% names(res$data))
@@ -121,6 +132,7 @@ test_that(".hm_global_precompute: eGFR derived from creatinine, age, sex", {
 })
 
 test_that(".hm_global_precompute: UACR derived from urine_albumin / urine_creatinine", {
+  skip_on_cran()
   df  <- data.frame(urine_albumin = 30.0, urine_creatinine = 150.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("UACR" %in% names(res$data))
@@ -129,6 +141,7 @@ test_that(".hm_global_precompute: UACR derived from urine_albumin / urine_creati
 })
 
 test_that(".hm_global_precompute: LDL_c derived via Friedewald (mmol/L)", {
+  skip_on_cran()
   df  <- data.frame(TC = 5.0, HDL_c = 1.2, TG = 1.5)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("LDL_c" %in% names(res$data))
@@ -137,6 +150,7 @@ test_that(".hm_global_precompute: LDL_c derived via Friedewald (mmol/L)", {
 })
 
 test_that(".hm_global_precompute: LDL_c is NA when TG > 4.5 mmol/L", {
+  skip_on_cran()
   df  <- data.frame(TC = 5.0, HDL_c = 1.2, TG = 5.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_true("LDL_c" %in% names(res$data))
@@ -144,6 +158,7 @@ test_that(".hm_global_precompute: LDL_c is NA when TG > 4.5 mmol/L", {
 })
 
 test_that(".hm_global_precompute: existing columns are not overwritten", {
+  skip_on_cran()
   df  <- data.frame(BMI = 30.0, weight = 50.0, height = 170.0)
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = NULL, verbose = FALSE)
   expect_equal(res$data[["BMI"]], 30.0)
@@ -151,6 +166,7 @@ test_that(".hm_global_precompute: existing columns are not overwritten", {
 })
 
 test_that(".hm_global_precompute: col_map keys are honoured for column resolution", {
+  skip_on_cran()
   df  <- data.frame(cr = 0.9, age = 50, sex = "F")
   cm  <- list(creatinine = "cr")
   res <- HealthMarkers:::.hm_global_precompute(df, col_map = cm, verbose = FALSE)

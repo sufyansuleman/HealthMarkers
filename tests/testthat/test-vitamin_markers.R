@@ -29,6 +29,7 @@ test_that("errors if `data` is not a data.frame", {
 })
 
 test_that("errors if `col_map` is not a named list", {
+  skip_on_cran()
   df <- make_full_df()
   expect_error(
     vitamin_markers(df, col_map = c(VitD = "VitD")),
@@ -37,6 +38,7 @@ test_that("errors if `col_map` is not a named list", {
 })
 
 test_that("errors when mapped columns are missing in data", {
+  skip_on_cran()
   df <- tibble(VitD = 50, VitD_ref_mean = 40, VitD_ref_sd = 5)
   req_keys <- c(
     "VitD","VitD_ref_mean","VitD_ref_sd","B12","Folate","Ferritin","TSat",
@@ -52,6 +54,7 @@ test_that("errors when mapped columns are missing in data", {
 })
 
 test_that("numeric coercion warns when NAs introduced and propagates to outputs", {
+  skip_on_cran()
   df <- make_full_df(2)
   df$B12 <- c("300", "oops")
   df$TSat <- c("0.25", "0.25")
@@ -65,6 +68,7 @@ test_that("numeric coercion warns when NAs introduced and propagates to outputs"
 })
 
 test_that("na_action='omit' with all rows dropped returns empty tibble with expected columns", {
+  skip_on_cran()
   df <- make_full_df(2)
   df$VitD <- c(NA_real_, NA_real_)
   cm <- cm_id(df)
@@ -79,6 +83,7 @@ test_that("na_action='omit' with all rows dropped returns empty tibble with expe
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   df <- make_full_df(1)
   cm <- cm_id(df)
   withr::local_options(healthmarkers.verbose = "inform")
@@ -88,6 +93,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- make_full_df(1)
   cm <- cm_id(df)
   withr::local_options(healthmarkers.verbose = "inform")
@@ -97,6 +103,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("extreme values produce range note in verbose; no warning in non-verbose mode", {
+  skip_on_cran()
   base <- make_full_df(1)
   df <- base
   df$VitD <- 1000

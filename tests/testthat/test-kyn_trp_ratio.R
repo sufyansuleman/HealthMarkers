@@ -20,6 +20,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
   expect_message(kyn_trp_ratio(df, cm, verbose = TRUE), "kyn_trp_ratio")
@@ -28,6 +29,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
   msgs <- testthat::capture_messages(
@@ -38,11 +40,13 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c("2000", "oops"), Trp_uM = c("60", "55"))
   expect_warning(kyn_trp_ratio(df, cm), class = "healthmarkers_ktr_warn_na_coercion")
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c(2000, NA, 8000), Trp_uM = c(60, 50, NA))
   out_keep <- kyn_trp_ratio(df, cm, na_action = "keep")
   expect_equal(nrow(out_keep), 3L)
@@ -59,12 +63,14 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("division by zero or nonpositive Trp sets NA with warning", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c(2000, 3000), Trp_uM = c(0, -5))
   out <- expect_warning(kyn_trp_ratio(df, cm), class = "healthmarkers_ktr_warn_nonpositive_trp")
   expect_true(all(is.na(out$kyn_trp_ratio)))
 })
 
 test_that("ratio computation and high ratio warning", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c(2400, 8000), Trp_uM = c(60, 50))
 
   # Only checking ratio correctness here; hide the high-ratio warning
@@ -80,12 +86,14 @@ test_that("ratio computation and high ratio warning", {
 })
 
 test_that("extreme inputs produce NA ratios via zero/invalid denominator", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c(50, 25000, 3000, 15000), Trp_uM = c(0, 200, 60, 50))
   out <- suppressWarnings(kyn_trp_ratio(df, cm, verbose = FALSE))
   expect_true(any(is.na(out$kyn_trp_ratio)))
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = c(2000, NA, 8000), Trp_uM = c(60, 50, NA))
   out_keep <- kyn_trp_ratio(df, cm, na_action = "keep")
   out_warn <- suppressWarnings(kyn_trp_ratio(df, cm, na_action = "warn"))

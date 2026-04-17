@@ -6,15 +6,10 @@
 \usage{
 liver_markers(
   data,
-  col_map = list(BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT", age = "age", AST =
-    "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes =
-    "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
-  verbose = FALSE,
-  na_action = c("keep", "omit", "error", "ignore", "warn"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  col_map = NULL,
+  verbose = TRUE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2
 )
 }
 \arguments{
@@ -28,28 +23,21 @@ liver_markers(
 \item \code{bilirubin} (mg/dL), \code{creatinine} (mg/dL).
 }}
 
-\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, input
+availability, physiological range information (informational only, values
+not altered), the list of markers being computed with their inputs, and a
+per-column results summary.}
 
-\item{na_action}{One of c("keep","omit","error") controlling missing-data policy. Default "keep" (preserves prior behavior).
-\itemize{
-\item "keep": leave NAs; they propagate to outputs.
-\item "omit": drop rows with NA in any required input.
-\item "error": abort if any required input contains NA.
-}}
+\item{na_action}{One of \code{c("keep","omit","error")} controlling missing-data
+policy. Default "keep".}
 
-\item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see \code{extreme_rules}). Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes are detected (only used if \code{check_extreme = TRUE}).
-\itemize{
-\item "warn": only warn (default), "cap": truncate to allowed range, "error": abort, "ignore": do nothing.
-}}
-
-\item{extreme_rules}{Optional named list of c(min,max) ranges for keys in \code{col_map}. If NULL, broad defaults are used.}
+\item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for
+high-missingness warnings. Default 0.2.}
 }
 \value{
-A tibble with one column per marker: \code{FLI}, \code{NFS}, \code{APRI}, \code{FIB4}, \code{BARD}, \code{ALBI}, \code{MELD_XI}.
+A tibble with one column per marker: \code{FLI}, \code{NFS}, \code{APRI}, \code{FIB4},
+\code{BARD}, \code{ALBI}, \code{MELD_XI}. If an ID column is detected in \code{data} (e.g.
+\code{id}, \code{IID}, \code{participant_id}), it is prepended as the first output column.
 }
 \description{
 Given routine labs and anthropometry, computes:
@@ -105,17 +93,8 @@ df <- tibble(
   bilirubin     = 1.0, # mg/dL
   creatinine    = 0.9  # mg/dL
 )
-liver_markers(df, verbose = TRUE)
-
-\donttest{
-# With extreme-value capping and diagnostics
-liver_markers(
-  df,
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
-)
-}
+liver_markers(df)
+liver_markers(df, verbose = FALSE)
 
 }
 \references{

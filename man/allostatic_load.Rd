@@ -9,11 +9,8 @@ allostatic_load(
   thresholds,
   col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  sds_limit = 6,
   return_summary = FALSE,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -24,12 +21,6 @@ allostatic_load(
 \item{col_map}{optional named list mapping keys in \code{thresholds} to column names in \code{data}.}
 
 \item{na_action}{one of c("keep","omit","error") ("keep" treats NA as zero contribution).}
-
-\item{check_extreme}{logical; scan columns with name containing "sds" for |value| > sds_limit.}
-
-\item{extreme_action}{one of c("cap","NA","error") for SDS-like extremes.}
-
-\item{sds_limit}{positive numeric cutoff for SDS-like scan (default 6).}
 
 \item{return_summary}{logical; TRUE returns list(data, summary, warnings).}
 

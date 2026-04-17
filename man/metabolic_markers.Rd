@@ -6,7 +6,7 @@
 \usage{
 metabolic_markers(
   data,
-  col_map,
+  col_map = NULL,
   which = c("insulin", "adiposity_sds", "cardio", "lipid", "liver", "glycemic", "mets"),
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),

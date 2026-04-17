@@ -34,6 +34,7 @@ test_that("sweat_markers errors if missing required columns", {
 })
 
 test_that("sweat_markers computes ionic and rate metrics correctly", {
+  skip_on_cran()
   df <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -57,6 +58,7 @@ test_that("sweat_markers computes ionic and rate metrics correctly", {
 })
 
 test_that("sweat_markers is vectorized over multiple rows", {
+  skip_on_cran()
   df <- tibble(
     sweat_chloride    = c(30, 40),
     sweat_Na          = c(50, 60),
@@ -74,6 +76,7 @@ test_that("sweat_markers is vectorized over multiple rows", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -91,6 +94,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -108,6 +112,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("na_action policies: error and omit behave as expected", {
+  skip_on_cran()
   df_na <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,
@@ -127,6 +132,7 @@ test_that("na_action policies: error and omit behave as expected", {
 })
 
 test_that("check_extreme removed: function passes through outlier rows", {
+  skip_on_cran()
   df_ext <- tibble(
     sweat_chloride    = 300,
     sweat_Na          = 300,
@@ -142,6 +148,7 @@ test_that("check_extreme removed: function passes through outlier rows", {
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA in ratios", {
+  skip_on_cran()
   df_zero <- tibble(
     sweat_chloride    = 30,
     sweat_Na          = 50,

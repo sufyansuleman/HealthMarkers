@@ -12,7 +12,7 @@ who5_score(
   impute = c("none", "mean"),
   prefix = "WHO5",
   low_cutoff_percent = 50,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ who5_score(
 
 \item{low_cutoff_percent}{Percentage threshold for low well-being flag.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{WHO5_raw}, \code{WHO5_percent}, \code{WHO5_low_wellbeing}. Input columns are not included.

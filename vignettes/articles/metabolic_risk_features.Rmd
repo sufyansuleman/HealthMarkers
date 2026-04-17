@@ -1,6 +1,6 @@
 ---
 title: "Metabolic Risk Features"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -29,7 +29,38 @@ Create pediatric-friendly binary risk flags (dyslipidemia, insulin resistance, h
 - `col_map`: named list mapping required keys (defaults to same names): `chol_total`, `chol_ldl`, `chol_hdl`, `triglycerides`, `age_year`, `z_HOMA`, `glucose`, `HbA1c`, `bp_sys_z`, `bp_dia_z`.
 - Units assumed: lipids mmol/L; glucose mmol/L; HbA1c mmol/mol (IFCC); BP inputs already z-scores; age in years; `z_HOMA` is a z-scored HOMA-IR.
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows missing required inputs; `error` aborts; `ignore` acts like keep; `warn` acts like keep plus high-missingness warnings via `na_warn_prop` (default 0.2).
-- `check_extreme`: set TRUE to scan using `extreme_action` (`warn`/`cap`/`error`/`ignore`/`NA`) with default bounds unless overridden by `extreme_rules` (defaults: chol_total 0.5–20; chol_ldl 0.1–15; chol_hdl 0.1–5; triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c 15–200; bp_sys_z/bp_dia_z -5–5).
+
+## Preparing derived inputs
+
+Two required inputs are **derived**, not raw lab values:
+
+### z_HOMA (standardised HOMA-IR)
+
+Compute HOMA-IR from fasting glucose (mmol/L) and fasting insulin (µIU/mL), then
+standardise to a z-score relative to a healthy reference population:
+
+```{r, eval=FALSE}
+# Step 1: compute HOMA-IR
+data$HOMA_IR <- (data$fasting_glucose_mmol * data$fasting_insulin_uIU) / 22.5
+
+# Step 2: standardise within cohort (or use external reference parameters)
+data$z_HOMA  <- normalize_vec(data$HOMA_IR, method = "z")
+```
+
+Published paediatric reference values: Keskin *et al.* (2005, *Pediatr Diabetes*);
+for adults, a 90th-percentile cutpoint (z ≈ 1.28) is commonly applied.
+
+### BP z-scores (bp_sys_z / bp_dia_z)
+
+BP z-scores must be derived using sex- and age-specific normative tables (AAP 2017
+Fourth Report or WHO paediatric reference). The `calc_sds()` function can apply
+stratified reference parameters if you have them; alternatively the `childsds`
+package (CRAN) provides ready-to-use paediatric normative tables.
+
+```{r, eval=FALSE}
+# Manual z-score: (observed − reference_mean) / reference_sd
+data$bp_sys_z <- (data$sbp - ref_sbp_mean) / ref_sbp_sd
+```
 
 ## Quick start
 
@@ -37,17 +68,18 @@ Create pediatric-friendly binary risk flags (dyslipidemia, insulin resistance, h
 library(HealthMarkers)
 library(tibble)
 
+# Six children/adolescents spanning multiple metabolic risk combinations
 peds <- tibble::tibble(
-  chol_total = c(5.4, 4.8),
-  chol_ldl   = c(3.6, 2.9),
-  chol_hdl   = c(0.9, 1.2),
-  triglycerides = c(1.6, 1.0),
-  age_year   = c(15, 9),
-  z_HOMA     = c(1.5, 0.8),
-  glucose    = c(5.8, 5.1),
-  HbA1c      = c(40, 35),
-  bp_sys_z   = c(1.2, 1.8),
-  bp_dia_z   = c(0.5, 1.7)
+  chol_total    = c(5.4, 4.8, 3.9, 6.2, 5.1, 4.5),
+  chol_ldl      = c(3.6, 2.9, 2.4, 4.1, 3.2, 2.8),
+  chol_hdl      = c(0.9, 1.2, 1.4, 0.8, 1.0, 1.3),
+  triglycerides = c(1.6, 1.0, 0.8, 2.0, 1.3, 0.9),
+  age_year      = c(15,  9,  12,  17,  11,   8 ),
+  z_HOMA        = c(1.5, 0.8, 0.2, 2.1, 1.0, -0.3),
+  glucose       = c(5.8, 5.1, 4.9, 6.5, 5.4, 4.8),
+  HbA1c         = c(40,  35,  32,  46,  38,  30 ),
+  bp_sys_z      = c(1.2, 1.8, 0.3, 2.1, 0.8, -0.2),
+  bp_dia_z      = c(0.5, 1.7, 0.2, 1.9, 0.6,  0.1)
 )
 
 metabolic_risk_features(
@@ -61,12 +93,15 @@ metabolic_risk_features(
 )
 ```
 
-## Scan, cap, and warn
+## Extreme values
+Extreme inputs will produce extreme or incorrect flags. Pre-filter implausible values before calling.
 
 ```{r}
 extreme <- peds
-extreme$triglycerides[1] <- 40  # high
-extreme$bp_sys_z[2] <- 9        # out of range
+extreme$triglycerides[1] <- 40  # extreme; pre-filter
+extreme$bp_sys_z[2] <- 9        # out of expected range; pre-filter
+extreme$triglycerides[extreme$triglycerides > 30] <- NA
+extreme$bp_sys_z[abs(extreme$bp_sys_z) > 5] <- NA
 
 metabolic_risk_features(
   data = extreme,
@@ -76,8 +111,6 @@ metabolic_risk_features(
     bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
   ),
   na_action = "warn",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 ```
@@ -105,7 +138,7 @@ metabolic_risk_features(
 )
 ```
 
-## Expanded example: cap extremes, drop incomplete rows
+## Expanded example: drop incomplete rows
 
 ```{r}
 ext_cap <- peds
@@ -121,8 +154,6 @@ out_cap <- metabolic_risk_features(
     bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
   ),
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 
@@ -141,7 +172,6 @@ list(rows_returned = nrow(out_cap), flags = out_cap)
 ## Handling and outputs
 
 - Missingness: `keep/ignore` propagate NA; `omit` drops rows with missing required inputs; `warn` logs high-missingness; `error` aborts on missing required inputs.
-- Extreme values: with `check_extreme = TRUE`, scan against defaults or `extreme_rules`; choose `extreme_action` to warn, cap, NA, ignore, or error.
 - Outputs: tibble with factor columns `dyslipidemia`, `insulin_resistance`, `hyperglycemia`, `hypertension` (levels `0`/`1`). Age-based TG cutoffs: >1.1 mmol/L (0–9 y) or >1.5 mmol/L (10–19 y) for dyslipidemia; BP z > 1.64 for hypertension; z_HOMA > 1.28 for insulin resistance; glucose 5.6–6.9 or HbA1c 39–47 for hyperglycemia.
 
 ## Verbose diagnostics
@@ -163,7 +193,6 @@ options(old_opt)
 ## Tips
 
 - Keep lipids/glucose in mmol/L and HbA1c in mmol/mol; BP inputs must already be z-scores.
-- Tighten `extreme_rules` to your cohort before using `extreme_action = "cap"` or `"error"`.
 - Use `na_action = "omit"` for analysis-ready flags; keep/warn during QA to inspect missingness.
 - Watch for HbA1c reported in % (values <=14 suggest percent) and lipids/glucose in mg/dL (would appear ~×38.7 or ×18 higher); standardize units before calling.
 - BP inputs must already be z-scores; large magnitude (|z| > 5) usually indicates scaling issues.

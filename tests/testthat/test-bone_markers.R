@@ -34,6 +34,7 @@ test_that("bone_markers infers missing col_map entries from data (no error)", {
 })
 
 test_that("bone_markers computes core indices correctly", {
+  skip_on_cran()
   out <- bone_markers(df_full, col_map = cm_full)
   expect_equal(out$OSTA, (df_full$weight - df_full$age) * 0.2)
   expect_equal(out$ALMI, df_full$ALM / df_full$height^2)
@@ -45,6 +46,7 @@ test_that("bone_markers computes core indices correctly", {
 })
 
 test_that("optional biomarkers are passed through when present", {
+  skip_on_cran()
   out <- bone_markers(df_full, col_map = cm_full)
   expect_equal(out$TBS, df_full$TBS)
   expect_equal(out$HSA, df_full$HSA)
@@ -55,6 +57,7 @@ test_that("optional biomarkers are passed through when present", {
 })
 
 test_that("missing optional biomarkers yield NA columns", {
+  skip_on_cran()
   # drop all optional keys
   cm_core <- cm_full[setdiff(
     names(cm_full),
@@ -71,6 +74,7 @@ test_that("missing optional biomarkers yield NA columns", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "bone_markers")
   expect_message(bone_markers(df_full, col_map = cm_full, verbose = TRUE), "col_map")
@@ -78,6 +82,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(
     bone_markers(df_full, col_map = cm_full, verbose = TRUE)
@@ -87,6 +92,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("na_action = 'keep' retains rows with missing/non-finite", {
+  skip_on_cran()
   df_bad <- df_full
   df_bad$BMD[1] <- NA_real_
   out <- bone_markers(df_bad, col_map = cm_full, na_action = "keep")
@@ -94,6 +100,7 @@ test_that("na_action = 'keep' retains rows with missing/non-finite", {
 })
 
 test_that("na_action = 'omit' drops rows with missing/non-finite inputs", {
+  skip_on_cran()
   df_bad <- df_full
   df_bad$height[2] <- NA_real_
   out <- bone_markers(df_bad, col_map = cm_full, na_action = "omit")
@@ -101,6 +108,7 @@ test_that("na_action = 'omit' drops rows with missing/non-finite inputs", {
 })
 
 test_that("na_action = 'error' stops on missing/non-finite inputs", {
+  skip_on_cran()
   df_bad <- df_full
   df_bad$height[2] <- NA_real_
   expect_error(
@@ -110,6 +118,7 @@ test_that("na_action = 'error' stops on missing/non-finite inputs", {
 })
 
 test_that("argument constraints are enforced (height > 0, ref_sd > 0)", {
+  skip_on_cran()
   df_h0 <- df_full; df_h0$height[1] <- 0
   expect_error(bone_markers(df_h0, col_map = cm_full), "height' must be positive")
   df_sd0 <- df_full; df_sd0$BMD_ref_sd[1] <- 0
@@ -117,6 +126,7 @@ test_that("argument constraints are enforced (height > 0, ref_sd > 0)", {
 })
 
 test_that("extra numeric columns in col_map are passed through", {
+  skip_on_cran()
   df_extra <- df_full
   df_extra$ALMI_sds <- c(0, 2)
   cm_extra <- cm_full

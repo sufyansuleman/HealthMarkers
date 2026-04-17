@@ -32,6 +32,7 @@ test_that("validation errors: data type, col_map type, missing map, empty mappin
 })
 
 test_that("numeric coercion warning on non-numeric inputs", {
+  skip_on_cran()
   df <- data.frame(Ca = c("9.0", "oops"), Alb = c("3.5", "3.0"))
 
   expect_warning(
@@ -42,6 +43,7 @@ test_that("numeric coercion warning on non-numeric inputs", {
 })
 
 test_that("NA policies: keep / warn / omit / error / ignore", {
+  skip_on_cran()
   df <- data.frame(
     Ca  = c(9.0, NA, 8.5),
     Alb = c(3.0, 3.5, NA)
@@ -70,6 +72,7 @@ test_that("NA policies: keep / warn / omit / error / ignore", {
 })
 
 test_that("conventional units Payne formula exact", {
+  skip_on_cran()
   df <- data.frame(Ca = 8.5, Alb = 2.8)
 
   out <- corrected_calcium(df, cm, units = "conventional")
@@ -79,6 +82,7 @@ test_that("conventional units Payne formula exact", {
 })
 
 test_that("auto SI detection converts and re-scales back (unit assumption warning)", {
+  skip_on_cran()
   df <- data.frame(Ca = 2.2, Alb = 35)
 
   # check warning class
@@ -93,6 +97,7 @@ test_that("auto SI detection converts and re-scales back (unit assumption warnin
 })
 
 test_that("domain warnings for albumin and corrected calcium ranges (no extreme scan)", {
+  skip_on_cran()
   # 1) Trigger corrected calcium outside 5–15 mg/dL but albumin in range
   df_corr <- data.frame(
     Ca  = c(4.0, 16.0),  # will yield corrected <5 and >15
@@ -115,6 +120,7 @@ test_that("domain warnings for albumin and corrected calcium ranges (no extreme 
 })
 
 test_that("domain warnings triggered for out-of-range albumin/calcium (conventional)", {
+  skip_on_cran()
   df <- data.frame(
     Ca  = c(4.5, 16),
     Alb = c(1.5, 6.0)
@@ -127,6 +133,7 @@ test_that("domain warnings triggered for out-of-range albumin/calcium (conventio
 })
 
 test_that("extreme input values pass through and produce finite output", {
+  skip_on_cran()
   df <- data.frame(
     Ca  = c(25, 9),
     Alb = c(3.5, 3.5)
@@ -138,6 +145,7 @@ test_that("extreme input values pass through and produce finite output", {
 })
 
 test_that("standard input produces correct Payne formula output", {
+  skip_on_cran()
   df <- data.frame(
     Ca  = c(9.0, 9.0),
     Alb = c(4.0, 2.0)
@@ -151,6 +159,7 @@ test_that("standard input produces correct Payne formula output", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(Ca = 9.0, Alb = 3.5)
   expect_message(corrected_calcium(df, cm, verbose = TRUE), "corrected_calcium")
@@ -159,6 +168,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(Ca = 9.0, Alb = 3.5)
   msgs <- testthat::capture_messages(corrected_calcium(df, cm, verbose = TRUE))
@@ -167,6 +177,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("empty input returns 0-row tibble with column", {
+  skip_on_cran()
   df <- data.frame(Ca = numeric(), Alb = numeric())
 
   out <- corrected_calcium(df, cm)
@@ -175,6 +186,7 @@ test_that("empty input returns 0-row tibble with column", {
 })
 
 test_that("all NA inputs produce NA outputs (keep/warn/ignore) and omit drops all", {
+  skip_on_cran()
   df <- data.frame(Ca = c(NA, NA), Alb = c(NA, NA))
 
   out_keep <- corrected_calcium(df, cm, na_action = "keep")

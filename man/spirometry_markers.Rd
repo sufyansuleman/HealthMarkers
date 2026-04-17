@@ -8,10 +8,7 @@ spirometry_markers(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = list(fev1 = c(0, 8), fvc = c(0, 10)),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,13 +19,7 @@ fev1, fvc, fev1_post, fvc_post, age, height, sex, ethnicity}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; scan for implausible values (liters).}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional list with c(min,max) for fev1,fvc.}
-
-\item{verbose}{Logical; if TRUE, emits progress via rlang::inform.}
+\item{verbose}{Logical; if TRUE (default), emits progress via rlang::inform.}
 }
 \value{
 Tibble with ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.

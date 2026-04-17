@@ -6,16 +6,10 @@
 \usage{
 sweat_markers(
   data,
-  col_map = list(sweat_chloride = "sweat_chloride", sweat_Na = "sweat_Na", sweat_K =
-    "sweat_K", sweat_lactate = "sweat_lactate", weight_before = "weight_before",
-    weight_after = "weight_after", duration = "duration", body_surface_area =
-    "body_surface_area"),
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  na_warn_prop = 0.2
 )
 }
 \arguments{
@@ -32,12 +26,6 @@ weight_before, weight_after, duration, body_surface_area
 \item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
 
 \item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
-
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.}
 }
 \value{
 A tibble with columns:

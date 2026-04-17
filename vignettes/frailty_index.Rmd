@@ -2,7 +2,7 @@
 title: "Frailty index"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{frailty_index}
+  %\VignetteIndexEntry{Frailty index}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,8 +25,7 @@ Compute a deficit-based frailty index (FI) via `di::di()` with HealthMarkers val
 - Deficits: supply via `cols` (character vector) or allow auto-selection of numeric columns when `cols = NULL` (age is excluded if provided).
 - Optional `age`: kept for plotting/bins but excluded from deficit selection.
 - `na_action`: `ignore`/`warn`/`error` (legacy) plus aliases `keep` (like ignore) and `omit` (drops rows with any missing selected deficit).
-- `check_extreme`: `NULL` (default; scans only when `rescale = FALSE`), `TRUE` (always scan <0 or >1), or `FALSE` (never scan). `extreme_action`: `warn`/`ignore`/`error`/`cap`/`NA`.
-- `rescale`: default `TRUE`; when `FALSE`, range scanning is active by default (`check_extreme = NULL`).
+- `rescale`: default `TRUE`; rescales numeric deficits to [0,1] before FI computation.
 - `return`: `list` (di object) or `data` (tibble with `di` plus selected deficits [+ age]).
 
 ## Load packages and data
@@ -65,8 +64,6 @@ if (has_di) {
     age = "age",
     rescale = TRUE,
     na_action = "keep",
-    check_extreme = NULL,   # legacy: scan only if rescale = FALSE
-    extreme_action = "warn",
     return = "data",
     verbose = FALSE
   )
@@ -83,8 +80,6 @@ FI ranges from 0 (no deficits) toward 1 (all deficits present). Here `rescale = 
 - Deficits: binary/logical or [0,1]-scaled; supply via `data` and `cols` (or let auto-select numeric deficits when `cols = NULL`).
 - `age` (optional): excluded from auto-selected deficits; useful only for plotting/bins.
 - `na_action`: `keep`/`ignore` retain rows with missing deficits; `omit` drops rows; `error` stops on any missing selected deficit; `warn` emits warnings.
-- `check_extreme`: `TRUE` scans for <0 or >1; `NULL` scans only when `rescale = FALSE`; `FALSE` skips scanning.
-- `extreme_action`: `cap` truncates to [0,1]; `NA` blanks; `warn`/`ignore` leave as-is; `error` stops.
 - `return`: `data` yields a tibble (di + selected deficits [+ age]); `list` returns the `di::di` object.
 
 ## Missing data and extremes
@@ -94,16 +89,14 @@ Demonstrate row dropping, capping, and tidy return.
 if (has_di) {
   demo_miss <- demo_df
   demo_miss$d2[3] <- NA       # introduce missing
-  demo_miss$d1[2] <- 1.2      # out-of-range to be capped
+  demo_miss$d1[2] <- 1.2      # out-of-range; rescale will normalise it
 
   fi_keep <- frailty_index(
     data = demo_miss,
     cols = cols,
     age = "age",
-    rescale = FALSE,          # triggers range scan when check_extreme is NULL
+    rescale = TRUE,
     na_action = "keep",
-    check_extreme = NULL,
-    extreme_action = "cap",
     return = "data",
     verbose = FALSE
   )
@@ -112,10 +105,8 @@ if (has_di) {
     data = demo_miss,
     cols = cols,
     age = "age",
-    rescale = FALSE,
+    rescale = TRUE,
     na_action = "omit",
-    check_extreme = NULL,
-    extreme_action = "cap",
     return = "data",
     verbose = FALSE
   )
@@ -123,20 +114,19 @@ if (has_di) {
   list(
     keep_rows = nrow(fi_keep),
     omit_rows = nrow(fi_omit),
-    capped_example = head(dplyr::select(fi_keep, di, dplyr::all_of(cols)))
+    keep_example = head(dplyr::select(fi_keep, di, dplyr::all_of(cols)))
   )
 } else {
   message("Install the 'di' package to run the examples.")
 }
 ```
 
-With `na_action = "keep"`, all rows remain (missing deficits propagate to FI). With `na_action = "omit"`, rows with any missing selected deficit are dropped. `extreme_action = "cap"` trims out-of-range deficits (e.g., 1.2) into [0,1] before FI calculation.
+With `na_action = "keep"`, all rows remain (missing deficits propagate to FI). With `na_action = "omit"`, rows with any missing selected deficit are dropped.
 
 ## Expectations
 - `di` package must be installed; otherwise calls stop (examples skip when missing).
 - Provide deficits via `cols` or rely on auto-selection of numeric columns (age excluded when present).
 - Choose `na_action` to control row retention vs. dropping on missing deficits.
-- Use `check_extreme`/`extreme_action` to scan and cap or blank values outside [0,1] when desired.
 - `return = "data"` gives a tibble (`di` + selected deficits [+ age]); `return = "list"` returns the raw `di::di` output.
 
 ## Verbose diagnostics
@@ -173,8 +163,7 @@ if (has_di) {
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 ## Tips
-- Keep deficits close to [0,1]; `rescale = TRUE` can normalize mild deviations, but extreme outliers may still need capping.
-- Use `extreme_action = "cap"` with `check_extreme = TRUE` (or `rescale = FALSE` + `check_extreme = NULL`) when your deficits might stray outside [0,1].
+- Keep deficits close to [0,1]; `rescale = TRUE` normalises mild deviations before FI computation.
 - Choose `na_action = "omit"` or `"error"` for stricter pipelines; `keep`/`ignore` for exploratory summaries.
 - `return = "data"` pairs FI with the selected deficits for quick binding into downstream tibbles.
 - Set `verbose = TRUE` to see the selected deficits, NA scan counts, and completion range.

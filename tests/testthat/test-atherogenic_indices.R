@@ -18,6 +18,7 @@ test_that("atherogenic_indices computes AIP, CRI_I, CRI_II", {
 })
 
 test_that("na_action omit drops rows with missing lipids", {
+  skip_on_cran()
   dat <- tibble(TG = c(150, NA_real_), HDL_c = c(50, 40), TC = c(200, 220), LDL_c = c(120, 150))
   cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
   res <- atherogenic_indices(dat, col_map = cm, na_action = "omit")
@@ -25,18 +26,21 @@ test_that("na_action omit drops rows with missing lipids", {
 })
 
 test_that("na_action error aborts on missing", {
+  skip_on_cran()
   dat <- tibble(TG = c(150, NA_real_), HDL_c = c(50, 40))
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   expect_error(atherogenic_indices(dat, col_map = cm, na_action = "error"), "missing values")
 })
 
 test_that("invalid normalize argument errors early", {
+  skip_on_cran()
   dat <- tibble(TG = 150, HDL_c = 50)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   expect_error(atherogenic_indices(dat, col_map = cm, normalize = "foo"))
 })
 
 test_that("AIP computed correctly with large TG values", {
+  skip_on_cran()
   dat <- tibble(TG = 20000, HDL_c = 10)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   res <- atherogenic_indices(dat, col_map = cm, verbose = FALSE)
@@ -45,12 +49,14 @@ test_that("AIP computed correctly with large TG values", {
 })
 
 test_that("missing columns reported clearly", {
+  skip_on_cran()
   dat <- tibble(TG = 150)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   expect_error(atherogenic_indices(dat, col_map = cm), "missing required columns in data: HDL_c")
 })
 
 test_that("package-level verbosity emits results summary message", {
+  skip_on_cran()
   dat <- tibble(TG = 150, HDL_c = 50)
   cm <- list(TG = "TG", HDL_c = "HDL_c")
   withr::local_options(healthmarkers.verbose = "inform")
@@ -61,6 +67,7 @@ test_that("package-level verbosity emits results summary message", {
 })
 
 test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   dat <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
   cm2 <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
@@ -70,6 +77,7 @@ test_that("verbose = TRUE emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   dat  <- tibble(TG = 150, HDL_c = 50, TC = 200, LDL_c = 120)
   cm2  <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")

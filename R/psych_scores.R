@@ -104,6 +104,12 @@ NULL
 }
 
 .hm_severity_band <- function(x, cuts, labels) {
+  if (length(cuts) != length(labels) + 1L) {
+    rlang::abort(sprintf(
+      ".hm_severity_band(): `cuts` must have exactly one more element than `labels` (got %d cuts, %d labels).",
+      length(cuts), length(labels)
+    ))
+  }
   out <- rep(NA_character_, length(x))
   for (i in seq_len(length(labels))) {
     out[x >= cuts[i] & x < cuts[i + 1]] <- labels[i]
@@ -207,7 +213,7 @@ NULL
 #' @param impute Imputation strategy for missing items when under the threshold: `none` or `mean` (row-wise mean).
 #' @param variant Choose PHQ9 (9 items) or PHQ8 (drops suicidal ideation item).
 #' @param prefix Prefix for output column names.
-#' @param verbose Logical flag for verbose messaging (reserved).
+#' @param verbose Logical; if `TRUE`, emits informational messages about column resolution and scoring progress via `hm_inform()`.
 #' @references \insertRef{kroenke2001phq9}{HealthMarkers}
 #' @return A tibble of score columns only: `PHQ9_total` and `PHQ9_severity` (factor). Input columns are not included.
 #' @examples

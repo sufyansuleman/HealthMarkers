@@ -34,6 +34,7 @@ test_that("ref must have M and F", {
 })
 
 test_that("ref M/F variable sets must match", {
+  skip_on_cran()
   df <- tibble(sex = "M", BMI = 25)
   ref_mismatch <- list(
     M = list(BMI = c(mean = 23, sd = 3), waist = c(mean = 80, sd = 10)),
@@ -46,6 +47,7 @@ test_that("ref M/F variable sets must match", {
 })
 
 test_that("ref component must have mean & sd names", {
+  skip_on_cran()
   df <- tibble(sex = "M", BMI = 25)
   bad_ref <- list(
     M = list(BMI = c(23, 3)),
@@ -58,6 +60,7 @@ test_that("ref component must have mean & sd names", {
 })
 
 test_that("sd must be >0", {
+  skip_on_cran()
   df <- tibble(sex = "F", BMI = 20)
   ref_bad_sd <- list(
     M = list(BMI = c(mean = 23, sd = 3)),
@@ -70,6 +73,7 @@ test_that("sd must be >0", {
 })
 
 test_that("missing sex column errors", {
+  skip_on_cran()
   df <- tibble(gender = "M", BMI = 25)
   ref <- list(
     M = list(BMI = c(mean = 23, sd = 3)),
@@ -82,6 +86,7 @@ test_that("missing sex column errors", {
 })
 
 test_that("invalid sex values error", {
+  skip_on_cran()
   df <- tibble(sex = c("M", "X"), BMI = c(25, 22))
   ref <- list(
     M = list(BMI = c(mean = 23, sd = 3)),
@@ -94,6 +99,7 @@ test_that("invalid sex values error", {
 })
 
 test_that("computes correct SDS (multi-variable, vectorized)", {
+  skip_on_cran()
   df <- tibble(
     sex   = c("M", "F", "M"),
     BMI   = c(25, 20, 26),
@@ -109,6 +115,7 @@ test_that("computes correct SDS (multi-variable, vectorized)", {
 })
 
 test_that("custom variable mapping via col_map$vars", {
+  skip_on_cran()
   df <- tibble(sex = c("M","F"), BMI_col = c(25, 23))
   ref <- list(
     M = list(BMI = c(mean = 24, sd = 3)),
@@ -119,6 +126,7 @@ test_that("custom variable mapping via col_map$vars", {
 })
 
 test_that("na_action omit vs error", {
+  skip_on_cran()
   df <- tibble(sex = c("M","F","M"), BMI = c(25, NA, 24), waist = c(90, 70, 88))
   out_keep <- adiposity_sds_strat(df, col_map = cm, ref = ref_full, na_action = "keep")
   expect_equal(nrow(out_keep), 3)
@@ -131,6 +139,7 @@ test_that("na_action omit vs error", {
 })
 
 test_that("allow_partial skips missing vars when TRUE", {
+  skip_on_cran()
   ref_partial <- list(
     M = list(BMI = c(mean=23, sd=3), waist = c(mean=85, sd=10)),
     F = list(BMI = c(mean=21, sd=3), waist = c(mean=75, sd=9))
@@ -142,6 +151,7 @@ test_that("allow_partial skips missing vars when TRUE", {
 })
 
 test_that("allow_partial=FALSE errors when data var missing", {
+  skip_on_cran()
   ref_partial <- ref_full
   df <- tibble(sex = c("M","F"), BMI = c(24,22))
   expect_error(
@@ -151,6 +161,7 @@ test_that("allow_partial=FALSE errors when data var missing", {
 })
 
 test_that("check_extreme removed: function passes through raw outlier rows", {
+  skip_on_cran()
   df <- tibble(
     sex = c("M","F"),
     BMI = c(120, 2),
@@ -165,6 +176,7 @@ test_that("check_extreme removed: function passes through raw outlier rows", {
 })
 
 test_that("prefix applied to output columns", {
+  skip_on_cran()
   df <- tibble(sex = c("M","F"), BMI = c(24,22))
   ref <- list(
     M = list(BMI = c(mean=23, sd=3)),
@@ -175,6 +187,7 @@ test_that("prefix applied to output columns", {
 })
 
 test_that("numeric sex coding 1/2 accepted", {
+  skip_on_cran()
   df <- tibble(sex = c(1L, 2L, 1L), BMI = c(25, 20, 26), waist = c(95, 70, 80))
   out <- adiposity_sds_strat(df, col_map = cm, ref = ref_full)
   # row 1 is male (1), row 2 is female (2)
@@ -184,6 +197,7 @@ test_that("numeric sex coding 1/2 accepted", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(sex = "M", BMI = 25, waist = 95)
   expect_message(adiposity_sds_strat(df, col_map = cm, ref = ref_full, verbose = TRUE), "adiposity_sds_strat")
@@ -192,6 +206,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(sex = "M", BMI = 25, waist = 95)
   msgs <- testthat::capture_messages(

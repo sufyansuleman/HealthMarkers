@@ -9,10 +9,7 @@ nutrient_markers(
   col_map = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -33,19 +30,6 @@ across the columns referenced by \code{col_map}.
 
 \item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness
 diagnostics on used input columns. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan used input columns for out-of-range
-values (see \code{extreme_rules}). Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") used when extremes are
-detected (only when \code{check_extreme = TRUE}). Default "warn".
-\itemize{
-\item "warn": only warn, "cap": truncate to range and warn, "error": abort,
-\item "ignore": no-op, "NA": set flagged inputs to NA.
-}}
-
-\item{extreme_rules}{Optional named list from input keys to c(min,max) ranges. If NULL,
-broad defaults are used (see Details).}
 
 \item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary via hm_inform. Default FALSE.}
 }

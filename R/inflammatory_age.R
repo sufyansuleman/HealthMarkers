@@ -38,25 +38,10 @@
 #'   - "warn": alias of "omit" but emits missingness warnings (per na_warn_prop).
 #' @param na_warn_prop Proportion in \eqn{[0,1]} above which a high-missingness warning
 #'   is emitted when `na_action = "warn"`. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.
-#'   - "warn": issue a warning, do not modify values (default if check_extreme = TRUE).
-#'   - "cap": truncate values to the allowed range and warn.
-#'   - "error": abort on detection.
-#'   - "ignore": do nothing.
-#'   - "NA": set out-of-range values to NA.
-#' @param extreme_rules Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.
 #'
 #' @return A tibble with one column:
 #'   - iAge (numeric): the computed inflammatory age index.
 #'
-#' @details
-#' Default extreme ranges (if `extreme_rules = NULL`):
-#' - CRP: 0 to 300 mg/L
-#' - IL6: 0 to 1,000 pg/mL
-#' - TNFa: 0 to 1,000 pg/mL
-#'
-#' These are deliberately broad. Adjust `extreme_rules` to fit your cohort.
 #'
 #' @seealso [impute_missing()], [glycemic_markers()]
 #'
@@ -80,11 +65,11 @@
 #'   na_action = "keep"
 #' )
 #'
-#' # Scan and cap extreme values
+#' # Verbose output
 #' iAge(
 #'   df,
 #'   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
-#'   check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+#'   verbose = TRUE
 #' )
 #'
 #' @references \insertRef{sayed2021iage}{HealthMarkers}

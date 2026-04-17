@@ -9,10 +9,7 @@ corrected_calcium(
   col_map = NULL,
   units = c("auto", "conventional", "si"),
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -24,14 +21,7 @@ corrected_calcium(
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges (applied on working units).}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional overrides for defaults in working units:
-list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5)).}
-
-\item{verbose}{Logical; if TRUE, emits progress via hm_inform().}
+\item{verbose}{Logical; if TRUE (default), emits progress via hm_inform().}
 }
 \value{
 A tibble with one column: corrected_calcium (numeric, in mg/dL for

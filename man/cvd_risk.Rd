@@ -9,7 +9,7 @@ cvd_risk(
   model = c("ALL", "ASCVD", "QRISK3", "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
   year = 10,
   ...,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{

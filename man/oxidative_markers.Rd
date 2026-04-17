@@ -6,9 +6,9 @@
 \usage{
 oxidative_markers(
   data,
-  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -18,10 +18,12 @@ oxidative_markers(
 
 \item{na_action}{One of c("keep","omit","error").}
 
-\item{verbose}{Logical; if TRUE, emits progress via hm_inform().}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping and a
+per-column results summary.}
 }
 \value{
-A tibble with column GSH_GSSG_Ratio.
+A tibble with column GSH_GSSG_Ratio. If an ID column is detected,
+it is prepended.
 }
 \description{
 Computes GSH_GSSG_Ratio = reduced glutathione (GSH) / oxidized glutathione (GSSG).

@@ -6,7 +6,8 @@ HealthMarkers
   - [Package overview](#package-overview)
   - [How to use HealthMarkers](#how-to-use-healthmarkers)
   - [Function-by-function guide](#function-by-function-guide)
-  - [Column mapping](#column-mapping)
+  - [Column mapping and multi-biobank
+    support](#column-mapping-and-multi-biobank-support)
   - [Handle missing data before
     computing](#handle-missing-data-before-computing)
   - [Verbose diagnostics](#verbose-diagnostics)
@@ -46,6 +47,12 @@ a unified dispatcher, `all_health_markers()`.
   returns glycaemic, lipid, liver, renal, pulmonary, inflammatory,
   hormonal, bone, psychiatric, and nutritional markers as one wide
   tibble.
+- **Multi-biobank ready.** The built-in synonym dictionary covers naming
+  conventions from 15+ cohorts and biobanks — UK Biobank, NHANES, HUNT,
+  Tromsø, FinnGen, Estonian Biobank, LifeLines (Netherlands), Generation
+  Scotland, All of Us (LOINC codes), Danish registers (NPU codes), and
+  more. Column names from any of these systems are recognised
+  automatically without any manual mapping.
 - **Safe by default.** NA handling, input validation, column-name
   inference, and range-capping are built in. Failed marker groups are
   skipped with a warning, never crashing your pipeline.
@@ -110,8 +117,7 @@ and which were skipped (and why) in the summary message.
 ### all_health_markers()\`: the dispatcher
 
 **Use this when** you want to compute many marker groups in one call and
-receive everything back as a single wide tibble appended to your
-original data.
+receive everything back as a single wide tibble.
 
 ``` r
 library(HealthMarkers)
@@ -385,7 +391,7 @@ urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
 
 ------------------------------------------------------------------------
 
-## Column mapping
+## Column mapping and multi-biobank support
 
 Every function accepts a `col_map` argument — a named list mapping
 internal keys (what the function expects) to your actual column names
@@ -398,6 +404,31 @@ fasting_is(
   col_map = list(G0 = "fasting_glucose_mmol", I0 = "insulin_uU_mL")
 )
 ```
+
+### Multi-biobank automatic variable name / column name recognition
+
+The synonym dictionary recognises column names from 15+ major cohorts
+and biobanks out of the box. The table below shows how the same analyte
+is named across systems:
+
+| Internal key | UK Biobank | NHANES | HUNT/Tromsø | FinnGen | Estonian BB | LifeLines (NL) | LOINC |
+|----|----|----|----|----|----|----|----|
+| `fasting_glucose` | `glucose_0_0` | `LBXGLU` | `fastende_blodsukker` | `paastoglukoosi` | `p_glukoos` | `nuchtere_glucose` | `LOINC_2345_7` |
+| `total_cholesterol` | `cholesterol_0_0` | `LBXSCH` | `total_kolesterol` | `kokonaiskolesteroli` | `kogukolesterool` | `totaal_cholesterol` | `LOINC_2093_3` |
+| `creatinine` | `creatinine_0_0` | `LBXSCR` | `kreatinin` | `kreatiniini` | `kreatiniin` | `creatinine` | `LOINC_2160_0` |
+| `HbA1c` | `glycated_haemoglobin_hba1c_0_0` | `LBXGH` | `HbA1c` | `hemoglobiini_a1c` | `HbA1c` | `geglycosyleerd_hemoglobine` | `LOINC_4548_4` |
+| `SBP` | `systolic_blood_pressure_0_0` | `BPXSY1` | `systolisk_blodtrykk` | `SBP` | `sbp` | `systolische_bloeddruk` | `LOINC_8480_6` |
+| `vitaminD` | `vitamin_d_0_0` | `LBXVD2` | `d_vitamin` | `D_vitamiini` | `D_vitamiin` | `vitamine_D` | `LOINC_62292_8` |
+| `ALT` | `alanine_aminotransferase_0_0` | `LBXSATSI` | `ALAT` | `alaniiniaminotransferaasi` | `ALAT` | `alanineaminotransferase` | `LOINC_1742_6` |
+
+For **OMOP CDM / All of Us** data, concept codes in `LOINC_XXXX_X`
+format are recognised for all major analytes. For **Nordic EHR /
+register data**, Danish and Norwegian NPU codes (`NPU01994`, `NPU01567`,
+etc.) are matched directly.
+
+Generation Scotland-specific names (`SBP_mean`, `DBP_mean`,
+`genetic_sex`, `ethnic_group`) and HUNT/Tromsø Norwegian-language terms
+are also included.
 
 ### Recommended workflow for real datasets
 
@@ -472,21 +503,25 @@ The most commonly needed internal keys are:
 
 | Internal key | Meaning | Example column names |
 |----|----|----|
-| `G0` | Fasting glucose (mmol/L) | `pglu0`, `fasting_glucose`, `gluc0` |
+| `G0` | Fasting glucose (mmol/L) | `pglu0`, `fasting_glucose`, `gluc0`, `LBXGLU`, `paastoglukoosi` |
 | `I0` | Fasting insulin (mU/L or pmol/L) | `insu0`, `insulin0`, `ins_fast` |
 | `G30`, `G120` | 30-/120-min OGTT glucose | `pglu30`, `pglu120` |
 | `I30`, `I120` | 30-/120-min OGTT insulin | `insu30`, `insu120` |
-| `TG` | Triglycerides (mmol/L) | `trig`, `TryG`, `TAG`, `triacylglycerol` |
-| `HDL_c` | HDL cholesterol | `hdlc`, `HDL`, `hdl_chol` |
-| `LDL_c` | LDL cholesterol | `ldl`, `LDL`, `ldl_chol` |
-| `TC` | Total cholesterol | `chol`, `total_chol` |
-| `ALT` | Alanine aminotransferase | `alat`, `SGPT`, `GPT` |
-| `albumin` | Serum albumin | `alb`, `Albumin` |
-| `creatinine` | Serum creatinine | `crea`, `Creatinine` |
+| `TG` | Triglycerides (mmol/L) | `trig`, `TryG`, `TAG`, `triglyserider`, `triglyseridit`, `LOINC_2571_8` |
+| `HDL_c` | HDL cholesterol | `hdlc`, `HDL`, `hdl_chol`, `hdl_kolesteroli`, `LOINC_2085_9` |
+| `LDL_c` | LDL cholesterol | `ldl`, `LDL`, `ldl_chol`, `ldl_kolesteroli`, `LOINC_13457_7` |
+| `TC` | Total cholesterol | `chol`, `total_chol`, `kokonaiskolesteroli`, `LOINC_2093_3` |
+| `ALT` | Alanine aminotransferase | `alat`, `SGPT`, `GPT`, `LBXSATSI`, `NPU03429`, `LOINC_1742_6` |
+| `albumin` | Serum albumin | `alb`, `Albumin`, `NPU04998`, `albumiini`, `LOINC_1751_7` |
+| `creatinine` | Serum creatinine | `crea`, `kreatinin`, `kreatiniini`, `NPU01994`, `LOINC_2160_0` |
 | `UACR` | Urine albumin/creatinine ratio | `ualbcrea`, `ACR` |
-| `SBP` / `DBP` | Systolic/diastolic BP | `sysbp`, `diabp` |
-| `BMI` | Body mass index | `bmi`, `BMI_kgm2` |
-| `waist` | Waist circumference (cm) | `waist_cm`, `WC` |
+| `SBP` / `DBP` | Systolic/diastolic BP | `sysbp`, `diabp`, `systolisk_blodtrykk`, `LOINC_8480_6` |
+| `BMI` | Body mass index | `bmi`, `BMI_kgm2`, `painoindeksi`, `LOINC_39156_5` |
+| `waist` | Waist circumference (cm) | `waist_cm`, `WC`, `midjeomkrets`, `tailleomtrek` |
+| `vitaminD` | 25-OH vitamin D | `vitd25`, `d_vitamin`, `D_vitamiini`, `NPU10501`, `LOINC_62292_8` |
+| `HbA1c` | Glycated haemoglobin | `hba1c`, `HbA1c`, `hemoglobiini_a1c`, `NPU27300`, `LOINC_4548_4` |
+| `WBC` | White blood cells | `leukocytes`, `leukocytter`, `leukocyter`, `LOINC_6690_2` |
+| `Hgb` | Haemoglobin | `hb`, `haemoglobin`, `hemoglobiini`, `NPU03609`, `LOINC_718_7` |
 
 ------------------------------------------------------------------------
 
@@ -545,8 +580,8 @@ vignettes, and a searchable article index:
 
 ## Vignettes
 
-There are **46 vignettes** covering every marker domain. The 12 core
-vignettes below are bundled with the package; the remaining 34 are
+There are **47 vignettes** covering every marker domain. The 12 core
+vignettes below are bundled with the package; the remaining 35 are
 available exclusively on the package website (they are not built by CRAN
 to keep installation fast).
 
@@ -570,9 +605,9 @@ vignette("impute_missing",      package = "HealthMarkers")
 vignette("health_markers",      package = "HealthMarkers")
 ```
 
-**All 46 vignettes** (including adipo_is, tracer_dxa_is,
-allostatic_load, bone_markers, psych_markers, and 29 more) are rendered
-and searchable on the package website:
+**All 47 vignettes** (including adipo_is, tracer_dxa_is,
+allostatic_load, bone_markers, psych_markers, the new multi-biobank
+guide, and 30 more) are rendered and searchable on the package website:
 
 > <https://sufyansuleman.github.io/HealthMarkers/articles/>
 

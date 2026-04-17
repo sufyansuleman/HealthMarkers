@@ -1,6 +1,6 @@
 ---
 title: "Vitamin Markers"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -44,9 +44,6 @@ Columns must exist and be coercible to numeric. Non-finite values become `NA`; c
 
 - `na_action = c("keep","omit","error")` (default "keep"): policy for missing required inputs. `omit` drops rows; `error` aborts.
 - `na_warn_prop = 0.2`: if debug-level verbose is enabled, flags columns with >=20% missing.
-- `check_extreme = FALSE`: enable plausible-range scanning (broad defaults per analyte).
-- `extreme_action = c("warn","cap","error","ignore")` (default "warn"): what to do with out-of-bounds values. `cap` truncates into range and warns; `error` aborts.
-- `extreme_rules = NULL`: override bounds keyed by required keys or by column names.
 - `verbose = FALSE`: progress summaries via `hm_inform()`.
 
 ## How inputs are validated and cleaned
@@ -54,7 +51,6 @@ Columns must exist and be coercible to numeric. Non-finite values become `NA`; c
 - `hm_validate_inputs()` ensures `data` is a data frame and all keys are mapped; missing maps abort with scoped errors.
 - Each mapped column is coerced to numeric; any NA introduced is warned; non-finite is set to NA.
 - NA policy is applied across all required columns; with `omit` the output shrinks to rows fully observed on required inputs.
-- Extreme scanning (if enabled) uses key- or column-based bounds; depending on `extreme_action`, outliers are warned, capped, aborted, or ignored.
 - Safe division sets zero denominators to NA and emits a consolidated warning listing affected ratios.
 
 ## Outputs
@@ -95,7 +91,7 @@ vitamin_markers(
 )
 ```
 
-Scan and cap extremes
+Pre-filter and run
 
 ```{r}
 df2 <- df
@@ -103,11 +99,13 @@ df2 <- df
 df2$TSat[2] <- 2.0
 df2$Zinc[1] <- 2000
 
+# Pre-filter implausible values before calling
+df2$TSat[df2$TSat > 1] <- NA
+df2$Zinc[df2$Zinc > 500] <- NA
+
 vitamin_markers(
   data = df2,
   col_map = cm,
-  check_extreme = TRUE,
-  extreme_action = "cap",
   na_action = "omit",
   verbose = TRUE
 )
@@ -124,10 +122,19 @@ vitamin_markers(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which vitamin/mineral columns are
+auto-detected before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
+
 ## Troubleshooting and tips
 
 - Incomplete or unnamed `col_map` aborts; ensure every key above is mapped.
 - If denominators are zero (e.g., TSat = 0), expect a warning and NA ratios; address upstream if this is unexpected.
 - Align units across inputs; no unit conversion is performed before ratios/z-scores.
-- Narrow `extreme_rules` to your lab ranges to catch or cap assay-specific outliers.
 - Use `na_action = "omit"` when downstream models cannot handle propagated NAs.

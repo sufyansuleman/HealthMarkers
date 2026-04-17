@@ -10,10 +10,7 @@ tracer_dxa_is(
   normalize = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -36,13 +33,6 @@ Full mode additionally requires:
 \item{na_action}{One of c("keep","omit","error") for NA handling on required inputs. Default "keep".}
 
 \item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings on required inputs. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs (keys as in col_map).
-If NULL, broad defaults are used.}
 
 \item{verbose}{Logical; if TRUE, prints progress messages and a completion summary.}
 }

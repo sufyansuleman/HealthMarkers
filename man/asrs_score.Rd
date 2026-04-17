@@ -14,7 +14,7 @@ asrs_score(
   partA_items = sprintf("asrs_\%02d", 1:6),
   partA_thresholds = rep(2, 6),
   partA_cutoff = 4,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ asrs_score(
 
 \item{partA_cutoff}{Count threshold for Part A positivity.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{ASRS_total}, \code{ASRS_partA_count}, \code{ASRS_partA_positive}. Input columns are not included.

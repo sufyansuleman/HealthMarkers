@@ -20,6 +20,7 @@ test_that("errors if missing any of HDL_c, TG, or BMI", {
 })
 
 test_that("SPISE is computed correctly", {
+  skip_on_cran()
   df <- tibble(HDL_c = 1.0, TG = 1.3, BMI = 24)
   expected <- 600 * 1.0^0.185 / (1.3^0.2 * 24^1.338)
   out <- glycemic_markers(df, verbose = FALSE)
@@ -27,6 +28,7 @@ test_that("SPISE is computed correctly", {
 })
 
 test_that("METS_IR returns finite when glucose present and HDL_c != 1, NA when denominator is zero", {
+  skip_on_cran()
   # Use HDL_c != 1 so log(HDL_c) != 0 and result is finite
   df_with <- tibble(HDL_c = 1.2, TG = 1.3, BMI = 24, glucose = 5.6)
   out1 <- glycemic_markers(df_with, verbose = FALSE)
@@ -45,6 +47,7 @@ test_that("METS_IR returns finite when glucose present and HDL_c != 1, NA when d
 })
 
 test_that("prediabetes and diabetes flags handle HbA1c correctly and propagate NA", {
+  skip_on_cran()
   df <- tibble(
     HDL_c = 1, TG = 1.3, BMI = 24,
     HbA1c = c(40, 44, 50)
@@ -60,6 +63,7 @@ test_that("prediabetes and diabetes flags handle HbA1c correctly and propagate N
 })
 
 test_that("HOMA_CP computed when C_peptide & G0 present, NA otherwise", {
+  skip_on_cran()
   df_ok <- tibble(
     HDL_c = 1, TG = 1.3, BMI = 24,
     C_peptide = 300, G0 = 5.5
@@ -74,6 +78,7 @@ test_that("HOMA_CP computed when C_peptide & G0 present, NA otherwise", {
 })
 
 test_that("LAR, ASI, and TyG_index compute correctly when inputs present", {
+  skip_on_cran()
   # set up a row where everything is present
   df <- tibble(
     HDL_c = 1, TG = 1.3, BMI = 24,
@@ -93,6 +98,7 @@ test_that("LAR, ASI, and TyG_index compute correctly when inputs present", {
 })
 
 test_that("LAR, ASI, TyG_index are NA when their inputs are missing", {
+  skip_on_cran()
   df1 <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   out1 <- glycemic_markers(df1, verbose = FALSE)
   expect_true(is.na(out1$LAR))
@@ -108,6 +114,7 @@ test_that("LAR, ASI, TyG_index are NA when their inputs are missing", {
 })
 
 test_that("output is vectorized and contains all expected columns", {
+  skip_on_cran()
   df <- tibble(
     HDL_c       = c(1, 1.1),
     TG          = c(1.3, 1.5),
@@ -132,6 +139,7 @@ test_that("output is vectorized and contains all expected columns", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   expect_message(glycemic_markers(df, verbose = TRUE), "glycemic_markers")
   expect_message(glycemic_markers(df, verbose = TRUE), "col_map")
@@ -141,6 +149,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("glycemic_markers computes expected columns with minimal inputs", {
+  skip_on_cran()
   df <- data.frame(HDL_c = c(1.0, 1.3), TG = c(1.5, 2.0), BMI = c(24, 30))
   res <- glycemic_markers(df, verbose = FALSE)
   expect_s3_class(res, "tbl_df")
@@ -151,6 +160,7 @@ test_that("glycemic_markers computes expected columns with minimal inputs", {
 })
 
 test_that("Optional inputs drive only their outputs; NA handling works", {
+  skip_on_cran()
   df <- data.frame(
     HDL_c = c(1.2, 1.3),   # avoid ln(HDL_c) == 0
     TG = c(1.5, 2.0),
@@ -176,6 +186,7 @@ test_that("Optional inputs drive only their outputs; NA handling works", {
 })
 
 test_that("extreme values produce no warning/error; range note appears in verbose", {
+  skip_on_cran()
   df <- data.frame(
     HDL_c = c(1.2, 1.3),
     TG    = c(25, 2.0),    # TG out-of-range (default max 20)
@@ -193,6 +204,7 @@ test_that("extreme values produce no warning/error; range note appears in verbos
 })
 
 test_that("Coercion to numeric warns when NAs introduced", {
+  skip_on_cran()
   df <- data.frame(
     HDL_c = c("1.0", "bad"),
     TG = c("1.5", "2.0"),
@@ -202,6 +214,7 @@ test_that("Coercion to numeric warns when NAs introduced", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- tibble(HDL_c = 1, TG = 1.3, BMI = 24)
   msgs <- testthat::capture_messages(glycemic_markers(df, verbose = TRUE))
   expect_equal(sum(grepl("col_map",  msgs)), 1L)
@@ -211,6 +224,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("glycemic_markers runs and returns key columns", {
+  skip_on_cran()
   df <- tibble::tibble(
     HDL_c  = c(1.0, 1.3),
     TG     = c(1.5, 2.0),
@@ -223,6 +237,7 @@ test_that("glycemic_markers runs and returns key columns", {
 })
 
 test_that("ID column is prepended to output when present in data", {
+  skip_on_cran()
   df <- tibble::tibble(
     id    = 1:3,
     HDL_c = c(1.0, 1.2, 1.1),
@@ -235,6 +250,7 @@ test_that("ID column is prepended to output when present in data", {
 })
 
 test_that("BMI pre-computed from weight and height when BMI absent", {
+  skip_on_cran()
   # Without pre-computation this would error (BMI missing)
   df <- tibble::tibble(
     HDL_c  = 1.0,
@@ -249,6 +265,7 @@ test_that("BMI pre-computed from weight and height when BMI absent", {
 })
 
 test_that("glucose derived from G0 when glucose absent", {
+  skip_on_cran()
   df <- tibble::tibble(
     HDL_c = 1.2,   # avoid log(HDL_c) == 0
     TG    = 1.3,
@@ -262,6 +279,7 @@ test_that("glucose derived from G0 when glucose absent", {
 })
 
 test_that("glucose derived from mapped G0 column via col_map redirect", {
+  skip_on_cran()
   # Physical column is "pglu0" — col_map maps G0 -> "pglu0".
   # .hm_build_col_map materializes data[["G0"]], then precompute derives glucose.
   # METS_IR and TyG_index should be non-NA.
@@ -278,6 +296,7 @@ test_that("glucose derived from mapped G0 column via col_map redirect", {
 })
 
 test_that("BMI derived from mapped weight/height with non-standard column names", {
+  skip_on_cran()
   # Physical columns are "wt_kg" and "ht_cm" — must be resolved via col_map.
   # .hm_build_col_map materializes data[["weight"]] and data[["height"]],
   # then .hm_precompute_from_deps derives BMI and SPISE computes.
@@ -296,6 +315,7 @@ test_that("BMI derived from mapped weight/height with non-standard column names"
 })
 
 test_that("partial col_map is filled from dictionary for remaining keys", {
+  skip_on_cran()
   # User provides only G0 mapping; HDL_c, TG, BMI should be inferred from
   # dictionary matching column names (pglu0 -> G0, hdlc -> HDL_c, etc.).
   df <- tibble::tibble(

@@ -8,10 +8,7 @@ vitamin_d_status(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -26,12 +23,6 @@ vitamin_d_status(
 \item error: abort if required input contains NA
 \item warn: like keep, but emit missingness warnings
 }}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional named list overriding defaults; default: list(vitamin_d = c(0, 250)).}
 
 \item{verbose}{Logical; if TRUE, emits progress via rlang::inform.}
 }

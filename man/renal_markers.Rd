@@ -9,10 +9,7 @@ renal_markers(
   col_map = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -32,28 +29,23 @@ renal_markers(
 \item optional NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP -> urine injury markers
 }}
 
-\item{na_action}{One of c("keep","omit","error") for handling missing values in
+\item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in
 required inputs. Default "keep".}
 
-\item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings for
-required inputs. Default 0.2.}
+\item{na_warn_prop}{Proportion (0-1) threshold for high-missingness diagnostics.
+Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scans selected inputs for out-of-range
-values using simple heuristics. Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore") when extremes
-are detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) bounds keyed by input
-names (e.g., "creatinine","BUN","cystatin_C","urea_serum","creatinine_urine","urea_urine").
-If NULL, built-in defaults are used.}
-
-\item{verbose}{Logical; if TRUE, prints progress messages and a completion summary.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints step-by-step progress
+including column mapping, optional input availability, physiological range
+information (informational only, values are not altered), the list of
+markers being computed, and a per-column results summary.}
 }
 \value{
-A tibble with columns:
-eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio, FE_Urea,
-NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP
+A tibble with computed renal markers:
+\code{eGFR_cr}, \code{eGFR_cys}, \code{eGFR_combined}, \code{BUN_Cr_ratio}, \code{FE_Urea},
+\code{NGAL}, \code{KIM1}, \code{NAG}, \code{Beta2Micro}, \code{IL18}, \code{L_FABP}.
+If an ID column is detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}),
+it is prepended as the first output column.
 }
 \description{
 Given routine blood and urine assays, \code{renal_markers()} computes:

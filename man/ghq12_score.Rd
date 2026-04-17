@@ -13,7 +13,7 @@ ghq12_score(
   prefix = "GHQ12",
   method = c("likert", "binary"),
   case_cutoff_binary = 3,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ ghq12_score(
 
 \item{case_cutoff_binary}{Cut-off for case status when using binary scoring.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{GHQ12_total_likert} (likert method) or \code{GHQ12_total_binary} and \code{GHQ12_case_binary} (binary method). Input columns are not included.

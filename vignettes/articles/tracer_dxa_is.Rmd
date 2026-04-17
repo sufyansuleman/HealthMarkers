@@ -1,6 +1,6 @@
 ---
 title: "Tracer DXA Insulin Sensitivity"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -28,9 +28,6 @@ Compute tracer/DXA-based insulin sensitivity indices: LIRI_inv, Lipo_inv, ATIRI_
 | col_map        | Named list mapping required keys                                | See below for required keys per mode                |
 | na_action      | Missing-data policy for required inputs                         | "keep" (default), "omit", "error"                  |
 | na_warn_prop   | Proportion threshold for high-missingness diagnostics           | Default 0.2 (shown in debug/verbose)                |
-| check_extreme  | Scan inputs against bounds                                      | Default FALSE                                       |
-| extreme_action | Handling for extremes                                           | "warn" (default), "cap", "error", "ignore"         |
-| extreme_rules  | Optional bounds list c(min, max) per input                      | Defaults are broad, see below                       |
 | verbose        | Emit progress and completion summaries                          | Default FALSE                                       |
 
 **Adipose-only required keys:** I0, rate_glycerol, rate_palmitate, fat_mass, weight, HDL_c, bmi.
@@ -49,18 +46,11 @@ Compute tracer/DXA-based insulin sensitivity indices: LIRI_inv, Lipo_inv, ATIRI_
 - Validation & coercion: mapped columns must exist; non-numeric inputs are coerced with warnings if NAs are introduced; non-finite become NA.
 - Missingness: `keep` propagates NA; `omit` drops rows with any required NA; `error` aborts if required inputs contain NA.
 - High-missing diagnostics: controlled by `na_warn_prop`; shown when `verbose` (or debug) is enabled.
-- Extreme screening (optional): checks all inputs; defaults are broad (see below); `extreme_action` controls warn/cap/error/ignore.
 - Safe division/log: all ratios/logs use helpers that set NA for zero/invalid denominators or non-positive log arguments, with consolidated warnings.
 - Mode selection: if all OGTT/lipid keys are present, full mode is used; otherwise, adipose-only mode.
 - Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
 ## Defaults and validation details
-- Default extreme bounds (applied only if `check_extreme = TRUE`):
-  - I0/I30/I120: 0–5000 pmol/L
-  - G0/G30/G120: 0–40 mmol/L
-  - TG: 0–50 mmol/L; HDL_c: 0–10 mmol/L; FFA: 0–5 mmol/L
-  - rate_glycerol/rate_palmitate: 0–10000 micromol/min
-  - fat_mass: 0.1–200 kg; weight: 1–400 kg; bmi: 5–100 kg/m²
 - Safe logs: only positive, finite values are logged; others become NA.
 - Consolidated zero-denominator warnings are emitted for all divisions.
 
@@ -101,7 +91,7 @@ tracer_dxa_is(
 ```
 *Interpretation:* Returns adipose indices; NA propagates where required inputs are missing or invalid.
 
-## Worked example 2: Full mode, cap extremes, drop incomplete
+## Worked example 2: Full mode, drop incomplete
 ```{r}
 df2 <- tibble::tibble(
   G0 = c(5.0, 6.2, 7.5), G30 = c(8.1, 9.5, 10.2), G120 = c(6.7, 8.8, 9.1),
@@ -110,6 +100,10 @@ df2 <- tibble::tibble(
   rate_glycerol = c(140, 200, 12000), rate_palmitate = c(110, 190, 11000),
   fat_mass = c(24, 32, 0.05), weight = c(72, 85, 500), bmi = c(25, 28, 120)
 )
+
+# Pre-filter implausible values before calling
+df2$I0[df2$I0 > 5000] <- NA
+df2$fat_mass[df2$fat_mass < 0.1] <- NA
 
 tracer_dxa_is(
   data = df2,
@@ -123,20 +117,16 @@ tracer_dxa_is(
     weight = "weight",
     bmi = "bmi"
   ),
-  check_extreme = TRUE,
-  extreme_action = "cap",
   na_action = "omit",
   verbose = TRUE
 )
 ```
-*Interpretation:* Extremes are capped before computing indices; incomplete rows are dropped.
+*Interpretation:* Implausible values are set to NA before calling; incomplete rows are then dropped.
 
 ## Troubleshooting & common pitfalls
-- YAML/header: keep YAML at the top; stray text before it breaks knitting.
 - Units: ensure all values match expected units; incorrect units can silently distort results.
 - Missing columns: ensure every required `col_map` key is mapped to an existing column.
 - Zero/invalid denominators: produce NA outputs and a warning; check for zero fat mass, weight, or invalid rates.
-- Outliers: enable `check_extreme` with `extreme_action = "cap"` or `"NA"` to constrain implausible values.
 - All NA outputs: usually due to missing/invalid inputs, zero denominators, or aggressive `na_action = "omit"`.
 
 ## Verbose diagnostics
@@ -165,18 +155,25 @@ tracer_dxa_is(
 )
 options(old_opt)
 ```
+## Column recognition
 
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
 ## Tips for best results
-- Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to plausible ranges.
 - Choose `na_action = "omit"` for modeling datasets that require complete cases; use `keep` for exploratory review.
-- Review warnings for zero denominators or capped values; these often indicate data entry or assay issues.
+- Review warnings for zero denominators; these often indicate data entry or assay issues.
 - Always check that units match the function’s expectations, especially for insulin, TG, and HDL-c.
 
 ## Validation notes
 - LIRI_inv, Lipo_inv, ATIRI_inv: see function docs for formulas; all use safe division/logs.
 - Full mode: I_AUC is insulin trapezoid (0-30, 30-120 min); FFA_AUC is flat over 0-120 min.
 - All divisions/logs are safe: zero/invalid denominators or non-positive log arguments yield NA and a warning.
-- Default bounds: see above; applied only if `check_extreme = TRUE`.
 
 ## See also
 - Function docs: `?tracer_dxa_is`

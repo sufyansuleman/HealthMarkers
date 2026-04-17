@@ -40,22 +40,22 @@
 #'
 #' @examples
 #' \dontrun{
-#' # This is an internal helper - see validate_inputs() from zzz-validate_inputs.R for the exported version
+#' # Legacy internal col_map validator (full-featured version)
 #' df <- tibble::tibble(G0 = c(5.5, 6.1), I0 = c(60, 88))
-#' validate_inputs(df, list(G0 = "G0", I0 = "I0"), fun_name = "fasting_is")
+#' .hm_validate_col_map(df, list(G0 = "G0", I0 = "I0"), fun_name = "fasting_is")
 #' }
 #'
 #' # Return normalized map
-#' validate_inputs(df, list(G0 = " G0 ", I0 = "I0"), fun_name = "fasting_is", return_map = TRUE)
+#' .hm_validate_col_map(df, list(G0 = " G0 ", I0 = "I0"), fun_name = "fasting_is", return_map = TRUE)
 #'
 #' # Will error: missing mapping for I0
 #' \dontrun{
-#' validate_inputs(df, list(G0 = "G0", I0 = NULL), fun_name = "fasting_is")
+#' .hm_validate_col_map(df, list(G0 = "G0", I0 = NULL), fun_name = "fasting_is")
 #' }
 #'
 #' @keywords internal
 #' @noRd
-validate_inputs <- function(data,
+.hm_validate_col_map <- function(data,
                             col_map,
                             fun_name = "",
                             required_keys = names(col_map),

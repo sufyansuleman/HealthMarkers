@@ -1,6 +1,6 @@
 ---
 title: "Calculate SDS"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}

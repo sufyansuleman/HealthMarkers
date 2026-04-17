@@ -1,6 +1,6 @@
 ---
 title: "Adipose insulin sensitivity indices"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -58,7 +58,6 @@ ais <- adipo_is(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   normalize = "none"
 )
 
@@ -89,20 +88,17 @@ ais_with_sex %>%
   slice_head(n = 5)
 ```
 
-## Missing data and extremes
-Screen a small slice, cap extremes, and compare row handling.
+## Missing data handling
+Compare NA policies on a small slice.
 
 ```{r}
 demo <- sim_small[1:6, c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "BMI")]
 demo$G0[2] <- NA        # missing glucose
-demo$TG[3] <- 30        # extreme TG (mmol/L)
 
 ais_keep <- adipo_is(
   data = demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   normalize = "none",
   verbose = FALSE
 )
@@ -111,8 +107,6 @@ ais_omit <- adipo_is(
   data = demo,
   col_map = col_map,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   normalize = "none",
   verbose = FALSE
 )
@@ -120,36 +114,8 @@ ais_omit <- adipo_is(
 list(
   keep_rows = nrow(ais_keep),
   omit_rows = nrow(ais_omit),
-  capped_preview = ais_keep %>% select(ends_with("_inv")) %>% slice_head(n = 3)
+  keep_preview = ais_keep %>% select(ends_with("_inv")) %>% slice_head(n = 3)
 )
-```
-
-## Custom extreme rules
-
-Override the built-in plausibility bounds with `extreme_rules` (values in original units before any conversion):
-
-```{r}
-custom_rules <- list(
-  G0    = c(2, 25),    # mmol/L — tighter glucose cap
-  TG    = c(0.1, 15),  # mmol/L — tighter TG cap
-  I0    = c(5, 1500),  # pmol/L
-  FFA   = c(0.05, 2),  # mmol/L
-  waist = c(50, 200)   # cm
-)
-
-ais_custom <- adipo_is(
-  data           = demo,
-  col_map        = col_map,
-  na_action      = "keep",
-  check_extreme  = TRUE,
-  extreme_action = "cap",
-  extreme_rules  = custom_rules,
-  normalize      = "none"
-)
-
-ais_custom %>%
-  select(Revised_QUICKI, TyG_inv, TG_HDL_C_inv) %>%
-  slice_head(n = 6)
 ```
 
 ## Normalise outputs
@@ -191,7 +157,6 @@ invisible(adipo_is(
   data          = sim_small[1:5, ],
   col_map       = col_map,
   na_action     = "keep",
-  check_extreme = TRUE,
   normalize     = "none",
   verbose       = TRUE
 ))
@@ -205,7 +170,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `options(healthmarkers.ver
 ## Expectations
 - All seven required mappings must be provided; missing mappings or columns abort.
 - `na_action` controls row handling: `keep` propagates NA outputs; `omit` drops rows with missing required inputs; `error` aborts.
-- `check_extreme` screens raw inputs before conversion; `extreme_action` can warn, cap, NA, or error.
 - Built-in conversions: glucose *18 (mg/dL), insulin /6 (muU/mL), TG *88.57 (mg/dL), HDL *38.67 (mg/dL); FFA/waist/BMI unchanged.
 
 ## Common pitfalls
@@ -213,7 +177,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `options(healthmarkers.ver
 - Mis-specified units (e.g., mg/dL glucose without converting) will skew every index; convert upstream if your lab units differ.
 - Missing `sex` does not block computation but only one of VAI/LAP applies per subject; interpret accordingly.
 - For modelling, use `normalize = "z"` (z-score), `"range"` (0–1), or `"robust"` (median/IQR); default `"none"` keeps raw index scales. See the *Normalise outputs* section above.
-
 ## Validation notes
 - **Revised_QUICKI**: typical adults ~0.3–0.6; lower is worse IR. Computed from log10(I0 [mU/L]) + log10(G0 [mg/dL]) + log10(FFA [mmol/L]).
 - **McAuley_index**: typical adults ~3–10; higher is better insulin sensitivity. Uses `ln(TG [mmol/L])` and `ln(I0 [mU/L])` — TG is kept in mmol/L before the internal mg/dL conversion.
@@ -221,7 +184,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `options(healthmarkers.ver
 - **LAP_Men_inv / LAP_Women_inv**: computed as `−(WC−threshold) × TG [mmol/L]` (Kahn 2005). Typical values −10 to −80; more negative = worse.
 - **VAI_Men_inv / VAI_Women_inv**: uses TG and HDL in mmol/L with the Amato 2010 reference constants (1.03, 1.31, 0.81, 1.52). Typical range −1 to −5; more negative = worse.
 - Spot-check `TG_HDL_C_inv`: should equal `−(TG_mg/dL / HDL_mg/dL)`.
-- Use `check_extreme = TRUE` with lab-appropriate `extreme_rules` before capping or erroring.
 
 ## See also
 - `glycemic_markers()` for glucose-centric indices.

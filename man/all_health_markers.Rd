@@ -19,8 +19,8 @@ all_health_markers(
 \item{data}{A data.frame or tibble.}
 
 \item{col_map}{Named list for column mapping forwarded to underlying functions.
-If \code{col_map} is \code{NULL} or missing, \code{all_health_markers()} calls
-\code{\link[=hm_infer_cols]{hm_infer_cols()}} once at the top level to guess a column map from common
+If \code{col_map} is \code{NULL} or an empty list, \code{all_health_markers()} calls
+\code{\link[=hm_col_report]{hm_col_report()}} once at the top level to guess a column map from common
 synonyms (for example \code{TG} vs \code{triglycerides}, \code{BMI} vs \code{bmi},
 \code{HDL_c} vs \code{HDL}). The inferred \code{col_map} is then reused for all groups
 that require it, and an error is thrown if required keys (e.g. \code{TG},

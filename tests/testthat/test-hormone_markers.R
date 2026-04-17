@@ -12,6 +12,7 @@ test_that("errors when no ratio can be computed from supplied col_map", {
 })
 
 test_that("computes all eleven ratios correctly", {
+  skip_on_cran()
   df <- tibble(
     total_testosterone = 10, SHBG = 2,
     LH = 8, FSH = 4,
@@ -43,6 +44,7 @@ test_that("computes all eleven ratios correctly", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
@@ -57,6 +59,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
@@ -71,6 +74,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("handles NA inputs gracefully", {
+  skip_on_cran()
   df <- tibble(
     total_testosterone = NA, SHBG = 2,
     LH = 1, FSH = 1,
@@ -89,6 +93,7 @@ test_that("handles NA inputs gracefully", {
 })
 
 test_that("inference: free_T3 derived from TSH + free_T4 enables T3_T4", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     total_testosterone = 10, SHBG = 2,

@@ -11,7 +11,7 @@ cognitive_score(
   missing_prop_max = 0.2,
   method = c("z_mean", "pca1"),
   prefix = "cog",
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ cognitive_score(
 
 \item{prefix}{Prefix for output column names.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \verb{\{prefix\}_z_mean} or \verb{\{prefix\}_pca1}. Input columns are not included.

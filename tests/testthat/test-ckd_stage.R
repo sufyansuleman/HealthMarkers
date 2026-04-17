@@ -8,6 +8,7 @@ test_that("ckd_stage classifies G and A stages", {
 })
 
 test_that("eGFR boundary values map to correct G stages", {
+  skip_on_cran()
   df <- data.frame(
     eGFR = c(90, 89, 60, 59, 45, 44, 30, 29, 15, 14),
     UACR = rep(10, 10)
@@ -20,12 +21,14 @@ test_that("eGFR boundary values map to correct G stages", {
 })
 
 test_that("UACR boundary values map to correct A stages", {
+  skip_on_cran()
   df <- data.frame(eGFR = rep(65, 4), UACR = c(0, 29, 30, 300))
   res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
   expect_equal(as.character(res$Albuminuria_stage), c("A1","A1","A2","A3"))
 })
 
 test_that("eGFR-only (no UACR) returns NA albuminuria and KDIGO assuming A1", {
+  skip_on_cran()
   df <- data.frame(eGFR = c(95, 50, 12))
   res <- ckd_stage(df, col_map = list(eGFR = "eGFR"))
   expect_equal(as.character(res$CKD_stage), c("G1","G3a","G5"))
@@ -35,6 +38,7 @@ test_that("eGFR-only (no UACR) returns NA albuminuria and KDIGO assuming A1", {
 })
 
 test_that("ckd_stage default keep retains rows; omit drops any NA in mapped inputs", {
+  skip_on_cran()
   df <- data.frame(eGFR = c(NA, 80), UACR = c(10, NA))
   res_keep <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
   expect_equal(nrow(res_keep), 2L)
@@ -44,6 +48,7 @@ test_that("ckd_stage default keep retains rows; omit drops any NA in mapped inpu
 })
 
 test_that("ckd_stage na_action = error aborts on missing mapped inputs", {
+  skip_on_cran()
   df <- data.frame(eGFR = c(NA, 80), UACR = c(10, NA))
   expect_error(
     ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"), na_action = "error"),
@@ -52,6 +57,7 @@ test_that("ckd_stage na_action = error aborts on missing mapped inputs", {
 })
 
 test_that("extreme eGFR/UACR values stage correctly without error", {
+  skip_on_cran()
   df <- data.frame(eGFR = c(250, 60), UACR = c(10, 6000))
   res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
   # eGFR 250 > G1 threshold, maps to G1
@@ -61,6 +67,7 @@ test_that("extreme eGFR/UACR values stage correctly without error", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
   cm2 <- list(eGFR = "eGFR", UACR = "UACR")
@@ -70,6 +77,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
   cm2  <- list(eGFR = "eGFR", UACR = "UACR")

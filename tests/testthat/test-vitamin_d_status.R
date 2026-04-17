@@ -12,6 +12,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   df <- data.frame(VitD = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(vitamin_d_status(df, cm, verbose = TRUE), "vitamin_d_status")
@@ -20,6 +21,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- data.frame(VitD = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(vitamin_d_status(df, cm, verbose = TRUE))
@@ -28,11 +30,13 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("coercion warning when non-numeric introduces NAs", {
+  skip_on_cran()
   df <- data.frame(VitD = c("12", "oops", "35"))
   expect_warning(vitamin_d_status(df, cm), class = "healthmarkers_vitd_warn_na_coercion")
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(VitD = c(12, NA, 35))
   out_keep <- vitamin_d_status(df, cm, na_action = "keep")
   expect_equal(nrow(out_keep), 3L)
@@ -50,6 +54,7 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("domain warnings: negative values and suspicious units", {
+  skip_on_cran()
   df_neg <- data.frame(VitD = c(-5, 15))
   expect_warning(vitamin_d_status(df_neg, cm),
                  class = "healthmarkers_vitd_warn_negative_values")
@@ -61,6 +66,7 @@ test_that("domain warnings: negative values and suspicious units", {
 })
 
 test_that("extreme inputs pass through without error (check_extreme removed)", {
+  skip_on_cran()
   df <- data.frame(VitD = c(-10, 15, 500, 35))
   out <- suppressWarnings(vitamin_d_status(df, cm))
   expect_s3_class(out, "tbl_df")
@@ -68,6 +74,7 @@ test_that("extreme inputs pass through without error (check_extreme removed)", {
 })
 
 test_that("classification boundaries are correct and ordered factor returned", {
+  skip_on_cran()
   df <- data.frame(VitD = c(19.9, 20.0, 29.9, 30.0, NA))
   out <- vitamin_d_status(df, cm)
   expect_identical(levels(out$vitamin_d_status),
@@ -81,6 +88,7 @@ test_that("classification boundaries are correct and ordered factor returned", {
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(VitD = c(12, NA, 35))
   out_keep <- vitamin_d_status(df, cm, na_action = "keep")
   out_warn <- suppressWarnings(vitamin_d_status(df, cm, na_action = "warn"))

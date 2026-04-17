@@ -6,10 +6,11 @@
 \usage{
 pulmo_markers(
   data,
+  col_map = NULL,
   equation = c("GLI", "GLIgl", "NHANES3"),
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,6 +23,10 @@ pulmo_markers(
 \item \code{fev1}      (numeric): observed FEV1 in L
 \item \code{fvc}       (numeric): observed FVC in L
 }}
+
+\item{col_map}{Optional named list mapping canonical keys (\code{age}, \code{sex}, \code{height},
+\code{ethnicity}, \code{fev1}, \code{fvc}) to actual column names in \code{data}. If \code{NULL},
+column names are inferred automatically.}
 
 \item{equation}{One of \code{c("GLI","GLIgl","NHANES3")} (see \code{rspiro} for details).
 GLIgl ignores ethnicity.}

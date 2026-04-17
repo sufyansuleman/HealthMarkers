@@ -30,6 +30,7 @@ test_that("lipid_markers computes core lipid markers", {
 })
 
 test_that("lipid_markers estimates LDL via Friedewald when LDL_c absent, no warning", {
+  skip_on_cran()
   df2 <- tibble(TC = 5, HDL_c = 1, TG = 1.5)
   expect_no_warning(
     out2 <- lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG"), verbose = FALSE)
@@ -39,6 +40,7 @@ test_that("lipid_markers estimates LDL via Friedewald when LDL_c absent, no warn
 })
 
 test_that("lipid_markers emits informational message for Friedewald LDL", {
+  skip_on_cran()
   df2 <- tibble(TC = 5, HDL_c = 1, TG = 1.5)
   msgs <- testthat::capture_messages(
     lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG"), verbose = TRUE)
@@ -47,6 +49,7 @@ test_that("lipid_markers emits informational message for Friedewald LDL", {
 })
 
 test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provided", {
+  skip_on_cran()
   df3 <- tibble(
     TC = 5, HDL_c = 1, TG = 1.3,
     LDL_c = 3, ApoB = 1.1, ApoA1 = 1.5,
@@ -70,6 +73,7 @@ test_that("lipid_markers computes VAI_Men and VAI_Women when waist & BMI provide
 })
 
 test_that("lipid_markers omits VAI when waist or BMI missing", {
+  skip_on_cran()
   df4a <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 85) # BMI missing
   out4a <- lipid_markers(df4a, col_map = list(
     TC    = "TC",
@@ -96,6 +100,7 @@ test_that("lipid_markers omits VAI when waist or BMI missing", {
 # ────────────────────────────────────────────────────────────────────────────────
 
 test_that("lipid_markers computes LAP_Men and LAP_Women when waist provided", {
+  skip_on_cran()
   df_lap <- tibble(TC = 5, HDL_c = 1, TG = 1.3, waist = 100)
   out_lap <- lipid_markers(df_lap, col_map = list(
     TC    = "TC",
@@ -112,6 +117,7 @@ test_that("lipid_markers computes LAP_Men and LAP_Women when waist provided", {
 })
 
 test_that("lipid_markers omits LAP when waist missing", {
+  skip_on_cran()
   df_no_lap <- tibble(TC = 5, HDL_c = 1, TG = 1.3)
   out_no_lap <- lipid_markers(df_no_lap, col_map = list(
     TC    = "TC",
@@ -127,6 +133,7 @@ test_that("lipid_markers omits LAP when waist missing", {
 # ────────────────────────────────────────────────────────────────────────────────
 
 test_that("na_action='omit' drops rows with NA in required inputs", {
+  skip_on_cran()
   df <- tibble(TC = c(5, NA), HDL_c = c(1, 1), TG = c(1.3, 1.4), LDL_c = c(3.7, 3.8))
   out <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"), na_action = "omit", verbose = FALSE)
   expect_equal(nrow(out), 1L)
@@ -134,6 +141,7 @@ test_that("na_action='omit' drops rows with NA in required inputs", {
 })
 
 test_that("na_action='error' aborts on NA in required inputs", {
+  skip_on_cran()
   df <- tibble(TC = c(5, NA), HDL_c = c(1, 1), TG = c(1.3, 1.4))
   expect_error(
     lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG"), na_action = "error", verbose = FALSE),
@@ -142,6 +150,7 @@ test_that("na_action='error' aborts on NA in required inputs", {
 })
 
 test_that("extreme values produce no warning/error; range note appears in verbose", {
+  skip_on_cran()
   df <- tibble(TC = 5, HDL_c = 1, TG = -3, LDL_c = 3) # negative TG out-of-range
   expect_no_warning(
     out <- lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"),
@@ -158,6 +167,7 @@ test_that("extreme values produce no warning/error; range note appears in verbos
 })
 
 test_that("numeric coercion warns when NAs introduced", {
+  skip_on_cran()
   df <- tibble(TC = c("5","oops"), HDL_c = c("1","1"), TG = c("1.3","1.4"), LDL_c = c(3, 3))
   expect_warning(
     lipid_markers(df, col_map = list(TC="TC", HDL_c="HDL_c", TG="TG", LDL_c="LDL_c"), verbose = FALSE),
@@ -166,6 +176,7 @@ test_that("numeric coercion warns when NAs introduced", {
 })
 
 test_that("verbose emits col_map, optional inputs, computing markers, and results messages", {
+  skip_on_cran()
   df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
   cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
   msgs <- testthat::capture_messages(lipid_markers(df_v, cm_v, verbose = TRUE))
@@ -176,6 +187,7 @@ test_that("verbose emits col_map, optional inputs, computing markers, and result
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df_v <- tibble::tibble(TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3)
   cm_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c")
   msgs <- testthat::capture_messages(
@@ -188,6 +200,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("ID column is prepended to output when detected", {
+  skip_on_cran()
   df_id <- tibble::tibble(
     id = 1:3, TC = c(5, 5.5, 6), HDL_c = c(1, 1.1, 1.2),
     TG = c(1.3, 1.4, 1.5), LDL_c = c(3, 3.2, 3.4)
@@ -198,6 +211,7 @@ test_that("ID column is prepended to output when detected", {
 })
 
 test_that("BMI is pre-computed from weight and height enabling VAI and TyG_BMI", {
+  skip_on_cran()
   df_bmi <- tibble::tibble(
     TC = 5, HDL_c = 1, TG = 1.3, LDL_c = 3,
     waist = 85, weight = 70, height = 175, glucose = 5.5
@@ -211,6 +225,7 @@ test_that("BMI is pre-computed from weight and height enabling VAI and TyG_BMI",
 })
 
 test_that("glucose derived from mapped G0 column via col_map redirect enables TyG_BMI", {
+  skip_on_cran()
   # Physical column is "pglu0" — col_map maps G0 -> "pglu0".
   # .hm_build_col_map materializes data[["G0"]], then precompute derives glucose.
   df <- tibble::tibble(
@@ -229,6 +244,7 @@ test_that("glucose derived from mapped G0 column via col_map redirect enables Ty
 })
 
 test_that("BMI derived from mapped weight/height with non-standard names enables VAI", {
+  skip_on_cran()
   # Physical columns are "body_weight" and "body_height" — must be resolved via col_map.
   # .hm_build_col_map materializes data[["weight"]] and data[["height"]],
   # then .hm_precompute_from_deps derives BMI, enabling VAI_Men.
@@ -254,6 +270,7 @@ test_that("BMI derived from mapped weight/height with non-standard names enables
 })
 
 test_that("partial col_map is filled from dictionary for remaining keys", {
+  skip_on_cran()
   # User provides only G0 mapping; TC, HDL_c, TG should be inferred by dict.
   df <- tibble::tibble(
     chol   = 5,      # maps to TC via synonym dictionary

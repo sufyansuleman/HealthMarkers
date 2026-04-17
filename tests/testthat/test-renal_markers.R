@@ -24,6 +24,7 @@ test_that("verbose emits col_map, optional inputs, computing markers, and result
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- make_df_req()
   msgs <- testthat::capture_messages(renal_markers(df, cm_req, verbose = TRUE))
   expect_gte(sum(grepl("col_map", msgs)), 1L)
@@ -33,6 +34,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("error when mapped column not found in data", {
+  skip_on_cran()
   df <- tibble(Age = 40, Sex = 1, Race = "white", BUN = 14) # missing Cr
   expect_error(
     renal_markers(df, cm_req, verbose = FALSE),
@@ -41,6 +43,7 @@ test_that("error when mapped column not found in data", {
 })
 
 test_that("na_action='omit' dropping all rows returns empty tibble with expected columns", {
+  skip_on_cran()
   df <- make_df_req(Cr = NA_real_)
   out <- renal_markers(df, cm_req, na_action = "omit", verbose = FALSE)
   expect_s3_class(out, "tbl_df")
@@ -52,6 +55,7 @@ test_that("na_action='omit' dropping all rows returns empty tibble with expected
 })
 
 test_that("sex mapping: numeric vs string agree; male vs female differ", {
+  skip_on_cran()
   df_code <- make_df_req(Cr = 1.0, Age = 50, Sex = 1, Race = "white", BUN = 14)
   df_strm <- make_df_req(Cr = 1.0, Age = 50, Sex = "male", Race = "white", BUN = 14)
   out_code <- renal_markers(df_code, cm_req, verbose = FALSE)
@@ -68,6 +72,7 @@ test_that("sex mapping: numeric vs string agree; male vs female differ", {
 })
 
 test_that("race mapping: black vs white scales eGFR_cr by ~1.159 (all else equal)", {
+  skip_on_cran()
   df_w <- make_df_req(Cr = 1.0, Age = 50, Sex = 1, Race = "caucasian", BUN = 14)
   df_b <- make_df_req(Cr = 1.0, Age = 50, Sex = 1, Race = "african american", BUN = 14)
   out_w <- renal_markers(df_w, cm_req, verbose = FALSE)
@@ -78,6 +83,7 @@ test_that("race mapping: black vs white scales eGFR_cr by ~1.159 (all else equal
 })
 
 test_that("extreme values produce no warning/error; range note appears in verbose", {
+  skip_on_cran()
   df_ext <- make_df_req(Cr = 10, Age = 90, Sex = 1, Race = "white", BUN = 300)
   expect_no_warning(
     out <- renal_markers(df_ext, cm_req, verbose = FALSE)
@@ -89,6 +95,7 @@ test_that("extreme values produce no warning/error; range note appears in verbos
 })
 
 test_that("FE_Urea zero denominators yield consolidated warning and NA", {
+  skip_on_cran()
   df1 <- tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14,
                 U_s = 0, Cr_u = 2, U_u = 80)
   cm1 <- modifyList(cm_req, list(urea_serum = "U_s", creatinine_urine = "Cr_u", urea_urine = "U_u"))
@@ -108,6 +115,7 @@ test_that("FE_Urea zero denominators yield consolidated warning and NA", {
 })
 
 test_that("ID column is prepended to output when detected", {
+  skip_on_cran()
   df_id <- tibble::tibble(
     id = 1:3,
     Cr = c(1.0, 1.2, 0.9), Age = c(40, 50, 35), Sex = 1L, Race = "white", BUN = 14

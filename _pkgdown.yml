@@ -154,6 +154,7 @@ reference:
 
   - title: "Utilities"
     contents:
+      - hm_col_report
       - infer_cols
       - impute_missing
       - impute_mice
@@ -168,6 +169,10 @@ articles:
   - title: "Getting started"
     contents:
       - getting-started
+
+  - title: "Multi-biobank compatibility"
+    contents:
+      - articles/multi_biobank
 
   - title: "Insulin sensitivity"
     contents:

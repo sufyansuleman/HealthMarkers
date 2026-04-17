@@ -9,10 +9,7 @@ kidney_failure_risk(
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
   na_action = c("keep", "error", "omit", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -35,20 +32,6 @@ kidney_failure_risk(
 }}
 
 \item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan for out-of-range values (see \code{extreme_rules}). Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") used when \code{check_extreme = TRUE}.
-\itemize{
-\item "warn": only warn about out-of-range values (default).
-\item "cap": truncate to range and warn.
-\item "error": abort if any out-of-range is detected.
-\item "ignore": do nothing.
-\item "NA": set out-of-range input values to NA before computation.
-}}
-
-\item{extreme_rules}{Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).
-If NULL, broad defaults are used: age (18, 120), eGFR (1, 200), UACR (0.1, 10000) (mg/g).}
 
 \item{verbose}{Logical; if TRUE, prints stepwise messages and a completion summary. Default FALSE.}
 }
@@ -101,12 +84,12 @@ kidney_failure_risk(
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
 )
 
-# With diagnostics and capping
+# With verbose output
 \donttest{
 kidney_failure_risk(
   data = df,
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
-  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+  verbose = TRUE
 )
 }
 

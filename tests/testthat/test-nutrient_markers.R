@@ -48,6 +48,7 @@ test_that("nutrient_markers computes all indices correctly", {
 })
 
 test_that("nutrient_markers is vectorized over rows", {
+  skip_on_cran()
   df <- tibble(
     ferritin         = c(80, 120),
     transferrin_sat  = c(40, 60),
@@ -62,6 +63,7 @@ test_that("nutrient_markers is vectorized over rows", {
 })
 
 test_that("missing inputs yield NA rather than error", {
+  skip_on_cran()
   df <- tibble(
     ferritin        = 90,
     transferrin_sat = 45,
@@ -75,6 +77,7 @@ test_that("missing inputs yield NA rather than error", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(ferritin = 50, transferrin_sat = 25)
   expect_message(nutrient_markers(df, col_map = cm_id(df), verbose = TRUE), "nutrient_markers")
@@ -83,6 +86,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(ferritin = 50, transferrin_sat = 25)
   msgs <- testthat::capture_messages(
@@ -93,10 +97,12 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("errors if `data` is not a data.frame", {
+  skip_on_cran()
   expect_error(nutrient_markers("not a df", col_map = list()), "data\\.frame|tibble")
 })
 
 test_that("na_action='error' aborts when used inputs contain NA", {
+  skip_on_cran()
   df <- tibble(
     ferritin        = c(100, 90),
     transferrin_sat = c(50, NA_real_)
@@ -108,6 +114,7 @@ test_that("na_action='error' aborts when used inputs contain NA", {
 })
 
 test_that("na_action='omit' drops rows with NA in used inputs", {
+  skip_on_cran()
   df <- tibble(
     ferritin        = c(100, 90),
     transferrin_sat = c(50, NA_real_)
@@ -122,6 +129,7 @@ test_that("na_action='omit' drops rows with NA in used inputs", {
 })
 
 test_that("extreme values produce range note in verbose and no warnings in silent mode", {
+  skip_on_cran()
   df <- tibble(ferritin = 5000, transferrin_sat = 50)
   # No warning emitted in non-verbose mode
   expect_no_warning(
@@ -136,6 +144,7 @@ test_that("extreme values produce range note in verbose and no warnings in silen
 })
 
 test_that("denominator zero emits a single summary warning and yields NA outputs", {
+  skip_on_cran()
   df <- tibble(
     Mg         = 0.9,
     uric_acid  = 300,
@@ -153,6 +162,7 @@ test_that("denominator zero emits a single summary warning and yields NA outputs
 })
 
 test_that("col_map with unrecognized keys warns and ignores them", {
+  skip_on_cran()
   df <- tibble(ferritin = 100, transferrin_sat = 50)
   cm <- list(ferritin = "ferritin", transferrin_sat = "transferrin_sat", LDL = "LDL")
   expect_warning(

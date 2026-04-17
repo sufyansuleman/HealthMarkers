@@ -20,6 +20,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(nfl_marker(df, cm, verbose = TRUE), "nfl_marker")
@@ -28,6 +29,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- data.frame(NfL = c(12, 35))
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(nfl_marker(df, cm, verbose = TRUE))
@@ -36,6 +38,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("numeric coercion warning when non-numeric introduces NAs", {
+  skip_on_cran()
   df <- data.frame(NfL = c("12", "oops", "35"))
 
   expect_warning(
@@ -45,6 +48,7 @@ test_that("numeric coercion warning when non-numeric introduces NAs", {
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(NfL = c(12, NA, 35))
 
   out_keep <- nfl_marker(df, cm, na_action = "keep")
@@ -67,6 +71,7 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("domain warnings: negative values", {
+  skip_on_cran()
   df_neg <- data.frame(NfL = c(-5, 15))
 
   expect_warning(
@@ -76,6 +81,7 @@ test_that("domain warnings: negative values", {
 })
 
 test_that("extreme NfL values pass through without error", {
+  skip_on_cran()
   df <- data.frame(NfL = c(1e7, 15, 35))
   out <- nfl_marker(df, cm)
   expect_equal(nrow(out), 3L)
@@ -83,6 +89,7 @@ test_that("extreme NfL values pass through without error", {
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(NfL = c(12, NA, 35))
 
   out_keep <- nfl_marker(df, cm, na_action = "keep")

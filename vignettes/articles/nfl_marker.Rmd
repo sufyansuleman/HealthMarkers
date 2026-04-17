@@ -1,6 +1,6 @@
 ---
 title: "Neurofilament light chain (NfL) marker"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -9,7 +9,7 @@ knitr::opts_knit$set(purl = FALSE)
 ```
 
 ## Scope
-Incorporate a neurofilament light chain (NfL) concentration measurement into the analysis pipeline. NfL is a biomarker of neuroaxonal injury; elevated plasma or CSF levels indicate neurodegeneration and typically increase with age and neurological disease. This function validates and passes through the input values (assumed plasma pg/mL) with optional NA handling and extreme-value scanning, returning a tidy tibble ready for downstream analysis.
+Incorporate a neurofilament light chain (NfL) concentration measurement into the analysis pipeline. NfL is a biomarker of neuroaxonal injury; elevated plasma or CSF levels indicate neurodegeneration and typically increase with age and neurological disease. This function validates and passes through the input values (assumed plasma pg/mL) with optional NA handling, returning a tidy tibble ready for downstream analysis.
 
 ## Load packages and demo data
 
@@ -36,7 +36,6 @@ out <- nfl_marker(
   data = df,
   col_map = cm,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -55,31 +54,14 @@ omit_out <- nfl_marker(df_na, cm, na_action = "omit")
 list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 ```
 
-## Extreme-value handling
-`check_extreme = TRUE` scans values against a broad default range of [0, 1e6] pg/mL.  
-`extreme_action` controls the response: `"warn"` emits a warning without altering values, `"cap"` clips to the range boundary, `"NA"` blanks flagged values, `"error"` aborts.
+## Extreme values
+Negative or implausibly high NfL values will be passed through as-is. Pre-filter before calling.
 
 ```{r, warning=TRUE}
-df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is out of range
-
-nfl_marker(
-  data = df_ext,
-  col_map = cm,
-  check_extreme = TRUE,
-  extreme_action = "warn"
-)
-```
-
-Custom range override:
-
-```{r}
-nfl_marker(
-  data = tibble::tibble(NfL = c(8.5, 5000, 22.1)),
-  col_map = cm,
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(nfl = c(0, 1000))
-)
+df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is implausible; pre-filter
+# Pre-filter:
+df_ext$NfL[df_ext$NfL < 0] <- NA
+nfl_marker(df_ext, col_map = cm, na_action = "keep")
 ```
 
 ## Verbose diagnostics
@@ -89,6 +71,17 @@ Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface three s
 old_opt <- options(healthmarkers.verbose = "inform")
 nfl_marker(tibble::tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
 options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
 ```
 
 ## Tips

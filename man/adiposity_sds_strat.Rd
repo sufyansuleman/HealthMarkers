@@ -9,12 +9,9 @@ adiposity_sds_strat(
   col_map,
   ref,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  extreme_rules = NULL,
   allow_partial = FALSE,
   prefix = "",
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -40,18 +37,6 @@ F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
 \item "omit"  - drop rows with NA in any required variable
 \item "error" - abort if any required variable has NA
 }}
-
-\item{check_extreme}{Logical; if TRUE, screen raw variables for extremes before SDS}
-
-\item{extreme_action}{One of:
-\itemize{
-\item "cap"   - winsorize to bounds
-\item "NA"    - set out-of-range to NA
-\item "error" - abort on out-of-range
-}}
-
-\item{extreme_rules}{Optional named list of c(min, max) per variable (raw scale).
-If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).}
 
 \item{allow_partial}{If TRUE, skip variables absent in data (with a warning); if FALSE error}
 

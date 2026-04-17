@@ -127,7 +127,7 @@ frailty_index <- function(data,
   if (!is.null(rescale.avoid))  .assert_character(rescale.avoid,  "rescale.avoid")
 
   # Backward-compatible na_action aliases ('ignore'/'warn' behave like 'keep')
-  if (na_action %in% c("keep","omit")) {
+  if (na_action %in% c("keep", "omit", "ignore", "warn")) {
     hm_inform(
       sprintf("frailty_index(): na_action=%s", na_action),
       level = "debug"

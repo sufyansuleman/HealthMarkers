@@ -38,7 +38,7 @@ Load the bundled simulated dataset, pick which markers to compute, and view only
 - `cvd_marker_aip(data, col_map = list(TG = "TG", HDL_c = "HDL_c"))` — atherogenic index of plasma.
 - `renal_markers(data)` — renal and eGFR-related outputs.
 - `glycemic_markers(data)` — glycemic metrics; pair with `fasting_is()` / `ogtt_is()` / `adipo_is()` for insulin indices.
-- `sweat_markers(data, check_extreme = TRUE)` and `urine_markers(data)` — alternate biofluid panels.
+- `sweat_markers(data)` and `urine_markers(data)` — alternate biofluid panels.
 
 ## Load the package and simulated data
 Inputs: the package plus the bundled RDS file at `inst/extdata/simulated_hm_data.rds`.
@@ -171,11 +171,11 @@ head(imputed)
   - `method = "mean" | "median" | "constant"`: simple deterministic fills for numeric columns.
 - Output: a data frame with imputed values replacing missing entries; then pass it to `all_health_markers()` or any helper (e.g., `cvd_marker_aip()`, `renal_markers()`).
 
-## Extreme value checks
-Scan for extreme sweat values and warn without stopping. Output: sweat markers with any warnings emitted.
+## Sweat markers
+Compute sweat markers; uses auto-inferred column names and verbose NA diagnostics.
 
 ```{r}
-sweat <- sweat_markers(sim_small, check_extreme = TRUE, extreme_action = "warn")
+sweat <- sweat_markers(sim_small, verbose = FALSE)
 sweat_new <- setdiff(names(sweat), names(sim_small))
 head(dplyr::select(sweat, dplyr::all_of(sweat_new)))
 ```

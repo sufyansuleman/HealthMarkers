@@ -8,6 +8,7 @@ test_that("fasting_is errors if missing required columns", {
 })
 
 test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
+  skip_on_cran()
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   out <- fasting_is(
     df,
@@ -30,6 +31,7 @@ test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
 })
 
 test_that("fasting_is is vectorized over multiple rows", {
+  skip_on_cran()
   df <- tibble::tibble(
     G0 = c(5.5, 6),
     I0 = c(60, 80)
@@ -39,6 +41,7 @@ test_that("fasting_is is vectorized over multiple rows", {
 })
 
 test_that("normalize = 'range' and 'z' behave correctly", {
+  skip_on_cran()
   df2 <- tibble::tibble(G0 = c(5.5, 6), I0 = c(60, 80))
 
   out_r <- fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), normalize = "range")
@@ -71,12 +74,14 @@ test_that("normalize = 'range' and 'z' behave correctly", {
 })
 
 test_that("normalize = 'inverse' and 'robust' run silently", {
+  skip_on_cran()
   df <- tibble::tibble(G0 = c(5.5, 6), I0 = c(60, 80))
   expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "inverse", verbose = FALSE))
   expect_silent(fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "robust",  verbose = FALSE))
 })
 
 test_that("invalid normalize argument errors", {
+  skip_on_cran()
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   expect_error(
     fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"), normalize = "foo"),
@@ -85,6 +90,7 @@ test_that("invalid normalize argument errors", {
 })
 
 test_that("verbose = TRUE emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   cm <- list(G0 = "G0", I0 = "I0")
@@ -94,6 +100,7 @@ test_that("verbose = TRUE emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- tibble::tibble(G0 = 5.5, I0 = 60)
   cm   <- list(G0 = "G0", I0 = "I0")

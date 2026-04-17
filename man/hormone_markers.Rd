@@ -7,12 +7,9 @@
 hormone_markers(
   data,
   col_map = NULL,
-  na_action = c("ignore", "warn", "error", "keep", "omit"),
+  na_action = c("keep", "omit", "error", "warn", "ignore"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,20 +19,22 @@ hormone_markers(
 total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4,
 aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30.}
 
-\item{na_action}{One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore; omit drops rows with any NA in used inputs.}
+\item{na_action}{One of \code{c("keep","omit","error","warn","ignore")}. \code{"keep"}/\code{"ignore"} leave NAs;
+\code{"omit"} drops rows with any NA in used inputs; \code{"error"} aborts;
+\code{"warn"} also warns about high missingness.}
 
-\item{na_warn_prop}{Proportion in \eqn{[0,1]} for high-missingness warnings when na_action="warn". Default 0.2.}
+\item{na_warn_prop}{Proportion in \eqn{[0,1]} for high-missingness warnings
+when \code{na_action = "warn"}. Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.}
-
-\item{extreme_action}{One of "warn","cap","error","ignore","NA" when check_extreme=TRUE. "cap" truncates to range; "NA" sets out-of-range to NA.}
-
-\item{extreme_rules}{Optional list of c(min,max) per key to override defaults.}
-
-\item{verbose}{Logical; print progress and completion summary.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, input
+availability, inference notes, physiological range information
+(informational only, values not altered), computing markers, and a
+per-column results summary.}
 }
 \value{
-Tibble with the nine ratio markers.
+Tibble with one column per computable ratio. If an ID column is
+detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}), it is prepended
+as the first output column.
 }
 \description{
 Ratios computed:

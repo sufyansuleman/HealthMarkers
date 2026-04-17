@@ -1,6 +1,6 @@
 ---
 title: "SARC-F Score"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -28,9 +28,6 @@ Compute the 5-item SARC-F sarcopenia screening score (Strength, Assistance in wa
 | data           | Data frame/tibble with SARC-F responses                         | Columns mapped via `col_map`                        |
 | col_map        | Named list mapping required items                               | strength, walking, chair, stairs, falls             |
 | na_action      | Missing-data policy                                             | "keep" (default), "omit", "error", "ignore", "warn" |
-| check_extreme  | Enable range checks (0–2 expected)                              | Default FALSE                                       |
-| extreme_action | Handling for out-of-range values                                | "warn" (default), "cap", "error", "ignore", "NA"   |
-| extreme_rules  | Optional per-item bounds `c(min, max)`                          | Defaults to 0–2 per item                           |
 | verbose        | Emit progress messages                                          | Default FALSE                                       |
 
 **Required columns (col_map):** strength, walking, chair, stairs, falls (expected 0/1/2). Mapped columns must exist.
@@ -40,8 +37,7 @@ Compute the 5-item SARC-F sarcopenia screening score (Strength, Assistance in wa
 ## Handling and expectations
 - Validation & coercion: mapped columns must exist; non-numeric inputs are coerced to numeric with warnings if NAs are introduced; non-finite values become NA.
 - Missingness: `keep`/`ignore`/`warn` propagate NA to the total; `omit` drops rows with any required NA; `error` aborts if missing.
-- Out-of-range check: even without `check_extreme`, a warning is issued if values fall outside 0–2. With `check_extreme = TRUE`, `extreme_action` decides warn/cap/error/ignore/NA.
-- Extreme rules: defaults cap each item to 0–2; can be overridden per item via `extreme_rules`.
+- Out-of-range check: a warning is issued if values fall outside 0–2.
 - Scoring: `sarc_f_score` sums the five items; `sarc_f_high_risk` is TRUE when score ≥ 4, FALSE otherwise, NA if score is NA.
 - Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
@@ -77,7 +73,7 @@ sarc_f_score(
 ```
 *Interpretation:* Rows with complete items return scores; the row with an NA item yields `sarc_f_score = NA` and `sarc_f_high_risk = NA`.
 
-## Worked example 2: Detect and cap miscoded values
+## Worked example 2: Detect miscoded values
 ```{r}
 df2 <- tibble::tibble(
   str = c(0, 3, -1),
@@ -87,23 +83,23 @@ df2 <- tibble::tibble(
   falls = c(0, 0, 1)
 )
 
+# Pre-recode out-of-range values before calling
+df2 <- df2 %>% dplyr::mutate(dplyr::across(everything(), ~ ifelse(. < 0 | . > 2, NA_real_, .)))
+
 sarc_f_score(
   data = df2,
   col_map = list(strength = "str", walking = "walk", chair = "chair", stairs = "stairs", falls = "falls"),
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 ```
-*Interpretation:* Values outside 0–2 are capped into range before summing; warnings note the corrections. Scores and risk flags are returned for all rows.
+*Interpretation:* Out-of-range values are set to NA before summing; scores with NA items return NA.
 
 ## Troubleshooting & common pitfalls
-- YAML/header: keep the YAML at the top; any text before it breaks knitting.
 - Missing columns: ensure every required `col_map` key is mapped to an existing column.
 - Non-numeric inputs: coerced with warnings; resulting NAs propagate unless `omit` is used.
-- Out-of-range values: a warning is emitted even without `check_extreme`; set `check_extreme = TRUE` + `extreme_action = "cap"` or `"NA"` to enforce bounds.
-- All NA scores: usually due to missing items, coercion to NA, or NA introduced by extreme handling with `extreme_action = "NA"`.
+- Out-of-range values: a warning is emitted; recode out-of-range items to NA before calling.
+- All NA scores: usually due to missing items or coercion to NA.
 
 ## Verbose diagnostics
 
@@ -120,13 +116,12 @@ options(old_opt)
 ```
 
 ## Tips for best results
-- Use `check_extreme = TRUE` with `extreme_action = "cap"` to hard-limit inputs to 0–2 when data may be noisy.
+- Recode out-of-range items to NA before calling when data may be noisy.
 - Choose `na_action = "omit"` when you need complete-case scores for modeling; use `keep`/`warn` for exploratory summaries where partial data is expected.
 - Treat `sarc_f_high_risk` as a screening flag (score ≥ 4); follow up with clinical assessment as appropriate.
 
 ## Validation notes
 - Score is a simple sum of the five items; risk flag is `score >= 4` when the score is finite.
-- Default bounds are 0–2 per item; override via `extreme_rules` if your instrument coding differs.
 - No unit conversion or weighting is applied; inputs should already reflect the standard SARC-F coding.
 
 ## See also

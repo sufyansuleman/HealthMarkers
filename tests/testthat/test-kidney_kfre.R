@@ -23,6 +23,7 @@ test_that("kidney_failure_risk returns a tibble with 2 risk estimates between 0 
 })
 
 test_that("kidney_failure_risk errors if mapped columns are missing in data", {
+  skip_on_cran()
   df_bad <- tibble(
     age  = 60,
     sex  = 1,
@@ -40,6 +41,7 @@ test_that("kidney_failure_risk errors if mapped columns are missing in data", {
 })
 
 test_that("kidney_failure_risk errors if required col_map entries are missing", {
+  skip_on_cran()
   df <- tibble(
     age  = 60,
     sex  = 1,
@@ -55,6 +57,7 @@ test_that("kidney_failure_risk errors if required col_map entries are missing", 
 })
 
 test_that("kidney_failure_risk respects a custom col_map", {
+  skip_on_cran()
   df2 <- tibble(A = 70, SEX = 2, GFR = 90, PROT = 20)
 
   out2 <- kidney_failure_risk(
@@ -68,6 +71,7 @@ test_that("kidney_failure_risk respects a custom col_map", {
 })
 
 test_that("na_action='error' aborts when required inputs contain NA", {
+  skip_on_cran()
   df <- tibble(age = 60, sex = 1, eGFR = 45, UACR = NA_real_)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_error(
@@ -77,6 +81,7 @@ test_that("na_action='error' aborts when required inputs contain NA", {
 })
 
 test_that("na_action='omit' drops rows with NA", {
+  skip_on_cran()
   df <- tibble(
     age = c(60, 70),
     sex = c(1, 2),
@@ -90,6 +95,7 @@ test_that("na_action='omit' drops rows with NA", {
 })
 
 test_that("invalid sex coding errors", {
+  skip_on_cran()
   df <- tibble(age = 60, sex = 3, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_error(
@@ -99,6 +105,7 @@ test_that("invalid sex coding errors", {
 })
 
 test_that("extreme input values pass through without error", {
+  skip_on_cran()
   df <- tibble(age = 10, sex = 1, eGFR = 0.5, UACR = 20000)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   out <- suppressWarnings(kidney_failure_risk(df, col_map = cm))
@@ -107,6 +114,7 @@ test_that("extreme input values pass through without error", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
@@ -116,6 +124,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble::tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
@@ -127,6 +136,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("non-positive eGFR triggers log warning", {
+  skip_on_cran()
   df <- tibble(age = 60, sex = 1, eGFR = 0, UACR = 1)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_warning(
@@ -136,10 +146,65 @@ test_that("non-positive eGFR triggers log warning", {
 })
 
 test_that("non-positive UACR triggers log warning", {
+  skip_on_cran()
   df <- tibble(age = 60, sex = 1, eGFR = 1, UACR = 0)
   cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
   expect_warning(
     kidney_failure_risk(df, col_map = cm),
     "'UACR'.*log\\(\\) undefined"
   )
+})
+
+# ---- Multi-row vectorization ------------------------------------------------
+test_that("kidney_failure_risk handles multi-row data correctly", {
+  skip_on_cran()
+  df <- tibble::tibble(
+    age  = c(45, 60, 75, 80),
+    sex  = c(1, 2, 1, 2),
+    eGFR = c(90, 45, 22, 10),
+    UACR = c(30, 300, 1000, 3000)
+  )
+  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  out <- kidney_failure_risk(df, col_map = cm)
+  expect_equal(nrow(out), 4L)
+  expect_true(all(out$KFRE_2yr >= 0 & out$KFRE_2yr <= 1))
+  expect_true(all(out$KFRE_5yr >= 0 & out$KFRE_5yr <= 1))
+  # Lower eGFR / higher UACR should yield higher risk
+  expect_gt(out$KFRE_5yr[4], out$KFRE_5yr[1])
+})
+
+# ---- String sex encoding ----------------------------------------------------
+test_that("kidney_failure_risk accepts string sex codes M/F", {
+  skip_on_cran()
+  df_str <- tibble::tibble(
+    age  = c(60, 70),
+    sex  = c("M", "F"),
+    eGFR = c(45, 30),
+    UACR = c(300, 500)
+  )
+  df_int <- tibble::tibble(
+    age  = c(60, 70),
+    sex  = c(1, 2),
+    eGFR = c(45, 30),
+    UACR = c(300, 500)
+  )
+  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  out_str <- kidney_failure_risk(df_str, col_map = cm)
+  out_int <- kidney_failure_risk(df_int, col_map = cm)
+  expect_equal(out_str$KFRE_2yr, out_int$KFRE_2yr)
+  expect_equal(out_str$KFRE_5yr, out_int$KFRE_5yr)
+})
+
+test_that("kidney_failure_risk accepts 'male'/'female' sex coding", {
+  skip_on_cran()
+  df <- tibble::tibble(
+    age  = 60, sex = "male", eGFR = 45, UACR = 300
+  )
+  df2 <- tibble::tibble(
+    age  = 60, sex = 1L, eGFR = 45, UACR = 300
+  )
+  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  out  <- kidney_failure_risk(df,  col_map = cm)
+  out2 <- kidney_failure_risk(df2, col_map = cm)
+  expect_equal(out$KFRE_2yr, out2$KFRE_2yr)
 })

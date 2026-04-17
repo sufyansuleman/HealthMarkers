@@ -1,11 +1,13 @@
 ---
 title: "Liver Fat Surrogates: HSI and NAFLD-LFS"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
 library(HealthMarkers)
+library(dplyr)
 ```
 
 ## Overview
@@ -126,3 +128,73 @@ liver_fat_markers(
 
 options(old_opt)
 ```
+
+## Non-standard column names
+
+When columns carry site-specific names, specify the mapping explicitly:
+
+```{r}
+df_ns <- data.frame(
+  alt_IU_L     = c(28, 42, 65, 38),
+  ast_IU_L     = c(18, 28, 35, 22),
+  bmi_kgm2     = c(23.5, 29.0, 34.2, 27.8),
+  gender       = c("female", "male", "female", "male"),
+  t2dm_flag    = c(FALSE, FALSE, TRUE, FALSE),
+  insulin_uIUmL = c(9, 18, 28, 12)
+)
+
+liver_fat_markers(
+  df_ns,
+  col_map = list(
+    ALT      = "alt_IU_L",
+    AST      = "ast_IU_L",
+    BMI      = "bmi_kgm2",
+    sex      = "gender",
+    diabetes = "t2dm_flag",
+    insulin  = "insulin_uIUmL"
+  )
+)
+```
+
+## Extreme values
+Extreme ALT or AST values will produce extreme index scores. Pre-filter implausible inputs before calling.
+
+```{r, message=TRUE}
+df_ext <- data.frame(
+  ALT = c(30, 650, 60),  # 650 is implausibly extreme; pre-filter
+  AST = c(20,  30, 25),
+  BMI = c(24,  28, 33)
+)
+
+# Pre-filter before calling
+df_ext$ALT[df_ext$ALT > 500] <- NA
+
+liver_fat_markers(
+  df_ext,
+  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI")
+)
+```
+
+## Using real cohort data
+
+The bundled simulated dataset has `ALT`, `AST`, `BMI`, and `sex` columns,
+enabling HSI (and partial NAFLD-LFS) computation with no column renaming:
+
+```{r}
+sim_path  <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim_small <- dplyr::slice_head(readRDS(sim_path), n = 50)
+
+lf_sim <- liver_fat_markers(
+  sim_small,
+  col_map   = list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex"),
+  na_action = "keep"
+)
+
+dplyr::bind_cols(dplyr::select(sim_small, ALT, AST, BMI), lf_sim) |> head()
+```
+
+> **Column recognition tip:** Run `hm_col_report(your_data)` to check which liver
+> enzyme and metabolic columns are auto-detected before building your `col_map`.
+> See the [Multi-Biobank Compatibility](multi_biobank.html) article for recognised
+> synonyms across major biobanks (e.g., `alanine_aminotransferase`, `ALT_UL`,
+> `ALAT`).

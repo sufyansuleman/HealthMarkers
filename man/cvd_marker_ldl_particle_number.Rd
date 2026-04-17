@@ -6,9 +6,9 @@
 \usage{
 cvd_marker_ldl_particle_number(
   data,
-  col_map = list(ApoB = "ApoB"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{

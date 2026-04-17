@@ -52,6 +52,7 @@ test_that("core metrics compute correctly without options", {
 
 # 2) Test adjust_WHR and include_RFM
 test_that("adjust_WHR adds WHRadjBMI and include_RFM adds RFM", {
+  skip_on_cran()
   out2 <- obesity_indices(
     data = base_df,
     weight = wt,
@@ -80,6 +81,7 @@ test_that("adjust_WHR adds WHRadjBMI and include_RFM adds RFM", {
 
 # 3) Units conversion
 test_that("unit conversion works for lb and cm", {
+  skip_on_cran()
   df_units <- tibble(
     wt_lb = 220,    # lb
     ht_cm = 180,    # cm
@@ -104,6 +106,7 @@ test_that("unit conversion works for lb and cm", {
 
 # 4) Error handling
 test_that("errors on missing columns or missing sex when RFM requested", {
+  skip_on_cran()
   # Missing waist column
   df_missing <- base_df[, setdiff(names(base_df), "waist")]
   expect_error(
@@ -127,6 +130,7 @@ test_that("errors on missing columns or missing sex when RFM requested", {
 
 # 5) na_action policies
 test_that("na_action policies behave as expected", {
+  skip_on_cran()
   df_na <- tibble(
     wt    = c(80, NA_real_),
     ht    = c(2, 2),
@@ -162,6 +166,7 @@ test_that("na_action policies behave as expected", {
 
 # 6) Extreme values pass through unchanged (no check_extreme)
 test_that("extreme input values pass through without error", {
+  skip_on_cran()
   df_ext <- tibble(
     wt    = 80,
     ht    = 200,
@@ -174,6 +179,7 @@ test_that("extreme input values pass through without error", {
 
 # 7) Denominator-zero summary warning
 test_that("denominator zero emits a single summary warning", {
+  skip_on_cran()
   df_zero <- tibble(
     wt    = 80,
     ht    = 2,
@@ -189,6 +195,7 @@ test_that("denominator zero emits a single summary warning", {
 
 # 8) include_RFM with invalid sex values warns and sets NA
 test_that("include_RFM warns on invalid sex values and sets NA", {
+  skip_on_cran()
   df_bad_sex <- tibble(
     wt    = c(80, 70),
     ht    = c(2, 1.8),
@@ -205,6 +212,7 @@ test_that("include_RFM warns on invalid sex values and sets NA", {
 
 # 9) Verbose emits col_map and results messages
 test_that("verbose emits preparing, col_map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE),
@@ -221,6 +229,7 @@ test_that("verbose emits preparing, col_map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(
     obesity_indices(base_df, wt, ht, waist, hip, verbose = TRUE)

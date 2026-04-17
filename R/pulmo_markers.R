@@ -22,6 +22,9 @@
 #'   required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings on
 #'   required inputs. Default 0.2.
+#' @param col_map Optional named list mapping canonical keys (`age`, `sex`, `height`,
+#'   `ethnicity`, `fev1`, `fvc`) to actual column names in `data`. If `NULL`,
+#'   column names are inferred automatically.
 #' @param verbose Logical; if `TRUE` prints progress messages and a completion summary.
 #'
 #' @return A tibble with columns:

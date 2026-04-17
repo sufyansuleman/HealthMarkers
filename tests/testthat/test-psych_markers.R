@@ -84,6 +84,7 @@ test_that("psych_markers returns combined outputs for requested scales", {
 })
 
 test_that("missingness policy propagate NA when too much is missing", {
+  skip_on_cran()
   df_na <- mini_df
   df_na$phq9_01 <- NA
   df_na$phq9_02 <- NA
@@ -92,12 +93,14 @@ test_that("missingness policy propagate NA when too much is missing", {
 })
 
 test_that("psych_markers verbose emits preparing and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(psych_markers(mini_df, which = "phq9", verbose = TRUE), "psych_markers")
   expect_message(psych_markers(mini_df, which = "phq9", verbose = TRUE), "results:")
 })
 
 test_that("psych_markers verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(psych_markers(mini_df, which = "phq9", verbose = TRUE))
   expect_equal(sum(grepl("results:", msgs)), 1L)

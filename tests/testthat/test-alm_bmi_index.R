@@ -23,6 +23,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   expect_message(alm_bmi_index(df, cm, verbose = TRUE), "alm_bmi_index")
@@ -31,6 +32,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
   msgs <- testthat::capture_messages(alm_bmi_index(df, cm, verbose = TRUE))
@@ -39,6 +41,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c("10", "oops"),
     BMI    = c("25", "26"),
@@ -52,6 +55,7 @@ test_that("numeric coercion warning when strings introduce NAs", {
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c(10, NA, 12),
     BMI    = c(25, 26, 27),
@@ -77,6 +81,7 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("domain warnings: BMI and ALM ranges and nonpositive BMI", {
+  skip_on_cran()
   # BMI out of [10,60], ALM plausible
   df_bmi <- data.frame(
     ALM_kg = c(15, 20),
@@ -124,6 +129,7 @@ test_that("domain warnings: BMI and ALM ranges and nonpositive BMI", {
 })
 
 test_that("sex normalization and unknown sex warning", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c(10, 10, 10),
     BMI    = c(25, 25, 25),
@@ -137,6 +143,7 @@ test_that("sex normalization and unknown sex warning", {
 })
 
 test_that("extreme ALM/BMI values trigger domain warnings", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c(2, 18, 45),
     BMI    = c(8, 25, 70),
@@ -149,6 +156,7 @@ test_that("extreme ALM/BMI values trigger domain warnings", {
 })
 
 test_that("thresholds: low muscle mass flagged correctly by sex", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c(15, 20, 10, 12),
     BMI    = c(20, 25, 20, 25),
@@ -162,6 +170,7 @@ test_that("thresholds: low muscle mass flagged correctly by sex", {
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(
     ALM_kg = c(10, NA, 12),
     BMI    = c(25, 26, 27),

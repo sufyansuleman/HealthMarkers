@@ -1,6 +1,6 @@
 ---
 title: "Atherogenic Indices"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -19,14 +19,13 @@ All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
 ## When to use
 - You have triglycerides and HDL cholesterol and want AIP.
 - You also have total and/or LDL cholesterol and want Castelli indices.
-- You need optional extreme-value screening or strict missing-data handling.
+- You need strict missing-data handling.
 
 ## Requirements checklist
 - Packages: HealthMarkers, dplyr (for display).
 - Data frame with lipid columns; required keys: TG and HDL_c. Optional: TC and LDL_c.
 - Numeric lipids; non-numeric are coerced with warnings; non-finite become NA.
 - Decide row policy: na_action = keep (default), omit, or error.
-- Optional extreme screening: enable check_extreme and choose extreme_action.
 
 ## Load packages and example data
 Replace the example slice with your data frame.
@@ -60,8 +59,6 @@ aip_out <- atherogenic_indices(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn",
   verbose = FALSE
 )
 
@@ -72,8 +69,6 @@ head(select(aip_out, all_of(new_cols)))
 ## Arguments that matter
 - col_map: named list for TG, HDL_c (required), and optional TC, LDL_c. Missing required keys error.
 - na_action: keep (default, rows retained; ratios become NA), omit (drop rows with NA in used lipids), error (abort on NA).
-- check_extreme: FALSE by default; if TRUE, screen lipids using extreme_rules.
-- extreme_action: warn (default, no change), cap, error, ignore, or NA. Defaults use wide mg/dL ranges: TG 0-10000, HDL_c 0-1000, LDL_c 0-10000, TC 0-10000.
 - verbose: emit step messages.
 
 ## Handling missing and zero denominators
@@ -97,23 +92,13 @@ list(
 ```
 
 ## Extreme-value screening (optional)
-Enable check_extreme to cap, warn, error, ignore, or set NA for out-of-range lipids.
+Zero or negative HDL_c denominators yield NA ratios and a warning. Filter or remove such values before calling.
 
 ```{r}
 demo2 <- sim_small
 demo2$TG[5] <- 12000  # extreme TG
-
-aip_screen <- atherogenic_indices(
-  data = demo2,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(TG = c(0, 10000), HDL_c = c(0, 1000), LDL_c = c(0, 10000), TC = c(0, 10000)),
-  verbose = FALSE
-)
-
-head(select(aip_screen, AIP, CRI_I, CRI_II))
+# Note: extreme values will produce extreme ratio outputs; pre-filter if needed
+head(select(atherogenic_indices(demo2, col_map = col_map), AIP, CRI_I, CRI_II))
 ```
 
 ## Outputs
@@ -126,7 +111,6 @@ Rows only drop when na_action = "omit" or when na_action = "error" encounters mi
 - Keep lipid units consistent; ratios are unitless but inputs must share units.
 - Mapping omissions for TG or HDL_c throw errors; missing TC/LDL_c just yield NA Castelli indices.
 - Zero HDL_c produces NA ratios and a warning; address true zeros before computing.
-- Tighten extreme_rules if your lab ranges are narrower; use extreme_action = "error" for strict QA.
 - Use na_action = "error" for pipelines that must fail fast on missing lipids.
 
 ## Validation ideas
@@ -165,6 +149,16 @@ options(old_opt)
 ```
 
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which lipid/analyte columns are
+auto-detected before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
 
 ## See also
 - health_summary() for combined marker panels.

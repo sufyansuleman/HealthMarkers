@@ -15,7 +15,7 @@ psych_markers(
   bis_key = NULL,
   spq_key = NULL,
   cognitive_method = c("z_mean", "pca1"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -37,7 +37,7 @@ psych_markers(
 
 \item{cognitive_method}{Method passed to \code{cognitive_score} ("z_mean" or "pca1").}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of computed score columns from all requested modules, bound together. No input columns are included in the output.

@@ -28,6 +28,7 @@ test_that("saliva_markers errors if missing required columns", {
 })
 
 test_that("saliva_markers computes log transforms, CAR_AUC, and passes through glucose", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
@@ -56,6 +57,7 @@ test_that("saliva_markers computes log transforms, CAR_AUC, and passes through g
 })
 
 test_that("saliva_markers is vectorized over multiple rows", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = c(10, 5),
     saliva_cort2    = c(20, 10),
@@ -71,6 +73,7 @@ test_that("saliva_markers is vectorized over multiple rows", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
@@ -85,6 +88,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
@@ -99,6 +103,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("na_action='omit' drops rows with NA in required inputs and returns empty tibble when all omitted", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = NA_real_,
     saliva_cort2    = 20,
@@ -113,6 +118,7 @@ test_that("na_action='omit' drops rows with NA in required inputs and returns em
 })
 
 test_that("invalid `times` argument errors clearly", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,
@@ -127,6 +133,7 @@ test_that("invalid `times` argument errors clearly", {
 })
 
 test_that("extreme values produce range note in verbose; no warning in non-verbose mode", {
+  skip_on_cran()
   df <- tibble(
     saliva_cort1    = 10,
     saliva_cort2    = 20,

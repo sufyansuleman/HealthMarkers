@@ -1,6 +1,6 @@
 ---
 title: "Nutrient Markers"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -29,7 +29,6 @@ Compute nutrient-related ratios/products (FerritinTS, AGR, Omega3Index, Mg_Cr_Ra
 - `col_map`: optional named list mapping keys (defaults to identity): `ferritin`, `transferrin_sat`, `albumin`, `total_protein`, `EPA`, `DHA`, `Mg`, `creatinine`, `glycated_albumin`, `uric_acid`, `BUN`, `phosphate`, `calcium`, `Na`, `K`, `Cl`, `HCO3`, `Tyr`, `Phe`. Unrecognized keys are ignored. Non-numeric values are coerced with warnings; non-finite set to `NA`.
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows with NA in used inputs; `error` aborts when used inputs contain NA.
 - `na_warn_prop`: threshold for high-missingness diagnostics (default 0.2; shown in verbose/debug).
-- `check_extreme`: set TRUE to scan inputs; `extreme_action` (`warn`/`cap`/`error`/`ignore`/`NA`) controls handling. Defaults are broad (e.g., ferritin 0–2000 ng/mL; transferrin_sat 0–100%; albumin 10–60 g/L; total_protein 40–100 g/L; EPA/DHA 0–20%; Mg 0.2–3 mmol/L; creatinine 20–2000 umol/L; glycated_albumin 0–60 g/L; uric_acid 50–1000 umol/L; BUN 1–150 mg/dL; phosphate 0.1–5 mmol/L; calcium 0.5–4 mmol/L; Na 100–200 mmol/L; K 2–8 mmol/L; Cl 70–130 mmol/L; HCO3 5–45 mmol/L; Tyr 10–300 umol/L; Phe 20–300 umol/L).
 - `verbose`: optional progress and summary logging.
 
 ## Quick start
@@ -53,20 +52,22 @@ nutrient_markers(
   data = df,
   col_map = NULL,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 ```
 
-## Extreme scan and cap
+## Extreme values
+Extreme inputs will produce extreme derived markers. Pre-filter implausible values before calling.
 
 ```{r}
+# Pre-filter extreme ferritin
+df_clean <- df
+df_clean$ferritin[df_clean$ferritin > 2000] <- NA
+
 nutrient_markers(
-  data = df,
+  data = df_clean,
   col_map = NULL,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 ```
@@ -101,9 +102,19 @@ nutrient_markers(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
+
 ## Tips
 
 - Provide only the inputs you have; missing inputs yield NA for dependent markers.
 - Omega3Index expects EPA/DHA as percentages; AGR uses globulin = total_protein - albumin.
-- Tighten `extreme_rules` to your lab ranges before using `extreme_action = "cap"` or `"error"`.
 - Use `na_action = "omit"` when you prefer row-complete outputs; use `keep` during QA to inspect missingness.

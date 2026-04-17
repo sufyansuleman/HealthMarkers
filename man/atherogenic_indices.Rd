@@ -8,11 +8,8 @@ atherogenic_indices(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   normalize = c("none", "log10"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -22,18 +19,14 @@ atherogenic_indices(
 
 \item{na_action}{one of c("keep","omit","error").}
 
-\item{check_extreme}{logical; if TRUE, screen inputs for extremes using \code{extreme_rules}.}
-
-\item{extreme_action}{one of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{optional named list of bounds per key or column, each c(min, max).}
-
 \item{normalize}{one of c("none","log10"). Reserved; AIP always uses log10(TG/HDL_c).}
 
-\item{verbose}{logical; prints step messages via hm_inform when TRUE.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.}
 }
 \value{
-tibble with columns AIP, CRI_I, CRI_II
+tibble with columns AIP, CRI_I, CRI_II. If an ID column is detected
+in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}), it is prepended.
 }
 \description{
 Calculates:
@@ -62,7 +55,7 @@ df <- tibble::tibble(
   LDL_c = c(120, 150)
 )
 cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
-atherogenic_indices(df, col_map = cm, verbose = FALSE)
+atherogenic_indices(df, col_map = cm)
 
 }
 \references{

@@ -30,6 +30,7 @@ test_that("all_health_markers: global precompute derives eGFR and feeds ckd_stag
 })
 
 test_that("all_health_markers: ckd_stage resolves even without the 'renal' group", {
+  skip_on_cran()
   # Only creatinine+age+sex — no renal group; eGFR comes solely from global precompute
   df <- data.frame(
     creatinine = c(1.2),
@@ -53,6 +54,7 @@ test_that("all_health_markers: ckd_stage resolves even without the 'renal' group
 # BMI pipeline: weight + height -> BMI (Tier 0) -> used by lipid/glycemic
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: global precompute derives BMI from weight and height", {
+  skip_on_cran()
   df <- data.frame(
     weight = 80.0, height = 175.0,
     TC = 5.2, HDL_c = 1.3, TG = 1.8
@@ -73,6 +75,7 @@ test_that("all_health_markers: global precompute derives BMI from weight and hei
 # LDL_c pipeline: TC + HDL_c + TG -> LDL_c (Tier 0) -> lipid_markers ratios
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: global precompute derives LDL_c and lipid group uses it", {
+  skip_on_cran()
   df <- data.frame(TC = 5.2, HDL_c = 1.3, TG = 1.8)
   out <- suppressWarnings(all_health_markers(
     df,
@@ -92,6 +95,7 @@ test_that("all_health_markers: global precompute derives LDL_c and lipid group u
 # Glucose alias pipeline: G0 -> glucose (Tier 0) -> glycemic group
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: G0 aliased to glucose by global precompute", {
+  skip_on_cran()
   df <- data.frame(G0 = 5.5, I0 = 10.0, age = 35, sex = "M", BMI = 25)
   out <- suppressWarnings(all_health_markers(
     df,
@@ -109,6 +113,7 @@ test_that("all_health_markers: G0 aliased to glucose by global precompute", {
 # UACR pipeline: urine_albumin + urine_creatinine -> UACR (Tier 0) -> ckd_stage
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: UACR derived by global precompute and used by ckd_stage", {
+  skip_on_cran()
   df <- data.frame(
     creatinine       = 1.1,
     age              = 60,
@@ -135,6 +140,7 @@ test_that("all_health_markers: UACR derived by global precompute and used by ckd
 # No-data graceful skip: ckd_stage absent when no eGFR inputs provided
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: ckd_stage skipped gracefully when no eGFR data", {
+  skip_on_cran()
   df <- data.frame(TC = 5.0, HDL_c = 1.2, TG = 1.8)
   out <- suppressWarnings(all_health_markers(
     df,
@@ -148,4 +154,39 @@ test_that("all_health_markers: ckd_stage skipped gracefully when no eGFR data", 
   expect_true("non_HDL_c" %in% names(out) || any(grepl("LDL|HDL|TC", names(out))))
   # ckd_stage should NOT have produced CKD_stage (no creatinine in data)
   expect_false("CKD_stage" %in% names(out))
+})
+
+# ---------------------------------------------------------------------------
+# .hm_safe_call() error attribute structure
+# ---------------------------------------------------------------------------
+test_that(".hm_safe_call() returns hm_error attribute when function throws", {
+  skip_on_cran()
+  bad_fun <- function(data, ...) stop("deliberate test failure")
+  result <- HealthMarkers:::.hm_safe_call(
+    fun           = bad_fun,
+    data          = data.frame(x = 1),
+    col_map       = list(),
+    needs_col_map = FALSE,
+    verbose       = FALSE,
+    tag           = "test_tag"
+  )
+  expect_false(is.null(attr(result, "hm_error")))
+  expect_match(attr(result, "hm_error"), "deliberate test failure")
+})
+
+test_that(".hm_safe_call() captures missing-package error and sets hm_missing_pkg", {
+  skip_on_cran()
+  pkg_fun <- function(data, ...) {
+    rlang::abort("Package 'fakepackage' is required for this feature.",
+                 class = "healthmarkers_missing_package", package = "fakepackage")
+  }
+  result <- HealthMarkers:::.hm_safe_call(
+    fun           = pkg_fun,
+    data          = data.frame(x = 1),
+    col_map       = list(),
+    needs_col_map = FALSE,
+    verbose       = FALSE,
+    tag           = "pkg_test"
+  )
+  expect_equal(attr(result, "hm_missing_pkg"), "fakepackage")
 })

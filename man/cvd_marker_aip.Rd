@@ -6,9 +6,9 @@
 \usage{
 cvd_marker_aip(
   data,
-  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{

@@ -6,16 +6,10 @@
 \usage{
 liver_fat_markers(
   data,
-  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes =
-    "diabetes", MetS = "MetS", insulin = "insulin", I0 = "I0", waist = "waist", TG =
-    "TG", HDL_c = "HDL_c", sbp = "sbp", bp_sys = "bp_sys", bp_treated = "bp_treated",
-    glucose = "glucose", G0 = "G0"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -32,13 +26,7 @@ liver_fat_markers(
 
 \item{na_warn_prop}{Proportion in \eqn{[0,1]} for high-missingness warnings when na_action = "warn". Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scan selected inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.}
-
-\item{extreme_rules}{Optional named list of c(min,max) to override defaults.}
-
-\item{verbose}{Logical; if TRUE, prints progress.}
+\item{verbose}{Logical; if TRUE, prints column mapping and computing messages.}
 }
 \value{
 A tibble with columns HSI and NAFLD_LFS.

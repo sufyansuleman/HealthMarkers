@@ -6,28 +6,24 @@
 \usage{
 urine_markers(
   data,
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  na_warn_prop = 0.2
 )
 }
 \arguments{
 \item{data}{A data.frame or tibble with at least urine_albumin and urine_creatinine.}
+
+\item{col_map}{Optional named list mapping canonical keys (e.g., \code{urine_albumin},
+\code{urine_creatinine}) to actual column names in \code{data}. If \code{NULL}, column names
+are inferred automatically.}
 
 \item{verbose}{Logical; if \code{TRUE}, prints progress messages and a completion summary. Default FALSE.}
 
 \item{na_action}{One of \code{c("keep","omit","error")} for handling missing values in required inputs. Default "keep".}
 
 \item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
-
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.}
 }
 \value{
 A tibble with columns:

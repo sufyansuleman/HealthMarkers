@@ -1,6 +1,6 @@
 ---
 title: "Adiposity SDS (Sex-Stratified)"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -9,7 +9,7 @@ knitr::opts_knit$set(purl = FALSE)
 ```
 
 ## Scope
-Sex-stratified SDS (z-scores) for anthropometric measures using separate male/female references, with NA policies, optional extreme screening, and flexible variable mapping.
+Sex-stratified SDS (z-scores) for anthropometric measures using separate male/female references, with NA policies and flexible variable mapping.
 
 ## When to use this
 - You need sex-specific standardization before modeling or flagging outliers.
@@ -35,11 +35,11 @@ sim <- readRDS(sim_path)
 # Normalize sex labels to M/F and ensure both sexes appear in the demo slice
 sim_small <- sim %>%
   mutate(sex = case_when(
-    sex %in% c("M", "F") ~ sex,
+    as.character(sex) %in% c("M", "F") ~ as.character(sex),
     sex %in% c("male", "Male", "m") ~ "M",
     sex %in% c("female", "Female", "f") ~ "F",
-    sex %in% c(1, "1") ~ "M",
-    sex %in% c(2, "2") ~ "F",
+    sex %in% c(1L, "1") ~ "M",
+    sex %in% c(2L, "2") ~ "F",
     TRUE ~ NA_character_
   )) %>%
   filter(!is.na(sex)) %>%
@@ -119,8 +119,6 @@ asds_strat <- adiposity_sds_strat(
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = "",
   verbose = FALSE
@@ -134,22 +132,18 @@ asds_strat %>%
 
 Interpretation: each `<var>_SDS` is standardized against sex-specific mean/SD; values near 0 are average for that sex, positive above, negative below.
 
-## Missing data and extremes
-Compare row handling and capping.
+## Missing data handling
+Compare row handling with NA policy.
 
 ```{r, eval=FALSE}
 demo <- sim_small[1:8, c("sex", "BMI", "waist", "height")]
 demo$BMI[3] <- NA         # missing
-demo$waist[5] <- 300      # extreme high waist
-demo$height[2] <- 20      # extreme low height
 
 demo_keep <- adiposity_sds_strat(
   data = demo,
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = ""
 )
@@ -159,8 +153,6 @@ demo_omit <- adiposity_sds_strat(
   col_map = col_map,
   ref = ref,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = ""
 )
@@ -168,7 +160,7 @@ demo_omit <- adiposity_sds_strat(
 list(
   keep_rows = nrow(demo_keep),
   omit_rows = nrow(demo_omit),
-  capped_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
+  keep_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
 )
 ```
 
@@ -209,7 +201,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 - `ref$M` and `ref$F` must list identical variables with finite `mean` and `sd > 0`.
 - All mapped columns must exist unless `allow_partial = TRUE`, in which case missing variables are skipped with an info message.
 - `na_action` controls whether rows with missing inputs are kept, dropped, or error; missing values propagate to SDS when kept.
-- `check_extreme` + `extreme_action` screen raw inputs before standardizing; SDS outputs themselves are not capped.
 - Numeric coercion happens with warnings if NAs are introduced; align your data units with the reference units.
 
 ## Common pitfalls
@@ -221,7 +212,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 ## Validation notes
 - Within each sex, SDS should center near 0 with SD near 1 if references match the data population.
 - Spot-check a variable: `(value - sex_mean)/sex_sd` should match the corresponding `<var>_SDS`.
-- Use `check_extreme = TRUE` with tailored `extreme_rules` to catch implausible anthropometrics before standardizing.
 
 ## See also
 - `adiposity_sds()` for pooled-sex SDS.

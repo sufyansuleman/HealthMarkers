@@ -9,10 +9,7 @@ fasting_is(
   col_map = NULL,
   normalize = c("none", "z", "inverse", "range", "robust"),
   na_action = c("keep", "omit", "error", "warn"),
-  check_extreme = FALSE,
-  extreme_limit = 1000,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -34,16 +31,13 @@ fasting_is(
 \item "warn"  (emit a warning for rows with missing inputs, then keep them)
 }}
 
-\item{check_extreme}{Logical; if TRUE, scan computed indices for large magnitudes.}
-
-\item{extreme_limit}{Positive numeric threshold used when check_extreme = TRUE.}
-
-\item{extreme_action}{One of: "cap","NA","error".}
-
-\item{verbose}{Logical; if TRUE, emit progress/completion messages.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.}
 }
 \value{
-Tibble with 10 columns (indices listed above).
+Tibble with 10 columns (indices listed above). If an ID column is
+detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}), it is prepended
+as the first output column.
 }
 \description{
 Compute 10 fasting indices from glucose (mmol/L) and insulin (pmol/L):
@@ -57,10 +51,9 @@ df <- data.frame(G0 = c(5.2, 6.1, 4.8), I0 = c(60, 120, 80))
 res <- fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))
 head(res)
 
-# With NA handling and extreme checking
+# With NA handling
 df2 <- data.frame(G0 = c(5.0, NA), I0 = c(90, 150))
-fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep",
-           check_extreme = TRUE, extreme_limit = 1e3, extreme_action = "cap")
+fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep")
 }
 \references{
 \insertRef{matthews1985homa}{HealthMarkers};

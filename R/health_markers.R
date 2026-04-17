@@ -572,8 +572,8 @@ metabolic_markers <- function(
 #'
 #' @param data A data.frame or tibble.
 #' @param col_map Named list for column mapping forwarded to underlying functions.
-#'   If `col_map` is `NULL` or missing, `all_health_markers()` calls
-#'   [hm_infer_cols()] once at the top level to guess a column map from common
+#'   If `col_map` is `NULL` or an empty list, `all_health_markers()` calls
+#'   [hm_col_report()] once at the top level to guess a column map from common
 #'   synonyms (for example `TG` vs `triglycerides`, `BMI` vs `bmi`,
 #'   `HDL_c` vs `HDL`). The inferred `col_map` is then reused for all groups
 #'   that require it, and an error is thrown if required keys (e.g. `TG`,
@@ -645,12 +645,23 @@ all_health_markers <- function(
     )
   }
 
+  # --- Tier 0: derive globally useful variables BEFORE the verbose summary
+  # so the summary can correctly classify derived vs not-found keys
+  out <- data
+  gp  <- .hm_global_precompute(out, col_map, verbose = FALSE)
+  out <- gp$data
+  # Merge newly derived keys into col_map (key -> same-name column)
+  for (k in names(gp$derived_map)) {
+    if (is.null(col_map[[k]])) col_map[[k]] <- k
+  }
+
   # Track which keys were mapped vs not found (for verbose summary)
   all_pattern_keys <- names(.hm_default_col_patterns_exact())
   user_keys <- if (is.null(orig_col_map)) character(0) else
     names(orig_col_map)[!vapply(orig_col_map, is.null, logical(1))]
   did_auto_infer <- is.null(orig_col_map)  # TRUE when we ran hm_col_report() above
-  inferred_keys  <- if (did_auto_infer) names(col_map) else character(0)
+  inferred_keys  <- if (did_auto_infer) setdiff(names(col_map), names(gp$derived_map)) else character(0)
+  derived_keys   <- if (did_auto_infer) intersect(names(gp$derived_map), all_pattern_keys) else character(0)
   not_found_keys <- if (did_auto_infer) setdiff(all_pattern_keys, names(col_map)) else character(0)
 
   if (isTRUE(verbose)) {
@@ -672,6 +683,11 @@ all_health_markers <- function(
       for (k in inferred_keys)
         cat(sprintf("   \u2714 %-24s -> %s\n", k, col_map[[k]]))
     }
+    if (did_auto_infer && length(derived_keys)) {
+      cat(sprintf("\n Derived (%d):\n", length(derived_keys)))
+      for (k in derived_keys)
+        cat(sprintf("   \u25b6 %-24s (computed from available inputs)\n", k))
+    }
     if (did_auto_infer && length(not_found_keys)) {
       cat(sprintf("\n Not found (%d) \u2014 groups needing these keys will be skipped:\n",
                   length(not_found_keys)))
@@ -681,13 +697,6 @@ all_health_markers <- function(
     cat(sprintf(" %s\n\n",
                 paste(rep("\u2500", 87L), collapse = "")))
   }
-
-  out <- data
-
-  # --- Tier 0: derive globally useful variables (BMI, eGFR, UACR, LDL_c, etc.)
-  # so downstream groups see them without redundant computation
-  gp <- .hm_global_precompute(out, col_map, verbose)
-  out <- gp$data
 
   group_status <- list()
 

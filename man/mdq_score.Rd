@@ -13,7 +13,7 @@ mdq_score(
   symptom_cutoff = 7,
   require_clustering = TRUE,
   require_impairment = TRUE,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -33,7 +33,7 @@ mdq_score(
 
 \item{require_impairment}{Require impairment item == 1 to be positive.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{MDQ_symptom_count}, \code{MDQ_clustering}, \code{MDQ_impairment}, \code{MDQ_positive_screen}. Input columns are not included.

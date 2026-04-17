@@ -24,7 +24,7 @@ Compute anthropometric adiposity/shape indices (BMI + category, WHR/WHtR, AVI, B
 ## When to use
 
 - You have weight/height/waist/hip (and optionally sex) and want a comprehensive set of body composition proxies in one call.
-- You need built-in unit conversion (kg/lb, cm/m), NA policy controls, and optional extreme-value scanning/capping.
+- You need built-in unit conversion (kg/lb, cm/m) and NA policy controls.
 - You want optional BMI-adjusted WHR and Relative Fat Mass when sex coding is available.
 
 ## Inputs
@@ -37,7 +37,6 @@ Compute anthropometric adiposity/shape indices (BMI + category, WHR/WHtR, AVI, B
 - `include_RFM`: compute Relative Fat Mass (requires `sex`).
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows missing required inputs; `error` aborts when required inputs contain NA.
 - `na_warn_prop`: threshold for high-missingness debug messages (default 0.2).
-- `check_extreme`: set TRUE to scan weight_kg/height_m/waist/hip; `extreme_action` (`warn`/`cap`/`error`/`ignore`) controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist 30–200 cm; hip 30–200 cm.
 - `verbose`: optional progress and summary logging.
 
 ## Quick start
@@ -66,14 +65,14 @@ obesity_indices(
   adjust_WHR = TRUE,
   include_RFM = TRUE,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 ```
 
-## Extreme scan and cap
+## Verbose diagnostics
 
-```{r}
+```{r, message=TRUE}
+old_opt <- options(healthmarkers.verbose = "inform")
 obesity_indices(
   data = df,
   weight = wt,
@@ -86,10 +85,9 @@ obesity_indices(
   adjust_WHR = FALSE,
   include_RFM = TRUE,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
+options(old_opt)
 ```
 
 ## Missing-data policy
@@ -112,28 +110,9 @@ try(
 - Adds: `weight_kg`, `height_m`, `BMI`, `BMI_cat`, `WHR`, `waist_to_height_ratio`, `AVI`, `BAI`, `ABSI`, `BRI`, `CI`, `waist_to_BMI_ratio`, `weight_to_height_ratio`, optional `WHRadjBMI`, optional `RFM`.
 - Zero denominators yield `NA` with warnings; WHRadjBMI requires variance in WHR and BMI; RFM requires sex coded 0/1.
 
-## Verbose diagnostics
-
-```{r, message=TRUE}
-old_opt <- options(healthmarkers.verbose = "inform")
-obesity_indices(
-  data = df,
-  weight = wt,
-  height = ht,
-  waist = waist,
-  hip = hip,
-  sex = sex,
-  weight_unit = "kg",
-  height_unit = "cm",
-  verbose = TRUE
-)
-options(old_opt)
-```
-
 ## Tips
 
 - Set weight/height units correctly; waist/hip are assumed cm.
 - Enable `include_RFM = TRUE` only with valid sex coding; leave FALSE otherwise.
 - WHRadjBMI needs variation in WHR and BMI; otherwise it returns `NA` with a warning.
-- Tighten `extreme_rules` to your cohort before using `extreme_action = "cap"` or `"error"`.
 - Use `na_action = "omit"` for row-complete outputs; keep during QA to see missingness.

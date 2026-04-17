@@ -1,6 +1,6 @@
 ---
 title: "Kynurenine/Tryptophan ratio"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -9,7 +9,34 @@ knitr::opts_knit$set(purl = FALSE)
 ```
 
 ## Scope
-Compute the kynurenine/tryptophan ratio (KTR), a marker of IDO activity and immune activation. Supports NA policies, optional extreme screening (warn/cap/NA/error), and verbose progress. Inputs must already be Kyn (nmol/L) and Trp (µmol/L); no unit conversion.
+Compute the kynurenine/tryptophan ratio (KTR), a marker of IDO activity and immune activation. Supports NA policies and verbose progress. Inputs must already be Kyn (nmol/L) and Trp (µmol/L); no unit conversion.
+
+## Background
+
+The kynurenine/tryptophan ratio (KTR) quantifies the activity of indoleamine
+2,3-dioxygenase 1 (IDO1), the rate-limiting enzyme in the kynurenine pathway of
+tryptophan catabolism. Elevated KTR reflects:
+
+- **Immune activation:** IDO1 is upregulated by interferon-γ and other pro-inflammatory
+  signals; high KTR indicates cell-mediated immune response.
+- **Immune escape:** tumour cells exploit IDO1 to suppress T-cell activity; KTR is
+  elevated in many malignancies.
+- **Ageing and inflammation:** KTR rises with biological age and correlates with
+  inflammatory burden (CRP, IL-6).
+
+Formula: $\text{KTR} = \frac{\text{kynurenine (nmol/L)}}{\text{tryptophan (\mu mol/L)}}$
+
+Approximate reference values in healthy adults:
+
+| Population | Typical KTR |
+|---------------------------|--------------|
+| Healthy adults (< 50 yr) | 15–30 |
+| Older adults (> 65 yr) | 25–45 |
+| Active infection / sepsis | 80–400+ |
+| Cancer (some types) | 50–200 |
+
+> **Unit note:** Kyn must be in nmol/L and Trp in µmol/L for the ratio to yield
+> values in the physiological range. The resulting KTR is unitless (nmol/µmol).
 
 ## Load packages and demo data
 
@@ -17,11 +44,16 @@ Compute the kynurenine/tryptophan ratio (KTR), a marker of IDO activity and immu
 library(HealthMarkers)
 library(tibble)
 
+# Eight participants: healthy → chronically ill → acute infection range
 df <- tibble::tibble(
-  Kyn_nM = c(1800, 2500, 3200),
-  Trp_uM = c(50, 42, 12)
+  Kyn_nM = c(1200, 1800, 2500, 3200, 4500, 8000, 15000, 25000),
+  Trp_uM = c(62,   50,   42,   38,   35,   28,   18,    12   )
 )
 ```
+
+*Row interpretation:* rows 1–2 ≈ healthy adults; rows 3–4 ≈ sub-clinical
+inflammation; rows 5–6 ≈ chronic immune activation; rows 7–8 ≈ acute infection
+or high-grade malignancy.
 
 ## Column map (required)
 
@@ -37,33 +69,29 @@ ktr <- kyn_trp_ratio(
   data = df,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
 ktr
 ```
 
-## Extreme screening
-Scan and cap into default ranges.
+## Extreme values
+Extreme Kyn or Trp values will produce extreme KTR. Pre-filter implausible inputs before calling.
 
 ```{r}
 df_ext <- df
-df_ext$Kyn_nM[2] <- 50000  # extreme
+df_ext$Kyn_nM[2] <- 50000  # extreme; pre-filter
+df_ext$Kyn_nM[df_ext$Kyn_nM > 20000] <- NA
 
-ktr_cap <- kyn_trp_ratio(
+ktr_filtered <- kyn_trp_ratio(
   data = df_ext,
   col_map = col_map,
   na_action = "warn",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
+  verbose = FALSE
 )
 
-ktr_cap
+ktr_filtered
 ```
-
-`extreme_action = "warn"` only warns; `error` aborts; `NA` blanks flagged values.
 
 ## Missing data handling
 `keep`/`ignore`/`warn` retain rows with NA ratios; `omit` drops rows with missing inputs; `error` stops on missingness.
@@ -81,7 +109,6 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 ## Expectations
 - Both markers must be mapped and present; non-numeric inputs are coerced with warnings if NAs are introduced.
 - Trp must be positive; nonpositive values are set to `NA` with a warning.
-- Extreme defaults: Kyn 100–20000 nmol/L, Trp 10–150 µmol/L, ratio 0–200; adjust with `extreme_rules`.
 - Output: one-column tibble `kyn_trp_ratio`; row count follows `na_action` if you omit rows.
 
 ## Verbose diagnostics
@@ -96,7 +123,22 @@ kyn_trp_ratio(
 options(old_opt)
 ```
 
+## Column recognition (multi-biobank)
+
+Kynurenine and tryptophan are measured by targeted HPLC or mass-spectrometry
+panels. Column names vary widely across platforms. Use `hm_col_report()` to
+check what is auto-detected in your dataset:
+
+```{r, eval=FALSE}
+hm_col_report(your_data)  # shows matched keys and suggests col_map entries
+```
+
+See the [Multi-Biobank Compatibility](multi_biobank.html) article for a full list
+of recognised synonyms (e.g., `kynurenine_nmol_L`, `KYN`, `TRP`, `tryptophan_umol`).
+
 ## Tips
 - Re-check units when ratios are very high (>100); Kyn should be nmol/L and Trp µmol/L.
-- Use `extreme_action = "cap"` sparingly and adjust ranges to your cohort.
+- Reference: Badawy AA-B (2019). Tryptophan metabolism: a versatile area providing
+  multiple targets for pharmacological intervention. *Egypt J Basic Clin Pharmacol*.
+  https://doi.org/10.32527/2019/101415
 - For modeling, consider scaling/transforming KTR separately after computation.

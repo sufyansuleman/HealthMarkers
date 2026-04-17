@@ -23,6 +23,7 @@ test_that("errors if any required column is missing", {
 })
 
 test_that("computes UACR, UPCR, Na/K ratio, and normalized tubular markers; names match", {
+  skip_on_cran()
   df <- tibble(
     urine_albumin    = 30,    # mg/L
     urine_creatinine = 2,     # mg/dL
@@ -68,6 +69,7 @@ test_that("computes UACR, UPCR, Na/K ratio, and normalized tubular markers; name
 })
 
 test_that("albuminuria_stage and microalbuminuria factors have correct levels and values", {
+  skip_on_cran()
   df <- tibble(
     # A1: UACR < 30 -> set 10
     urine_albumin    = c(1, 30, 400),
@@ -87,6 +89,7 @@ test_that("albuminuria_stage and microalbuminuria factors have correct levels an
 })
 
 test_that("UPCR and U_Na_K_ratio are NA when inputs are missing", {
+  skip_on_cran()
   df <- tibble(
     urine_albumin    = 30,
     urine_creatinine = 2
@@ -98,6 +101,7 @@ test_that("UPCR and U_Na_K_ratio are NA when inputs are missing", {
 })
 
 test_that("is vectorized over multiple rows", {
+  skip_on_cran()
   df <- tibble(
     urine_albumin    = c(30, 40),
     urine_creatinine = c(2, 4),
@@ -110,6 +114,7 @@ test_that("is vectorized over multiple rows", {
 })
 
 test_that("na_action policies: error and omit behave as expected", {
+  skip_on_cran()
   df_na <- tibble(
     urine_albumin    = c(30, NA_real_),
     urine_creatinine = c(2, 2)
@@ -125,6 +130,7 @@ test_that("na_action policies: error and omit behave as expected", {
 })
 
 test_that("extreme inputs pass through without error (check_extreme removed)", {
+  skip_on_cran()
   df_ext <- tibble(
     urine_albumin    = 1e6,
     urine_creatinine = 1e-6,
@@ -136,6 +142,7 @@ test_that("extreme inputs pass through without error (check_extreme removed)", {
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA in ratios", {
+  skip_on_cran()
   df_zero <- tibble(
     urine_albumin    = 30,
     urine_creatinine = 0,     # zero -> denominator for all per-gCr ratios
@@ -154,6 +161,7 @@ test_that("zero denominators emit a consolidated warning and yield NA in ratios"
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   df <- tibble(
     urine_albumin    = 30,
     urine_creatinine = 2
@@ -165,6 +173,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- tibble(
     urine_albumin    = 30,
     urine_creatinine = 2

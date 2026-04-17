@@ -17,8 +17,7 @@
 #'   - "omit"  (drop rows with any missing/non-finite required inputs)
 #'   - "error" (abort if any required input is missing/non-finite)
 #'   - "warn"  (emit a warning for rows with missing inputs, then keep them)
-#' @param check_extreme Defunct; ignored. Physiological range checking is
-#'   informational only and shown in `verbose` mode.
+
 #' @param verbose Logical; if `TRUE` (default), prints column mapping, the list
 #'   of indices being computed, and a per-column results summary.
 #'

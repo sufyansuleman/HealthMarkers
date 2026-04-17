@@ -14,6 +14,7 @@ test_that("marker_summary returns tibble with variable/mean/sd/iqr", {
 })
 
 test_that("marker_summary returns correct values", {
+  skip_on_cran()
   df <- data.frame(x = c(1, 2, 3))
   out <- marker_summary(df)
   expect_equal(out$mean, 2)
@@ -22,6 +23,7 @@ test_that("marker_summary returns correct values", {
 })
 
 test_that("marker_summary ignores non-numeric columns", {
+  skip_on_cran()
   df <- data.frame(a = 1:3, b = c("x", "y", "z"), stringsAsFactors = FALSE)
   out <- marker_summary(df)
   expect_equal(nrow(out), 1L)
@@ -29,6 +31,7 @@ test_that("marker_summary ignores non-numeric columns", {
 })
 
 test_that("marker_summary returns empty tibble when no numeric columns", {
+  skip_on_cran()
   df <- data.frame(a = c("x", "y"), stringsAsFactors = FALSE)
   out <- marker_summary(df)
   expect_s3_class(out, "tbl_df")
@@ -36,6 +39,7 @@ test_that("marker_summary returns empty tibble when no numeric columns", {
 })
 
 test_that("marker_summary handles NA values (mean/sd/iqr computed na.rm=TRUE)", {
+  skip_on_cran()
   df <- data.frame(x = c(1, NA, 3))
   out <- marker_summary(df)
   expect_equal(out$mean, 2)
@@ -43,10 +47,12 @@ test_that("marker_summary handles NA values (mean/sd/iqr computed na.rm=TRUE)", 
 })
 
 test_that("marker_summary errors on non-data.frame input", {
+  skip_on_cran()
   expect_error(marker_summary(1:5), "must be a data.frame or tibble")
 })
 
 test_that("marker_summary verbose=TRUE runs without error", {
+  skip_on_cran()
   df <- data.frame(a = 1:3)
   expect_no_error(marker_summary(df, verbose = TRUE))
 })

@@ -32,7 +32,7 @@
 #'   per-column results summary.
 #' @param na_action One of `c("keep","omit","error")` controlling missing-data
 #'   policy. Default "keep".
-#' @param na_warn_prop Numeric in [0,1]; per-variable threshold for
+#' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for
 #'   high-missingness warnings. Default 0.2.
 #'
 #' @return A tibble with one column per marker: `FLI`, `NFS`, `APRI`, `FIB4`,

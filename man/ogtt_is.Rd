@@ -8,12 +8,9 @@ ogtt_is(
   data,
   col_map = NULL,
   normalize = "none",
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_limit = 1000,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA")
+  na_warn_prop = 0.2
 )
 }
 \arguments{
@@ -31,20 +28,17 @@ ogtt_is(
 
 \item{normalize}{One of c("none","z","inverse","range","robust") used by normalize_vec().}
 
-\item{verbose}{Logical; if TRUE, prints progress messages via hm_inform().}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.}
 
 \item{na_action}{One of c("keep","omit","error") for missing/non-finite required inputs. Default "keep".}
 
 \item{na_warn_prop}{Proportion (0-1) for high-missingness diagnostics (debug). Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan outputs for |value| > extreme_limit. Default FALSE.}
-
-\item{extreme_limit}{Positive numeric magnitude threshold for extremes. Default 1e3.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".}
 }
 \value{
-A tibble with the OGTT-based index columns listed above.
+A tibble with the OGTT-based index columns listed above. If an ID
+column is detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}), it is
+prepended as the first output column.
 }
 \description{
 Given glucose & insulin at 0, 30, 120 min (plus weight, BMI, age, sex),

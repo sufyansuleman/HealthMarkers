@@ -1,6 +1,38 @@
-# HealthMarkers 0.1.2 (development)
+# HealthMarkers 0.1.2
 
 ## New features
+
+* **Multi-biobank column inference (major).** The internal synonym dictionary
+  (`.hm_default_col_patterns_exact()`) now recognises column-naming conventions
+  from 15+ major cohort studies and biobanks for all primary analytes:
+  - **UK Biobank** — `_0_0` / `_1_0` field naming (e.g. `glucose_0_0`,
+    `creatinine_0_0`, `vitamin_d_0_0`); `standing_height`, `25OHD`.
+  - **NHANES** — LBXS, LBDS, BPX, URX prefix variables (e.g. `LBXGLU`,
+    `LBXSCH`, `BPXSY1`, `URXUMA`).
+  - **Danish national registers / EHR (LABKA/OPEN)** — NPU codes (`NPU01994`
+    for creatinine, `NPU01567` for cholesterol, `NPU03609` for haemoglobin,
+    etc.) and Danish clinical labels (`kreatinin`, `kolesterol`, `blodsukker`,
+    `leukocytter`, `trombocytter`, `d_vitamin`).
+  - **HUNT Study and Tromsø Study (Norway)** — Norwegian-language terms
+    (`blodsukkerfasting`, `systolisk_blodtrykk`, `triglyserider`, `karbamid`,
+    `kjonn`, `midjeomkrets`).
+  - **SCAPIS / TwinGene (Sweden)** — Swedish-language terms (`glukos`,
+    `urinsyra`, `leukocyter`, `trombocyter`, `kön`, `längd`, `vikt`).
+  - **FinnGen / THL Biobank (Finland)** — Finnish-language terms
+    (`glukoosi`, `kolesteroli`, `kreatiniini`, `hemoglobiini`, `sukupuoli`,
+    `virtsahappo`, `leukosyytit`, `ferritiini`, `D_vitamiini`).
+  - **Estonian Biobank (EstBB)** — Estonian terms (`glukoos`, `kolesterool`,
+    `kreatiniin`, `hemoglobiin`, `naatrium`, `kaalium`, `vanus`, `sugu`).
+  - **LifeLines Cohort / Rotterdam Study (Netherlands)** — Dutch terms
+    (`nuchtere_glucose`, `totaal_cholesterol`, `urinezuur`, `ureum`,
+    `leukocyten`, `hemoglobine`, `vitamine_D`, `tailleomtrek`).
+  - **Generation Scotland (GS:SFHS)** — `SBP_mean`, `DBP_mean`,
+    `genetic_sex`, `ethnic_group`.
+  - **All of Us / OMOP CDM** — LOINC codes in `LOINC_XXXX_X` format for
+    all major analytes (e.g. `LOINC_2345_7` for fasting glucose,
+    `LOINC_2160_0` for creatinine, `LOINC_718_7` for haemoglobin).
+  - **NAKO / KORA (Germany)** — German-language terms (`Cholesterin`,
+    `Triglyzeride`, `Harnsäure`, `Harnstoff`, `Leukozyten`, `Thrombozyten`).
 
 * Added `hm_col_report()` — an interactive column-mapping diagnostic. Call
   `hm_col_report(your_data)` **before** running any computation to see a
@@ -11,16 +43,27 @@
   mappings invisibly so the result can be passed directly as `col_map` to any
   HealthMarkers function.
 
-* Expanded the internal synonym dictionary (`.hm_default_col_patterns_exact()`)
-  for all variable groups, incorporating column naming conventions from:
-  - The Inter99 / ADDITION real phenotype dataset (e.g. `pglu0`, `insu0`,
-    `trig`, `hdlc`, `alat`, `alb`, `crea`, `ualbcrea`, `vitd25`, `dhaes`)
-  - UK Biobank-style names (e.g. `sbp`, `standing_height`, `25OHD`)
-  - Common literature spellings (e.g. `TryG`, `TAG`, `TRIG`, `triacylglycerol`
-    for triglycerides; `SGPT`/`GPT`/`ALAT` for ALT; `hsCRP`/`hs_CRP` for CRP)
+* **Auto-derivation of computed inputs.** `.hm_global_precompute()` now
+  automatically derives 18+ secondary columns before marker computation begins,
+  so functions that require (e.g.) `eGFR`, `UACR`, `WHR`, `LDL_c`, or `waist`
+  no longer fail silently when only the raw inputs are present. Affected keys
+  include `eGFR` (from creatinine/age/sex via CKD-EPI), `WHR` (from `waist`
+  and `hip`), `UACR` (from `u_albumin` / `u_creatinine`), `LDL_c` (Friedewald
+  from TC/HDL_c/TG), `MAP`, `PP`, `BMI` (from height/weight), and more.
+
+* Expanded the internal synonym dictionary (`R/utils_infer-cols.R`) for all
+  variable groups, additionally incorporating:
+  - Inter99 / ADDITION real phenotype dataset labels
+  - Common literature spellings (`TryG`, `TAG`, `TRIG`, `triacylglycerol`;
+    `SGPT`/`GPT`/`ALAT`; `hsCRP`/`hs_CRP`)
   - Longitudinal follow-up suffixes (`_0`, `_1`, `_3`, `_5`)
-  - Added new variable groups: urine electrolytes/metabolomics (NMR panel),
-    ECG markers, lifestyle covariates, and cytokine multiplex panel proteins.
+  - NMR metabolomics (urine) panel, ECG markers, lifestyle covariates, and
+    cytokine multiplex proteins.
+
+## Bug fixes
+
+* `adiposity_sds()`: fixed `fn_name` lookup bug that caused incorrect
+  error messages when validation failed on non-standard column names.
 
 ## Internal
 

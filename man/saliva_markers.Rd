@@ -7,12 +7,9 @@
 saliva_markers(
   data,
   col_map = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
   times = c(0, 30, 60)
 )
 }
@@ -28,17 +25,14 @@ saliva_markers(
 \item glucose -> "saliva_glucose" (mg/dL)
 }}
 
-\item{verbose}{Logical; if \code{TRUE}, prints progress messages via hm_inform().}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, input
+availability, physiological range information (informational only, values
+not altered), the list of markers being computed with their inputs, and a
+per-column results summary.}
 
 \item{na_action}{One of \code{c("keep","omit","error")} for required-input NA handling. Default "keep".}
 
 \item{na_warn_prop}{Proportion \eqn{[0,1]} to trigger high-missingness diagnostics (debug). Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for extreme values. Default FALSE.}
-
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore")} when extremes detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) bounds. If NULL, broad defaults are used (keyed by mapped column names).}
 
 \item{times}{Numeric vector of sampling times (minutes) for CAR AUC. Must align with cort1/2/3. Default c(0,30,60).}
 }
@@ -50,6 +44,9 @@ A tibble with columns:
 \item \code{log_amylase}
 \item \code{saliva_glucose}
 }
+
+If an ID column is detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}),
+it is prepended as the first output column.
 }
 \description{
 Computes:

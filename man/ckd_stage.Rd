@@ -6,11 +6,9 @@
 \usage{
 ckd_stage(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,16 +23,7 @@ ckd_stage(
 \item "error" (abort if any mapped input missing)
 }}
 
-\item{check_extreme}{Logical; if TRUE, screen eGFR/UACR for extreme values.}
-
-\item{extreme_action}{One of:
-\itemize{
-\item "cap"   - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
-\item "NA"    - replace out-of-range with NA
-\item "error" - abort on any out-of-range value
-}}
-
-\item{verbose}{Logical; if TRUE, emits progress messages via \code{hm_inform()}.}
+\item{verbose}{Logical; if TRUE (default), emits progress messages via \code{hm_inform()}.}
 }
 \value{
 Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.

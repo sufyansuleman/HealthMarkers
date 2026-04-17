@@ -2,7 +2,7 @@
 title: "Inflammatory markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{inflammatory_markers}
+  %\VignetteIndexEntry{Inflammatory markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,7 +17,7 @@ Compute inflammatory ratios/panels. Panels:
 - Classic: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category.
 - Eosinophil: NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR passthrough.
 - Both: union of classic + eos metrics.
-Inputs are coerced to numeric; non-finite become `NA`. Zero denominators warn. Optional extreme handling can warn/cap/blank/error.
+Inputs are coerced to numeric; non-finite become `NA`. Zero denominators warn.
 
 ## Load packages and demo data
 Synthetic counts to run both panels.
@@ -65,33 +65,30 @@ classic_out <- inflammatory_markers(
   col_map = cm,
   panel = "classic",
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
 classic_out
 ```
 
-## Eosinophil panel with extreme capping
+## Eosinophil panel
 
 ```{r}
 df_ext <- df
-df_ext$CRP[3] <- 400  # intentional extreme
+df_ext$CRP[3] <- 400  # intentional extreme value
 
 eos_out <- inflammatory_markers(
   data = df_ext,
   col_map = cm,
   panel = "eos",
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 
 eos_out
 ```
 
-`extreme_action = "cap"` trims out-of-range inputs; `warn` only warns; `error` aborts; `NA` blanks flagged values.
+Extremely high CRP values propagate through the ratios; use `na_action = "keep"` for exploratory review.
 
 ## Missing data handling
 `na_action = "keep"` preserves rows with `NA` outputs; `omit` drops rows with missing required inputs; `error` aborts if any required input is missing/non-finite.
@@ -109,7 +106,6 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 ## Expectations
 - Provide required keys per panel; missing mappings abort.
 - Inputs are coerced to numeric; non-finite become `NA`; zero denominators warn.
-- Extreme scan uses broad defaults for blood counts/CRP/albumin; adjust via `extreme_action` and built-in ranges.
 - Panel selection: `auto` uses eos if `eosinophils` mapping is present; `both` returns the union.
 
 ## Verbose diagnostics

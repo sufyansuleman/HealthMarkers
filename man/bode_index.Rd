@@ -8,10 +8,7 @@ bode_index(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,14 +22,7 @@ Example from spirometry_markers: list(fev1_pp="fev1_pp", sixmwd="Walk_m", mmrc="
 
 \item{na_action}{one of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{logical; if TRUE scan for extreme values.}
-
-\item{extreme_action}{one of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{named list of bounds (c(lo,hi)) for fev1_pct,sixmwd,mmrc,bmi.
-Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).}
-
-\item{verbose}{logical; TRUE emits messages.}
+\item{verbose}{logical; TRUE (default) emits messages.}
 }
 \value{
 tibble with bode_index (integer). NA if any required input missing (unless omitted).

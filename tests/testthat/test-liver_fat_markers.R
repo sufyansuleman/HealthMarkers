@@ -16,6 +16,7 @@ test_that("liver_fat_markers computes HSI and NAFLD_LFS", {
 })
 
 test_that("liver_fat_markers missing handling omit", {
+  skip_on_cran()
   df <- data.frame(
     ALT = c(30, NA), AST = c(20, 35), BMI = c(25, 32),
     sex = c(1, 2), diabetes = c(0, 1), MetS = c(1, 0), insulin = c(15, 20)
@@ -33,6 +34,7 @@ test_that("liver_fat_markers missing handling omit", {
 })
 
 test_that("verbose = TRUE emits preparing, col_map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(ALT = 30, AST = 20, BMI = 25, sex = 2, diabetes = 1, insulin = 15)
   cm <- list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex",
@@ -43,6 +45,7 @@ test_that("verbose = TRUE emits preparing, col_map, and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(ALT = 30, AST = 20, BMI = 25, sex = 2, diabetes = 1, insulin = 15)
   cm <- list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex",

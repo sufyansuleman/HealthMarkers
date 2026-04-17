@@ -28,6 +28,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- make_df(list())
   expect_message(charlson_index(df, cm, verbose = TRUE), "charlson_index")
@@ -36,6 +37,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- make_df(list())
   msgs <- testthat::capture_messages(charlson_index(df, cm, verbose = TRUE))
@@ -44,11 +46,13 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {
+  skip_on_cran()
   df <- make_df(list(mi = c("1", "oops")), n = 2)
   expect_warning(charlson_index(df, cm), class = "healthmarkers_cci_warn_na_coercion")
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- make_df(list(mi = c(1, NA, 0)), n = 3)
 
   out_keep <- charlson_index(df, cm, na_action = "keep")
@@ -70,12 +74,14 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("domain warnings for non-binary indicators", {
+  skip_on_cran()
   df <- make_df(list(mi = -1, chf = 2))
   expect_warning(charlson_index(df, cm),
                  class = "healthmarkers_cci_warn_out_of_range")
 })
 
 test_that("check_extreme removed: function passes through numeric outlier rows", {
+  skip_on_cran()
   df <- make_df(list(mi = -1, chf = 2, pvd = 0.5), n = 3)
   # domain warning for non-binary is still emitted, but no extreme-scan error
   out <- suppressWarnings(charlson_index(df, cm))
@@ -83,6 +89,7 @@ test_that("check_extreme removed: function passes through numeric outlier rows",
 })
 
 test_that("base 1-, 2-, and 6-point weights computed correctly", {
+  skip_on_cran()
   df <- make_df(list(
     mi=1, chf=1, pvd=1, stroke=1, dementia=1, copd=1, rheum=1, ulcer=1,
     hemiplegia=1, renal=1, leukemia=1, lymphoma=1, hiv=1
@@ -93,6 +100,7 @@ test_that("base 1-, 2-, and 6-point weights computed correctly", {
 })
 
 test_that("paired categories use maximum weight without double counting", {
+  skip_on_cran()
   # Diabetes pair
   df1 <- make_df(list(diabetes=1, diab_comp=0))
   out1 <- charlson_index(df1, cm)
@@ -124,6 +132,7 @@ test_that("paired categories use maximum weight without double counting", {
 })
 
 test_that("comprehensive example total is correct", {
+  skip_on_cran()
   df <- make_df(list(
     mi=1, chf=1, pvd=1, stroke=1, dementia=1, copd=1, rheum=1, ulcer=1,
     mild_liver=1, diabetes=1, diab_comp=0, hemiplegia=1, renal=1,
@@ -136,12 +145,14 @@ test_that("comprehensive example total is correct", {
 })
 
 test_that("logical inputs (TRUE/FALSE) are handled via numeric coercion", {
+  skip_on_cran()
   df <- make_df(list(mi = c(TRUE, FALSE)), n = 2)
   out <- suppressWarnings(charlson_index(df, cm))
   expect_equal(out$charlson_index, c(1L, 0L))
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- make_df(list(mi = c(1, NA, 0)), n = 3)
   out_keep <- charlson_index(df, cm, na_action = "keep")
   out_warn <- suppressWarnings(charlson_index(df, cm, na_action = "warn"))

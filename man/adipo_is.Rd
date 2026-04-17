@@ -9,10 +9,7 @@ adipo_is(
   col_map = NULL,
   normalize = "none",
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  extreme_rules = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 }
@@ -25,20 +22,17 @@ adipo_is(
 
 \item{na_action}{One of c("keep","omit","error"); default "keep"}
 
-\item{check_extreme}{Logical; if TRUE, applies range checks before computing}
-
-\item{extreme_action}{One of c("cap","NA","error"); default "cap" when \code{check_extreme = TRUE}}
-
-\item{extreme_rules}{Optional named list of c(min,max) per key (in original units)}
-
-\item{verbose}{Logical; when TRUE, emits progress via \code{hm_inform()}}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.}
 
 \item{...}{Reserved}
 }
 \value{
 A tibble with columns:
 \code{Revised_QUICKI}, \code{VAI_Men_inv}, \code{VAI_Women_inv}, \code{TG_HDL_C_inv}, \code{TyG_inv},
-\code{LAP_Men_inv}, \code{LAP_Women_inv}, \code{McAuley_index}, \code{Adipo_inv}, \code{Belfiore_inv_FFA}
+\code{LAP_Men_inv}, \code{LAP_Women_inv}, \code{McAuley_index}, \code{Adipo_inv}, \code{Belfiore_inv_FFA}.
+If an ID column is detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}), it
+is prepended as the first output column.
 }
 \description{
 Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
@@ -74,7 +68,6 @@ df <- tibble::tibble(
 )
 cm <- as.list(names(df)); names(cm) <- names(df)
 out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
-head(out)
 }
 \references{
 \insertRef{katz2000quicki}{HealthMarkers};

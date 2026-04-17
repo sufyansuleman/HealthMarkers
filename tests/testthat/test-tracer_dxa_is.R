@@ -34,6 +34,7 @@ test_that("adipose-only mode returns three indices with correct values", {
 })
 
 test_that("full mode errors when required columns are missing", {
+  skip_on_cran()
   df <- tibble(G0 = 5, I0 = 60)
   full_map <- list(
     G0 = "G0", G30 = "G30", G120 = "G120",
@@ -52,6 +53,7 @@ test_that("full mode errors when required columns are missing", {
 })
 
 test_that("full mode returns all seven indices and correct values", {
+  skip_on_cran()
   df_full <- tibble(
     G0             = 5,
     G30            = 7,
@@ -104,6 +106,7 @@ test_that("full mode returns all seven indices and correct values", {
 })
 
 test_that("vectorized over multiple rows", {
+  skip_on_cran()
   base_df <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,
@@ -134,6 +137,7 @@ test_that("vectorized over multiple rows", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df_full <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,
@@ -157,6 +161,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df_full <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,
@@ -180,6 +185,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("na_action policies: error and omit behave as expected", {
+  skip_on_cran()
   col_map_adipose <- list(
     I0             = "I0",
     rate_palmitate = "rate_palmitate",
@@ -202,6 +208,7 @@ test_that("na_action policies: error and omit behave as expected", {
 })
 
 test_that("check_extreme removed: function passes through outlier rows", {
+  skip_on_cran()
   df_ext <- tibble(
     G0 = 50, G30 = 60, G120 = 70,
     I0 = 6000, I30 = 6000, I120 = 6000,
@@ -224,6 +231,7 @@ test_that("check_extreme removed: function passes through outlier rows", {
 })
 
 test_that("zero denominators emit a consolidated warning and yield NA where applicable", {
+  skip_on_cran()
   df_zero <- tibble(
     G0 = 5, G30 = 7, G120 = 7,
     I0 = 60, I30 = 65, I120 = 70,

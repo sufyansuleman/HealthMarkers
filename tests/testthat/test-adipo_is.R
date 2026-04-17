@@ -39,6 +39,7 @@ test_that("partial col_map is supplemented by dictionary inference", {
 })
 
 test_that("returns all 10 adipose-based indices", {
+  skip_on_cran()
   out <- run_adipo(base_df)
   expected <- c(
     "Revised_QUICKI","VAI_Men_inv","VAI_Women_inv",
@@ -52,12 +53,14 @@ test_that("returns all 10 adipose-based indices", {
 })
 
 test_that("vectorized input produces matching row count", {
+  skip_on_cran()
   df2 <- bind_rows(base_df, mutate(base_df, G0 = 6))
   out2 <- run_adipo(df2)
   expect_equal(nrow(out2), 2)
 })
 
 test_that("McAuley_index uses TG in mmol/L (not mg/dL)", {
+  skip_on_cran()
   I0_u   <- base_df$I0 / 6          # pmol/L -> mU/L
   TG_mmol <- base_df$TG             # mmol/L: use raw, NOT * 88.57
   manual_mc <- exp(2.63 - 0.28 * log(I0_u) - 0.31 * log(TG_mmol))
@@ -69,6 +72,7 @@ test_that("McAuley_index uses TG in mmol/L (not mg/dL)", {
 })
 
 test_that("LAP uses TG in mmol/L (not mg/dL)", {
+  skip_on_cran()
   TG_mmol <- base_df$TG             # mmol/L: use raw
   manual_lap_m <- -((base_df$waist - 65) * TG_mmol)
   manual_lap_f <- -((base_df$waist - 58) * TG_mmol)
@@ -80,6 +84,7 @@ test_that("LAP uses TG in mmol/L (not mg/dL)", {
 })
 
 test_that("VAI uses TG and HDL in mmol/L (Amato 2010 reference constants)", {
+  skip_on_cran()
   TG_mmol  <- base_df$TG      # mmol/L
   HDL_mmol <- base_df$HDL_c   # mmol/L
   manual_vai_m <- -(
@@ -92,6 +97,7 @@ test_that("VAI uses TG and HDL in mmol/L (Amato 2010 reference constants)", {
 })
 
 test_that("Revised_QUICKI matches manual computation", {
+  skip_on_cran()
   I0_u <- base_df$I0 / 6
   G0_mgdL <- base_df$G0 * 18
   FFA_v <- base_df$FFA
@@ -101,6 +107,7 @@ test_that("Revised_QUICKI matches manual computation", {
 })
 
 test_that("normalize='range' maps variable columns to [0,1]; constants allowed", {
+  skip_on_cran()
   skip_if_not(exists("normalize_vec", where = asNamespace("HealthMarkers")),
               "normalize_vec not available")
   df2 <- bind_rows(base_df, mutate(base_df, G0 = 6))
@@ -118,6 +125,7 @@ test_that("normalize='range' maps variable columns to [0,1]; constants allowed",
 })
 
 test_that("normalize='z' gives mean≈0 / sd≈1 when variable; constants -> zeros", {
+  skip_on_cran()
   skip_if_not(exists("normalize_vec", where = asNamespace("HealthMarkers")),
               "normalize_vec not available")
   df3 <- bind_rows(
@@ -139,6 +147,7 @@ test_that("normalize='z' gives mean≈0 / sd≈1 when variable; constants -> zer
 })
 
 test_that("invalid normalize argument handling depends on normalize_vec", {
+  skip_on_cran()
   if (exists("normalize_vec", where = asNamespace("HealthMarkers"))) {
     expect_error(run_adipo(base_df, normalize = "foo"),
                  "`normalize` must be one of|invalid 'method'")
@@ -148,6 +157,7 @@ test_that("invalid normalize argument handling depends on normalize_vec", {
 })
 
 test_that("na_action policies", {
+  skip_on_cran()
   df_na <- bind_rows(base_df, mutate(base_df, TG = NA_real_))
   expect_error(
     suppressWarnings(adipo_is(df_na,
@@ -162,18 +172,21 @@ test_that("na_action policies", {
 })
 
 test_that("extreme inputs produce NA in sensitive outputs", {
+  skip_on_cran()
   df_ext <- mutate(base_df, HDL_c = 0, TG = 0)
   out_zero <- run_adipo(df_ext, verbose = FALSE)
   expect_true(is.na(out_zero$TG_HDL_C_inv))
 })
 
 test_that("verbose = TRUE emits column map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(run_adipo(base_df, verbose = TRUE), "col_map")
   expect_message(run_adipo(base_df, verbose = TRUE), "adipo_is\\(\\): results")
 })
 
 test_that("verbose column map lists all required keys", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
   map_msgs <- msgs[grepl("col_map", msgs)]
@@ -185,6 +198,7 @@ test_that("verbose column map lists all required keys", {
 })
 
 test_that("verbose results line reports correct non-NA counts", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   # base_df has 1 complete row -> expect all columns show 1/1
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
@@ -195,6 +209,7 @@ test_that("verbose results line reports correct non-NA counts", {
 })
 
 test_that("verbose = TRUE with inform option emits messages exactly once (no double-fire)", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(run_adipo(base_df, verbose = TRUE))
   expect_gte(sum(grepl("col_map", msgs)), 1L)
@@ -202,6 +217,7 @@ test_that("verbose = TRUE with inform option emits messages exactly once (no dou
 })
 
 test_that("verbose = FALSE suppresses messages even at inform global level", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_no_message(run_adipo(base_df, verbose = FALSE))
 })

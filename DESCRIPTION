@@ -28,12 +28,6 @@ Description: Computes over 50 specialist health marker functions covering
     sweat). Missing value imputation helpers, pre or post computation
     normalization and a unified all_health_markers() dispatcher that returns
     all requested marker groups as a single wide tibble are included.
-    Goff et al. (2014) <doi:10.1161/01.cir.0000437741.48606.98>,
-    Hippisley-Cox et al. (2017) <doi:10.1136/bmj.j2099>,
-    Tangri et al. (2011) <doi:10.1001/jama.2011.451>,
-    Kanis et al. (2008) <doi:10.1007/s00198-007-0543-5>,
-    Celli et al. (2004) <doi:10.1056/NEJMoa021322>,
-    Sayed et al. (2021) <doi:10.1038/s43587-021-00082-y>.
 License: MIT + file LICENSE
 URL: https://sufyansuleman.github.io/HealthMarkers/,
     https://github.com/sufyansuleman/HealthMarkers

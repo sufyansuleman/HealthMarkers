@@ -8,10 +8,7 @@ kyn_trp_ratio(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -25,17 +22,12 @@ kyn_trp_ratio(
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional overrides; defaults:
-list(kynurenine_nmolL = c(100, 20000), tryptophan_umolL = c(10, 150), ratio = c(0, 200)).}
-
-\item{verbose}{Logical; if TRUE, emits progress via rlang::inform.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints column mapping and a
+per-column results summary.}
 }
 \value{
-A tibble with one column: kyn_trp_ratio (numeric).
+A tibble with one column: kyn_trp_ratio (numeric). If an ID column
+is detected, it is prepended.
 }
 \description{
 Computes the ratio of kynurenine to tryptophan, a marker of IDO activity and immune activation.

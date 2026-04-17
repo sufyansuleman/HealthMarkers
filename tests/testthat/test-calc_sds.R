@@ -37,6 +37,7 @@ test_that("calc_sds computes z-scores and returns structure", {
 })
 
 test_that("NA actions: keep, omit, error", {
+  skip_on_cran()
   df_na <- df
   df_na$bmi[c(2, 5)] <- NA_real_
   # keep -> same rows
@@ -64,6 +65,7 @@ test_that("NA actions: keep, omit, error", {
 })
 
 test_that("SDS extremes: cap, NA, error; and disabling via check_extreme", {
+  skip_on_cran()
   df_ext <- df
   df_ext$bmi[1] <- 50  # mean=25, sd=5 -> z=5
   # cap -> warning and capped to 3
@@ -102,6 +104,7 @@ test_that("SDS extremes: cap, NA, error; and disabling via check_extreme", {
 })
 
 test_that("Input validation: refs and args", {
+  skip_on_cran()
   # missing column in data
   expect_error(
     calc_sds(df, vars = c("bmi", "sbp", "missing"), ref = ref, verbose = FALSE),
@@ -132,6 +135,7 @@ test_that("Input validation: refs and args", {
 })
 
 test_that("Coercion of non-numeric vars warns and introduces NA", {
+  skip_on_cran()
   df_chr <- df
   df_chr$bmi <- c("24", "30", "not-a-number", "29", "20", "26")
   expect_warning(
@@ -146,6 +150,7 @@ test_that("Coercion of non-numeric vars warns and introduces NA", {
 })
 
 test_that("verbose = TRUE emits starting, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,
@@ -165,6 +170,7 @@ test_that("verbose = TRUE emits starting, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(
     calc_sds(df, vars = c("bmi", "sbp"), ref = ref, verbose = TRUE,

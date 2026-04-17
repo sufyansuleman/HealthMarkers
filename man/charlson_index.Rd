@@ -12,11 +12,8 @@ charlson_index(
     "hemiplegia", renal = "renal", cancer = "cancer", leukemia = "leukemia", lymphoma =
     "lymphoma", sev_liver = "sev_liver", metastatic_cancer = "metastatic_cancer", hiv =
     "hiv"),
-  verbose = FALSE,
-  na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE,
+  na_action = c("keep", "omit", "error", "ignore", "warn")
 )
 }
 \arguments{
@@ -29,12 +26,6 @@ hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv
 \item{verbose}{Logical; if TRUE, emits progress messages.}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional overrides (applied per key); default bounds c(0,1) for all.}
 }
 \value{
 A tibble with one column: charlson_index (integer total score; NA if any

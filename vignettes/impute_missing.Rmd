@@ -2,7 +2,7 @@
 title: "Imputing missing values"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{impute_missing}
+  %\VignetteIndexEntry{Imputing missing values}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

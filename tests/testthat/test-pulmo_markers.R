@@ -53,6 +53,7 @@ test_that("pulmo_markers computes expected pulmonary metrics across equations", 
 })
 
 test_that("height auto-conversion (cm vs m) yields identical predictions/z-scores", {
+  skip_on_cran()
   available_eqs <- skip_if_no_rspiro_2()
 
   df_cm <- tibble(age = 50, sex = "female", height = 162, ethnicity = "Caucasian", fev1 = 2.6, fvc = 3.2)
@@ -75,6 +76,7 @@ test_that("height auto-conversion (cm vs m) yields identical predictions/z-score
 })
 
 test_that("na_action policies: error and omit behave as expected", {
+  skip_on_cran()
   available_eqs <- skip_if_no_rspiro_2()
   eq <- available_eqs[[1]]
 
@@ -96,6 +98,7 @@ test_that("na_action policies: error and omit behave as expected", {
 })
 
 test_that("sex and ethnicity mappings are robust to codes and strings", {
+  skip_on_cran()
   available_eqs <- skip_if_no_rspiro_2()
   # GLI uses 5-level ethnicity; GLIgl ignores ethnicity. NHANES3 requires 1–3; skip it here.
   eqs_to_test <- intersect(available_eqs, c("GLI", "GLIgl"))
@@ -120,6 +123,7 @@ test_that("sex and ethnicity mappings are robust to codes and strings", {
 })
 
 test_that("pulmo_markers errors on missing required columns", {
+  skip_on_cran()
   skip_if_no_rspiro_2()
   df <- tibble(
     age = 45, sex = "male", height = 170, ethnicity = "Caucasian",
@@ -133,6 +137,7 @@ test_that("pulmo_markers errors on missing required columns", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
   withr::local_options(healthmarkers.verbose = "inform")
@@ -143,6 +148,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
   withr::local_options(healthmarkers.verbose = "inform")
@@ -153,6 +159,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("na_action='keep' preserves rows and propagates NA", {
+  skip_on_cran()
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = NA_real_, fvc = 4.0)
@@ -162,6 +169,7 @@ test_that("na_action='keep' preserves rows and propagates NA", {
 })
 
 test_that("fvc=0 yields NA fev1_fvc_ratio; predictions remain finite", {
+  skip_on_cran()
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 0)
@@ -172,6 +180,7 @@ test_that("fvc=0 yields NA fev1_fvc_ratio; predictions remain finite", {
 })
 
 test_that("percent predicted is ~100 when measured equals predicted", {
+  skip_on_cran()
   available <- skip_if_no_rspiro_2()
   eq <- available[[1]]
   base <- tibble(age = 50, sex = "female", height = 162, ethnicity = "Caucasian", fev1 = 2.6, fvc = 3.2)
@@ -186,6 +195,7 @@ test_that("percent predicted is ~100 when measured equals predicted", {
 })
 
 test_that("unknown equation aborts with clear error", {
+  skip_on_cran()
   skip_if_no_rspiro_2()
   df <- tibble(age = 45, sex = "male", height = 170, ethnicity = "Caucasian", fev1 = 3.0, fvc = 4.0)
   expect_error(

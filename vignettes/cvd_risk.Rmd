@@ -2,7 +2,7 @@
 title: "CVD Risk Dispatcher"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cvd_risk}
+  %\VignetteIndexEntry{CVD Risk Dispatcher}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -113,7 +113,15 @@ options(old_opt)
 ```
 
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+## Column recognition
 
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the [Multi-Biobank Compatibility](articles/multi_biobank.html)
+article for recognised synonyms across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
 ## Tips
 - Install optional packages: PooledCohort (ASCVD, Stroke), QRISK3, RiskScorescvd. Without them, guarded chunks skip and `model = "ALL"` yields `NA` placeholders.
 - Ensure required columns match each model’s spec; units follow backend expectations (e.g., mg/dL lipids, mmHg SBP, BMI kg/m^2).

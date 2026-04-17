@@ -11,17 +11,13 @@ adiposity_sds(
   na_action = c("keep", "omit", "error"),
   extreme_action = c("cap", "NA", "error", "warn", "ignore"),
   sds_cap = 6,
-  check_extreme = FALSE,
-  extreme_rules = NULL,
   diagnostics = FALSE,
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   id_col = NULL,
   return_summary = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   na_strategy = NULL,
-  extreme_strategy = NULL,
-  check_raw_extreme = NULL,
-  raw_extreme_rules = NULL
+  extreme_strategy = NULL
 )
 }
 \arguments{
@@ -41,12 +37,6 @@ SDS values exceeding \code{sds_cap}.}
 
 \item{sds_cap}{Positive numeric; absolute cap used when \code{extreme_action = "cap"}.}
 
-\item{check_extreme}{Logical; if TRUE run raw-value extreme screening using
-\code{extreme_rules} before SDS computation.}
-
-\item{extreme_rules}{Optional named list of c(min, max) ranges for raw variables;
-if NULL, broad defaults are used for common anthropometric measures.}
-
 \item{diagnostics}{Logical; if TRUE emit informational/warning messages
 (coercions, missingness, extremes). FALSE suppresses non-critical warnings.}
 
@@ -65,10 +55,6 @@ and \code{extreme_prop} (default 0.01) used for proportion-based diagnostic warn
 
 \item{extreme_strategy}{Soft-deprecated alias for \code{extreme_action} (if provided
 and \code{extreme_action} missing, it is used).}
-
-\item{check_raw_extreme}{Soft-deprecated alias for \code{check_extreme}.}
-
-\item{raw_extreme_rules}{Soft-deprecated alias for \code{extreme_rules}.}
 }
 \value{
 A tibble with one \verb{<var>_SDS} column per reference variable, or a

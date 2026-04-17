@@ -7,12 +7,14 @@ test_that("errors on non-data input", {
 })
 
 test_that("errors on missing mapping keys", {
+  skip_on_cran()
   bad <- list(fev1_pct = "FEV1pct", mmrc = "mMRC") # missing others
   df <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   expect_error(bode_index(df, bad), class = "healthmarkers_bode_error_missing_map")
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   expect_message(bode_index(df, cm, verbose = TRUE), "bode_index")
@@ -21,6 +23,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- data.frame(FEV1pct = 80, Walk_m = 400, mMRC = 1, BMI = 25)
   msgs <- testthat::capture_messages(bode_index(df, cm, verbose = TRUE))
@@ -29,6 +32,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("cut-point scoring basic", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c(80,60,40,30),
     Walk_m  = c(400,300,200,100),
@@ -41,6 +45,7 @@ test_that("cut-point scoring basic", {
 })
 
 test_that("boundary mapping", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c(65,50,36,35),
     Walk_m  = c(350,250,150,149),
@@ -53,6 +58,7 @@ test_that("boundary mapping", {
 })
 
 test_that("NA policies keep/omit/error/warn/ignore", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c(60, NA, 30),
     Walk_m  = c(300, 200, NA),
@@ -72,6 +78,7 @@ test_that("NA policies keep/omit/error/warn/ignore", {
 })
 
 test_that("numeric coercion warning", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c("60","oops"),
     Walk_m  = c("300","250"),
@@ -83,6 +90,7 @@ test_that("numeric coercion warning", {
 })
 
 test_that("domain warnings for individual ranges", {
+  skip_on_cran()
   # FEV1pct out-of-range only
   df_fev1 <- data.frame(FEV1pct = 200, Walk_m = 400, mMRC = 1, BMI = 22)
   expect_warning(bode_index(df_fev1, cm), class = "healthmarkers_bode_warn_fev1pct_range")
@@ -101,6 +109,7 @@ test_that("domain warnings for individual ranges", {
 })
 
 test_that("extreme values trigger domain warnings", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c(160,40,20),
     Walk_m  = c(900,140,300),
@@ -114,6 +123,7 @@ test_that("extreme values trigger domain warnings", {
 })
 
 test_that("formula correctness with normal input", {
+  skip_on_cran()
   df <- data.frame(
     FEV1pct = c(70, 50, 30),
     Walk_m  = c(400, 300, 200),
@@ -128,6 +138,7 @@ test_that("formula correctness with normal input", {
 })
 
 test_that("padding keep/warn/ignore retain row count; omit reduces", {
+  skip_on_cran()
   df <- data.frame(FEV1pct = c(60, NA), Walk_m = c(300,200), mMRC = c(2,4), BMI = c(25,18))
   keep <- bode_index(df, cm, na_action = "keep")
   warn <- suppressWarnings(bode_index(df, cm, na_action = "warn"))
@@ -140,6 +151,7 @@ test_that("padding keep/warn/ignore retain row count; omit reduces", {
 })
 
 test_that("empty input returns 0-row tibble", {
+  skip_on_cran()
   df <- data.frame(FEV1pct = numeric(), Walk_m = numeric(), mMRC = numeric(), BMI = numeric())
   out <- bode_index(df, cm)
   expect_equal(nrow(out), 0L)
@@ -147,6 +159,7 @@ test_that("empty input returns 0-row tibble", {
 })
 
 test_that("extreme values outside domain ranges produce domain warnings", {
+  skip_on_cran()
   # Values within some domains but outside others
   df <- data.frame(
     FEV1pct = c(9, 50, 30),

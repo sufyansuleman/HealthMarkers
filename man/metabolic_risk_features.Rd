@@ -9,10 +9,7 @@ metabolic_risk_features(
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -40,18 +37,7 @@ Keys: c("chol_total","chol_ldl","chol_hdl","triglycerides","age_year",
 
 \item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for out-of-range values (see \code{extreme_rules}). Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") used when extremes are detected
-(only when \code{check_extreme = TRUE}).
-\itemize{
-\item "warn": only warn (default), "cap": truncate to range and warn,
-\item "error": abort, "ignore": do nothing, "NA": set flagged inputs to NA.
-}}
-
-\item{extreme_rules}{Optional named list of c(min,max) ranges for required keys. If NULL, broad defaults are used.}
-
-\item{verbose}{Logical; if TRUE, prints stepwise messages and a final summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints column mapping and computing messages.}
 }
 \value{
 A tibble with four factor columns (levels c("0","1")):

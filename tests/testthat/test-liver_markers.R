@@ -29,6 +29,7 @@ test_that("computes markers for a minimal valid example", {
 })
 
 test_that("verbose emits preparing, column map, and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
@@ -42,6 +43,7 @@ test_that("verbose emits preparing, column map, and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
@@ -57,6 +59,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("na_action='omit' emits omit message and preserves expected row count", {
+  skip_on_cran()
   df <- tibble(
     BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20),
@@ -74,6 +77,7 @@ test_that("na_action='omit' emits omit message and preserves expected row count"
 })
 
 test_that("custom column mapping works with renamed inputs", {
+  skip_on_cran()
   df <- tibble(
     BMIx = 24, waistx = 80, TGx = 150, GGTx = 30, agex = 30,
     ASTx = 25, ALTx = 20, ptx = 250, albuminx = 45, diabx = FALSE,
@@ -92,6 +96,7 @@ test_that("custom column mapping works with renamed inputs", {
 })
 
 test_that("verbose emits range note for out-of-range values", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80,
     TG = 5000,  # above plausible range -> range note in verbose
@@ -109,6 +114,7 @@ test_that("verbose emits range note for out-of-range values", {
 })
 
 test_that("extreme values are not altered; non-positive inputs propagate NaN to outputs", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80,
     TG = -5,   # negative -> log(-5) = NaN -> FLI = NaN
@@ -126,6 +132,7 @@ test_that("extreme values are not altered; non-positive inputs propagate NaN to 
 })
 
 test_that("numeric coercion warns when NAs introduced", {
+  skip_on_cran()
   df <- tibble(
     BMI = c(24, 24), waist = c(80, 80), TG = c("150","oops"), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20),
@@ -145,6 +152,7 @@ test_that("numeric coercion warns when NAs introduced", {
 })
 
 test_that("diabetes logical values compute BARD correctly without warnings", {
+  skip_on_cran()
   df <- tibble(
     BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = TRUE,
@@ -160,6 +168,7 @@ test_that("diabetes logical values compute BARD correctly without warnings", {
 })
 
 test_that("vectorized diabetes logical values contribute per-row", {
+  skip_on_cran()
   df <- tibble(
     BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150),
     GGT = c(30, 30), age = c(30, 30),
@@ -175,6 +184,7 @@ test_that("vectorized diabetes logical values contribute per-row", {
 })
 
 test_that("liver_markers returns all seven markers and correct values", {
+  skip_on_cran()
   df <- tibble(
     BMI           = 24,
     waist         = 80,
@@ -224,6 +234,7 @@ test_that("liver_markers returns all seven markers and correct values", {
 })
 
 test_that("errors if mapped columns are missing in data", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE
@@ -241,6 +252,7 @@ test_that("errors if mapped columns are missing in data", {
 })
 
 test_that("partial col_map is supplemented by dictionary inference for missing keys", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
@@ -260,6 +272,7 @@ test_that("partial col_map is supplemented by dictionary inference for missing k
 })
 
 test_that("na_action='error' aborts when required inputs contain NA", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
@@ -273,6 +286,7 @@ test_that("na_action='error' aborts when required inputs contain NA", {
 })
 
 test_that("na_action='omit' drops rows with NA", {
+  skip_on_cran()
   df <- tibble(
     BMI = c(24, 24), waist = c(80, 80), TG = c(150, 150), GGT = c(30, 30),
     age = c(30, 30), AST = c(25, 25), ALT = c(20, 20), platelets = c(250, NA_real_),
@@ -284,6 +298,7 @@ test_that("na_action='omit' drops rows with NA", {
 })
 
 test_that("na_action='keep' propagates NA to outputs", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,
@@ -296,6 +311,7 @@ test_that("na_action='keep' propagates NA to outputs", {
 })
 
 test_that("extreme values compute without error when outside plausible range", {
+  skip_on_cran()
   df <- tibble(
     BMI = 80,              # above range
     waist = 300,           # above range
@@ -317,6 +333,7 @@ test_that("extreme values compute without error when outside plausible range", {
 })
 
 test_that("extreme values produce finite or NaN/Inf outputs without error", {
+  skip_on_cran()
   df <- tibble(
     BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
@@ -329,6 +346,7 @@ test_that("extreme values produce finite or NaN/Inf outputs without error", {
 })
 
 test_that("verbose range note is informational and does not warn or cap", {
+  skip_on_cran()
   # All values positive so no log/sqrt warnings; only range note emitted in verbose
   df <- tibble(
     BMI = 5, waist = 30, TG = 2000, GGT = 3000,
@@ -350,6 +368,7 @@ test_that("verbose range note is informational and does not warn or cap", {
 })
 
 test_that("no warning emitted for extreme values in non-verbose mode", {
+  skip_on_cran()
   df <- tibble(
     BMI = 80, waist = 300, TG = 5000, GGT = 5000, age = 150,
     AST = 6000, ALT = 6000, platelets = 5, albumin = 5, diabetes = FALSE,
@@ -361,6 +380,7 @@ test_that("no warning emitted for extreme values in non-verbose mode", {
 })
 
 test_that("BMI pre-computed from weight and height when BMI absent", {
+  skip_on_cran()
   df <- tibble(
     weight = 70, height = 170,  # BMI = 70 / (1.70)^2 = 24.22
     waist = 80, TG = 150, GGT = 30, age = 30,
@@ -380,6 +400,7 @@ test_that("BMI pre-computed from weight and height when BMI absent", {
 })
 
 test_that("ID column is detected and prepended to output", {
+  skip_on_cran()
   df <- tibble(
     id  = c("p1", "p2"),
     BMI = c(24, 28), waist = c(80, 90), TG = c(150, 200), GGT = c(30, 40),
@@ -394,6 +415,7 @@ test_that("ID column is detected and prepended to output", {
 })
 
 test_that("denominator and transform warnings fire (isolated tests)", {
+  skip_on_cran()
   # Zero platelets -> denominator warning for APRI/FIB4
   df1 <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
@@ -438,6 +460,7 @@ test_that("denominator and transform warnings fire (isolated tests)", {
 })
 
 test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
+  skip_on_cran()
   df <- tibble(
     BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = "1",
@@ -453,6 +476,7 @@ test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
 })
 
 test_that("non-binary diabetes values warn about coercion and propagate NA into BARD", {
+  skip_on_cran()
   df <- tibble(
     BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
     AST = 40, ALT = 30, platelets = 250, albumin = 45, diabetes = "yes",
@@ -473,6 +497,7 @@ test_that("non-binary diabetes values warn about coercion and propagate NA into 
 })
 
 test_that("validating inputs message appears when verbose is TRUE", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
@@ -488,6 +513,7 @@ test_that("validating inputs message appears when verbose is TRUE", {
 })
 
 test_that("verbose summary reports Inf counts for zero denominators", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 0, albumin = 45, diabetes = FALSE,

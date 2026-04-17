@@ -20,6 +20,7 @@ test_that("infer_cols maps by name when present", {
 # ----------------------------------------------------------------------------
 
 test_that("validate_inputs errors for missing lipid_markers keys", {
+  skip_on_cran()
   df <- tibble::tibble(TG = 1, HDL_c = 1)
   col_map <- list(TG = "TG", HDL_c = "HDL_c", LDL_c = NULL, TC = NULL)
   expect_error(
@@ -29,12 +30,14 @@ test_that("validate_inputs errors for missing lipid_markers keys", {
 })
 
 test_that("validate_inputs passes when all lipid_markers keys present", {
+  skip_on_cran()
   df <- tibble::tibble(TG = 1, HDL_c = 1, LDL_c = 1, TC = 1)
   col_map <- list(TG = "TG", HDL_c = "HDL_c", LDL_c = "LDL_c", TC = "TC")
   expect_silent(validate_inputs(df, col_map, fun_name = "lipid_markers"))
 })
 
 test_that("validate_inputs with required_keys works for any fun_name", {
+  skip_on_cran()
   df <- tibble::tibble(G0 = 5.5, I0 = 60)
   # Should pass when all required_keys are in col_map
   expect_silent(
@@ -54,12 +57,14 @@ test_that("validate_inputs with required_keys works for any fun_name", {
 })
 
 test_that("validate_inputs returns TRUE silently for unknown fun_name with no required_keys", {
+  skip_on_cran()
   df <- tibble::tibble(x = 1)
   # No required_keys and unknown fun_name -> switch returns character(0) -> no error
   expect_silent(validate_inputs(df, list(x = "x"), fun_name = "unknown_function"))
 })
 
 test_that("validate_inputs errors when required_keys is not a character vector", {
+  skip_on_cran()
   df <- tibble::tibble(x = 1)
   expect_error(
     validate_inputs(df, list(x = "x"), fun_name = "foo", required_keys = 123),

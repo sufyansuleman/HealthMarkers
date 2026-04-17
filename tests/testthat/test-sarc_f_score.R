@@ -17,6 +17,7 @@ test_that("mapping validation and missing columns error", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(sarc_f_score(df, cm, verbose = TRUE), "sarc_f_score")
@@ -25,6 +26,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(sarc_f_score(df, cm, verbose = TRUE))
@@ -33,6 +35,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("numeric coercion warning when strings introduce NAs", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c("0","oops"),
     Walking =c("1","1"),
@@ -44,6 +47,7 @@ test_that("numeric coercion warning when strings introduce NAs", {
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c(0, NA, 2),
     Walking =c(1, 1, 2),
@@ -71,6 +75,7 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("domain warnings for values outside 0–2", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c(-1,0),
     Walking =c(3,1),
@@ -85,6 +90,7 @@ test_that("domain warnings for values outside 0–2", {
 })
 
 test_that("out-of-range items (0-2) trigger domain warning and still compute", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c(-1, 0, 3),
     Walking =c(0, 2, 1),
@@ -101,6 +107,7 @@ test_that("out-of-range items (0-2) trigger domain warning and still compute", {
 })
 
 test_that("thresholding: high risk is TRUE for score >= 4", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c(2,1,0,NA),
     Walking =c(1,1,1,1),
@@ -121,6 +128,7 @@ test_that("thresholding: high risk is TRUE for score >= 4", {
 })
 
 test_that("padding preserved for keep/warn", {
+  skip_on_cran()
   df <- data.frame(
     Strength=c(0,NA,2),
     Walking =c(1,1,2),

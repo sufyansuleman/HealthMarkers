@@ -37,6 +37,7 @@ test_that("computes pre and post ratios and fixed COPD flag", {
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   expect_message(spirometry_markers(df, cm, verbose = TRUE), "spirometry_markers")
@@ -45,6 +46,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df <- data.frame(FEV1 = 2.0, FVC = 3.0)
   withr::local_options(healthmarkers.verbose = "inform")
   msgs <- testthat::capture_messages(spirometry_markers(df, cm, verbose = TRUE))
@@ -53,6 +55,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("NA policies: keep, omit, error, warn", {
+  skip_on_cran()
   df <- data.frame(FEV1 = c(NA, 1.0, 1.2), FVC = c(2.0, 2.5, NA))
 
   # keep (default via 'keep' or 'ignore')
@@ -80,6 +83,7 @@ test_that("NA policies: keep, omit, error, warn", {
 })
 
 test_that("numeric coercion warning on volumes with non-numeric noise", {
+  skip_on_cran()
   df <- data.frame(
     FEV1 = c("2.0", "oops"),  # 'oops' will introduce NA on coercion
     FVC  = c("3.0", "4.0")
@@ -91,6 +95,7 @@ test_that("numeric coercion warning on volumes with non-numeric noise", {
 })
 
 test_that("domain warnings: zero FVC, negative inputs, ratio > 1", {
+  skip_on_cran()
   # zero FVC
   df_zero <- data.frame(FEV1 = c(2.0, 1.0), FVC = c(0, 3.0))
   expect_warning(
@@ -114,6 +119,7 @@ test_that("domain warnings: zero FVC, negative inputs, ratio > 1", {
 })
 
 test_that("extreme FEV1/FVC values pass through and produce finite ratios", {
+  skip_on_cran()
   df <- data.frame(
     FEV1 = c(0.2, 9.5, 3.0),
     FVC  = c(0.3, 12.0, 4.5)
@@ -125,6 +131,7 @@ test_that("extreme FEV1/FVC values pass through and produce finite ratios", {
 })
 
 test_that("bronchodilator response percent is computed when post provided", {
+  skip_on_cran()
   df <- data.frame(
     FEV1 = c(1.0, 2.0),
     FVC  = c(2.0, 3.0),
@@ -139,6 +146,7 @@ test_that("bronchodilator response percent is computed when post provided", {
 })
 
 test_that("padding: keep and warn preserve row count; omit reduces rows", {
+  skip_on_cran()
   df <- data.frame(FEV1 = c(2.0, NA, 1.0), FVC = c(3.0, 2.5, NA))
   out_keep <- spirometry_markers(df, cm, na_action = "keep")
   expect_equal(nrow(out_keep), nrow(df))
@@ -149,6 +157,7 @@ test_that("padding: keep and warn preserve row count; omit reduces rows", {
 })
 
 test_that("alternate col_map still produces valid output", {
+  skip_on_cran()
   df <- data.frame(
     FEV1 = c(0.05, 6.0),
     FVC  = c(0.1,  7.5)
@@ -161,6 +170,7 @@ test_that("alternate col_map still produces valid output", {
 })
 
 test_that("GLI-based outputs present when rspiro and demographics available", {
+  skip_on_cran()
   skip_if_not_installed("rspiro")
   df <- data.frame(
     FEV1 = c(2.5, 1.2), FVC = c(3.2, 2.0),

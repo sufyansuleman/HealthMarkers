@@ -2,7 +2,7 @@
 title: "Glycemic and metabolic markers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{glycemic_markers}
+  %\VignetteIndexEntry{Glycemic and metabolic markers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,14 +18,13 @@ Compute SPISE, METS_IR, prediabetes/diabetes flags (HbA1c), HOMA_CP, LAR, ASI, a
 ## When to use
 - You have fasting lipids and BMI and want quick insulin resistance/sensitivity proxies.
 - You can supply glucose/HbA1c/C-peptide/insulin/adipokines when available to enrich outputs.
-- You need explicit NA handling and optional extreme-value screening.
+- You need explicit NA handling.
 
 ## Inputs and requirements
 - Required (mapped via `col_map`): `HDL_c` (mmol/L), `TG` (mmol/L), `BMI` (kg/m^2).
 - Optional: `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`, `adiponectin`.
 - Unit notes: TyG converts TG to mg/dL (x88.57) and glucose to mg/dL (x18); HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`.
 - `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows with missing used inputs; `error` aborts.
-- `check_extreme`: when TRUE, scans inputs with default broad ranges; `extreme_action` = `warn`/`cap`/`NA`/`error`/`ignore`.
 
 ## Load packages and data
 Use a small subset of the simulated data (30-50 rows). Swap `sim_small` with your data frame in practice.
@@ -212,6 +211,16 @@ glycem_out <- glycemic_markers(
   col_map = list(HDL_c = "HDL_c", TG = "TG", BMI = "BMI", glucose = "glucose"),
   verbose = TRUE
 )
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the [Multi-Biobank Compatibility](articles/multi_biobank.html)
+article for recognised synonyms across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
 ```
 
 ## Tips

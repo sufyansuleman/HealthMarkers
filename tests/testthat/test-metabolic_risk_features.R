@@ -24,6 +24,7 @@ test_that("returns tibble with four factor flags and correct names/levels", {
 })
 
 test_that("custom col_map works", {
+  skip_on_cran()
   df <- tibble(
     CT = 6.0, LDL = 3.5, HDL = 1.0, TG = 1.2,
     AGE = 25, ZH = 1.5, GLU = 5.8, A1C = 40, SBPZ = 1.7, DBPZ = 1.0
@@ -39,6 +40,7 @@ test_that("custom col_map works", {
 })
 
 test_that("errors if mapped columns are missing in data", {
+  skip_on_cran()
   df <- tibble(
     chol_total = 6.0, chol_ldl = 3.5, chol_hdl = 1.0, triglycerides = 1.2,
     age_year = 25, z_HOMA = 1.5, glucose = 5.8,
@@ -57,6 +59,7 @@ test_that("errors if mapped columns are missing in data", {
 })
 
 test_that("partial col_map is supplemented by dictionary inference for missing keys", {
+  skip_on_cran()
   df <- tibble(
     chol_total = 6.0, chol_ldl = 3.5, chol_hdl = 1.0, triglycerides = 1.2,
     age_year = 25, z_HOMA = 1.5, glucose = 5.8, HbA1c = 40, bp_sys_z = 1.7, bp_dia_z = 1.0
@@ -72,6 +75,7 @@ test_that("partial col_map is supplemented by dictionary inference for missing k
 })
 
 test_that("na_action='error' aborts when required inputs contain NA", {
+  skip_on_cran()
   df <- tibble(
     chol_total = 6.0, chol_ldl = 3.5, chol_hdl = 1.0, triglycerides = 1.2,
     age_year = 25, z_HOMA = 1.5, glucose = NA_real_, HbA1c = 40, bp_sys_z = 1.7, bp_dia_z = 1.0
@@ -84,6 +88,7 @@ test_that("na_action='error' aborts when required inputs contain NA", {
 })
 
 test_that("na_action='omit' drops rows with NA", {
+  skip_on_cran()
   df <- tibble(
     chol_total = c(6.0, 6.0), chol_ldl = c(3.5, 3.5), chol_hdl = c(1.0, 1.0), triglycerides = c(1.2, 1.2),
     age_year = c(25, 25), z_HOMA = c(1.5, 1.5), glucose = c(5.8, NA_real_), HbA1c = c(40, 40),
@@ -95,6 +100,7 @@ test_that("na_action='omit' drops rows with NA", {
 })
 
 test_that("na_action='keep' yields NA only when the rule cannot be decided", {
+  skip_on_cran()
   # Make dyslipidemia undecidable due to NA (no other trigger is TRUE)
   df <- tibble(
     chol_total = 5.0, chol_ldl = NA_real_, chol_hdl = 1.2, triglycerides = 1.0,
@@ -106,6 +112,7 @@ test_that("na_action='keep' yields NA only when the rule cannot be decided", {
 })
 
 test_that("extreme input values pass through without error", {
+  skip_on_cran()
   df <- tibble(
     chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
     age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
@@ -117,6 +124,7 @@ test_that("extreme input values pass through without error", {
 })
 
 test_that("high missingness warning is emitted when proportion exceeds threshold", {
+  skip_on_cran()
   df <- tibble(
     chol_total = c(5, 5), chol_ldl = c(3, 3), chol_hdl = c(1.2, 1.2), triglycerides = c(1, 1),
     age_year = c(30, 30), z_HOMA = c(0, 0), glucose = c(5, 5),
@@ -130,6 +138,7 @@ test_that("high missingness warning is emitted when proportion exceeds threshold
 })
 
 test_that("verbose emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
@@ -143,6 +152,7 @@ test_that("verbose emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(
     chol_total = 5, chol_ldl = 3, chol_hdl = 1.2, triglycerides = 1.0,
@@ -158,6 +168,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("output has correct row count without check_extreme", {
+  skip_on_cran()
   df <- tibble(
     chol_total = 5.0, chol_ldl = 3.0, chol_hdl = 1.2, triglycerides = 1.0,
     age_year = 30, z_HOMA = 0, glucose = 5.0, HbA1c = 300,
@@ -169,6 +180,7 @@ test_that("output has correct row count without check_extreme", {
 })
 
 test_that("numeric coercion warns when NAs introduced", {
+  skip_on_cran()
   df <- tibble(
     chol_total = c("5.0","oops"), chol_ldl = c(3.0, 3.0), chol_hdl = c(1.2, 1.2), triglycerides = c(1.0, 1.0),
     age_year = c(30, 30), z_HOMA = c(0, 0), glucose = c(5.0, 5.0), HbA1c = c(40, 40),
@@ -182,6 +194,7 @@ test_that("numeric coercion warns when NAs introduced", {
 })
 
 test_that("na_action='omit' drops rows with required NA and announces omission", {
+  skip_on_cran()
   df <- tibble(
     chol_total = c(5.0, NA), chol_ldl = c(3.0, 3.0), chol_hdl = c(1.2, 1.2), triglycerides = c(1.0, 1.0),
     age_year = c(30, 30), z_HOMA = c(0, 0), glucose = c(5.0, 5.0), HbA1c = c(40, 40),

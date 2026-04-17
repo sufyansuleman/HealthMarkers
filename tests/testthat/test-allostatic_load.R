@@ -17,6 +17,7 @@ test_that("basic multi-biomarker scoring uses strict >", {
 })
 
 test_that("single biomarker uses inclusive >=", {
+  skip_on_cran()
   df <- tibble(X = c(5, 10, 11))
   thr <- list(X = 10)
   out <- allostatic_load(df, thresholds = thr, na_action = "keep")
@@ -24,6 +25,7 @@ test_that("single biomarker uses inclusive >=", {
 })
 
 test_that("input validation errors (HM-CS messages)", {
+  skip_on_cran()
   df <- tibble(A = 1:3)
   expect_error(allostatic_load("not df", thresholds = list(A = 1)), "data.frame or tibble")
   expect_error(allostatic_load(df, thresholds = list()), "must contain at least one")
@@ -36,6 +38,7 @@ test_that("input validation errors (HM-CS messages)", {
 })
 
 test_that("biomarker must be numeric", {
+  skip_on_cran()
   df <- tibble(A = letters[1:3])
   thr <- list(A = 1)
   # Suppress the deliberate coercion warning in the test
@@ -45,6 +48,7 @@ test_that("biomarker must be numeric", {
 })
 
 test_that("na_action = omit drops any row with missing in any required var", {
+  skip_on_cran()
   df <- tibble(A = c(1, NA, 3), B = c(2, 2, NA))
   thr <- list(A = 1.5, B = 1.5)
   out <- allostatic_load(df, thresholds = thr, na_action = "omit")
@@ -52,6 +56,7 @@ test_that("na_action = omit drops any row with missing in any required var", {
 })
 
 test_that("na_action = error stops on NA", {
+  skip_on_cran()
   df <- tibble(A = c(1, NA, 3))
   expect_error(
     allostatic_load(df, thresholds = list(A = 2), na_action = "error"),
@@ -60,6 +65,7 @@ test_that("na_action = error stops on NA", {
 })
 
 test_that("check_extreme removed: function passes through SDS-like outlier rows", {
+  skip_on_cran()
   df <- tibble(BP_sds = c(-0.5, 7, 6.5), HR_sds = c(0, -7, 5))
   thr <- list(BP_sds = 1.5, HR_sds = 1.5)
   out <- allostatic_load(df, thresholds = thr)
@@ -67,6 +73,7 @@ test_that("check_extreme removed: function passes through SDS-like outlier rows"
 })
 
 test_that("zero-row data returns zero-row tibble", {
+  skip_on_cran()
   df <- tibble(A = numeric(0))
   out <- allostatic_load(df, thresholds = list(A = 2))
   expect_equal(nrow(out), 0)
@@ -74,6 +81,7 @@ test_that("zero-row data returns zero-row tibble", {
 })
 
 test_that("verbose = TRUE emits col_map and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- tibble(A = c(1, 5), B = c(0, 3))
   thr <- list(A = 2, B = 1)
@@ -83,6 +91,7 @@ test_that("verbose = TRUE emits col_map and results messages", {
 })
 
 test_that("verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df  <- tibble(A = c(1, 5), B = c(0, 3))
   thr <- list(A = 2, B = 1)
@@ -94,6 +103,7 @@ test_that("verbose double-fire guard: each message fires exactly once", {
 })
 
 test_that("return_summary returns structured list", {
+  skip_on_cran()
   df <- tibble(A = c(1, 5, 6))
   thr <- list(A = 2)
   res <- allostatic_load(df, thresholds = thr, return_summary = TRUE)

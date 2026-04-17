@@ -8,11 +8,8 @@ frax_score(
   data,
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   country = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,12 +24,6 @@ rheumatoid, secondary_op, smoker, alcohol
 }}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional overrides for defaults (age, bmd).}
 
 \item{country}{optional country/region code for FRAX calibration (accepted, currently unused).}
 

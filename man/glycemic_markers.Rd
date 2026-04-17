@@ -9,10 +9,7 @@ glycemic_markers(
   col_map = NULL,
   na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -35,29 +32,18 @@ in used inputs before computing markers. Default "ignore".}
 \item{na_warn_prop}{Proportion (0-1) threshold for high-missingness warnings
 among used columns when \code{na_action = "warn"}. Default 0.2.}
 
-\item{check_extreme}{Logical; if \code{TRUE}, scan selected input variables for values
-outside plausible ranges defined in \code{extreme_rules}. Default \code{FALSE}.}
-
-\item{extreme_action}{One of \code{c("warn","cap","error","ignore","NA")} controlling
-how to handle extremes when \code{check_extreme = TRUE}. If "cap", values are
-truncated to the allowed range; if "NA", out-of-range values become NA.
-Default "warn".}
-
-\item{extreme_rules}{Named list of numeric length-2 ranges for inputs to scan when
-\code{check_extreme = TRUE}. Defaults are broad medical plausibility ranges:
-\itemize{
-\item HDL_c: c(0.1, 5), TG: c(0.1, 20), BMI: c(10, 80),
-\item glucose: c(2, 30), HbA1c: c(20, 200), C_peptide: c(0, 5000),
-\item G0: c(2, 30), I0: c(0, 3000), leptin: c(0, 200), adiponectin: c(0, 300).
-Only variables present in \code{data} are checked.
-}}
-
-\item{verbose}{Logical; if \code{TRUE}, prints progress and a completion summary. Default FALSE.}
+\item{verbose}{Logical; if \code{TRUE} (default), prints step-by-step progress
+including column mapping, optional input availability, pre-computation
+notes, physiological range information (informational only, values are not
+altered), the list of markers being computed with their inputs, and a
+per-column results summary.}
 }
 \value{
 A tibble with columns:
 \itemize{
 \item SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index
+If an ID column is detected in \code{data} (e.g. \code{id}, \code{IID}, \code{participant_id}),
+it is prepended as the first output column.
 }
 }
 \description{
@@ -94,13 +80,16 @@ Quality controls and options:
 \item Verbose mode prints step-by-step progress and a completion summary.
 }
 
-Optional marker detection:
-When \code{col_map = NULL} (default), an identity map for all 10 keys is built
-automatically. The seven optional keys (glucose, HbA1c, C_peptide, G0, I0,
-leptin, adiponectin) are computed only when the corresponding column exists
-in \code{data}. When \code{verbose = TRUE}, any optional markers whose columns are
-absent are listed in an informational message so the caller knows which
-derived metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+Optional marker detection and pre-computation (one level deep):
+When \code{col_map = NULL} (default), column names are inferred automatically.
+The seven optional keys (glucose, HbA1c, C_peptide, G0, I0, leptin,
+adiponectin) are computed only when present in \code{data}. If \code{BMI} is absent
+but \code{weight} (kg) and \code{height} (m or cm) are present, BMI is computed
+automatically. If \code{glucose} is absent but \code{G0} column exists (or vice
+versa), the missing key is derived via alias. With \code{verbose = TRUE}
+(default), the function reports: column mapping, what is missing and which
+raw inputs could provide it, which indices will be NA and why, any
+physiological range notes, and a per-column results summary.
 
 Notes on HOMA_CP:
 \itemize{
@@ -124,14 +113,12 @@ df <- tibble::tibble(
   leptin      = c(10, 20),
   adiponectin = c(8, 5)
 )
-# Quiet defaults
+# Full verbose output (default — shows mapping, missing notes, results)
 glycemic_markers(df)
-# Warn on missingness and scan for extremes with capping
-glycemic_markers(df,
-  na_action = "warn", na_warn_prop = 0.1,
-  check_extreme = TRUE, extreme_action = "cap",
-  verbose = TRUE
-)
+# Suppress messaging for batch use
+glycemic_markers(df, verbose = FALSE)
+# Drop rows with any missing input
+glycemic_markers(df, na_action = "omit", verbose = FALSE)
 }
 \references{
 \insertRef{paulmichl2016spise}{HealthMarkers};

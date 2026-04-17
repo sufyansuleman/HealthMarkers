@@ -45,7 +45,6 @@ lm_out <- lipid_markers(
     ApoB = "ApoB", ApoA1 = "ApoA1", waist = "waist", BMI = "BMI", glucose = "glucose"
   ),
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 lm_out |> dplyr::slice_head(n = 5)
@@ -75,10 +74,9 @@ lm_mapped[, c("VAI_Men", "TyG_BMI")]
 
 Only `weight` and `height` had to be overridden; `TC`, `HDL_c`, `TG`, `LDL_c`, `waist`, and `glucose` were matched by the built-in synonym dictionary.
 
-## Missing data & extremes
+## Missing data
 
 - `na_action`: `keep/ignore` retain rows with missing inputs (derived outputs become `NA`); `omit` drops them; `error` aborts; `warn` retains with warnings. `na_warn_prop` flags high missingness when warning.
-- `check_extreme` with `extreme_action` (`warn`, `cap`, `NA`, `error`, `ignore`) scans broad defaults (TC/HDL/TG/LDL 0-50 mmol/L; ApoB/ApoA1 0-10; waist 30-250 cm; BMI 10-80 kg/m^2; glucose 0-50 mmol/L). Override via `extreme_rules`.
 - If `LDL_c` is absent, LDL is estimated via Friedewald (TC - HDL - TG/5) when TG is available.
 
 ## Expectations
@@ -89,7 +87,6 @@ Only `weight` and `height` had to be overridden; `TC`, `HDL_c`, `TG`, `LDL_c`, `
 ## Tips
 
 - Provide waist and BMI to enable VAI/LAP; supply glucose and BMI to enable TyG-BMI.
-- Use `check_extreme = TRUE` with `cap` to bound implausible lipid or anthropometric values.
 - Set `na_action = "omit"` when you need complete-case derived lipid indices.
 
 ## Missing-data policy

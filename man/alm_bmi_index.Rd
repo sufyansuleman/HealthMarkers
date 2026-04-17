@@ -7,11 +7,8 @@
 alm_bmi_index(
   data,
   col_map = NULL,
-  verbose = FALSE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 )
 }
 \arguments{
@@ -24,16 +21,9 @@ alm_bmi_index(
 \item sex: sex column name ("Male"/"Female" or m/f; case-insensitive)
 }}
 
-\item{verbose}{Logical; if TRUE, emits progress messages.}
-
 \item{na_action}{One of c("keep","omit","error","ignore","warn").}
 
-\item{check_extreme}{Logical; if TRUE, scan inputs for plausible ranges.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA").}
-
-\item{extreme_rules}{Optional list with bounds for \code{alm} and \code{bmi}
-(defaults: alm = c(5, 40), bmi = c(10, 60)).}
+\item{verbose}{Logical; if TRUE (default), emits progress messages.}
 }
 \value{
 A tibble with:

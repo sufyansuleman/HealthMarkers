@@ -15,10 +15,8 @@ plot_frailty_age(
   bins = 7,
   na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  check_extreme = NULL,
-  extreme_action = c("warn", "ignore", "error", "cap", "NA"),
   return = c("list", "data"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -57,26 +55,12 @@ Default \code{"ignore"} (retained for backward compatibility; equivalent to \cod
 \item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
 is emitted (per column) when na_action = "warn". Default 0.2.}
 
-\item{check_extreme}{NULL/TRUE/FALSE gate for out-of-range scan:
-\itemize{
-\item NULL (default): legacy behavior (scan only when rescale = FALSE)
-\item TRUE: always scan selected deficits for values < 0 or > 1 before di::di
-\item FALSE: never scan for extremes
-}}
-
-\item{extreme_action}{One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.
-\itemize{
-\item "cap": truncate to \eqn{[0,1]}
-\item "NA": set out-of-range to NA
-Default "warn".
-}}
-
 \item{return}{One of c("list","data"). "list" (default) returns the original
 di::di result (backward compatible). "data" returns a tibble with one row
 per individual, columns: di (the frailty index) plus the selected deficit
 columns (post-capping if applied). Age is included if present.}
 
-\item{verbose}{Logical; if TRUE, prints progress and a completion summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints progress and a completion summary.}
 }
 \value{
 The object returned by frailty_index() (di::di object if return="list").

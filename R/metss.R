@@ -24,6 +24,9 @@
 #' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".
 #' @param na_warn_prop Proportion (0-1) above which high-missingness warning fires when na_action='warn'. Default 0.2.
+#' @param col_map Optional named list mapping canonical keys (`waist`, `TG`, `HDL`,
+#'   `glucose`, `MAP`) to actual column names in `data`. If `NULL`, column names
+#'   are inferred automatically.
 #' @param diagnostics Logical; if TRUE (default) emit value/range diagnostic warnings
 #'   (negative, out-of-range checks).
 #'

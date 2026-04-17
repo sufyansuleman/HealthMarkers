@@ -1,5 +1,6 @@
+---
 title: "Hormone marker ratios"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -20,7 +21,6 @@ Compute nine hormone ratios with built-in QA: `FAI`, `LH_FSH`, `E2_P`, `T3_T4`, 
 - `col_map`: map each required key to your column names; missing mappings or columns abort.
 - Units: keep units consistent within each ratio (e.g., cortisol nmol/L; aldosterone/renin in matching units).
 - `na_action`: `keep`/`ignore` retain rows with NA outputs; `omit` drops rows with missing required inputs; `error` aborts.
-- `check_extreme`: optional; `extreme_action` = `warn`/`cap`/`NA`/`error`/`ignore`.
 
 ## Load packages and demo data
 Use a small synthetic tibble (covers all required inputs) so the chunk runs anywhere. Replace `horm_demo` with your lab data.
@@ -93,7 +93,6 @@ hm_out <- hormone_markers(
   data = horm_demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -110,45 +109,32 @@ horm_demo_na$ft3[2] <- NA
 keep_res <- hormone_markers(
   data = horm_demo_na,
   col_map = col_map,
-  na_action = "keep",
-  check_extreme = FALSE
+  na_action = "keep"
 )
 
 omit_res <- hormone_markers(
   data = horm_demo_na,
   col_map = col_map,
-  na_action = "omit",
-  check_extreme = FALSE
+  na_action = "omit"
 )
 
 list(keep_rows = nrow(keep_res), omit_rows = nrow(omit_res))
 ```
 
-## Extreme screening
-Enable range scanning and cap out-of-range inputs into allowed bounds.
+## Extreme values
+Extreme labs will produce extreme ratios. Pre-filter implausible values before calling.
 
 ```{r}
 horm_demo_ext <- horm_demo
 horm_demo_ext$aldo[1] <- 2000  # intentionally extreme
-
-cap_res <- hormone_markers(
-  data = horm_demo_ext,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
-)
-
-cap_res[1, c("ARR", "FAI")]
+# Pre-filter or cap before calling
+horm_demo_ext$aldo[horm_demo_ext$aldo > 1000] <- 1000
+head(hormone_markers(horm_demo_ext, col_map = col_map, na_action = "keep")[, c("ARR", "FAI")])
 ```
-
-`extreme_action = "cap"` trims inputs into the allowed ranges; `warn` or `error` emit warnings or abort instead.
 
 ## Expectations
 - All required inputs must be mapped and present; missing mappings/columns abort.
 - `na_action`: `keep`/`ignore` retains rows with `NA` outputs; `omit` drops rows with missing required inputs; `error` stops on missingness.
-- Extreme screening is optional; when enabled, choose how to handle flagged values with `extreme_action`.
 - Outputs are numeric ratios; divisions by zero/non-finite are converted to `NA`.
 
 ## Verbose diagnostics
@@ -169,8 +155,18 @@ hormone_markers(df_v,
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which hormone assay columns are
+auto-detected before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised
+synonyms across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
+
 ## Tips
 - Keep units consistent across rows (e.g., cortisol nmol/L, aldosterone/renin in matching units) to make ratios meaningful.
 - Use `na_action = "omit"` when you prefer complete-case ratios; keep/ignore if you want row counts preserved.
-- Tighten `extreme_rules` if your lab reference ranges are narrower than the broad defaults.
-- Turn on `verbose = TRUE` to see coercion, missingness scan, and extreme handling summaries.
+- Turn on `verbose = TRUE` to see coercion, missingness scan, and handling summaries.

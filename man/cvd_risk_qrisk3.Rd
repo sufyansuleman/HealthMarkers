@@ -4,7 +4,7 @@
 \alias{cvd_risk_qrisk3}
 \title{QRISK3 10-year risk (UK QRISK3-2017)}
 \usage{
-cvd_risk_qrisk3(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = FALSE)
+cvd_risk_qrisk3(data, ..., patid = NULL, na_warn_prop = 0.2, verbose = TRUE)
 }
 \arguments{
 \item{data}{A data frame with variables required by \code{QRISK3::QRISK3_2017()}.}

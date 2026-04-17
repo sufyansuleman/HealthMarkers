@@ -30,3 +30,4 @@ doc_out.txt
 render_out.txt
 test_output.txt
 tools/*.txt
+tools/_*

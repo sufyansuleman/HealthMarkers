@@ -30,14 +30,6 @@
 #'   - "error": abort if any used input contains NA.
 #' @param na_warn_prop Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness
 #'   diagnostics on used input columns. Default 0.2.
-#' @param check_extreme Logical; if TRUE, scan used input columns for out-of-range
-#'   values (see `extreme_rules`). Default FALSE.
-#' @param extreme_action One of c("warn","cap","error","ignore","NA") used when extremes are
-#'   detected (only when `check_extreme = TRUE`). Default "warn".
-#'   - "warn": only warn, "cap": truncate to range and warn, "error": abort,
-#'   - "ignore": no-op, "NA": set flagged inputs to NA.
-#' @param extreme_rules Optional named list from input keys to c(min,max) ranges. If NULL,
-#'   broad defaults are used (see Details).
 #' @param verbose Logical; if TRUE, prints stepwise messages and a final summary via hm_inform. Default FALSE.
 #'
 #' @details

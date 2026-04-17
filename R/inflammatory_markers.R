@@ -50,8 +50,7 @@
 #' classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
 #' inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
 #' # Eosinophil panel
-#' inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
-#'                      check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
+#' inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 #'
 #' @references \insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 #' @export

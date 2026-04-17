@@ -1,6 +1,6 @@
 ---
 title: "FRAX fracture risk"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -21,8 +21,6 @@ Compute a simplified, non-validated approximation of FRAX 10-year fracture risk 
 - Optional binary risk factors: prior fracture, parent fracture, glucocorticoids, rheumatoid, secondary osteoporosis, current smoker, high alcohol.
 - Optional: femoral neck BMD T-score (`bmd`).
 - `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows missing required inputs; `error` aborts.
-- `check_extreme`: when TRUE, scan age and BMD; default bounds age 40–90, BMD T -6 to 2 (override with `extreme_rules`).
-- `extreme_action`: `warn` (default) leaves values; `cap` trims into bounds; `NA` blanks; `error` aborts; `ignore` skips messages.
 
 ## Load packages and data
 Illustrative demo data only; replace with your cohort.
@@ -76,8 +74,6 @@ frax_out <- frax_score(
   data = demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "warn",
   verbose = FALSE
 )
 
@@ -90,51 +86,42 @@ Interpretation: `frax_major_percent` and `frax_hip_percent` are placeholder prob
 - Required: `age` (years) and `sex` codes mapped in `col_map`.
 - Optional: binary risk factors and BMD T-score. Non-numeric inputs are coerced; non-finite values become NA.
 - `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs; `omit` drops rows missing required inputs; `error` aborts.
-- `check_extreme`: when TRUE, scan age and BMD; defaults bounds age 40–90, BMD T -6 to 2 (override with `extreme_rules`).
-- `extreme_action`: `warn` (default) leaves values; `cap` trims into bounds; `NA` blanks; `error` aborts; `ignore` skips messages.
 
-## Missing data and extremes
-Show row handling, capping, and dropping on a small slice.
+## Missing data handling
+Show row handling on a small slice.
 
 ```{r}
 demo_miss <- demo
 demo_miss$Age[3] <- NA      # missing age
 demo_miss$Sex[4] <- "X"    # unknown sex -> NA
-demo_miss$Age[5] <- 105     # extreme age
-demo_miss$bmd[2] <- -7      # extreme BMD
 
-keep_cap <- frax_score(
+keep_res <- frax_score(
   data = demo_miss,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = FALSE
 )
 
-omit_cap <- frax_score(
+omit_res <- frax_score(
   data = demo_miss,
   col_map = col_map,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = FALSE
 )
 
 list(
-  keep_rows = nrow(keep_cap),
-  omit_rows = nrow(omit_cap),
-  capped_preview = head(dplyr::select(keep_cap, frax_age_used, frax_bmd_tscore, frax_major_percent, frax_hip_percent))
+  keep_rows = nrow(keep_res),
+  omit_rows = nrow(omit_res),
+  preview = head(dplyr::select(keep_res, frax_age_used, frax_bmd_tscore, frax_major_percent, frax_hip_percent))
 )
 ```
 
-Here `na_action = "keep"` retains rows even with missing/unknown sex or age (outputs become NA). `na_action = "omit"` drops rows missing required inputs. `extreme_action = "cap"` trims age/BMD into allowed ranges before risk calculation.
+Here `na_action = "keep"` retains rows even with missing/unknown sex or age (outputs become NA). `na_action = "omit"` drops rows missing required inputs.
 
 ## Expectations
 - Placeholder approximation only; not a validated FRAX calculator and not for clinical use.
 - You must map `age` and `sex`; missing mappings or columns abort.
 - Choose `na_action` to enforce or relax completeness; `error` is strict, `omit` drops, `keep` retains.
-- Use `check_extreme`/`extreme_action` to cap, blank, or reject out-of-range age/BMD (defaults age 40–90, BMD T -6 to 2).
 - `verbose = TRUE` surfaces progress and QA messages.
 
 ## Verbose diagnostics
@@ -152,8 +139,18 @@ frax_score(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
+
 ## Tips
 - Normalize sex coding to `M`/`F` or 1/0 before calling to avoid NA normalization.
-- Adjust `extreme_rules` if your bounds differ; set `check_extreme = FALSE` to skip scanning.
 - Use `na_action = "error"` for strict pipelines; `omit` to filter incomplete rows; `keep`/`warn` for exploratory use.
 - Outputs are illustrative only; replace with a validated FRAX implementation for clinical workflows.

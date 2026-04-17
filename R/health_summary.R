@@ -10,7 +10,7 @@
 #' health_summary(df)
 #' @export
 health_summary <- function(x, cols = NULL) {
-  stopifnot(is.data.frame(x))
+  if (!is.data.frame(x)) rlang::abort("`x` must be a data.frame or tibble.", class = "healthmarkers_health_summary_error_data_type")
   if (is.null(cols)) cols <- names(x)[vapply(x, is.numeric, logical(1))]
   cols <- intersect(cols, names(x))
   if (length(cols) == 0L) {

@@ -1,6 +1,6 @@
 ---
 title: "Saliva Markers"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -29,9 +29,6 @@ Compute saliva-based stress and glycemic markers: safe-log waking cortisol, cort
 | col_map        | Named list mapping required inputs                                    | cort1, cort2, cort3 (cortisol); amylase; glucose                      |
 | na_action      | Missing-data policy for required inputs                               | "keep" (default), "omit", "error"                                    |
 | na_warn_prop   | Proportion threshold for high-missingness diagnostics                  | Default 0.2 (shown in debug/verbose)                                  |
-| check_extreme  | Scan inputs against bounds                                            | Default FALSE                                                         |
-| extreme_action | Handling if extremes detected                                         | "warn" (default), "cap", "error", "ignore"                          |
-| extreme_rules  | Optional bounds list c(min, max)                                      | Keys may be mapped column names or cort1/cort2/cort3/amylase/glucose  |
 | times          | Sampling times (minutes) for CAR AUC                                  | Numeric length 3, non-decreasing; default c(0, 30, 60)                |
 | verbose        | Emit progress and completion summaries                                | Default FALSE                                                         |
 
@@ -43,15 +40,12 @@ Compute saliva-based stress and glycemic markers: safe-log waking cortisol, cort
 - Validation & coercion: required columns must exist; non-numeric are coerced with warnings when NAs are introduced; non-finite become NA.
 - Missingness: `keep` propagates NA; `omit` drops rows with any required NA; `error` aborts if required inputs contain NA.
 - High-missing diagnostics: controlled by `na_warn_prop`; shown when `verbose` (or debug) is enabled.
-- Extreme screening (optional): checks inputs, not outputs. Uses defaults unless `extreme_rules` provided; `extreme_action` controls warn/cap/error/ignore.
 - Safe logs: cortisol and amylase are log-transformed after setting non-positive to NA.
 - CAR AUC: trapezoidal over the three cortisol values using `times`; any non-finite cortisol in the triplet yields NA for that row.
 - Times: must be numeric length 3, non-decreasing; customize for your protocol.
 - No unit conversion: ensure assays are in consistent units before calling.
 
 ## Defaults and validation details
-- Default extreme bounds (when `check_extreme = TRUE` and no overrides): cortisol (each) 0–2000, amylase 0–50000, glucose 0–1000 (keyed by mapped column names).
-- Extreme rules can be keyed by input names (cort1/2/3/amylase/glucose) or actual column names; they are remapped internally.
 - NA diagnostics appear only with verbose/debug logging; set `verbose = TRUE` during QC.
 - Empty result: if `na_action = "omit"` drops all rows, returns a zero-row tibble with expected columns.
 
@@ -87,33 +81,33 @@ saliva_markers(
 ```
 *Interpretation:* CAR_AUC and log cortisol/amylase compute where inputs are present and positive; the third row yields NA for log_cortisol_wake and CAR_AUC due to missing cort1.
 
-## Worked example 2: Custom times, cap extremes, drop incomplete
+## Worked example 2: Custom times, drop incomplete
 ```{r}
 df2 <- tibble::tibble(
-  c1 = c(14, 0, 2200),    # zero and extreme cortisol
+  c1 = c(14, 0, 2200),    # zero and extreme cortisol; pre-filter
   c2 = c(19, 12, 2100),
   c3 = c(17, 11, 2050),
-  amy = c(90, 70, 60000),  # extreme amylase
+  amy = c(90, 70, 60000),  # extreme amylase; pre-filter
   glu = c(4.5, 5.1, 7.0)
 )
+
+# Pre-filter implausible values before calling
+df2$c1[df2$c1 > 2000] <- NA
+df2$amy[df2$amy > 50000] <- NA
 
 saliva_markers(
   data = df2,
   col_map = list(cort1 = "c1", cort2 = "c2", cort3 = "c3", amylase = "amy", glucose = "glu"),
   times = c(0, 20, 50),
-  check_extreme = TRUE,
-  extreme_action = "cap",
   na_action = "omit",
   verbose = TRUE
 )
 ```
-*Interpretation:* Rows with required NAs are dropped; extremes are capped before logs/AUC; CAR_AUC uses the custom times (0,20,50).
+*Interpretation:* Rows with required NAs are dropped; CAR_AUC uses the custom times (0,20,50).
 
 ## Troubleshooting & common pitfalls
-- YAML/header placement: keep this YAML at the top; stray text before it breaks knitting.
 - Missing columns: ensure every required `col_map` key is mapped to an existing column.
 - Non-positive cortisol/amylase: become NA before logging; expect NA outputs if values are 0 or negative.
-- Extreme handling: only runs when `check_extreme = TRUE`; defaults are broad—override with `extreme_rules` if needed.
 - Times validation: must be numeric length 3 and non-decreasing; otherwise the function aborts.
 - All NA outputs: typically due to missing cortisol triplets, non-positive cortisol/amylase, or aggressive `na_action = "omit"`.
 
@@ -133,16 +127,25 @@ saliva_markers(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
+
 ## Tips for best results
 - Confirm assay units upfront; no conversions are applied.
-- Use `check_extreme = TRUE` with `extreme_action = "warn"` first to see how many inputs are implausible; switch to `cap` to truncate.
 - Set `na_action = "omit"` for modeling datasets; `keep` is better for exploratory review.
 - Provide accurate sampling times in minutes for CAR AUC if your protocol differs from 0/30/60.
 
 ## Validation notes
 - CAR_AUC is trapezoidal: $\sum_{i=1}^{2} \frac{c_i + c_{i+1}}{2} \times (t_{i+1} - t_i)$ using the three cortisol values and the `times` gaps.
 - Safe logs: $\log(x)$ is only taken when $x > 0$ and finite; otherwise NA.
-- Extreme capping (when enabled) happens on inputs before log/AUC computation.
 
 ## See also
 - Function docs: `?saliva_markers`

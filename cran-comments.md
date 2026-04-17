@@ -2,9 +2,9 @@
 
 0 errors | 0 warnings | 1 note
 
-### Note 1: New submission + possibly misspelled words in DESCRIPTION
+### Note 1: possibly misspelled words in DESCRIPTION
 
-This is the first CRAN submission of the HealthMarkers package.
+This is a resubmission of HealthMarkers (v0.1.2).
 
 The flagged terms (ASCVD, CKD, DXA, FRAX, Framingham, KFRE, QRISK, Rockwood,
 Charlson, anthropometric, atherogenic, biofluids, eGFR, glycaemic, iAge,

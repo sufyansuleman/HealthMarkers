@@ -11,7 +11,7 @@ isi_score(
   missing_prop_max = 0.2,
   impute = c("none", "mean"),
   prefix = "ISI",
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ isi_score(
 
 \item{prefix}{Prefix for output column names.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{ISI_total} and \code{ISI_severity} (factor). Input columns are not included.

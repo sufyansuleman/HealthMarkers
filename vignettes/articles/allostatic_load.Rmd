@@ -1,6 +1,6 @@
 ---
 title: "Allostatic Load"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -19,7 +19,7 @@ Compute a composite Allostatic Load (AL) score: each biomarker exceeding its thr
 ## What you need
 - Thresholds: named list of scalar numeric cutoffs; names must match columns (or be mapped via `col_map`).
 - Data: matching biomarker columns; units should align with the thresholds you supply.
-- Policies: `na_action` (`keep` treats missing as unflagged; `omit` drops rows; `error` aborts). `check_extreme`/`sds_limit`/`extreme_action` only affect columns whose names contain "sds".
+- Policies: `na_action` (`keep` treats missing as unflagged; `omit` drops rows; `error` aborts).
 - Optional: `return_summary = TRUE` for counts of flags/omissions; `verbose` for progress.
 
 ## Load packages and data
@@ -50,7 +50,6 @@ al <- allostatic_load(
   thresholds = thresholds,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -59,34 +58,26 @@ al %>% slice_head(n = 5)
 
 Interpretation: `AllostaticLoad` is the count of biomarkers above thresholds. With >1 biomarker the rule is `>`; with a single biomarker it is `>=`.
 
-## Missing data and screening
-Demonstrate row handling and SDS screening (only affects columns containing "sds").
+## Missing data handling
+Demonstrate row handling.
 
 ```{r}
 demo <- sim_small[1:8, c("sbp", "dbp", "CRP")]
 demo$sbp[3] <- NA
 
-demo$CRP_sds <- c(0, 7, -8, 1, NA, 0, 0, 0)  # example SDS column to show screening
-
 al_keep <- allostatic_load(
   data = demo,
   thresholds = thresholds,
-  col_map = c(col_map, CRP_sds = "CRP_sds"),
+  col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  sds_limit = 6,
   verbose = FALSE
 )
 
 al_omit <- allostatic_load(
   data = demo,
   thresholds = thresholds,
-  col_map = c(col_map, CRP_sds = "CRP_sds"),
+  col_map = col_map,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  sds_limit = 6,
   verbose = FALSE
 )
 
@@ -146,19 +137,26 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 ## Expectations
 - Threshold names must match columns (or be mapped); missing columns abort.
 - `na_action`: `keep` treats missing as unflagged (flag = 0), `omit` drops rows, `error` aborts on missing.
-- `check_extreme`/`sds_limit`/`extreme_action` affect only columns whose names contain "sds" (case-insensitive).
 - Multi-biomarker rule is `>`; single-biomarker rule is `>=`.
 
 ## Common pitfalls
 - Threshold units mismatched to data units will misflag results; align units first.
 - Passing only one biomarker changes the rule to `>=`; set thresholds accordingly.
-- SDS screening does nothing unless column names contain "sds"; rename if you expect screening.
 - `na_action = keep` leaves missing inputs unflagged (zero); use `omit` for stricter handling.
 
 ## Validation notes
 - Spot-check one biomarker: flag = 1 if value exceeds the threshold (or equals when only one biomarker), else 0.
 - Sum of per-biomarker flags should equal `AllostaticLoad` for each row.
-- If using `check_extreme`, verify capped SDS values are truncated to +/- `sds_limit` when `extreme_action = "cap"`.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which biomarker columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
+```
 
 ## See also
 - `adiposity_sds()` and `adiposity_sds_strat()` for SDS creation.

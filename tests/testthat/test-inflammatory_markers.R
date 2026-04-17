@@ -9,6 +9,7 @@ test_that("default na_action is 'keep' (not 'error')", {
 })
 
 test_that("mapping validation errors and messages", {
+  skip_on_cran()
   df <- tibble::tibble(neutrophils = numeric())
   expect_error(inflammatory_markers("x", list()), "data.frame or tibble")
   expect_error(inflammatory_markers(df, list(1)), "named list")
@@ -28,6 +29,7 @@ test_that("mapping validation errors and messages", {
 })
 
 test_that("verbose emits col_map, optional inputs, computing markers, and results messages", {
+  skip_on_cran()
   df_v <- tibble::tibble(neutrophils = numeric(0), lymphocytes = numeric(0))
   cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
   msgs <- testthat::capture_messages(
@@ -40,6 +42,7 @@ test_that("verbose emits col_map, optional inputs, computing markers, and result
 })
 
 test_that("verbose double-fire guard", {
+  skip_on_cran()
   df_v <- tibble::tibble(neutrophils = numeric(0), lymphocytes = numeric(0))
   cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
   msgs <- testthat::capture_messages(
@@ -52,6 +55,7 @@ test_that("verbose double-fire guard", {
 })
 
 test_that("classic panel computes markers", {
+  skip_on_cran()
   df <- tibble::tibble(
     neutrophils = 4, lymphocytes = 2, monocytes = 0.5, platelets = 200, WBC = 7, CRP = 2.5
   )
@@ -65,6 +69,7 @@ test_that("classic panel computes markers", {
 })
 
 test_that("eosinophil panel computes markers and ESR passthrough", {
+  skip_on_cran()
   df <- tibble::tibble(
     neutrophils = 4, lymphocytes = 2, monocytes = 0.5, platelets = 200,
     CRP = 5, albumin = 40, eosinophils = 0.2, ESR = 12
@@ -79,6 +84,7 @@ test_that("eosinophil panel computes markers and ESR passthrough", {
 })
 
 test_that("na_action policies", {
+  skip_on_cran()
   df <- tibble::tibble(neutrophils = c(2, NA), lymphocytes = c(2, 1))
   cm <- list(neutrophils="neutrophils", lymphocytes="lymphocytes")
   out_keep <- inflammatory_markers(df, cm, panel = "classic", na_action = "keep", verbose = FALSE)
@@ -92,6 +98,7 @@ test_that("na_action policies", {
 })
 
 test_that("extreme values produce no warning/error; range note appears in verbose", {
+  skip_on_cran()
   df <- tibble::tibble(
     neutrophils = 40, lymphocytes = 0.2, monocytes = 6, platelets = 5000,
     CRP = 500, albumin = 5, eosinophils = 0.1, ESR = 99
@@ -109,6 +116,7 @@ test_that("extreme values produce no warning/error; range note appears in verbos
 })
 
 test_that("zero denominators warn and keep Inf/NaN", {
+  skip_on_cran()
   df <- tibble::tibble(neutrophils = 2, lymphocytes = 0, platelets = 10, monocytes = 0, WBC = 2)
   cm <- as.list(names(df)); names(cm) <- names(df)
   expect_warning(out <- inflammatory_markers(df, cm, panel = "classic", na_action = "keep", verbose = FALSE),
@@ -118,6 +126,7 @@ test_that("zero denominators warn and keep Inf/NaN", {
 })
 
 test_that("ID column is prepended to output when detected", {
+  skip_on_cran()
   df_id <- tibble::tibble(
     id = 1:3, neutrophils = c(4, 3, 5), lymphocytes = c(2, 1.5, 2.5)
   )

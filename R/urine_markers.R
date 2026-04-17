@@ -26,6 +26,9 @@
 #' @param verbose Logical; if `TRUE`, prints progress messages and a completion summary. Default FALSE.
 #' @param na_action One of `c("keep","omit","error")` for handling missing values in required inputs. Default "keep".
 #' @param na_warn_prop Proportion \eqn{[0,1]} to trigger high-missingness warnings for required inputs. Default 0.2.
+#' @param col_map Optional named list mapping canonical keys (e.g., `urine_albumin`,
+#'   `urine_creatinine`) to actual column names in `data`. If `NULL`, column names
+#'   are inferred automatically.
 #'
 #' @return A tibble with columns:
 #'   UACR, albuminuria_stage, microalbuminuria, UPCR, U_Na_K_ratio,

@@ -1,4 +1,4 @@
-﻿library(HealthMarkers)
+library(HealthMarkers)
 
 # ============================================================
 # HealthMarkers -- manual / interactive tests

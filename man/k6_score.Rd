@@ -12,7 +12,7 @@ k6_score(
   impute = c("none", "mean"),
   prefix = "K6",
   cutoff = 13,
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ k6_score(
 
 \item{cutoff}{Threshold for the K6 case flag.}
 
-\item{verbose}{Logical flag for verbose messaging (reserved).}
+\item{verbose}{Logical; if \code{TRUE}, emits informational messages about column resolution and scoring progress via \code{hm_inform()}.}
 }
 \value{
 A tibble of score columns only: \code{K6_total} and \code{K6_case}. Input columns are not included.

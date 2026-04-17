@@ -21,12 +21,14 @@ test_that("impute_missing mean/median/zero/constant work", {
 })
 
 test_that("impute_missing errors appropriately", {
+  skip_on_cran()
   expect_error(impute_missing("not a df"), "must be a data.frame or tibble")
   expect_error(impute_missing(tibble(a = 1), cols = "b"), "Some `cols` not in data")
 })
 
 # 2) impute_mice()
 test_that("impute_mice basic functionality is silent and imputes", {
+  skip_on_cran()
   skip_if_not_installed("mice")
   df <- tibble(a = c(1, NA, 3), b = c(4, 5, NA), c = c("x", "y", "z"))
   expect_silent({
@@ -39,6 +41,7 @@ test_that("impute_mice basic functionality is silent and imputes", {
 })
 
 test_that("impute_mice errors on bad inputs", {
+  skip_on_cran()
   skip_if_not_installed("mice")
   expect_error(impute_mice("nope"), "must be a data.frame or tibble")
   expect_error(impute_mice(tibble(x = 1:3), cols = "foo"),
@@ -52,6 +55,7 @@ test_that("impute_mice errors on bad inputs", {
 
 # 3) impute_missforest()
 test_that("impute_missforest fills NAs and preserves non-numeric", {
+  skip_on_cran()
   skip_if_not_installed("missForest")
   df <- tibble(
     a = c(2, NA, 8),
@@ -67,6 +71,7 @@ test_that("impute_missforest fills NAs and preserves non-numeric", {
 })
 
 test_that("impute_missforest errors on bad inputs", {
+  skip_on_cran()
   skip_if_not_installed("missForest")
   expect_error(impute_missforest("nope"), "must be a data.frame or tibble")
   expect_error(impute_missforest(tibble(x = 1:3), cols = "foo"),
@@ -81,6 +86,7 @@ test_that("impute_missforest errors on bad inputs", {
 # Verbose message tests -------------------------------------------------------
 
 test_that("impute_missing verbose emits preparing inputs and results messages", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(x = c(1, NA, 3), y = c(NA, 2, NA))
   expect_message(suppressWarnings(impute_missing(df, verbose = TRUE)), "impute_missing")
@@ -88,6 +94,7 @@ test_that("impute_missing verbose emits preparing inputs and results messages", 
 })
 
 test_that("impute_missing verbose double-fire guard: each message fires exactly once", {
+  skip_on_cran()
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- tibble(x = c(1, NA, 3), y = c(NA, 2, NA))
   msgs <- testthat::capture_messages(suppressWarnings(impute_missing(df, verbose = TRUE)))
@@ -96,6 +103,7 @@ test_that("impute_missing verbose double-fire guard: each message fires exactly 
 })
 
 test_that("impute_mice verbose emits preparing inputs and results messages", {
+  skip_on_cran()
   skip_if_not_installed("mice")
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(a = c(1, NA, 3), b = c(4, 5, NA))
@@ -104,6 +112,7 @@ test_that("impute_mice verbose emits preparing inputs and results messages", {
 })
 
 test_that("impute_mice verbose double-fire guard", {
+  skip_on_cran()
   skip_if_not_installed("mice")
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- tibble(a = c(1, NA, 3), b = c(4, 5, NA))
@@ -113,6 +122,7 @@ test_that("impute_mice verbose double-fire guard", {
 })
 
 test_that("impute_missforest verbose emits preparing inputs and results messages", {
+  skip_on_cran()
   skip_if_not_installed("missForest")
   withr::local_options(healthmarkers.verbose = "inform")
   df <- tibble(a = c(2, NA, 8), b = c(NA, 6, 9))
@@ -121,6 +131,7 @@ test_that("impute_missforest verbose emits preparing inputs and results messages
 })
 
 test_that("impute_missforest verbose double-fire guard", {
+  skip_on_cran()
   skip_if_not_installed("missForest")
   withr::local_options(healthmarkers.verbose = "inform")
   df   <- tibble(a = c(2, NA, 8), b = c(NA, 6, 9))

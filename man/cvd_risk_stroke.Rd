@@ -4,7 +4,7 @@
 \alias{cvd_risk_stroke}
 \title{Stroke 10-year risk}
 \usage{
-cvd_risk_stroke(data, col_map = NULL, na_warn_prop = 0.2, verbose = FALSE, ...)
+cvd_risk_stroke(data, col_map = NULL, na_warn_prop = 0.2, verbose = TRUE, ...)
 }
 \arguments{
 \item{data}{A data frame with the required cardiovascular risk columns.}

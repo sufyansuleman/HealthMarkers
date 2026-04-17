@@ -1,6 +1,6 @@
 ---
 title: "Oxidative Markers"
-output: rmarkdown::html_vignette
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}
@@ -105,6 +105,17 @@ oxidative_markers(
   verbose = TRUE
 )
 options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
+before building your `col_map`. See the
+[Multi-Biobank Compatibility](multi_biobank.html) article for recognised synonyms
+across major biobanks.
+
+```{r, eval=FALSE}
+hm_col_report(your_data)
 ```
 
 ## Tips for best results

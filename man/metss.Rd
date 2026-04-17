@@ -29,12 +29,10 @@ metss(
     = 1.29, sd = 0.35, coef = -0.657), 
      glucose = c(mean = 5.53, sd = 0.87, coef =
     0.644), MAP = c(mean = 91, sd = 11, coef = 0.512))),
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   diagnostics = TRUE
 )
 }
@@ -45,21 +43,18 @@ metss(
 list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
 is a named numeric vector c(mean=, sd=, coef=).}
 
-\item{verbose}{Logical; print progress.}
+\item{col_map}{Optional named list mapping canonical keys (\code{waist}, \code{TG}, \code{HDL},
+\code{glucose}, \code{MAP}) to actual column names in \code{data}. If \code{NULL}, column names
+are inferred automatically.}
+
+\item{verbose}{Logical; if TRUE, prints column mapping and computing messages.}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".}
 
 \item{na_warn_prop}{Proportion (0-1) above which high-missingness warning fires when na_action='warn'. Default 0.2.}
 
-\item{check_extreme}{Logical; scan for extreme values if TRUE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".}
-
-\item{extreme_rules}{Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia, TG, HDL_c, glucose).}
-
 \item{diagnostics}{Logical; if TRUE (default) emit value/range diagnostic warnings
-(negative, out-of-range checks). Set FALSE to suppress these (e.g., in tests when
-also using check_extreme).}
+(negative, out-of-range checks).}
 }
 \value{
 tibble with one numeric column: MetSSS

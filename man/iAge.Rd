@@ -8,12 +8,9 @@ iAge(
   data,
   col_map = NULL,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  na_warn_prop = 0.2
 )
 }
 \arguments{
@@ -29,7 +26,7 @@ iAge(
 \item{weights}{Named numeric vector of weights for each marker (must sum to 1).
 Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 
-\item{verbose}{Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints column mapping and computing messages.}
 
 \item{na_action}{One of c("keep","omit","error","ignore","warn") controlling how missing inputs affect iAge:
 \itemize{
@@ -42,19 +39,6 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).}
 
 \item{na_warn_prop}{Proportion in \eqn{[0,1]} above which a high-missingness warning
 is emitted when \code{na_action = "warn"}. Default 0.2.}
-
-\item{check_extreme}{Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.}
-
-\item{extreme_action}{One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.
-\itemize{
-\item "warn": issue a warning, do not modify values (default if check_extreme = TRUE).
-\item "cap": truncate values to the allowed range and warn.
-\item "error": abort on detection.
-\item "ignore": do nothing.
-\item "NA": set out-of-range values to NA.
-}}
-
-\item{extreme_rules}{Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.}
 }
 \value{
 A tibble with one column:
@@ -88,15 +72,6 @@ machine learning model. This function provides a simple, linear proxy using
 three canonical inflammatory biomarkers. It is not identical to the original
 published iAge but is inspired by its rationale.
 }
-
-Default extreme ranges (if \code{extreme_rules = NULL}):
-\itemize{
-\item CRP: 0 to 300 mg/L
-\item IL6: 0 to 1,000 pg/mL
-\item TNFa: 0 to 1,000 pg/mL
-}
-
-These are deliberately broad. Adjust \code{extreme_rules} to fit your cohort.
 }
 \examples{
 library(tibble)
@@ -118,11 +93,11 @@ iAge(
   na_action = "keep"
 )
 
-# Scan and cap extreme values
+# Verbose output
 iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
-  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+  verbose = TRUE
 )
 
 }
