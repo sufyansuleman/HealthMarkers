@@ -18,7 +18,7 @@ calc_sds(
   extreme_strategy = c("cap", "warn", "error", "NA"),
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   return = c("data", "list"),
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = NULL,
   check_extreme = TRUE,
   extreme_action = NULL

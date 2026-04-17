@@ -8,11 +8,9 @@ maps KDIGO risk.
 ``` r
 ckd_stage(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -36,23 +34,9 @@ ckd_stage(
 
   - "error" (abort if any mapped input missing)
 
-- check_extreme:
-
-  Logical; if TRUE, screen eGFR/UACR for extreme values.
-
-- extreme_action:
-
-  One of:
-
-  - "cap" - winsorize to bounds (eGFR: (0, 200); UACR: (0, 5000) mg/g)
-
-  - "NA" - replace out-of-range with NA
-
-  - "error" - abort on any out-of-range value
-
 - verbose:
 
-  Logical; if TRUE, emits progress messages via `hm_inform()`.
+  Logical; if TRUE (default), emits progress messages via `hm_inform()`.
 
 ## Value
 
@@ -72,6 +56,15 @@ in Crossref; related synopsis PMID: 23732715,
 ``` r
 df <- data.frame(eGFR = c(95, 50), UACR = c(10, 200))
 ckd_stage(df, list(eGFR = "eGFR", UACR = "UACR"))
+#> ckd_stage(): reading input 'df' — 2 rows × 2 variables
+#> ckd_stage(): col_map (2 columns — 2 specified)
+#>   eGFR              ->  'eGFR'
+#>   UACR              ->  'UACR'
+#> ckd_stage(): computing markers:
+#>   CKD_stage          [eGFR G-stage]
+#>   Albuminuria_stage  [UACR A-stage]
+#>   KDIGO_risk         [combined KDIGO risk category]
+#> ckd_stage(): results: CKD_stage 2/2, Albuminuria_stage 2/2, KDIGO_risk 2/2
 #> # A tibble: 2 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     

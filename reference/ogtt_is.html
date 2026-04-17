@@ -41,7 +41,7 @@ Belfiore_isi_gly
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,14 +90,11 @@ computes:</p><ul><li><p>Isi_120</p></li>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ogtt_is</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_limit <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span></span>
+<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -124,7 +121,8 @@ computes:</p><ul><li><p>Isi_120</p></li>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, prints progress messages via hm_inform().</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
@@ -134,22 +132,12 @@ computes:</p><ul><li><p>Isi_120</p></li>
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
 <dd><p>Proportion (0-1) for high-missingness diagnostics (debug). Default 0.2.</p></dd>
 
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan outputs for |value| &gt; extreme_limit. Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-limit">extreme_limit<a class="anchor" aria-label="anchor" href="#arg-extreme-limit"></a></dt>
-<dd><p>Positive numeric magnitude threshold for extremes. Default 1e3.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") when extremes detected. Default "warn".</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with the OGTT-based index columns listed above.</p>
+    <p>A tibble with the OGTT-based index columns listed above. If an ID
+column is detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>), it is
+prepended as the first output column.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -235,8 +223,33 @@ Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T,
 <span class="r-in"><span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): preparing inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): column map: G0 -&gt; 'G0', I0 -&gt; 'I0', G30 -&gt; 'G30', I30 -&gt; 'I30', G120 -&gt; 'G120', I120 -&gt; 'I120', weight -&gt; 'weight', bmi -&gt; 'bmi', age -&gt; 'age', sex -&gt; 'sex'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): reading input 'df' — 1 rows × 10 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): col_map (10 columns — 10 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   G0                -&gt;  'G0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I0                -&gt;  'I0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   G30               -&gt;  'G30'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I30               -&gt;  'I30'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   G120              -&gt;  'G120'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I120              -&gt;  'I120'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   weight            -&gt;  'weight'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   bmi               -&gt;  'bmi'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   age               -&gt;  'age'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sex               -&gt;  'sex'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Isi_120                [G120, I120]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Cederholm_index        [G0, G120, I0, I120, weight]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Gutt_index             [G0, G120, I0, I120, weight]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Avignon_Si0            [G0, I0, weight]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Avignon_Si120          [G120, I120, weight]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Avignon_Sim            [Si0, Si120]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Modified_stumvoll      [I0, I120, G120]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Stumvoll_Demog.        [bmi, I120, age]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Matsuda_AUC            [G0, I0, G_AUC, I_AUC]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Matsuda_ISI            [G0, I0, G_mean, I_mean]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BigttSi                [I0, I30, I120, G0, G30, G120, sex, bmi]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ifc_inv                [I0, I120]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HIRI_inv               [G0, G30, I0, I30]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Belfiore_isi_gly       [I_AUC, G_AUC]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ogtt_is(): results: Isi_120 1/1, Cederholm_index 1/1, Gutt_index 1/1, Avignon_Si0 1/1, Avignon_Si120 1/1, Avignon_Sim 1/1, Modified_stumvoll 1/1, Stumvoll_Demographics 1/1, Matsuda_AUC 1/1, Matsuda_ISI 1/1, BigttSi 1/1, Ifc_inv 1/1, HIRI_inv 1/1, Belfiore_isi_gly 1/1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim</span>

@@ -11,7 +11,7 @@ individual calculators fail."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@ individual calculators fail.</p>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ALL"</span>, <span class="st">"ASCVD"</span>, <span class="st">"QRISK3"</span>, <span class="st">"Stroke"</span>, <span class="st">"RiskScorescvd"</span>, <span class="st">"AIP"</span>, <span class="st">"LDL_PN"</span><span class="op">)</span>,</span>
 <span>  year <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -91,6 +91,11 @@ individual calculators fail.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>TG <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span>, HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">40</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">cvd_risk</span><span class="op">(</span><span class="va">df</span>, model <span class="op">=</span> <span class="st">"AIP"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_risk: dispatching model 'AIP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_marker_aip(): col_map (inferred): TG -&gt; 'TG', HDL_c -&gt; 'HDL_c'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_marker_aip(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   AIP [TG, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_marker_aip(): results: AIP 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

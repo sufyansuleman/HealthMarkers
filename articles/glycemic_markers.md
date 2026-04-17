@@ -14,7 +14,7 @@ packaged simulated data for runnable examples.
   resistance/sensitivity proxies.
 - You can supply glucose/HbA1c/C-peptide/insulin/adipokines when
   available to enrich outputs.
-- You need explicit NA handling and optional extreme-value screening.
+- You need explicit NA handling.
 
 ## Inputs and requirements
 
@@ -26,8 +26,6 @@ packaged simulated data for runnable examples.
   (x18); HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`.
 - `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs;
   `omit` drops rows with missing used inputs; `error` aborts.
-- `check_extreme`: when TRUE, scans inputs with default broad ranges;
-  `extreme_action` = `warn`/`cap`/`NA`/`error`/`ignore`.
 
 ## Load packages and data
 
@@ -81,11 +79,10 @@ Compute all markers and show only newly created columns.
 
 ``` r
 gm <- glycemic_markers(
-  data = sim_small,
-  col_map = col_map,
+  data     = sim_small,
+  col_map  = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
-  verbose = FALSE
+  verbose  = FALSE
 )
 
 gm_new <- setdiff(names(gm), names(sim_small))
@@ -93,12 +90,12 @@ head(dplyr::select(gm, dplyr::all_of(gm_new)))
 #> # A tibble: 6 × 7
 #>   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index
 #>   <dbl>   <dbl>       <int>   <dbl> <dbl> <dbl>     <dbl>
-#> 1  6.54    175.           0      NA    NA    NA      8.39
-#> 2  7.04    163.           0      NA    NA    NA      9.13
-#> 3  6.74    342.           0      NA    NA    NA      8.42
-#> 4  4.13  -1870.           0      NA    NA    NA      9.07
-#> 5  6.25    271.           0      NA    NA    NA      8.95
-#> 6  5.34    347.           0      NA    NA    NA      8.37
+#> 1  4.85    336.           0      NA    NA    NA      9.67
+#> 2  7.11    369.           1      NA    NA    NA      8.07
+#> 3  7.51    289.           0      NA    NA    NA      8.43
+#> 4  8.29    164.           0      NA    NA    NA      8.23
+#> 5  8.38    116.           0      NA    NA    NA      8.51
+#> 6  5.09    165.           0      NA    NA    NA      8.44
 ```
 
 Interpretation: SPISE and METS_IR summarize insulin
@@ -111,125 +108,219 @@ relate adipokines to insulin; HbA1c flags populate
 ## Inputs and units (quick reminder)
 
 - Required: `HDL_c` (mmol/L), `TG` (mmol/L), `BMI` (kg/m^2).
+  Auto-derived: BMI from `weight` (kg) + `height` (m/cm) if BMI absent.
 - Optional if present/mapped: `glucose`, `HbA1c`, `C_peptide`, `G0`,
-  `I0`, `leptin`, `adiponectin`.
+  `I0`, `leptin`, `adiponectin`. Auto-derived: `glucose` from `G0` (or
+  vice versa) if one is absent.
 - TyG converts TG to mg/dL (88.57) and glucose to mg/dL (18) internally.
 - HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`; verify your units for
   C-peptide.
 - Missingness: `na_action` controls row handling
   (`keep`/`omit`/`error`/`warn`/`ignore`).
-- Extreme screening: `check_extreme = TRUE` can warn/cap/NA/error using
-  default broad ranges; override via `extreme_rules`.
 
-## Missing data and extremes
+## Pre-computation example
 
-Show row handling and extreme screening on a tiny slice.
+Providing `weight` and `height` instead of `BMI` works automatically:
+
+``` r
+df_no_bmi <- data.frame(
+  HDL_c   = c(1.0, 1.2),
+  TG      = c(1.3, 1.5),
+  weight  = c(70, 85),    # kg
+  height  = c(175, 180),  # cm
+  glucose = c(5.5, 6.0)
+)
+gm_precomp <- glycemic_markers(df_no_bmi, verbose = FALSE)
+gm_precomp$SPISE  # computed via auto-derived BMI
+#> [1] 8.649504 7.229832
+```
+
+Similarly, providing `G0` without `glucose` enables METS_IR and
+TyG_index via alias:
+
+``` r
+df_g0_only <- data.frame(
+  HDL_c = 1.2, TG = 1.3, BMI = 24, G0 = 5.5
+)
+gm_alias <- glycemic_markers(df_g0_only, verbose = FALSE)
+c(METS_IR = gm_alias$METS_IR, TyG_index = gm_alias$TyG_index)
+#>   METS_IR TyG_index 
+#> 330.35250   8.64813
+```
+
+## Non-standard column names
+
+When your data frame uses different column names (e.g. `pglu0` instead
+of `G0`), pass a `col_map` that redirects them. The function
+materialises the alias and runs pre-computation normally.
+
+``` r
+# Data has 'pglu0' instead of 'G0'
+df_mapped <- data.frame(
+  HDL_c = 1.2, TG = 1.3, BMI = 24.0, pglu0 = 5.5
+)
+gm_mapped <- glycemic_markers(
+  df_mapped,
+  col_map = list(G0 = "pglu0"),   # only need to specify what differs
+  verbose = FALSE
+)
+c(METS_IR = gm_mapped$METS_IR, TyG_index = gm_mapped$TyG_index)
+#>   METS_IR TyG_index 
+#> 330.35250   8.64813
+```
+
+Similarly, map `weight` / `height` to differently-named anthropometric
+columns and BMI is derived automatically:
+
+``` r
+df_wh <- data.frame(
+  HDL_c = 1.1, TG = 1.4, wt_kg = 80, ht_cm = 175, glucose = 5.8
+)
+gm_wh <- glycemic_markers(
+  df_wh,
+  col_map = list(weight = "wt_kg", height = "ht_cm"),
+  verbose = FALSE
+)
+gm_wh$SPISE   # BMI was derived from wt_kg / ht_cm
+#> [1] 7.254687
+```
+
+## Partial col_map and dictionary inference
+
+You only need to specify the keys that *differ* from dictionary
+defaults. For any key you omit,
+[`glycemic_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/glycemic_markers.md)
+auto-infers the mapping from common synonym patterns (e.g. `hdlc`,
+`hdl_cholesterol`, `hdl.c` all resolve to `HDL_c`). Provide a partial
+`col_map` with just the non-standard entries:
+
+``` r
+# Column names match common synonyms — no col_map needed for those
+df_syn <- data.frame(
+  hdlc = 1.0, trig = 1.3, bmi = 24.0, pglu0 = 5.5
+)
+gm_syn <- glycemic_markers(
+  df_syn,
+  col_map = list(G0 = "pglu0"),   # only override the non-obvious one
+  verbose = FALSE
+)
+c(SPISE = gm_syn$SPISE, METS_IR = gm_syn$METS_IR, TyG_index = gm_syn$TyG_index)
+#>     SPISE   METS_IR TyG_index 
+#>   8.10289        NA   8.64813
+```
+
+## Missing data handling
+
+Show row handling on a small slice.
 
 ``` r
 demo <- sim_small[1:6, c("HDL_c", "TG", "BMI")]
-demo$glucose <- c(5.5, 6.2, 7.0, 5.8, 6.0, 5.4)
-demo$HbA1c <- c(42, 39, 41, 45, 44, 40)
+demo$glucose   <- c(5.5, 6.2, 7.0, 5.8, 6.0, 5.4)
+demo$HbA1c     <- c(42, NA, 41, 45, 44, 40)
 demo$C_peptide <- c(300, 450, 500, 400, 380, 360)
-demo$G0 <- demo$glucose
-demo$I0 <- c(60, 90, 120, 80, 75, 70)
-demo$leptin <- c(10, 12, 15, 11, 9, 13)
+demo$G0        <- demo$glucose
+demo$I0        <- c(60, 90, 120, 80, 75, 70)
+demo$leptin    <- c(10, 12, 15, 11, 9, 13)
 demo$adiponectin <- c(8, 7, 6, 9, 10, 7)
-demo$TG[3] <- 30       # extreme TG
-demo$HbA1c[2] <- NA    # missing HbA1c
 
-gm_keep <- glycemic_markers(
-  data = demo,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = FALSE
+cm2 <- list(
+  HDL_c = "HDL_c", TG = "TG", BMI = "BMI",
+  glucose = "glucose", HbA1c = "HbA1c",
+  C_peptide = "C_peptide", G0 = "G0", I0 = "I0",
+  leptin = "leptin", adiponectin = "adiponectin"
 )
 
-gm_omit <- glycemic_markers(
-  data = demo,
-  col_map = col_map,
-  na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = FALSE
-)
+gm_keep <- glycemic_markers(data = demo, col_map = cm2, na_action = "keep",  verbose = FALSE)
+gm_omit <- glycemic_markers(data = demo, col_map = cm2, na_action = "omit",  verbose = FALSE)
 
-list(
-  keep_rows = nrow(gm_keep),
-  omit_rows = nrow(gm_omit),
-  capped_preview = head(dplyr::select(gm_keep, dplyr::all_of(gm_new)))
-)
+list(keep_rows = nrow(gm_keep), omit_rows = nrow(gm_omit))
 #> $keep_rows
 #> [1] 6
 #> 
 #> $omit_rows
 #> [1] 5
-#> 
-#> $capped_preview
-#> # A tibble: 6 × 7
-#>   SPISE METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index
-#>   <dbl>   <dbl>       <int>   <dbl> <dbl>  <dbl>     <dbl>
-#> 1  6.54    179.           1    12.2  1.25 0.133       8.45
-#> 2  7.04    173.          NA    20.7  1.71 0.0778      9.31
-#> 3  3.82    504.           0    25.9  2.5  0.05       11.6 
-#> 4  4.13  -1886.           1    17.2  1.22 0.112       9.10
-#> 5  6.25    284.           1    16.9  0.9  0.133       9.09
-#> 6  5.34    332.           0    14.4  1.86 0.1         8.25
 ```
 
 `na_action = "keep"` preserves all rows (missing inputs flow to `NA`
 outputs); `na_action = "omit"` drops rows with missing/invalid used
-inputs. `extreme_action = "cap"` trims out-of-range values (e.g., TG =
-30) before computation.
+inputs.
 
 ## Expectations
 
-- Required inputs must be present/mapped; missing required columns
-  abort.
+- Required inputs must be present/mapped or derivable (BMI from
+  weight/height); missing required columns abort.
 - `na_action` governs whether missing/invalid inputs drop rows, warn, or
   error.
-- `check_extreme`/`extreme_action` can cap, blank, warn, or abort on
-  out-of-range inputs.
 - Optional columns drive optional markers; absent inputs yield `NA` in
   their markers.
+- Range checks are informational only — values outside physiological
+  plausibility ranges are noted in `verbose` output but not altered.
 
 ## Verbose diagnostics
 
-Set `verbose = TRUE` (and `healthmarkers.verbose = "inform"`) to surface
-three structured messages on each call: preparing inputs, the column
-map, and a results summary.
+Set `verbose = TRUE` (the default) to surface five structured messages:
+column mapping, optional inputs (what is present/missing and which
+indices they affect), pre-computation actions, the full list of markers
+being computed with their inputs, and a per-column results summary.
 
 ``` r
-old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- data.frame(HDL_c = 1.0, TG = 1.3, BMI = 24, glucose = 5.6)
-glycemic_markers(
+glycem_out <- glycemic_markers(
   df_v,
   col_map = list(HDL_c = "HDL_c", TG = "TG", BMI = "BMI", glucose = "glucose"),
   verbose = TRUE
 )
-#> glycemic_markers(): preparing inputs
-#> glycemic_markers(): column map: HDL_c -> 'HDL_c', TG -> 'TG', BMI -> 'BMI'
-#> glycemic_markers(): optional markers not computed (columns absent): HbA1c, C_peptide, G0, I0, leptin, adiponectin
+#> glycemic_markers(): reading input 'df_v' — 1 rows × 4 variables
+#> glycemic_markers(): col_map (5 columns — 4 specified, 1 inferred from data)
+#>   HDL_c             ->  'HDL_c'
+#>   TG                ->  'TG'
+#>   BMI               ->  'BMI'
+#>   glucose           ->  'glucose'
+#>   G0                ->  'glucose'    (inferred)
+#> glycemic_markers(): optional inputs
+#>   present:  glucose, G0
+#>   missing:  HbA1c, C_peptide, I0, leptin, adiponectin
+#>   indices -> NA:
+#>   prediabetes -> NA  [missing: HbA1c]
+#>   diabetes -> NA  [missing: HbA1c]
+#>   HOMA_CP -> NA  [missing: C_peptide]
+#>   LAR -> NA  [missing: leptin, adiponectin]
+#>   ASI -> NA  [missing: adiponectin, I0]
+#> glycemic_markers(): computing markers:
+#>   SPISE           [HDL_c, TG, BMI]
+#>   METS_IR         [glucose, TG, BMI, HDL_c]
+#>   prediabetes     NA [HbA1c missing]
+#>   diabetes        NA [HbA1c missing]
+#>   HOMA_CP         NA [C_peptide/G0 missing]
+#>   LAR             NA [leptin/adiponectin missing]
+#>   ASI             NA [adiponectin/I0 missing]
+#>   TyG_index       [TG, glucose]
 #> glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1
-#> # A tibble: 1 × 8
-#>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index
-#>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl> <dbl>     <dbl>
-#> 1  8.10      NA          NA       NA      NA    NA    NA      8.67
-options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
 ```
 
 ## Tips
 
-- Start with fasting lipids and BMI; add
-  glucose/HbA1c/C-peptide/insulin/adipokines when available for richer
-  markers.
+- Start with fasting lipids and BMI (or weight/height); add
+  glucose/HbA1c/C-peptide/insulin/adipokines for richer markers.
+- Provide `weight` and `height` instead of BMI when BMI is not directly
+  available — it is computed automatically.
 - Convert units beforehand if your data are not in the expected
   mmol/L/pmol/L/ng/mL units.
 - For stricter pipelines, use `na_action = "omit"` or `"error"`;
   keep/warn for exploratory work.
-- Turn on `check_extreme = TRUE` with `extreme_action = "cap"` when
-  working with noisy or simulated inputs.
+- Use `verbose = TRUE` (default) for detailed output messages and
+  diagnostics.
 - See
   [`?glycemic_markers`](https://sufyansuleman.github.io/HealthMarkers/reference/glycemic_markers.md)
   for full argument details and marker definitions.

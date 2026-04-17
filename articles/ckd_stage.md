@@ -10,8 +10,7 @@ risk assumes A1 for mapping.
 
 - You have eGFR (mL/min/1.73 m^2) and optionally UACR (mg/g) and want
   KDIGO staging.
-- You need explicit handling of missing inputs and optional
-  extreme-value screening.
+- You need explicit handling of missing inputs.
 - You want a lightweight KDIGO risk label without age adjustment.
 
 ## Requirements checklist
@@ -22,8 +21,6 @@ risk assumes A1 for mapping.
 - Column map: list(eGFR = …, UACR = …) with UACR optional; mapping
   missing columns errors (except optional UACR).
 - Row policy: na_action = keep (default), omit, error.
-- Extreme screening: check_extreme + extreme_action (cap/NA/error);
-  defaults cap eGFR 0-200, UACR 0-5000 when enabled.
 
 ## Load packages and example data
 
@@ -55,21 +52,19 @@ Defaults keep rows with missing inputs and return NA stages for them.
 ckd_out <- ckd_stage(
   data = sim_small,
   col_map = col_map,
-  na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "cap"
+  na_action = "keep"
 )
 
 head(ckd_out)
 #> # A tibble: 6 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     
-#> 1 G1        A2                Moderate  
-#> 2 G2        A1                Low       
-#> 3 G2        A2                Moderate  
-#> 4 G3a       A1                Moderate  
-#> 5 G1        A1                Low       
-#> 6 G2        A2                Moderate
+#> 1 G5        A1                Very High 
+#> 2 G5        A1                Very High 
+#> 3 G5        A1                Very High 
+#> 4 G5        A1                Very High 
+#> 5 G5        A1                Very High 
+#> 6 G5        A1                Very High
 ```
 
 ## Arguments that matter
@@ -78,9 +73,6 @@ head(ckd_out)
   in data, albuminuria is NA and a warning is issued.
 - na_action: keep (default, retain rows; stages become NA), omit (drop
   rows with missing inputs), error (abort on missing).
-- check_extreme: FALSE by default; TRUE enables bounds checks (eGFR
-  0-200; UACR 0-5000 mg/g by default).
-- extreme_action: cap (default), NA, or error when check_extreme = TRUE.
 
 ## Handling missing inputs
 
@@ -96,8 +88,8 @@ head(ckd_out)
 demo <- sim_small[1:8, ]
 demo$eGFR[3] <- NA
 
-a_keep <- ckd_stage(demo, col_map, na_action = "keep", check_extreme = FALSE)
-a_omit <- ckd_stage(demo, col_map, na_action = "omit", check_extreme = FALSE)
+a_keep <- ckd_stage(demo, col_map, na_action = "keep")
+a_omit <- ckd_stage(demo, col_map, na_action = "omit")
 
 list(
   keep_rows = nrow(a_keep),
@@ -114,40 +106,33 @@ list(
 #> # A tibble: 6 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     
-#> 1 G1        A2                Moderate  
-#> 2 G2        A1                Low       
-#> 3 NA        A2                NA        
-#> 4 G3a       A1                Moderate  
-#> 5 G1        A1                Low       
-#> 6 G2        A2                Moderate
+#> 1 G5        A1                Very High 
+#> 2 G5        A1                Very High 
+#> 3 NA        A1                NA        
+#> 4 G5        A1                Very High 
+#> 5 G5        A1                Very High 
+#> 6 G5        A1                Very High
 ```
 
-## Extreme-value screening (optional)
+## Extreme values
 
-Cap or error on out-of-range values.
+Extreme eGFR or UACR will map to the most extreme KDIGO categories.
+Pre-filter implausible values before calling.
 
 ``` r
 demo2 <- demo
 demo2$UACR[5] <- 6000  # extreme albuminuria
 
-a_cap <- ckd_stage(
-  data = demo2,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap"
-)
-
-head(select(a_cap, Albuminuria_stage, KDIGO_risk))
+head(select(ckd_stage(demo2, col_map = col_map, na_action = "keep"), Albuminuria_stage, KDIGO_risk))
 #> # A tibble: 6 × 2
 #>   Albuminuria_stage KDIGO_risk
 #>   <fct>             <fct>     
-#> 1 A2                Moderate  
-#> 2 A1                Low       
-#> 3 A2                NA        
-#> 4 A1                Moderate  
-#> 5 A3                Moderate  
-#> 6 A2                Moderate
+#> 1 A1                Very High 
+#> 2 A1                Very High 
+#> 3 A1                NA        
+#> 4 A1                Very High 
+#> 5 A3                Very High 
+#> 6 A1                Very High
 ```
 
 ## Outputs
@@ -164,7 +149,6 @@ head(select(a_cap, Albuminuria_stage, KDIGO_risk))
   with mg/mmol.
 - If you do not have UACR, remove it from col_map; albuminuria stays NA
   and risk assumes A1.
-- Use extreme_action = “error” for strict QC; cap for gentle cleaning.
 
 ## Validation ideas
 
@@ -196,8 +180,14 @@ ckd_stage(
   col_map = list(eGFR = "eGFR", UACR = "UACR"),
   verbose = TRUE
 )
-#> ckd_stage(): column map: eGFR -> 'eGFR', UACR -> 'UACR'
-#> ckd_stage(): completed
+#> ckd_stage(): reading input 'df_v' — 3 rows × 2 variables
+#> ckd_stage(): col_map (2 columns — 2 specified)
+#>   eGFR              ->  'eGFR'
+#>   UACR              ->  'UACR'
+#> ckd_stage(): computing markers:
+#>   CKD_stage          [eGFR G-stage]
+#>   Albuminuria_stage  [UACR A-stage]
+#>   KDIGO_risk         [combined KDIGO risk category]
 #> ckd_stage(): results: CKD_stage 3/3, Albuminuria_stage 2/3, KDIGO_risk 3/3
 #> # A tibble: 3 × 3
 #>   CKD_stage Albuminuria_stage KDIGO_risk
@@ -210,6 +200,17 @@ options(old_opt)
 ```
 
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which renal marker columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## See also
 

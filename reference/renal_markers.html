@@ -23,7 +23,7 @@ NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP: pass-through urinary injury markers (
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,13 +63,10 @@ NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP: pass-through urinary injury markers (
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">renal_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,40 +93,29 @@ NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP: pass-through urinary injury markers (
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>One of c("keep","omit","error") for handling missing values in
+<dd><p>One of <code>c("keep","omit","error")</code> for handling missing values in
 required inputs. Default "keep".</p></dd>
 
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
-<dd><p>Proportion \([0,1]\) to trigger high-missingness warnings for
-required inputs. Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scans selected inputs for out-of-range
-values using simple heuristics. Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore") when extremes
-are detected. Default "warn".</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min,max) bounds keyed by input
-names (e.g., "creatinine","BUN","cystatin_C","urea_serum","creatinine_urine","urea_urine").
-If NULL, built-in defaults are used.</p></dd>
+<dd><p>Proportion (0-1) threshold for high-missingness diagnostics.
+Default 0.2.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, prints progress messages and a completion summary.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints step-by-step progress
+including column mapping, optional input availability, physiological range
+information (informational only, values are not altered), the list of
+markers being computed, and a per-column results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with columns:
-eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio, FE_Urea,
-NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP</p>
+    <p>A tibble with computed renal markers:
+<code>eGFR_cr</code>, <code>eGFR_cys</code>, <code>eGFR_combined</code>, <code>BUN_Cr_ratio</code>, <code>FE_Urea</code>,
+<code>NGAL</code>, <code>KIM1</code>, <code>NAG</code>, <code>Beta2Micro</code>, <code>IL18</code>, <code>L_FABP</code>.
+If an ID column is detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>),
+it is prepended as the first output column.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -192,6 +178,26 @@ Portilla D, Dent C, Sugaya T, others (2008).
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>Cr <span class="op">=</span> <span class="fl">1.0</span>, Age <span class="op">=</span> <span class="fl">40</span>, Sex <span class="op">=</span> <span class="fl">1</span>, Race <span class="op">=</span> <span class="st">"white"</span>, BUN <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>creatinine <span class="op">=</span> <span class="st">"Cr"</span>, age <span class="op">=</span> <span class="st">"Age"</span>, sex <span class="op">=</span> <span class="st">"Sex"</span>, race <span class="op">=</span> <span class="st">"Race"</span>, BUN <span class="op">=</span> <span class="st">"BUN"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">renal_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> renal_markers(): reading input 'df' — 1 rows × 5 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> renal_markers(): col_map (5 columns — 5 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   creatinine        -&gt;  'Cr'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   age               -&gt;  'Age'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sex               -&gt;  'Sex'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   race              -&gt;  'Race'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BUN               -&gt;  'BUN'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> renal_markers(): optional inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   missing:  cystatin_C, urea_serum, creatinine_urine, urea_urine, NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   indices -&gt; NA:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eGFR_cys -&gt; NA  [missing: cystatin_C]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eGFR_combined -&gt; NA  [missing: cystatin_C]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FE_Urea -&gt; NA  [missing: urea_serum, creatinine_urine, urea_urine]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> renal_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eGFR_cr        [creatinine, age, sex, race]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eGFR_cys       NA [cystatin_C missing]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eGFR_combined  NA [cystatin_C missing]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BUN_Cr_ratio   [BUN, creatinine]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FE_Urea        NA [urea/urine inputs missing]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> renal_markers(): results: eGFR_cr 1/1, eGFR_cys 0/1, eGFR_combined 0/1, BUN_Cr_ratio 1/1, FE_Urea 0/1, NGAL 0/1, KIM1 0/1, NAG 0/1, Beta2Micro 0/1, IL18 0/1, L_FABP 0/1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 11</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   eGFR_cr eGFR_cys eGFR_combined BUN_Cr_ratio FE_Urea  NGAL  KIM1   NAG</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

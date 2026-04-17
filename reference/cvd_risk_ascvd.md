@@ -7,20 +7,34 @@ the backend errors.
 ## Usage
 
 ``` r
-cvd_risk_ascvd(data, year = 10, na_warn_prop = 0.2, verbose = FALSE, ...)
+cvd_risk_ascvd(
+  data,
+  year = 10,
+  col_map = NULL,
+  na_warn_prop = 0.2,
+  verbose = TRUE,
+  ...
+)
 ```
 
 ## Arguments
 
 - data:
 
-  A data frame with columns: `age`, `sex` (1 = male, 0 = female), `race`
-  ("white","black","other"), `smoker` (logical), `total_chol`, `HDL_c`,
-  `sbp`, `bp_treated` (logical), `diabetes` (logical), `bmi`.
+  A data frame with the required cardiovascular risk columns.
 
 - year:
 
   Risk horizon: 10 or 30.
+
+- col_map:
+
+  Optional named list mapping internal keys (`age`, `sex`, `race`,
+  `smoker`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `diabetes`,
+  `bmi`) to actual column names in `data`. If `NULL` (default), column
+  names are auto-inferred then fall back to the key names themselves.
+  `sex` accepts `1`/`0`, `"m"`/`"f"`, or `"male"`/`"female"`
+  (case-insensitive).
 
 - na_warn_prop:
 

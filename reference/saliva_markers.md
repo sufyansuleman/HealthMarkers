@@ -16,14 +16,10 @@ Computes:
 ``` r
 saliva_markers(
   data,
-  col_map = list(cort1 = "saliva_cort1", cort2 = "saliva_cort2", cort3 = "saliva_cort3",
-    amylase = "saliva_amylase", glucose = "saliva_glucose"),
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
   times = c(0, 30, 60)
 )
 ```
@@ -50,7 +46,10 @@ saliva_markers(
 
 - verbose:
 
-  Logical; if `TRUE`, prints progress messages via hm_inform().
+  Logical; if `TRUE` (default), prints column mapping, input
+  availability, physiological range information (informational only,
+  values not altered), the list of markers being computed with their
+  inputs, and a per-column results summary.
 
 - na_action:
 
@@ -61,20 +60,6 @@ saliva_markers(
 
   Proportion \\\[0,1\]\\ to trigger high-missingness diagnostics
   (debug). Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-
-- extreme_action:
-
-  One of `c("warn","cap","error","ignore")` when extremes detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) bounds. If NULL, broad defaults are
-  used (keyed by mapped column names).
 
 - times:
 
@@ -92,6 +77,9 @@ A tibble with columns:
 - `log_amylase`
 
 - `saliva_glucose`
+
+If an ID column is detected in `data` (e.g. `id`, `IID`,
+`participant_id`), it is prepended as the first output column.
 
 ## Details
 
@@ -137,6 +125,21 @@ df <- tibble::tibble(
   saliva_glucose  = 4.2
 )
 saliva_markers(df)  # uses default col_map
+#> saliva_markers(): reading input 'df' — 1 rows × 5 variables
+#> saliva_markers(): col_map (5 columns — 5 inferred from data)
+#>   cort1             ->  'saliva_cort1'    (inferred)
+#>   cort2             ->  'saliva_cort2'    (inferred)
+#>   cort3             ->  'saliva_cort3'    (inferred)
+#>   amylase           ->  'saliva_amylase'    (inferred)
+#>   glucose           ->  'saliva_glucose'    (inferred)
+#> saliva_markers(): optional inputs
+#>   present:  cort1, cort2, cort3, amylase, glucose
+#> saliva_markers(): computing markers:
+#>   log_cortisol_wake    [cort1]
+#>   CAR_AUC              [cort1, cort2, cort3]
+#>   log_amylase          [amylase]
+#>   saliva_glucose       [glucose]
+#> saliva_markers(): results: log_cortisol_wake 1/1, CAR_AUC 1/1, log_amylase 1/1, saliva_glucose 1/1
 #> # A tibble: 1 × 4
 #>   log_cortisol_wake CAR_AUC log_amylase saliva_glucose
 #>               <dbl>   <dbl>       <dbl>          <dbl>

@@ -15,7 +15,7 @@ asrs_score(
   partA_items = sprintf("asrs_%02d", 1:6),
   partA_thresholds = rep(2, 6),
   partA_cutoff = 4,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -62,7 +62,8 @@ asrs_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

@@ -9,7 +9,7 @@ reference means and SDs provided separately for males and females."></head><body
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,12 +48,9 @@ reference means and SDs provided separately for males and females.</p>
 <span>  <span class="va">col_map</span>,</span>
 <span>  <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cap"</span>, <span class="st">"NA"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  allow_partial <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">""</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -86,22 +83,6 @@ F = list(BMI = c(mean=21, sd=3.0), waist = c(mean=75, sd=9))
 <li><p>"omit"  - drop rows with NA in any required variable</p></li>
 <li><p>"error" - abort if any required variable has NA</p></li>
 </ul></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, screen raw variables for extremes before SDS</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of:</p><ul><li><p>"cap"   - winsorize to bounds</p></li>
-<li><p>"NA"    - set out-of-range to NA</p></li>
-<li><p>"error" - abort on out-of-range</p></li>
-</ul></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min, max) per variable (raw scale).
-If NULL, broad defaults are applied for common measures (BMI, waist, weight, height, hip, WC, HC).</p></dd>
 
 
 <dt id="arg-allow-partial">allow_partial<a class="anchor" aria-label="anchor" href="#arg-allow-partial"></a></dt>
@@ -146,8 +127,12 @@ ISBN 9241208546, No DOI for this WHO report; see ISBN/URL, <a href="https://www.
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sex <span class="op">=</span> <span class="st">"sex"</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BMI <span class="op">=</span> <span class="st">"BMI"</span>, waist <span class="op">=</span> <span class="st">"waist"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  ref <span class="op">=</span> <span class="va">ref</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): preparing inputs (2 vars, 3 rows)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): reading input 'df' — 3 rows × 3 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): col_map (2 columns — 2 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI               -&gt;  'BMI'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   waist             -&gt;  'waist'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI_SDS, waist_SDS</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds_strat(): results: BMI_SDS 3/3, waist_SDS 3/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   BMI_SDS waist_SDS</span>

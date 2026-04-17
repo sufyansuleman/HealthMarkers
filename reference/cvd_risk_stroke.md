@@ -7,15 +7,23 @@ with quiet fallback to NA if the backend errors.
 ## Usage
 
 ``` r
-cvd_risk_stroke(data, na_warn_prop = 0.2, verbose = FALSE, ...)
+cvd_risk_stroke(data, col_map = NULL, na_warn_prop = 0.2, verbose = TRUE, ...)
 ```
 
 ## Arguments
 
 - data:
 
-  Data frame with: `age`, `sex`, `race`, `smoker`, `total_chol`,
-  `HDL_c`, `sbp`, `bp_treated`, `diabetes`, `bmi`.
+  A data frame with the required cardiovascular risk columns.
+
+- col_map:
+
+  Optional named list mapping internal keys (`age`, `sex`, `race`,
+  `smoker`, `total_chol`, `HDL_c`, `sbp`, `bp_treated`, `diabetes`,
+  `bmi`) to actual column names in `data`. If `NULL` (default), column
+  names are auto-inferred then fall back to the key names themselves.
+  `sex` accepts `1`/`0`, `"m"`/`"f"`, or `"male"`/`"female"`
+  (case-insensitive).
 
 - na_warn_prop:
 
@@ -52,6 +60,8 @@ if (requireNamespace("PooledCohort", quietly = TRUE)) {
     diabetes = FALSE, bmi = 27)
   cvd_risk_stroke(df)
 }
+#> cvd_risk_stroke(): preparing inputs; non-finite=1, high-NA=1, all-NA=1
+#> cvd_risk_stroke(): results: 1 row(s)
 #> # A tibble: 1 × 3
 #>   model   year   risk
 #>   <chr>  <int>  <dbl>

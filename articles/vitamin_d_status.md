@@ -28,24 +28,16 @@ enforces your missing-data policy, and can scan/cap implausible values.
 - `na_action = c("keep","omit","error","ignore","warn")` (default
   “keep”): policy for missing 25(OH)D. `warn`/`ignore` behave like keep;
   `omit` drops those rows; `error` aborts.
-- `check_extreme = FALSE`: turn on plausible-range screening.
-- `extreme_action = c("warn","cap","error","ignore","NA")` (default
-  “warn”): response to values outside bounds.
-- `extreme_rules = NULL`: override default bounds for vitamin D
-  (defaults to 0 to 250 ng/mL).
 - `verbose = FALSE`: emit progress messages.
 
-## How missingness and extremes are handled
+## How missingness is handled
 
 - Missing 25(OH)D follows `na_action`; `omit` shrinks the output;
   `error` aborts.
 - Non-numeric inputs are coerced to numeric; any NAs introduced trigger
   a warning.
-- With `check_extreme = TRUE`, values outside the bounds are handled per
-  `extreme_action`: warn only, cap into range, abort, ignore, or blank
-  to NA.
 - Negative values and very high medians (suggesting nmol/L) warn when
-  extreme scanning is off.
+  values appear implausible.
 
 ## Outputs
 
@@ -78,24 +70,25 @@ vitamin_d_status(
 #> 4 NA
 ```
 
-Screen and cap extremes
+Pre-filter and classify
 
 ``` r
-df2 <- tibble::tibble(d = c(15, 280, 8, 65, NA))  # 280 is extreme by default (0-250)
+df2 <- tibble::tibble(d = c(15, 280, 8, 65, NA))  # 280 is implausible; pre-filter
+
+# Pre-filter before calling
+df2$d[df2$d > 250] <- NA
 
 vitamin_d_status(
   data = df2,
   col_map = list(vitd = "d"),
   na_action = "warn",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 #> # A tibble: 5 × 1
 #>   vitamin_d_status
 #>   <ord>           
 #> 1 Deficient       
-#> 2 Sufficient      
+#> 2 NA              
 #> 3 Deficient       
 #> 4 Sufficient      
 #> 5 NA
@@ -110,8 +103,12 @@ vitamin_d_status(
   col_map = list(vitamin_d = "VitD"),
   verbose = TRUE
 )
-#> vitamin_d_status(): preparing inputs
-#> vitamin_d_status(): column map: vitamin_d -> 'VitD'
+#> vitamin_d_status(): reading input 'data' — 2 rows × 1 variables
+#> vitamin_d_status(): col_map (2 columns — 1 specified, 1 inferred from data)
+#>   vitamin_d         ->  'VitD'
+#>   vitd              ->  'VitD'    (inferred)
+#> vitamin_d_status(): computing markers:
+#>   vitamin_d_status [VitD]
 #> vitamin_d_status(): results: vitamin_d_status 2/2
 #> # A tibble: 2 × 1
 #>   vitamin_d_status
@@ -127,7 +124,5 @@ options(old_opt)
   should be divided by 2.5 to get ng/mL).
 - Set `na_action = "omit"` when downstream steps cannot handle NA
   statuses.
-- Tighten `extreme_rules` to your assay range, or leave
-  `check_extreme = FALSE` when values are already QCed.
 - Keep `col_map` named; missing or empty mappings abort with classed
   errors you can assert in tests.

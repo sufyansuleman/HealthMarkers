@@ -8,9 +8,9 @@ glutathione (GSSG).
 ``` r
 oxidative_markers(
   data,
-  col_map = list(GSH = "GSH", GSSG = "GSSG"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -31,11 +31,13 @@ oxidative_markers(
 
 - verbose:
 
-  Logical; if TRUE, emits progress via hm_inform().
+  Logical; if `TRUE` (default), prints column mapping and a per-column
+  results summary.
 
 ## Value
 
-A tibble with column GSH_GSSG_Ratio.
+A tibble with column GSH_GSSG_Ratio. If an ID column is detected, it is
+prepended.
 
 ## References
 
@@ -50,6 +52,13 @@ Medicine*, **30**(1–2), 1–12.
 ``` r
 df <- data.frame(GSH = c(5, 3), GSSG = c(1, 0.5))
 oxidative_markers(df, col_map = list(GSH="GSH", GSSG="GSSG"))
+#> oxidative_markers(): reading input 'df' — 2 rows × 2 variables
+#> oxidative_markers(): col_map (2 columns — 2 specified)
+#>   GSH               ->  'GSH'
+#>   GSSG              ->  'GSSG'
+#> oxidative_markers(): computing markers:
+#>   GSH_GSSG_Ratio  [GSH / GSSG]
+#> oxidative_markers(): results: GSH_GSSG_Ratio 2/2
 #> # A tibble: 2 × 1
 #>   GSH_GSSG_Ratio
 #>            <dbl>

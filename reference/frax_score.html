@@ -11,7 +11,7 @@ This is for development/demo only and does not implement the proprietary FRAX al
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,13 +48,10 @@ This is for development/demo only and does not implement the proprietary FRAX al
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">frax_score</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"Age"</span>, sex <span class="op">=</span> <span class="st">"Sex"</span>, bmd_t <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  country <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -76,18 +73,6 @@ rheumatoid, secondary_op, smoker, alcohol</p></li>
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
 <dd><p>One of c("keep","omit","error","ignore","warn").</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for plausible ranges.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA").</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional overrides for defaults (age, bmd).</p></dd>
 
 
 <dt id="arg-country">country<a class="anchor" aria-label="anchor" href="#arg-country"></a></dt>
@@ -121,6 +106,14 @@ Kanis JA, McCloskey EV, Johansson H, Oden A, others (2010).
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">65</span>, <span class="fl">72</span>, <span class="fl">58</span><span class="op">)</span>, Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"female"</span>, <span class="st">"male"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">frax_score</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frax_score(): reading input 'df' — 3 rows × 2 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frax_score(): col_map (2 columns — 2 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   age               -&gt;  'Age'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sex               -&gt;  'Sex'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frax_score(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   frax_major_percent [age, sex, risk factors, bmd]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   frax_hip_percent [age, sex, risk factors, bmd]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frax_score(): results: frax_major_percent 3/3, frax_hip_percent 3/3, frax_sex_norm 3/3, frax_age_used 3/3, frax_bmd_tscore 0/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   frax_major_percent frax_hip_percent frax_sex_norm frax_age_used</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

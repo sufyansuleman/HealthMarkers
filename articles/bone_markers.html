@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -90,8 +90,6 @@ T-scores.</li>
 (coerced to numeric if mapped and present).</li>
 <li>Row policy via na_action: keep (default), omit, or error on
 missing/non-finite required inputs.</li>
-<li>Optional SDS screening: check_extreme on any mapped key containing
-“sds”; control with sds_limit and extreme_action.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -148,23 +146,41 @@ derived scores.</p>
 <code class="sourceCode R"><span><span class="va">bm_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  sds_limit <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; bone_markers(): reading input 'sim_small' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; bone_markers(): col_map (13 columns — 8 specified, 5 inferred from data)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt;   ALM               -&gt;  'ALM'</span></span>
+<span><span class="co">#&gt;   FM                -&gt;  'FM'</span></span>
+<span><span class="co">#&gt;   BMD               -&gt;  'BMD'</span></span>
+<span><span class="co">#&gt;   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span></span>
+<span><span class="co">#&gt;   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span></span>
+<span><span class="co">#&gt;   TBS               -&gt;  'TBS'    (inferred)</span></span>
+<span><span class="co">#&gt;   PINP              -&gt;  'PINP'    (inferred)</span></span>
+<span><span class="co">#&gt;   CTX               -&gt;  'CTX'    (inferred)</span></span>
+<span><span class="co">#&gt;   BSAP              -&gt;  'BSAP'    (inferred)</span></span>
+<span><span class="co">#&gt;   Osteocalcin       -&gt;  'Osteocalcin'    (inferred)</span></span>
+<span><span class="co">#&gt; bone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   OSTA       [(weight - age) * 0.2]</span></span>
+<span><span class="co">#&gt;   ALMI       [ALM / height^2]</span></span>
+<span><span class="co">#&gt;   FMI        [FM / height^2]</span></span>
+<span><span class="co">#&gt;   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span></span>
+<span><span class="co">#&gt; bone_markers(): results: id 30/30, OSTA 30/30, ALMI 30/30, FMI 30/30, BMD_Tscore 30/30, TBS 30/30, HSA 0/30, PINP 30/30, CTX 30/30, BSAP 30/30, Osteocalcin 30/30</span></span>
 <span></span>
 <span><span class="va">new_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bm_out</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bm_out</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">new_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;    OSTA     ALMI      FMI BMD_Tscore   HSA</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  1.73 0.000<span style="text-decoration: underline;">986</span> 0.000<span style="text-decoration: underline;">862</span>     -<span style="color: #BB0000;">0.696</span>    <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  2.83 0.000<span style="text-decoration: underline;">832</span> 0.000<span style="text-decoration: underline;">728</span>     -<span style="color: #BB0000;">0.827</span>    <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  8.59 0.000<span style="text-decoration: underline;">905</span> 0.000<span style="text-decoration: underline;">806</span>     -<span style="color: #BB0000;">0.868</span>    <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 11.9  0.001<span style="text-decoration: underline;">05</span>  0.001<span style="text-decoration: underline;">04</span>      -<span style="color: #BB0000;">0.921</span>    <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  8.42 0.000<span style="text-decoration: underline;">918</span> 0.000<span style="text-decoration: underline;">803</span>     -<span style="color: #BB0000;">0.972</span>    <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 13.7  0.000<span style="text-decoration: underline;">892</span> 0.001<span style="text-decoration: underline;">01</span>      -<span style="color: #BB0000;">0.867</span>    <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  7.56 0.000<span style="text-decoration: underline;">958</span> 0.000<span style="text-decoration: underline;">897</span>     -<span style="color: #BB0000;">0.799</span>    <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 12.1  0.000<span style="text-decoration: underline;">903</span> 0.000<span style="text-decoration: underline;">832</span>     -<span style="color: #BB0000;">1.00</span>     <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  9.4  0.000<span style="text-decoration: underline;">865</span> 0.000<span style="text-decoration: underline;">757</span>     -<span style="color: #BB0000;">1.00</span>     <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  7.74 0.000<span style="text-decoration: underline;">840</span> 0.000<span style="text-decoration: underline;">735</span>     -<span style="color: #BB0000;">0.919</span>    <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">4.02</span> 0.000<span style="text-decoration: underline;">772</span> 0.000<span style="text-decoration: underline;">676</span>     -<span style="color: #BB0000;">0.642</span>    <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.5  0.001<span style="text-decoration: underline;">17</span>  0.001<span style="text-decoration: underline;">03</span>      -<span style="color: #BB0000;">0.631</span>    <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -176,10 +192,6 @@ pass through when mapped.</li>
 <li>na_action: keep (default, retain rows; derived scores become NA when
 inputs missing), omit (drop rows with missing/non-finite required
 inputs), error (abort if any missing/non-finite required inputs).</li>
-<li>check_extreme: FALSE by default; TRUE scans mapped keys containing
-“sds” (case-insensitive) for |value| &gt; sds_limit.</li>
-<li>extreme_action (when check_extreme = TRUE): cap, NA, or error.</li>
-<li>sds_limit: threshold for SDS-like screening (default 6).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -199,7 +211,39 @@ become NA.</li>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">ALM</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; bone_markers(): reading input 'demo' — 8 rows × 8 variables</span></span>
+<span><span class="co">#&gt; bone_markers(): col_map (8 columns — 8 specified)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt;   ALM               -&gt;  'ALM'</span></span>
+<span><span class="co">#&gt;   FM                -&gt;  'FM'</span></span>
+<span><span class="co">#&gt;   BMD               -&gt;  'BMD'</span></span>
+<span><span class="co">#&gt;   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span></span>
+<span><span class="co">#&gt;   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span></span>
+<span><span class="co">#&gt; bone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   OSTA       [(weight - age) * 0.2]</span></span>
+<span><span class="co">#&gt;   ALMI       [ALM / height^2]</span></span>
+<span><span class="co">#&gt;   FMI        [FM / height^2]</span></span>
+<span><span class="co">#&gt;   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span></span>
+<span><span class="co">#&gt; bone_markers(): results: OSTA 8/8, ALMI 6/8, FMI 8/8, BMD_Tscore 8/8, TBS 0/8, HSA 0/8, PINP 0/8, CTX 0/8, BSAP 0/8, Osteocalcin 0/8</span></span>
 <span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; bone_markers(): reading input 'demo' — 8 rows × 8 variables</span></span>
+<span><span class="co">#&gt; bone_markers(): col_map (8 columns — 8 specified)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt;   ALM               -&gt;  'ALM'</span></span>
+<span><span class="co">#&gt;   FM                -&gt;  'FM'</span></span>
+<span><span class="co">#&gt;   BMD               -&gt;  'BMD'</span></span>
+<span><span class="co">#&gt;   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span></span>
+<span><span class="co">#&gt;   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span></span>
+<span><span class="co">#&gt; bone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   OSTA       [(weight - age) * 0.2]</span></span>
+<span><span class="co">#&gt;   ALMI       [ALM / height^2]</span></span>
+<span><span class="co">#&gt;   FMI        [FM / height^2]</span></span>
+<span><span class="co">#&gt;   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span></span>
+<span><span class="co">#&gt; bone_markers(): results: OSTA 6/6, ALMI 6/6, FMI 6/6, BMD_Tscore 6/6, TBS 0/6, HSA 0/6, PINP 0/6, CTX 0/6, BSAP 0/6, Osteocalcin 0/6</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">a_keep</span><span class="op">)</span>,</span>
@@ -216,38 +260,59 @@ become NA.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;    OSTA      ALMI      FMI BMD_Tscore</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  1.73  0.000<span style="text-decoration: underline;">986</span> 0.000<span style="text-decoration: underline;">862</span>     -<span style="color: #BB0000;">0.696</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  2.83 <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">728</span>     -<span style="color: #BB0000;">0.827</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  8.59  0.000<span style="text-decoration: underline;">905</span> 0.000<span style="text-decoration: underline;">806</span>     -<span style="color: #BB0000;">0.868</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 11.9   0.001<span style="text-decoration: underline;">05</span>  0.001<span style="text-decoration: underline;">04</span>      -<span style="color: #BB0000;">0.921</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  8.42 <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">803</span>     -<span style="color: #BB0000;">0.972</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 13.7   0.000<span style="text-decoration: underline;">892</span> 0.001<span style="text-decoration: underline;">01</span>      -<span style="color: #BB0000;">0.867</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  7.56  0.000<span style="text-decoration: underline;">958</span> 0.000<span style="text-decoration: underline;">897</span>     -<span style="color: #BB0000;">0.799</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 12.1  <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">832</span>     -<span style="color: #BB0000;">1.00</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  9.4   0.000<span style="text-decoration: underline;">865</span> 0.000<span style="text-decoration: underline;">757</span>     -<span style="color: #BB0000;">1.00</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  7.74  0.000<span style="text-decoration: underline;">840</span> 0.000<span style="text-decoration: underline;">735</span>     -<span style="color: #BB0000;">0.919</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">4.02</span> <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">676</span>     -<span style="color: #BB0000;">0.642</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.5   0.001<span style="text-decoration: underline;">17</span>  0.001<span style="text-decoration: underline;">03</span>      -<span style="color: #BB0000;">0.631</span></span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="optional-sds-screening">Optional SDS screening<a class="anchor" aria-label="anchor" href="#optional-sds-screening"></a>
+<h2 id="optional-marker-pass-through">Optional marker pass-through<a class="anchor" aria-label="anchor" href="#optional-marker-pass-through"></a>
 </h2>
-<p>If you supply any mapped key containing “sds”, you can cap/NA/error
-on extremes.</p>
+<p>Supply any of the optional keys (<code>TBS</code>, <code>HSA</code>,
+<code>PINP</code>, <code>CTX</code>, <code>BSAP</code>,
+<code>Osteocalcin</code>) in <code>col_map</code> to include them in the
+output; unmapped optional columns return <code>NA</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">demo</span></span>
-<span><span class="co"># Example SDS-like column for illustration</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">demo2</span><span class="op">$</span><span class="va">BMD_z_sds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">demo2</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
-<span><span class="va">col_map_sds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col_map</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BMD_z_sds <span class="op">=</span> <span class="st">"BMD_z_sds"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">demo2</span><span class="op">$</span><span class="va">PINP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">demo2</span><span class="op">)</span>, mean <span class="op">=</span> <span class="fl">55</span>, sd <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="va">col_map_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col_map</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>PINP <span class="op">=</span> <span class="st">"PINP"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">bm_screen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span></span>
+<span><span class="va">bm_with_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map_sds</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  sds_limit <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span></span>
+<span>  col_map <span class="op">=</span> <span class="va">col_map_opt</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; bone_markers(): reading input 'demo2' — 8 rows × 9 variables</span></span>
+<span><span class="co">#&gt; bone_markers(): col_map (9 columns — 9 specified)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt;   ALM               -&gt;  'ALM'</span></span>
+<span><span class="co">#&gt;   FM                -&gt;  'FM'</span></span>
+<span><span class="co">#&gt;   BMD               -&gt;  'BMD'</span></span>
+<span><span class="co">#&gt;   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span></span>
+<span><span class="co">#&gt;   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span></span>
+<span><span class="co">#&gt;   PINP              -&gt;  'PINP'</span></span>
+<span><span class="co">#&gt; bone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   OSTA       [(weight - age) * 0.2]</span></span>
+<span><span class="co">#&gt;   ALMI       [ALM / height^2]</span></span>
+<span><span class="co">#&gt;   FMI        [FM / height^2]</span></span>
+<span><span class="co">#&gt;   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span></span>
+<span><span class="co">#&gt; bone_markers(): results: OSTA 8/8, ALMI 6/8, FMI 8/8, BMD_Tscore 8/8, TBS 0/8, HSA 0/8, PINP 8/8, CTX 0/8, BSAP 0/8, Osteocalcin 0/8</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">demo2</span><span class="op">$</span><span class="va">BMD_z_sds</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">6</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Mode   FALSE    TRUE </span></span>
-<span><span class="co">#&gt; logical       7       1</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bm_with_opt</span>, <span class="va">OSTA</span>, <span class="va">ALMI</span>, <span class="va">FMI</span>, <span class="va">BMD_Tscore</span>, <span class="va">PINP</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;    OSTA      ALMI      FMI BMD_Tscore  PINP</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  7.56  0.000<span style="text-decoration: underline;">958</span> 0.000<span style="text-decoration: underline;">897</span>     -<span style="color: #BB0000;">0.799</span> 27.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 12.1  <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">832</span>     -<span style="color: #BB0000;">1.00</span>  60.1 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  9.4   0.000<span style="text-decoration: underline;">865</span> 0.000<span style="text-decoration: underline;">757</span>     -<span style="color: #BB0000;">1.00</span>   6.25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  7.74  0.000<span style="text-decoration: underline;">840</span> 0.000<span style="text-decoration: underline;">735</span>     -<span style="color: #BB0000;">0.919</span> 54.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">4.02</span> <span style="color: #BB0000;">NA</span>        0.000<span style="text-decoration: underline;">676</span>     -<span style="color: #BB0000;">0.642</span> 67.4 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.5   0.001<span style="text-decoration: underline;">17</span>  0.001<span style="text-decoration: underline;">03</span>      -<span style="color: #BB0000;">0.631</span> 78.0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -269,8 +334,6 @@ aborts before row filtering.</li>
 keep units consistent (height meters; masses kg; BMD g/cm^2).</li>
 <li>Optional markers are numeric-coerced; if missing or not mapped, they
 return NA columns.</li>
-<li>SDS screening applies only to mapped keys containing “sds”; defaults
-do nothing unless you provide such keys.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -320,8 +383,21 @@ active:</p>
 <span>  BMD_ref_mean <span class="op">=</span> <span class="st">"BMD_ref_mean"</span>, BMD_ref_sd <span class="op">=</span> <span class="st">"BMD_ref_sd"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/bone_markers.html">bone_markers</a></span><span class="op">(</span><span class="va">df_v</span>, col_map <span class="op">=</span> <span class="va">cm_v</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; bone_markers(): column map: age -&gt; 'age', weight -&gt; 'weight', height -&gt; 'height', ALM -&gt; 'ALM', FM -&gt; 'FM', BMD -&gt; 'BMD', BMD_ref_mean -&gt; 'BMD_ref_mean', BMD_ref_sd -&gt; 'BMD_ref_sd'</span></span>
-<span><span class="co">#&gt; bone_markers(): completed</span></span>
+<span><span class="co">#&gt; bone_markers(): reading input 'df_v' — 2 rows × 8 variables</span></span>
+<span><span class="co">#&gt; bone_markers(): col_map (8 columns — 8 specified)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt;   ALM               -&gt;  'ALM'</span></span>
+<span><span class="co">#&gt;   FM                -&gt;  'FM'</span></span>
+<span><span class="co">#&gt;   BMD               -&gt;  'BMD'</span></span>
+<span><span class="co">#&gt;   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span></span>
+<span><span class="co">#&gt;   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span></span>
+<span><span class="co">#&gt; bone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   OSTA       [(weight - age) * 0.2]</span></span>
+<span><span class="co">#&gt;   ALMI       [ALM / height^2]</span></span>
+<span><span class="co">#&gt;   FMI        [FM / height^2]</span></span>
+<span><span class="co">#&gt;   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span></span>
 <span><span class="co">#&gt; bone_markers(): results: OSTA 2/2, ALMI 2/2, FMI 2/2, BMD_Tscore 2/2, TBS 0/2, HSA 0/2, PINP 0/2, CTX 0/2, BSAP 0/2, Osteocalcin 0/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
 <span><span class="co">#&gt;    OSTA  ALMI   FMI BMD_Tscore   TBS   HSA  PINP   CTX  BSAP Osteocalcin</span></span>
@@ -332,6 +408,16 @@ active:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
 <code>"none"</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which
+bone/calcium/phosphate columns are auto-detected before building your
+<code>col_map</code>. See the <a href="multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

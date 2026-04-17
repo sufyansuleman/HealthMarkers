@@ -29,13 +29,10 @@ computes:
 ``` r
 vitamin_markers(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -62,29 +59,20 @@ vitamin_markers(
   Proportion \\\[0,1\]\\ to trigger high-missingness debug notices.
   Default 0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore") when extremes detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) bounds keyed by input keys or column
-  names.
-
 - verbose:
 
-  Logical; if TRUE, prints progress messages via hm_inform().
+  Logical; if `TRUE` (default), prints column mapping, input
+  availability, physiological range information (informational only,
+  values not altered), the list of markers being computed with their
+  inputs, and a per-column results summary.
 
 ## Value
 
 A tibble with columns: VitD_Z, B12_Fol_Ratio, Ferr_TSat_R, Cort_DHEA_R,
 T_E2_Ratio, TSH_fT4_R, Retinol_Z, Toco_Lip_R, PIVKA_II, VitC,
-Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R
+Homocysteine, MMA, Mg_Zn_R, Cu_Zn_R. If an ID column is detected in
+`data` (e.g. `id`, `IID`, `participant_id`), it is prepended as the
+first output column.
 
 ## Details
 
@@ -129,6 +117,52 @@ df <- tibble::tibble(
 )
 cm <- as.list(names(df)); names(cm) <- names(df)
 vitamin_markers(df, cm)
+#> vitamin_markers(): reading input 'df' — 1 rows × 25 variables
+#> vitamin_markers(): col_map (25 columns — 25 specified)
+#>   VitD              ->  'VitD'
+#>   VitD_ref_mean     ->  'VitD_ref_mean'
+#>   VitD_ref_sd       ->  'VitD_ref_sd'
+#>   B12               ->  'B12'
+#>   Folate            ->  'Folate'
+#>   Ferritin          ->  'Ferritin'
+#>   TSat              ->  'TSat'
+#>   Cortisol          ->  'Cortisol'
+#>   DHEAS             ->  'DHEAS'
+#>   Testosterone      ->  'Testosterone'
+#>   Estradiol         ->  'Estradiol'
+#>   TSH               ->  'TSH'
+#>   free_T4           ->  'free_T4'
+#>   Retinol           ->  'Retinol'
+#>   Retinol_ref_mean  ->  'Retinol_ref_mean'
+#>   Retinol_ref_sd    ->  'Retinol_ref_sd'
+#>   Tocopherol        ->  'Tocopherol'
+#>   Total_lipids      ->  'Total_lipids'
+#>   PIVKA_II          ->  'PIVKA_II'
+#>   VitC              ->  'VitC'
+#>   Homocysteine      ->  'Homocysteine'
+#>   MMA               ->  'MMA'
+#>   Magnesium         ->  'Magnesium'
+#>   Zinc              ->  'Zinc'
+#>   Copper            ->  'Copper'
+#> vitamin_markers(): optional inputs
+#>   present:  VitD, VitD_ref_mean, VitD_ref_sd, B12, Folate, Ferritin, TSat, Cortisol, DHEAS, Testosterone, Estradiol, TSH, free_T4, Retinol, Retinol_ref_mean, Retinol_ref_sd, Tocopherol, Total_lipids, PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper
+#> vitamin_markers(): column map: VitD -> 'VitD', VitD_ref_mean -> 'VitD_ref_mean', VitD_ref_sd -> 'VitD_ref_sd', B12 -> 'B12', Folate -> 'Folate', Ferritin -> 'Ferritin', TSat -> 'TSat', Cortisol -> 'Cortisol', DHEAS -> 'DHEAS', Testosterone -> 'Testosterone', Estradiol -> 'Estradiol', TSH -> 'TSH', free_T4 -> 'free_T4', Retinol -> 'Retinol', Retinol_ref_mean -> 'Retinol_ref_mean', Retinol_ref_sd -> 'Retinol_ref_sd', Tocopherol -> 'Tocopherol', Total_lipids -> 'Total_lipids', PIVKA_II -> 'PIVKA_II', VitC -> 'VitC', Homocysteine -> 'Homocysteine', MMA -> 'MMA', Magnesium -> 'Magnesium', Zinc -> 'Zinc', Copper -> 'Copper'
+#> vitamin_markers(): computing markers:
+#>   VitD_Z           [VitD, VitD_ref_mean, VitD_ref_sd]
+#>   B12_Fol_Ratio    [B12, Folate]
+#>   Ferr_TSat_R      [Ferritin, TSat]
+#>   Cort_DHEA_R      [Cortisol, DHEAS]
+#>   T_E2_Ratio       [Testosterone, Estradiol]
+#>   TSH_fT4_R        [TSH, free_T4]
+#>   Retinol_Z        [Retinol, Retinol_ref_mean, Retinol_ref_sd]
+#>   Toco_Lip_R       [Tocopherol, Total_lipids]
+#>   PIVKA_II         [PIVKA_II]
+#>   VitC             [VitC]
+#>   Homocysteine     [Homocysteine]
+#>   MMA              [MMA]
+#>   Mg_Zn_R          [Magnesium, Zinc]
+#>   Cu_Zn_R          [Copper, Zinc]
+#> vitamin_markers(): results: VitD_Z 1/1, B12_Fol_Ratio 1/1, Ferr_TSat_R 1/1, Cort_DHEA_R 1/1, T_E2_Ratio 1/1, TSH_fT4_R 1/1, Retinol_Z 1/1, Toco_Lip_R 1/1, PIVKA_II 1/1, VitC 1/1, Homocysteine 1/1, MMA 1/1, Mg_Zn_R 1/1, Cu_Zn_R 1/1
 #> # A tibble: 1 × 14
 #>   VitD_Z B12_Fol_Ratio Ferr_TSat_R Cort_DHEA_R T_E2_Ratio TSH_fT4_R Retinol_Z
 #>    <dbl>         <dbl>       <dbl>       <dbl>      <dbl>     <dbl>     <dbl>

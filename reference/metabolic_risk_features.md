@@ -18,10 +18,7 @@ metabolic_risk_features(
   col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -69,30 +66,9 @@ metabolic_risk_features(
   Numeric in \\\[0,1\]\\; per-variable threshold for high-missingness
   warnings. Default 0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for out-of-range values (see
-  `extreme_rules`). Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") used when extremes are
-  detected (only when `check_extreme = TRUE`).
-
-  - "warn": only warn (default), "cap": truncate to range and warn,
-
-  - "error": abort, "ignore": do nothing, "NA": set flagged inputs to
-    NA.
-
-- extreme_rules:
-
-  Optional named list of c(min,max) ranges for required keys. If NULL,
-  broad defaults are used.
-
 - verbose:
 
-  Logical; if TRUE, prints stepwise messages and a final summary.
-  Default FALSE.
+  Logical; if TRUE, prints column mapping and computing messages.
 
 ## Value
 
@@ -146,6 +122,24 @@ df <- data.frame(
   bp_dia_z = c(0.1, 0.9)
 )
 metabolic_risk_features(df)
+#> metabolic_risk_features(): reading input 'df' — 2 rows × 10 variables
+#> metabolic_risk_features(): col_map (10 columns — 10 inferred from data)
+#>   chol_total        ->  'chol_total'    (inferred)
+#>   chol_ldl          ->  'chol_ldl'    (inferred)
+#>   chol_hdl          ->  'chol_hdl'    (inferred)
+#>   triglycerides     ->  'triglycerides'    (inferred)
+#>   age_year          ->  'age_year'    (inferred)
+#>   z_HOMA            ->  'z_HOMA'    (inferred)
+#>   glucose           ->  'glucose'    (inferred)
+#>   HbA1c             ->  'HbA1c'    (inferred)
+#>   bp_sys_z          ->  'bp_sys_z'    (inferred)
+#>   bp_dia_z          ->  'bp_dia_z'    (inferred)
+#> metabolic_risk_features(): computing markers:
+#>   dyslipidemia       [chol_total, chol_ldl, chol_hdl, triglycerides, age_year]
+#>   insulin_resistance [z_HOMA]
+#>   hyperglycemia      [glucose, HbA1c]
+#>   hypertension       [bp_sys_z, bp_dia_z]
+#> metabolic_risk_features(): results: dyslipidemia 2/2, insulin_resistance 2/2, hyperglycemia 2/2, hypertension 2/2
 #> # A tibble: 2 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       

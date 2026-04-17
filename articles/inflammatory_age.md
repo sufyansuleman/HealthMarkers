@@ -1,27 +1,50 @@
-# 
-
-title: “Inflammatory age (iAge proxy)” output: rmarkdown::html_vignette
-—
+# Inflammatory age (iAge proxy)
 
 ## Scope
 
 Compute a simplified inflammatory age proxy (`iAge`) as a weighted sum
-of CRP, IL6, and TNFa. Supports NA policies, high-missingness warnings,
-and optional extreme scanning (warn/cap/NA/error). Units assumed: CRP
-mg/L; IL6, TNFa pg/mL (no internal conversions).
+of CRP, IL6, and TNFa. Supports NA policies and high-missingness
+warnings. Units assumed: CRP mg/L; IL6, TNFa pg/mL (no internal
+conversions).
+
+## Background
+
+`iAge` is a simplified implementation of the inflammatory age proxy
+described by Sayed *et al.* (2021, *Nature Aging*). The original model
+uses a 50+ cytokine proteomics panel; this function computes a weighted
+sum of three routinely available markers—CRP, IL-6, and TNF-α—as a
+practical, single-site approximation.
+
+Elevated iAge scores have been associated with:
+
+- Biological age acceleration independent of chronological age
+- Increased frailty, functional decline, and all-cause mortality risk in
+  longitudinal cohorts
+- Cardiometabolic and neurodegenerative disease incidence
+
+| Marker | Biological role                                            | Default weight |
+|--------|------------------------------------------------------------|----------------|
+| CRP    | Acute-phase protein; reflects systemic IL-6 signalling     | 0.33           |
+| IL-6   | Pro-inflammatory interleukin; master acute-phase regulator | 0.33           |
+| TNF-α  | Pleiotropic cytokine; adipose source in metabolic disease  | 0.34           |
+
+Approximate reference ranges (healthy adults, standard lab units): - CRP
+\< 3 mg/L (hs-CRP \< 1 mg/L = low cardiovascular risk) - IL-6 \< 7
+pg/mL - TNF-α 1–6 pg/mL
 
 ## Load packages and demo data
 
-Synthetic data with one missing value to show NA handling.
+Six participants spanning low to markedly elevated inflammatory burden,
+with one missing CRP to demonstrate NA handling.
 
 ``` r
 library(HealthMarkers)
 library(tibble)
 
 df <- tibble::tibble(
-  CRP  = c(1.2, 3.5, NA),  # mg/L
-  IL6  = c(2.0, 4.1, 1.5), # pg/mL
-  TNFa = c(1.0, 1.8, 0.9)  # pg/mL
+  CRP  = c(0.8, 1.5, 3.5,  8.0,   NA, 42.0), # mg/L
+  IL6  = c(1.2, 2.0, 4.1,  6.8,  3.2, 15.0), # pg/mL
+  TNFa = c(0.8, 1.0, 1.8,  2.5,  1.4,  3.2)  # pg/mL
 )
 ```
 
@@ -43,18 +66,36 @@ ia_default <- iAge(
   data = df,
   col_map = col_map,
   na_action = "omit",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
 ia_default
-#> # A tibble: 3 × 1
-#>    iAge
-#>   <dbl>
-#> 1 1.40 
-#> 2 3.12 
-#> 3 0.801
+#> # A tibble: 6 × 1
+#>     iAge
+#>    <dbl>
+#> 1  0.932
+#> 2  1.50 
+#> 3  3.12 
+#> 4  5.73 
+#> 5  1.53 
+#> 6 19.9
 ```
+
+## Interpreting iAge scores
+
+As a weighted sum of (unstandardised) inflammatory markers, the raw
+score is influenced by the absolute magnitude of CRP (which dominates
+when elevated). As a broad guide:
+
+| Score | Inflammatory profile                                                            |
+|-------|---------------------------------------------------------------------------------|
+| 0–2   | Low burden; typical of healthy younger adults                                   |
+| 2–8   | Sub-clinical elevation; common in overweight, sedentary, or older adults        |
+| \> 8  | High chronic inflammation; consistent with metabolic syndrome or active disease |
+
+For cross-cohort comparison, normalise the score with
+[`normalize_vec()`](https://sufyansuleman.github.io/HealthMarkers/reference/normalize_vec.md)
+(method `"z"` or `"robust"`) before downstream modelling.
 
 ## Keep NA vs drop
 
@@ -65,46 +106,49 @@ row. `na_action = "error"` stops on missing required inputs.
 ia_keep <- iAge(
   data = df,
   col_map = col_map,
-  na_action = "keep",
-  check_extreme = FALSE
+  na_action = "keep"
 )
 
 ia_keep
-#> # A tibble: 3 × 1
-#>    iAge
-#>   <dbl>
-#> 1  1.40
-#> 2  3.12
-#> 3 NA
+#> # A tibble: 6 × 1
+#>     iAge
+#>    <dbl>
+#> 1  0.932
+#> 2  1.50 
+#> 3  3.12 
+#> 4  5.73 
+#> 5 NA    
+#> 6 19.9
 ```
 
-## Extreme screening
+## Extreme values
 
-Scan for out-of-range inputs and cap into allowed bounds.
+Extreme marker values will produce extreme scores. Pre-filter
+implausible values before calling.
 
 ``` r
 df_ext <- df
 df_ext$CRP[2] <- 500  # extreme on purpose
+# Pre-filter or cap before passing to iAge
+df_ext$CRP[df_ext$CRP > 300] <- 300
 
-ia_cap <- iAge(
+ia_filtered <- iAge(
   data = df_ext,
   col_map = col_map,
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
+  verbose = FALSE
 )
 
-ia_cap
-#> # A tibble: 3 × 1
-#>     iAge
-#>    <dbl>
-#> 1   1.40
-#> 2 101.  
-#> 3  NA
+ia_filtered
+#> # A tibble: 6 × 1
+#>      iAge
+#>     <dbl>
+#> 1   0.932
+#> 2 100    
+#> 3   3.12 
+#> 4   5.73 
+#> 5  NA    
+#> 6  19.9
 ```
-
-`extreme_action = "warn"` would only warn; `error` aborts; `NA` blanks
-flagged values before computing.
 
 ## Weights
 
@@ -115,12 +159,15 @@ flagged values before computing.
 
 ``` r
 iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
-#> # A tibble: 3 × 1
+#> # A tibble: 6 × 1
 #>    iAge
 #>   <dbl>
-#> 1  1.35
-#> 2  3.22
-#> 3 NA
+#> 1  0.9 
+#> 2  1.5 
+#> 3  3.22
+#> 4  6.32
+#> 5 NA   
+#> 6 25.6
 ```
 
 ## Expectations
@@ -132,8 +179,6 @@ iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
     rows preserved.
   - `keep`: any missing required marker yields `NA` for that row.
   - `error`: abort if any required marker is missing/NA.
-- Extreme scan uses broad defaults (CRP 0–300, IL6 0–1000, TNFa 0–2000);
-  adjust via `extreme_rules` for your lab ranges.
 - Output: one-column tibble `iAge`; rows match input unless you subset
   beforehand.
 
@@ -147,8 +192,13 @@ map, and a results summary.
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- tibble::tibble(CRP = 1.2, IL6 = 2.0, TNFa = 1.0)
 iAge(df_v, col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"), verbose = TRUE)
-#> iAge(): preparing inputs
-#> iAge(): column map: CRP -> 'CRP', IL6 -> 'IL6', TNFa -> 'TNFa'
+#> iAge(): reading input 'df_v' — 1 rows × 3 variables
+#> iAge(): col_map (3 columns — 3 specified)
+#>   CRP               ->  'CRP'
+#>   IL6               ->  'IL6'
+#>   TNFa              ->  'TNFa'
+#> iAge(): computing markers:
+#>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]
 #> iAge(): results: iAge 1/1
 #> # A tibble: 1 × 1
 #>    iAge
@@ -157,6 +207,34 @@ iAge(df_v, col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"), verbose = TR
 options(old_opt)
 ```
 
+## Column recognition (multi-biobank)
+
+CRP is widely available in clinical databases (often labelled `CRP`,
+`hs_CRP`, `hsCRP`, `c_reactive_protein`). IL-6 and TNF-α require
+targeted immunoassay panels (e.g., Meso Scale Discovery, Luminex) and
+are absent from most routine clinical extracts.
+
+``` r
+# Check which inflammation markers are present in your cohort data
+hm_col_report(your_data)
+```
+
+For datasets where only CRP is available, pass a single-marker `col_map`
+and assign all weight to CRP:
+
+``` r
+iAge(
+  data    = your_data,
+  col_map = list(CRP = "hs_CRP"),  # IL6/TNFa omitted
+  weights = c(CRP = 1.0),          # full weight to CRP
+  na_action = "keep"
+)
+```
+
+See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
 ## Tips
 
 - Keep units consistent (CRP mg/L; IL6/TNFa pg/mL). Convert before
@@ -164,8 +242,11 @@ options(old_opt)
 - Prefer `na_action = "keep"` when you want to see which rows are
   incomplete; use `omit` when you want continuity of the score despite
   single missing markers.
-- Tighten `extreme_rules` for cleaner QA; use `verbose = TRUE` during
-  setup to see mapping and warnings.
+- Use `verbose = TRUE` during setup to see mapping and warnings.
 - Impute upstream (e.g.,
   [`impute_missing()`](https://sufyansuleman.github.io/HealthMarkers/reference/impute_missing.md))
   if you prefer not to down-weight missing markers to zero.
+- Reference: Sayed N, *et al.* (2021). An inflammatory aging clock
+  (iAge) based on deep learning tracks multimorbidity, immunosenescence,
+  epigenetic reprogramming, and mortality. *Nature Aging*, 1, 598–615.
+  <https://doi.org/10.1038/s43587-021-00082-y>

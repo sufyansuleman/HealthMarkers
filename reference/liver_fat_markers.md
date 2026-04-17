@@ -12,16 +12,10 @@ Computes:
 ``` r
 liver_fat_markers(
   data,
-  col_map = list(ALT = "ALT", AST = "AST", BMI = "BMI", sex = "sex", diabetes =
-    "diabetes", MetS = "MetS", insulin = "insulin", I0 = "I0", waist = "waist", TG =
-    "TG", HDL_c = "HDL_c", sbp = "sbp", bp_sys = "bp_sys", bp_treated = "bp_treated",
-    glucose = "glucose", G0 = "G0"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -51,22 +45,9 @@ liver_fat_markers(
   Proportion in \\\[0,1\]\\ for high-missingness warnings when na_action
   = "warn". Default 0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan selected inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") controlling how extremes
-  are handled.
-
-- extreme_rules:
-
-  Optional named list of c(min,max) to override defaults.
-
 - verbose:
 
-  Logical; if TRUE, prints progress.
+  Logical; if TRUE, prints column mapping and computing messages.
 
 ## Value
 
@@ -108,6 +89,19 @@ liver_fat_markers(
   col_map = list(ALT="ALT", AST="AST", BMI="BMI",
                  sex="sex", diabetes="diabetes", I0="I0")
 )
+#> liver_fat_markers(): reading input 'df' — 1 rows × 6 variables
+#> liver_fat_markers(): col_map (7 columns — 6 specified, 1 inferred from data)
+#>   ALT               ->  'ALT'
+#>   AST               ->  'AST'
+#>   BMI               ->  'BMI'
+#>   sex               ->  'sex'
+#>   diabetes          ->  'diabetes'
+#>   I0                ->  'I0'
+#>   insulin           ->  'I0'    (inferred)
+#> liver_fat_markers(): computing markers:
+#>   HSI        [8*(ALT/AST) + BMI + sex + diabetes]
+#>   NAFLD_LFS  [MetS/insulin/diabetes required; NA if unavailable]
+#> liver_fat_markers(): results: HSI 1/1, NAFLD_LFS 0/1
 #> # A tibble: 1 × 2
 #>     HSI NAFLD_LFS
 #>   <dbl>     <dbl>

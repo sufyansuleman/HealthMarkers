@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,8 +62,8 @@
 
 <dt id="arg-col-map">col_map<a class="anchor" aria-label="anchor" href="#arg-col-map"></a></dt>
 <dd><p>Named list for column mapping forwarded to underlying functions.
-If <code>col_map</code> is <code>NULL</code> or missing, <code>all_health_markers()</code> calls
-<code><a href="infer_cols.html">hm_infer_cols()</a></code> once at the top level to guess a column map from common
+If <code>col_map</code> is <code>NULL</code> or an empty list, <code>all_health_markers()</code> calls
+<code><a href="hm_col_report.html">hm_col_report()</a></code> once at the top level to guess a column map from common
 synonyms (for example <code>TG</code> vs <code>triglycerides</code>, <code>BMI</code> vs <code>bmi</code>,
 <code>HDL_c</code> vs <code>HDL</code>). The inferred <code>col_map</code> is then reused for all groups
 that require it, and an error is thrown if required keys (e.g. <code>TG</code>,
@@ -128,10 +128,12 @@ across categories included by <code>which</code>.</p>
 <span class="r-in"><span><span class="fu">all_health_markers</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>, which <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lipid"</span>,<span class="st">"liver"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                   include_insulin <span class="op">=</span> <span class="cn">FALSE</span>, normalize <span class="op">=</span> <span class="st">"none"</span>, mode <span class="op">=</span> <span class="st">"both"</span>,</span></span>
 <span class="r-in"><span>                   verbose <span class="op">=</span> <span class="cn">FALSE</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    TC HDL_c  TG LDL_c ALT AST BMI non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 200    50 150   120  30  20  25       150        30            4            3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   ratio_LDL_HDL ApoB_ApoA1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1           2.4         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    TC HDL_c  TG LDL_c ALT AST BMI     VLDL non_HDL remnant_c       AIP CRI_I</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 200    50 150   120  30  20  25 68.18182     150        30 0.4771213     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   CRI_II HDL_TG_ratio LDL_HDL_ratio non_HDL_c ratio_TC_HDL ratio_TG_HDL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    2.4    0.3333333           2.4       150            4            3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ratio_LDL_HDL ApoB_ApoA1 FLI NFS APRI FIB4 BARD ALBI MELD_XI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           2.4         NA  NA  NA   NA   NA    0   NA      NA</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

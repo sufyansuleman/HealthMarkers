@@ -14,11 +14,8 @@ charlson_index(
     "hemiplegia", renal = "renal", cancer = "cancer", leukemia = "leukemia", lymphoma =
     "lymphoma", sev_liver = "sev_liver", metastatic_cancer = "metastatic_cancer", hiv =
     "hiv"),
-  verbose = FALSE,
-  na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE,
+  na_action = c("keep", "omit", "error", "ignore", "warn")
 )
 ```
 
@@ -43,18 +40,6 @@ charlson_index(
 - na_action:
 
   One of c("keep","omit","error","ignore","warn").
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides (applied per key); default bounds c(0,1) for all.
 
 ## Value
 
@@ -104,6 +89,11 @@ charlson_index(
   patient,
   col_map = as.list(stats::setNames(names(patient), names(patient)))
 )
+#> charlson_index(): reading input 'patient' — 1 rows × 19 variables
+#> charlson_index(): col_map: mi -> 'mi', chf -> 'chf', pvd -> 'pvd', stroke -> 'stroke', dementia -> 'dementia', copd -> 'copd', rheum -> 'rheum', ulcer -> 'ulcer', mild_liver -> 'mild_liver', diabetes -> 'diabetes', diab_comp -> 'diab_comp', hemiplegia -> 'hemiplegia', renal -> 'renal', cancer -> 'cancer', leukemia -> 'leukemia', lymphoma -> 'lymphoma', sev_liver -> 'sev_liver', metastatic_cancer -> 'metastatic_cancer', hiv -> 'hiv'
+#> charlson_index(): computing markers:
+#>   charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]
+#> charlson_index(): results: charlson_index 1/1
 #> # A tibble: 1 × 1
 #>   charlson_index
 #>            <int>

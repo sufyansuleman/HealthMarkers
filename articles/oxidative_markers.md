@@ -120,8 +120,12 @@ oxidative_markers(
   col_map = list(GSH = "GSH", GSSG = "GSSG"),
   verbose = TRUE
 )
-#> oxidative_markers(): preparing inputs
-#> oxidative_markers(): column map: GSH -> 'GSH', GSSG -> 'GSSG'
+#> oxidative_markers(): reading input 'df' — 3 rows × 2 variables
+#> oxidative_markers(): col_map (2 columns — 2 specified)
+#>   GSH               ->  'GSH'
+#>   GSSG              ->  'GSSG'
+#> oxidative_markers(): computing markers:
+#>   GSH_GSSG_Ratio  [GSH / GSSG]
 #> oxidative_markers(): results: GSH_GSSG_Ratio 2/3
 #> # A tibble: 3 × 1
 #>   GSH_GSSG_Ratio
@@ -130,6 +134,17 @@ oxidative_markers(
 #> 2              6
 #> 3             NA
 options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
 ```
 
 ## Tips for best results

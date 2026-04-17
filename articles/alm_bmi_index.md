@@ -20,8 +20,7 @@ Compute ALM/BMI and flag low muscle mass using FNIH cut-points (men \<
   values yield `NA` for the flag).
 - Defaults: ALM in kg, BMI in kg/m^2. No unit conversion is performed.
 - Policies: `na_action` (`keep`/`warn`/`ignore` behave like keep; `omit`
-  drops; `error` aborts). `check_extreme` + `extreme_action` can
-  cap/NA/error on implausible ALM/BMI.
+  drops; `error` aborts).
 - FNIH cut-points are built in; nothing to configure beyond column
   mapping.
 
@@ -62,7 +61,6 @@ alm_out <- alm_bmi_index(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -72,32 +70,28 @@ alm_out %>%
 #> # A tibble: 5 × 2
 #>   alm_bmi_ratio low_muscle_mass
 #>           <dbl> <lgl>          
-#> 1         0.929 FALSE          
-#> 2         0.964 FALSE          
-#> 3         1.16  FALSE          
-#> 4         0.941 FALSE          
-#> 5         1.00  FALSE
+#> 1         1.09  FALSE          
+#> 2         1.16  FALSE          
+#> 3         1.10  FALSE          
+#> 4         1.16  FALSE          
+#> 5         0.892 NA
 ```
 
 Interpretation: `alm_bmi_ratio` is ALM/BMI. `low_muscle_mass` is `TRUE`
 if below the sex-specific FNIH cut-point; `NA` if sex or ratio is `NA`.
 
-## Missing data and extremes
+## Missing data handling
 
-Compare NA handling and optional capping.
+Compare NA handling.
 
 ``` r
 demo <- sim_small[1:8, c("ALM_kg", "BMI", "sex")]
 demo$ALM_kg[3] <- NA
-demo$BMI[4] <- 2    # implausible, will be capped
 
 alm_keep <- alm_bmi_index(
   data = demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(alm = c(5, 40), bmi = c(10, 60)),
   verbose = FALSE
 )
 
@@ -105,9 +99,6 @@ alm_omit <- alm_bmi_index(
   data = demo,
   col_map = col_map,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(alm = c(5, 40), bmi = c(10, 60)),
   verbose = FALSE
 )
 
@@ -126,9 +117,9 @@ list(
 #> # A tibble: 3 × 2
 #>   alm_bmi_ratio low_muscle_mass
 #>           <dbl> <lgl>          
-#> 1         0.929 FALSE          
-#> 2         0.964 FALSE          
-#> 3        NA     NA
+#> 1          1.09 FALSE          
+#> 2          1.16 FALSE          
+#> 3         NA    NA
 ```
 
 ## Verbose diagnostics
@@ -157,8 +148,14 @@ df_v <- data.frame(
 alm_bmi_index(df_v,
               col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
               verbose  = TRUE)
-#> alm_bmi_index(): preparing inputs
-#> alm_bmi_index(): column map: alm -> 'ALM_kg', bmi -> 'BMI', sex -> 'Sex'
+#> alm_bmi_index(): reading input 'df_v' — 2 rows × 3 variables
+#> alm_bmi_index(): col_map (3 columns — 3 specified)
+#>   alm               ->  'ALM_kg'
+#>   bmi               ->  'BMI'
+#>   sex               ->  'Sex'
+#> alm_bmi_index(): computing markers:
+#>   alm_bmi_ratio    [ALM / BMI]
+#>   low_muscle_mass  [ratio < sex-specific FNIH cut-point]
 #> alm_bmi_index(): results: alm_bmi_ratio 2/2, low_muscle_mass 2/2
 #> # A tibble: 2 × 2
 #>   alm_bmi_ratio low_muscle_mass
@@ -176,8 +173,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 - Required columns must be mapped; missing columns abort.
 - `na_action` controls row handling (`keep`/`warn`/`ignore` behave like
   keep; `omit` drops; `error` aborts).
-- `check_extreme` screens raw ALM/BMI; `extreme_action` can
-  warn/cap/NA/error; tune `extreme_rules` to your lab limits.
 - Sex must normalize to m/f/1/0 for the flag to evaluate; otherwise the
   flag is `NA`.
 
@@ -185,8 +180,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 - Feeding ALM in pounds or BMI in non-metric units will misclassify;
   keep ALM in kg and BMI in kg/m^2.
-- A single implausible BMI (e.g., \<=0) zeroes the ratio; enable
-  `check_extreme` to cap or NA such inputs.
 - Using an ALM proxy (like weight \* 0.35) is illustrative only; use
   measured ALM when possible.
 - `na_action = keep` leaves missing inputs as `NA`; choose `omit` for
@@ -196,9 +189,18 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
 
 - Spot-check one row: ratio = ALM/BMI; compare to FNIH thresholds (0.789
   men, 0.512 women) to verify `low_muscle_mass`.
-- With `check_extreme = TRUE` and `extreme_action = cap`, ALM/BMI will
-  be truncated into your specified ranges before the ratio.
 - Expect `low_muscle_mass` to be `NA` when sex cannot be normalized.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which body composition columns
+are auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## See also
 

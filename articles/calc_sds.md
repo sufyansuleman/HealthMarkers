@@ -67,14 +67,14 @@ sds_tbl <- calc_sds(
 new_cols <- setdiff(names(sds_tbl), names(sim_small))
 head(select(sds_tbl, id, all_of(new_cols)))
 #> # A tibble: 6 × 3
-#>      id BMI_sds sbp_sds
-#>   <int>   <dbl>   <dbl>
-#> 1     1  0.294   -0.565
-#> 2     2 -0.597    1.49 
-#> 3     3 -0.0777   0.625
-#> 4     4  1.48    -1.10 
-#> 5     5 -0.0968  -0.427
-#> 6     6  1.26    -0.642
+#>   id    BMI_sds sbp_sds
+#>   <chr>   <dbl>   <dbl>
+#> 1 P001    0.696  -1.66 
+#> 2 P002    0.279   0.482
+#> 3 P003   -0.209  -1.06 
+#> 4 P004   -0.354  -0.765
+#> 5 P005   -0.734   0.732
+#> 6 P006    1.53   -0.915
 ```
 
 ## Arguments that matter
@@ -121,12 +121,12 @@ list(
 #> # A tibble: 6 × 2
 #>   BMI_sds sbp_sds
 #>     <dbl>   <dbl>
-#> 1  0.294   -0.565
-#> 2 -0.597    1.49 
-#> 3 NA        0.625
-#> 4  1.48    -1.10 
-#> 5 -0.0968  -0.427
-#> 6  1.26    -0.642
+#> 1   0.696  -1.66 
+#> 2   0.279   0.482
+#> 3  NA      -1.06 
+#> 4  -0.354  -0.765
+#> 5  -0.734   0.732
+#> 6   1.53   -0.915
 ```
 
 ## Extreme-value handling
@@ -151,12 +151,12 @@ head(select(a_cap, BMI_sds, sbp_sds))
 #> # A tibble: 6 × 2
 #>   BMI_sds sbp_sds
 #>     <dbl>   <dbl>
-#> 1  0.294   -0.565
-#> 2 -0.597    1.49 
-#> 3 NA        0.625
-#> 4  1.48    -1.10 
-#> 5 -0.0968   4    
-#> 6  1.26    -0.642
+#> 1   0.696  -1.66 
+#> 2   0.279   0.482
+#> 3  NA      -1.06 
+#> 4  -0.354  -0.765
+#> 5  -0.734   4    
+#> 6   1.53   -0.915
 ```
 
 ## List output for diagnostics
@@ -244,7 +244,7 @@ calc_sds(
   verbose = TRUE
 )
 #> calc_sds: starting on 3 row(s), 2 variable(s) (id: id)
-#> calc_sds(): column map: BMI -> 'BMI', sbp -> 'sbp'
+#> calc_sds(): col_map: BMI -> 'BMI', sbp -> 'sbp'
 #> Computing SDS for 2 variable(s)...
 #> calc_sds: completed
 #> calc_sds(): results: BMI_sds 3/3, sbp_sds 3/3

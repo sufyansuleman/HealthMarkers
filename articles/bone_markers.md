@@ -23,8 +23,6 @@ BMD_Tscore uses supplied reference mean and SD; SD must be positive.
   to numeric if mapped and present).
 - Row policy via na_action: keep (default), omit, or error on
   missing/non-finite required inputs.
-- Optional SDS screening: check_extreme on any mapped key containing
-  “sds”; control with sds_limit and extreme_action.
 
 ## Load packages and example data
 
@@ -82,23 +80,41 @@ scores.
 bm_out <- bone_markers(
   data = sim_small,
   col_map = col_map,
-  na_action = "keep",
-  check_extreme = FALSE,
-  sds_limit = 6,
-  extreme_action = "cap"
+  na_action = "keep"
 )
+#> bone_markers(): reading input 'sim_small' — 30 rows × 519 variables
+#> bone_markers(): col_map (13 columns — 8 specified, 5 inferred from data)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#>   TBS               ->  'TBS'    (inferred)
+#>   PINP              ->  'PINP'    (inferred)
+#>   CTX               ->  'CTX'    (inferred)
+#>   BSAP              ->  'BSAP'    (inferred)
+#>   Osteocalcin       ->  'Osteocalcin'    (inferred)
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
+#> bone_markers(): results: id 30/30, OSTA 30/30, ALMI 30/30, FMI 30/30, BMD_Tscore 30/30, TBS 30/30, HSA 0/30, PINP 30/30, CTX 30/30, BSAP 30/30, Osteocalcin 30/30
 
 new_cols <- setdiff(names(bm_out), names(sim_small))
 head(select(bm_out, all_of(new_cols)))
 #> # A tibble: 6 × 5
 #>    OSTA     ALMI      FMI BMD_Tscore   HSA
 #>   <dbl>    <dbl>    <dbl>      <dbl> <dbl>
-#> 1  1.73 0.000986 0.000862     -0.696    NA
-#> 2  2.83 0.000832 0.000728     -0.827    NA
-#> 3  8.59 0.000905 0.000806     -0.868    NA
-#> 4 11.9  0.00105  0.00104      -0.921    NA
-#> 5  8.42 0.000918 0.000803     -0.972    NA
-#> 6 13.7  0.000892 0.00101      -0.867    NA
+#> 1  7.56 0.000958 0.000897     -0.799    NA
+#> 2 12.1  0.000903 0.000832     -1.00     NA
+#> 3  9.4  0.000865 0.000757     -1.00     NA
+#> 4  7.74 0.000840 0.000735     -0.919    NA
+#> 5 -4.02 0.000772 0.000676     -0.642    NA
+#> 6  1.5  0.00117  0.00103      -0.631    NA
 ```
 
 ## Arguments that matter
@@ -109,10 +125,6 @@ head(select(bm_out, all_of(new_cols)))
 - na_action: keep (default, retain rows; derived scores become NA when
   inputs missing), omit (drop rows with missing/non-finite required
   inputs), error (abort if any missing/non-finite required inputs).
-- check_extreme: FALSE by default; TRUE scans mapped keys containing
-  “sds” (case-insensitive) for \|value\| \> sds_limit.
-- extreme_action (when check_extreme = TRUE): cap, NA, or error.
-- sds_limit: threshold for SDS-like screening (default 6).
 
 ## Handling missing inputs
 
@@ -128,7 +140,39 @@ demo <- sim_small[1:8, c("age","weight","height","ALM","FM","BMD","BMD_ref_mean"
 demo$ALM[c(2, 5)] <- NA
 
 a_keep <- bone_markers(demo, col_map, na_action = "keep")
+#> bone_markers(): reading input 'demo' — 8 rows × 8 variables
+#> bone_markers(): col_map (8 columns — 8 specified)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
+#> bone_markers(): results: OSTA 8/8, ALMI 6/8, FMI 8/8, BMD_Tscore 8/8, TBS 0/8, HSA 0/8, PINP 0/8, CTX 0/8, BSAP 0/8, Osteocalcin 0/8
 a_omit <- bone_markers(demo, col_map, na_action = "omit")
+#> bone_markers(): reading input 'demo' — 8 rows × 8 variables
+#> bone_markers(): col_map (8 columns — 8 specified)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
+#> bone_markers(): results: OSTA 6/6, ALMI 6/6, FMI 6/6, BMD_Tscore 6/6, TBS 0/6, HSA 0/6, PINP 0/6, CTX 0/6, BSAP 0/6, Osteocalcin 0/6
 
 list(
   keep_rows = nrow(a_keep),
@@ -145,38 +189,58 @@ list(
 #> # A tibble: 6 × 4
 #>    OSTA      ALMI      FMI BMD_Tscore
 #>   <dbl>     <dbl>    <dbl>      <dbl>
-#> 1  1.73  0.000986 0.000862     -0.696
-#> 2  2.83 NA        0.000728     -0.827
-#> 3  8.59  0.000905 0.000806     -0.868
-#> 4 11.9   0.00105  0.00104      -0.921
-#> 5  8.42 NA        0.000803     -0.972
-#> 6 13.7   0.000892 0.00101      -0.867
+#> 1  7.56  0.000958 0.000897     -0.799
+#> 2 12.1  NA        0.000832     -1.00 
+#> 3  9.4   0.000865 0.000757     -1.00 
+#> 4  7.74  0.000840 0.000735     -0.919
+#> 5 -4.02 NA        0.000676     -0.642
+#> 6  1.5   0.00117  0.00103      -0.631
 ```
 
-## Optional SDS screening
+## Optional marker pass-through
 
-If you supply any mapped key containing “sds”, you can cap/NA/error on
-extremes.
+Supply any of the optional keys (`TBS`, `HSA`, `PINP`, `CTX`, `BSAP`,
+`Osteocalcin`) in `col_map` to include them in the output; unmapped
+optional columns return `NA`.
 
 ``` r
 demo2 <- demo
-# Example SDS-like column for illustration
-set.seed(1)
-demo2$BMD_z_sds <- rnorm(nrow(demo2), mean = 0, sd = 7)
-col_map_sds <- c(col_map, list(BMD_z_sds = "BMD_z_sds"))
+demo2$PINP <- rnorm(nrow(demo2), mean = 55, sd = 20)
+col_map_opt <- c(col_map, list(PINP = "PINP"))
 
-bm_screen <- bone_markers(
+bm_with_opt <- bone_markers(
   data = demo2,
-  col_map = col_map_sds,
-  na_action = "keep",
-  check_extreme = TRUE,
-  sds_limit = 6,
-  extreme_action = "cap"
+  col_map = col_map_opt,
+  na_action = "keep"
 )
+#> bone_markers(): reading input 'demo2' — 8 rows × 9 variables
+#> bone_markers(): col_map (9 columns — 9 specified)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#>   PINP              ->  'PINP'
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
+#> bone_markers(): results: OSTA 8/8, ALMI 6/8, FMI 8/8, BMD_Tscore 8/8, TBS 0/8, HSA 0/8, PINP 8/8, CTX 0/8, BSAP 0/8, Osteocalcin 0/8
 
-summary(abs(demo2$BMD_z_sds) > 6)
-#>    Mode   FALSE    TRUE 
-#> logical       7       1
+head(select(bm_with_opt, OSTA, ALMI, FMI, BMD_Tscore, PINP))
+#> # A tibble: 6 × 5
+#>    OSTA      ALMI      FMI BMD_Tscore  PINP
+#>   <dbl>     <dbl>    <dbl>      <dbl> <dbl>
+#> 1  7.56  0.000958 0.000897     -0.799 27.0 
+#> 2 12.1  NA        0.000832     -1.00  60.1 
+#> 3  9.4   0.000865 0.000757     -1.00   6.25
+#> 4  7.74  0.000840 0.000735     -0.919 54.9 
+#> 5 -4.02 NA        0.000676     -0.642 67.4 
+#> 6  1.5   0.00117  0.00103      -0.631 78.0
 ```
 
 ## Outputs
@@ -194,8 +258,6 @@ summary(abs(demo2$BMD_z_sds) > 6)
   keep units consistent (height meters; masses kg; BMD g/cm^2).
 - Optional markers are numeric-coerced; if missing or not mapped, they
   return NA columns.
-- SDS screening applies only to mapped keys containing “sds”; defaults
-  do nothing unless you provide such keys.
 
 ## Validation ideas
 
@@ -232,8 +294,21 @@ cm_v <- list(
   BMD_ref_mean = "BMD_ref_mean", BMD_ref_sd = "BMD_ref_sd"
 )
 bone_markers(df_v, col_map = cm_v, verbose = TRUE)
-#> bone_markers(): column map: age -> 'age', weight -> 'weight', height -> 'height', ALM -> 'ALM', FM -> 'FM', BMD -> 'BMD', BMD_ref_mean -> 'BMD_ref_mean', BMD_ref_sd -> 'BMD_ref_sd'
-#> bone_markers(): completed
+#> bone_markers(): reading input 'df_v' — 2 rows × 8 variables
+#> bone_markers(): col_map (8 columns — 8 specified)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
 #> bone_markers(): results: OSTA 2/2, ALMI 2/2, FMI 2/2, BMD_Tscore 2/2, TBS 0/2, HSA 0/2, PINP 0/2, CTX 0/2, BSAP 0/2, Osteocalcin 0/2
 #> # A tibble: 2 × 10
 #>    OSTA  ALMI   FMI BMD_Tscore   TBS   HSA  PINP   CTX  BSAP Osteocalcin
@@ -245,6 +320,18 @@ options(old_opt)
 ```
 
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which bone/calcium/phosphate
+columns are auto-detected before building your `col_map`. See the
+[Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## See also
 

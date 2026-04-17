@@ -26,8 +26,8 @@ all_health_markers(
 - col_map:
 
   Named list for column mapping forwarded to underlying functions. If
-  `col_map` is `NULL` or missing, `all_health_markers()` calls
-  [`hm_infer_cols()`](https://sufyansuleman.github.io/HealthMarkers/reference/infer_cols.md)
+  `col_map` is `NULL` or an empty list, `all_health_markers()` calls
+  [`hm_col_report()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.md)
   once at the top level to guess a column map from common synonyms (for
   example `TG` vs `triglycerides`, `BMI` vs `bmi`, `HDL_c` vs `HDL`).
   The inferred `col_map` is then reused for all groups that require it,
@@ -100,8 +100,10 @@ df <- data.frame(
 all_health_markers(df, col_map = list(), which = c("lipid","liver"),
                    include_insulin = FALSE, normalize = "none", mode = "both",
                    verbose = FALSE, na_action = "keep")
-#>    TC HDL_c  TG LDL_c ALT AST BMI non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL
-#> 1 200    50 150   120  30  20  25       150        30            4            3
-#>   ratio_LDL_HDL ApoB_ApoA1
-#> 1           2.4         NA
+#>    TC HDL_c  TG LDL_c ALT AST BMI     VLDL non_HDL remnant_c       AIP CRI_I
+#> 1 200    50 150   120  30  20  25 68.18182     150        30 0.4771213     4
+#>   CRI_II HDL_TG_ratio LDL_HDL_ratio non_HDL_c ratio_TC_HDL ratio_TG_HDL
+#> 1    2.4    0.3333333           2.4       150            4            3
+#>   ratio_LDL_HDL ApoB_ApoA1 FLI NFS APRI FIB4 BARD ALBI MELD_XI
+#> 1           2.4         NA  NA  NA   NA   NA    0   NA      NA
 ```

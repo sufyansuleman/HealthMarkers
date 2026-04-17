@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -185,27 +185,34 @@ minimal). Show only new columns.</p>
 <span></span>
 <span><span class="va">mm_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">mm</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">mm</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">mm_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   non_HDL_c  remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1  2.805635 -0.1707940     2.828547    0.6934188      1.939860  0.4725922</span></span>
-<span><span class="co">#&gt; 2  4.411394  1.8086884     3.946180    1.4946281      1.738235  0.6374380</span></span>
-<span><span class="co">#&gt; 3  3.306616  0.9604294     3.702865    0.9518317      1.917799  0.3916076</span></span>
-<span><span class="co">#&gt; 4  3.719980 -0.1980635     4.916000    2.0409466      4.124501  0.8039860</span></span>
-<span><span class="co">#&gt; 5  4.025115  0.7886167     4.085650    1.4183511      2.481097  0.5155962</span></span>
-<span><span class="co">#&gt; 6  3.879587  0.6680692     3.971257    0.6777942      2.459603  0.8798657</span></span>
-<span><span class="co">#&gt;         FLI       NFS      APRI      FIB4 BARD      ALBI  MELD_XI    SPISE</span></span>
-<span><span class="co">#&gt; 1  1.379285 -26.54137 0.5822226 2.8827295    2 -2.132707 76.60588 6.538621</span></span>
-<span><span class="co">#&gt; 2  2.638468 -25.01258 0.4325298 1.3397544    1 -1.662751 77.83057 7.040211</span></span>
-<span><span class="co">#&gt; 3  1.643102 -27.32148 0.2685047 1.2561533    2 -2.078360 72.61716 6.738432</span></span>
-<span><span class="co">#&gt; 4 28.874626 -27.27550 0.3315235 0.9452263    2 -2.093965 74.95934 4.125126</span></span>
-<span><span class="co">#&gt; 5  9.050782 -30.47121 0.4758078 1.1140914    1 -2.463606 73.71918 6.245599</span></span>
-<span><span class="co">#&gt; 6  8.854861 -26.97225 0.2044272 0.9347936    1 -2.213821 77.93558 5.338716</span></span>
-<span><span class="co">#&gt;      METS_IR prediabetes HOMA_CP LAR ASI TyG_index</span></span>
-<span><span class="co">#&gt; 1   175.4422           0      NA  NA  NA  8.390992</span></span>
-<span><span class="co">#&gt; 2   163.2440           0      NA  NA  NA  9.133717</span></span>
-<span><span class="co">#&gt; 3   342.1412           0      NA  NA  NA  8.423506</span></span>
-<span><span class="co">#&gt; 4 -1869.7322           0      NA  NA  NA  9.073867</span></span>
-<span><span class="co">#&gt; 5   270.7383           0      NA  NA  NA  8.947845</span></span>
-<span><span class="co">#&gt; 6   347.0725           0      NA  NA  NA  8.365320</span></span></code></pre></div>
+<span><span class="co">#&gt;   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
+<span><span class="co">#&gt; 1      5.14      1.43     4.953846    2.4230769      2.853846  0.6899225</span></span>
+<span><span class="co">#&gt; 2      4.58      0.33     4.754098    0.5901639      3.483607  0.4120879</span></span>
+<span><span class="co">#&gt; 3      5.70      0.49     5.523810    0.8492063      4.134921  0.9924812</span></span>
+<span><span class="co">#&gt; 4      2.97      0.42     3.020408    0.6258503      1.734694  1.0826446</span></span>
+<span><span class="co">#&gt; 5      3.12      0.75     2.962264    1.0314465      1.490566  0.6736111</span></span>
+<span><span class="co">#&gt; 6      4.00      0.58     3.380952    0.7619048      2.035714  0.4509804</span></span>
+<span><span class="co">#&gt;     VAI_Men VAI_Women LAP_Men LAP_Women  TyG_BMI       FLI       NFS      APRI</span></span>
+<span><span class="co">#&gt; 1 3.0404154  4.614469 105.525   127.575 297.9208 5.5614542 -22.36501 0.2140411</span></span>
+<span><span class="co">#&gt; 2 0.7834761  1.190929  24.984    30.024 236.1715 2.9074145 -22.49108 0.3308824</span></span>
+<span><span class="co">#&gt; 3 0.9912081  1.509719  19.260    26.750 230.1380 1.5564455 -30.82639 0.7000000</span></span>
+<span><span class="co">#&gt; 4 0.8153524  1.242666  24.012    30.452 225.5786 0.7301821 -26.95540 0.5615385</span></span>
+<span><span class="co">#&gt; 5 1.0959268  1.673274   9.840    21.320 215.1741 0.4444250 -22.01252 0.2272727</span></span>
+<span><span class="co">#&gt; 6 0.7377906  1.116715  22.528    31.488 317.6446 6.1582809 -28.18628 0.1707650</span></span>
+<span><span class="co">#&gt;        FIB4 BARD      ALBI  MELD_XI    SPISE  METS_IR prediabetes HOMA_CP LAR</span></span>
+<span><span class="co">#&gt; 1 0.5779393    1 -1.587680 68.33445 4.849288 302.5694           0      NA  NA</span></span>
+<span><span class="co">#&gt; 2 0.5623053    2 -1.505498 72.49500 7.113989 352.8944           1      NA  NA</span></span>
+<span><span class="co">#&gt; 3 1.1033166    1 -2.718063 71.93274 7.510664 298.4802           0      NA  NA</span></span>
+<span><span class="co">#&gt; 4 1.6544453    2 -2.057258 71.36352 8.292019 188.0396           0      NA  NA</span></span>
+<span><span class="co">#&gt; 5 0.7601567    0 -1.459018 74.67420 8.381122 134.0136           0      NA  NA</span></span>
+<span><span class="co">#&gt; 6 0.7069672    1 -1.995310 73.23331 5.086907 179.8589           0      NA  NA</span></span>
+<span><span class="co">#&gt;   ASI TyG_index</span></span>
+<span><span class="co">#&gt; 1  NA  9.310025</span></span>
+<span><span class="co">#&gt; 2  NA  7.951901</span></span>
+<span><span class="co">#&gt; 3  NA  8.523629</span></span>
+<span><span class="co">#&gt; 4  NA  8.609869</span></span>
+<span><span class="co">#&gt; 5  NA  8.928386</span></span>
+<span><span class="co">#&gt; 6  NA  8.678815</span></span></code></pre></div>
 <p>Interpretation: outputs include lipid ratios, TyG-based metrics, and
 liver-derived markers. Rows are retained because
 <code>na_action = "keep"</code> propagates missing inputs to
@@ -228,23 +235,88 @@ for minimal inputs.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): column mapping ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Data: 30 rows × 519 columns</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  User-supplied (11):</span></span>
+<span><span class="co">#&gt;    ✔ TG                       -&gt; TG</span></span>
+<span><span class="co">#&gt;    ✔ HDL_c                    -&gt; HDL_c</span></span>
+<span><span class="co">#&gt;    ✔ LDL_c                    -&gt; LDL_c</span></span>
+<span><span class="co">#&gt;    ✔ TC                       -&gt; TC</span></span>
+<span><span class="co">#&gt;    ✔ BMI                      -&gt; BMI</span></span>
+<span><span class="co">#&gt;    ✔ G0                       -&gt; G0</span></span>
+<span><span class="co">#&gt;    ✔ I0                       -&gt; I0</span></span>
+<span><span class="co">#&gt;    ✔ ALT                      -&gt; ALT</span></span>
+<span><span class="co">#&gt;    ✔ AST                      -&gt; AST</span></span>
+<span><span class="co">#&gt;    ✔ age                      -&gt; age</span></span>
+<span><span class="co">#&gt;    ✔ sex                      -&gt; sex</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): group summary ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Computed (4):</span></span>
+<span><span class="co">#&gt;    ✔ glycemic</span></span>
+<span><span class="co">#&gt;    ✔ lipid</span></span>
+<span><span class="co">#&gt;    ✔ renal</span></span>
+<span><span class="co">#&gt;    ✔ inflammatory</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
 <span></span>
 <span><span class="va">hm_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hm</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">hm</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">hm_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      SPISE    METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c</span></span>
-<span><span class="co">#&gt; 1 6.538621   175.4422           0      NA  NA  NA  8.390992  2.805635</span></span>
-<span><span class="co">#&gt; 2 7.040211   163.2440           0      NA  NA  NA  9.133717  4.411394</span></span>
-<span><span class="co">#&gt; 3 6.738432   342.1412           0      NA  NA  NA  8.423506  3.306616</span></span>
-<span><span class="co">#&gt; 4 4.125126 -1869.7322           0      NA  NA  NA  9.073867  3.719980</span></span>
-<span><span class="co">#&gt; 5 6.245599   270.7383           0      NA  NA  NA  8.947845  4.025115</span></span>
-<span><span class="co">#&gt; 6 5.338716   347.0725           0      NA  NA  NA  8.365320  3.879587</span></span>
-<span><span class="co">#&gt;    remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1 -0.1707940     2.828547    0.6934188      1.939860  0.4725922</span></span>
-<span><span class="co">#&gt; 2  1.8086884     3.946180    1.4946281      1.738235  0.6374380</span></span>
-<span><span class="co">#&gt; 3  0.9604294     3.702865    0.9518317      1.917799  0.3916076</span></span>
-<span><span class="co">#&gt; 4 -0.1980635     4.916000    2.0409466      4.124501  0.8039860</span></span>
-<span><span class="co">#&gt; 5  0.7886167     4.085650    1.4183511      2.481097  0.5155962</span></span>
-<span><span class="co">#&gt; 6  0.6680692     3.971257    0.6777942      2.459603  0.8798657</span></span></code></pre></div>
+<span><span class="co">#&gt;         whr       MAP BUN_Cr_ratio      VLDL non_HDL remnant_c         AIP</span></span>
+<span><span class="co">#&gt; 1 0.8842011  85.00000   0.05193687 1.4318182    5.14      1.43  0.38436720</span></span>
+<span><span class="co">#&gt; 2 1.0020101  90.66667   0.12525849 0.3272727    4.58      0.33 -0.22902733</span></span>
+<span><span class="co">#&gt; 3 0.8058252  81.66667   0.10722892 0.4863636    5.70      0.49 -0.07098677</span></span>
+<span><span class="co">#&gt; 4 0.9324463  84.33333   0.08955954 0.4181818    2.97      0.42 -0.20352951</span></span>
+<span><span class="co">#&gt; 5 0.7634409 116.33333   0.09718640 0.7454545    3.12      0.75  0.01344672</span></span>
+<span><span class="co">#&gt; 6 0.8515464  85.33333   0.14898305 0.5818182    4.00      0.58 -0.11809931</span></span>
+<span><span class="co">#&gt;      CRI_I   CRI_II HDL_TG_ratio LDL_HDL_ratio      NLR      dNLR       PLR</span></span>
+<span><span class="co">#&gt; 1 4.953846 2.853846    0.4126984      2.853846 2.502912 1.5340688 154.57914</span></span>
+<span><span class="co">#&gt; 2 4.754098 3.483607    1.6944444      3.483607 1.583486 1.3036254  93.57798</span></span>
+<span><span class="co">#&gt; 3 5.523810 4.134921    1.1775701      4.134921 1.892516 0.9910573  87.89553</span></span>
+<span><span class="co">#&gt; 4 3.020408 1.734694    1.5978261      1.734694 2.299722 1.4876293 226.00834</span></span>
+<span><span class="co">#&gt; 5 2.962264 1.490566    0.9695122      1.490566 2.580645 2.2602230  84.04075</span></span>
+<span><span class="co">#&gt; 6 3.380952 2.035714    1.3125000      2.035714 2.733387 1.9553265 293.03443</span></span>
+<span><span class="co">#&gt;         SII      SIRI  Mg_Zn_den Cu_Zn_den Cort_DHEAS_den    T_E2_den</span></span>
+<span><span class="co">#&gt; 1  730.8502 1.7395236 0.06681250  1.225000       66.87657 0.133514690</span></span>
+<span><span class="co">#&gt; 2  323.0312 0.7094018 0.06606667  1.213333       35.59113 0.116924779</span></span>
+<span><span class="co">#&gt; 3  331.1904 0.8762351 0.10210000  1.610000       52.46440 0.141312384</span></span>
+<span><span class="co">#&gt; 4  747.4096 0.6002274 0.07342857  1.357143       56.78392 0.159005705</span></span>
+<span><span class="co">#&gt; 5  510.9677 0.9290323 0.05715385  1.484615       34.27673 0.007779773</span></span>
+<span><span class="co">#&gt; 6 1000.4195 0.7844820 0.05635294  1.241176       41.55556 0.002063599</span></span>
+<span><span class="co">#&gt;   TSH_fT4_den Tyr_Phe_Ratio KIM1_gCr NGAL_gCr   NAG_gCr L_FABP_gCr IL18_gCr</span></span>
+<span><span class="co">#&gt; 1  0.10418719     1.1428571 1.602041 16.32653  5.000000  16.122449 123.7755</span></span>
+<span><span class="co">#&gt; 2  0.08628743     1.8000000 2.583333 21.56250 11.458333   1.562500 153.9583</span></span>
+<span><span class="co">#&gt; 3  0.04641026     0.6438356 1.773810 55.35714  4.285714  10.952381 217.2619</span></span>
+<span><span class="co">#&gt; 4  0.14133803     1.0882353 2.603604 33.60360 10.360360   7.207207 117.7477</span></span>
+<span><span class="co">#&gt; 5  0.25781095     0.9062500 1.436782 44.02299  5.977011   9.770115 194.7126</span></span>
+<span><span class="co">#&gt; 6  0.09473684     1.3750000 1.800000 28.18182  9.363636   1.000000 112.7273</span></span>
+<span><span class="co">#&gt;      SPISE  METS_IR prediabetes HOMA_CP LAR ASI TyG_index non_HDL_c</span></span>
+<span><span class="co">#&gt; 1 4.849288 302.5694           0      NA  NA  NA  9.310025      5.14</span></span>
+<span><span class="co">#&gt; 2 7.113989 352.8944           1      NA  NA  NA  7.951901      4.58</span></span>
+<span><span class="co">#&gt; 3 7.510664 298.4802           0      NA  NA  NA  8.523629      5.70</span></span>
+<span><span class="co">#&gt; 4 8.292019 188.0396           0      NA  NA  NA  8.609869      2.97</span></span>
+<span><span class="co">#&gt; 5 8.381122 134.0136           0      NA  NA  NA  8.928386      3.12</span></span>
+<span><span class="co">#&gt; 6 5.086907 179.8589           0      NA  NA  NA  8.678815      4.00</span></span>
+<span><span class="co">#&gt;   ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1   VAI_Men VAI_Women</span></span>
+<span><span class="co">#&gt; 1     4.953846    2.4230769      2.853846  0.6899225 3.0404154  4.614469</span></span>
+<span><span class="co">#&gt; 2     4.754098    0.5901639      3.483607  0.4120879 0.7834761  1.190929</span></span>
+<span><span class="co">#&gt; 3     5.523810    0.8492063      4.134921  0.9924812 0.9912081  1.509719</span></span>
+<span><span class="co">#&gt; 4     3.020408    0.6258503      1.734694  1.0826446 0.8153524  1.242666</span></span>
+<span><span class="co">#&gt; 5     2.962264    1.0314465      1.490566  0.6736111 1.0959268  1.673274</span></span>
+<span><span class="co">#&gt; 6     3.380952    0.7619048      2.035714  0.4509804 0.7377906  1.116715</span></span>
+<span><span class="co">#&gt;   LAP_Men LAP_Women  TyG_BMI   eGFR_cr eGFR_cys eGFR_combined FE_Urea</span></span>
+<span><span class="co">#&gt; 1 105.525   127.575 297.9208 0.4725555 89.82553      6.696628      NA</span></span>
+<span><span class="co">#&gt; 2  24.984    30.024 236.1715 0.5818192 43.32180      4.949108      NA</span></span>
+<span><span class="co">#&gt; 3  19.260    26.750 230.1380 0.5165652 80.61015      6.504759      NA</span></span>
+<span><span class="co">#&gt; 4  24.012    30.452 225.5786 0.6102493 93.72321      7.710013      NA</span></span>
+<span><span class="co">#&gt; 5   9.840    21.320 215.1741 0.2392153 37.79522      3.155730      NA</span></span>
+<span><span class="co">#&gt; 6  22.528    31.488 317.6446 0.3701522 57.57784      4.915629      NA</span></span>
+<span><span class="co">#&gt;   Beta2Micro      LMR      NER      PIV       CLR        CAR       PCR mGPS</span></span>
+<span><span class="co">#&gt; 1       1.99 2.717986 11.70297 507.9409 1.8845950 0.10439883  82.02247    0</span></span>
+<span><span class="co">#&gt; 2       1.88 4.866071 10.65432 144.7180 0.6009174 0.03628809 155.72519    0</span></span>
+<span><span class="co">#&gt; 3       1.47 4.300216 12.11576 153.3411 0.5524862 0.02235772 159.09091    0</span></span>
+<span><span class="co">#&gt; 4       1.54 5.509579 13.38866 195.0739 1.2378303 0.04178404 182.58427    0</span></span>
+<span><span class="co">#&gt; 5       1.20 6.544444 13.24619 183.9484 1.2393888 0.08295455  67.80822    0</span></span>
+<span><span class="co">#&gt; 6       1.75 4.351916 12.59779 287.1204 2.8422738 0.08179724 103.09859    0</span></span></code></pre></div>
 <p>Verbose mode reports inferred/user mappings and which groups were
 computed or skipped. Skipped groups leave the input untouched.</p>
 </div>
@@ -275,51 +347,188 @@ if <code>G0</code>/<code>I0</code> are present.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): column mapping ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Data: 30 rows × 519 columns</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  User-supplied (7):</span></span>
+<span><span class="co">#&gt;    ✔ G0                       -&gt; G0</span></span>
+<span><span class="co">#&gt;    ✔ I0                       -&gt; I0</span></span>
+<span><span class="co">#&gt;    ✔ TG                       -&gt; TG</span></span>
+<span><span class="co">#&gt;    ✔ HDL_c                    -&gt; HDL_c</span></span>
+<span><span class="co">#&gt;    ✔ BMI                      -&gt; BMI</span></span>
+<span><span class="co">#&gt;    ✔ age                      -&gt; age</span></span>
+<span><span class="co">#&gt;    ✔ sex                      -&gt; sex</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): group summary ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Computed (3):</span></span>
+<span><span class="co">#&gt;    ✔ insulin_panel</span></span>
+<span><span class="co">#&gt;    ✔ glycemic</span></span>
+<span><span class="co">#&gt;    ✔ lipid</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
 <span></span>
 <span><span class="va">ins_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ins</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">ins</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">ins_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         whr       MAP BUN_Cr_ratio      VLDL non_HDL remnant_c         AIP</span></span>
+<span><span class="co">#&gt; 1 0.8842011  85.00000   0.05193687 1.4318182    5.14      1.43  0.38436720</span></span>
+<span><span class="co">#&gt; 2 1.0020101  90.66667   0.12525849 0.3272727    4.58      0.33 -0.22902733</span></span>
+<span><span class="co">#&gt; 3 0.8058252  81.66667   0.10722892 0.4863636    5.70      0.49 -0.07098677</span></span>
+<span><span class="co">#&gt; 4 0.9324463  84.33333   0.08955954 0.4181818    2.97      0.42 -0.20352951</span></span>
+<span><span class="co">#&gt; 5 0.7634409 116.33333   0.09718640 0.7454545    3.12      0.75  0.01344672</span></span>
+<span><span class="co">#&gt; 6 0.8515464  85.33333   0.14898305 0.5818182    4.00      0.58 -0.11809931</span></span>
+<span><span class="co">#&gt;      CRI_I   CRI_II HDL_TG_ratio LDL_HDL_ratio      NLR      dNLR       PLR</span></span>
+<span><span class="co">#&gt; 1 4.953846 2.853846    0.4126984      2.853846 2.502912 1.5340688 154.57914</span></span>
+<span><span class="co">#&gt; 2 4.754098 3.483607    1.6944444      3.483607 1.583486 1.3036254  93.57798</span></span>
+<span><span class="co">#&gt; 3 5.523810 4.134921    1.1775701      4.134921 1.892516 0.9910573  87.89553</span></span>
+<span><span class="co">#&gt; 4 3.020408 1.734694    1.5978261      1.734694 2.299722 1.4876293 226.00834</span></span>
+<span><span class="co">#&gt; 5 2.962264 1.490566    0.9695122      1.490566 2.580645 2.2602230  84.04075</span></span>
+<span><span class="co">#&gt; 6 3.380952 2.035714    1.3125000      2.035714 2.733387 1.9553265 293.03443</span></span>
+<span><span class="co">#&gt;         SII      SIRI  Mg_Zn_den Cu_Zn_den Cort_DHEAS_den    T_E2_den</span></span>
+<span><span class="co">#&gt; 1  730.8502 1.7395236 0.06681250  1.225000       66.87657 0.133514690</span></span>
+<span><span class="co">#&gt; 2  323.0312 0.7094018 0.06606667  1.213333       35.59113 0.116924779</span></span>
+<span><span class="co">#&gt; 3  331.1904 0.8762351 0.10210000  1.610000       52.46440 0.141312384</span></span>
+<span><span class="co">#&gt; 4  747.4096 0.6002274 0.07342857  1.357143       56.78392 0.159005705</span></span>
+<span><span class="co">#&gt; 5  510.9677 0.9290323 0.05715385  1.484615       34.27673 0.007779773</span></span>
+<span><span class="co">#&gt; 6 1000.4195 0.7844820 0.05635294  1.241176       41.55556 0.002063599</span></span>
+<span><span class="co">#&gt;   TSH_fT4_den Tyr_Phe_Ratio KIM1_gCr NGAL_gCr   NAG_gCr L_FABP_gCr IL18_gCr</span></span>
+<span><span class="co">#&gt; 1  0.10418719     1.1428571 1.602041 16.32653  5.000000  16.122449 123.7755</span></span>
+<span><span class="co">#&gt; 2  0.08628743     1.8000000 2.583333 21.56250 11.458333   1.562500 153.9583</span></span>
+<span><span class="co">#&gt; 3  0.04641026     0.6438356 1.773810 55.35714  4.285714  10.952381 217.2619</span></span>
+<span><span class="co">#&gt; 4  0.14133803     1.0882353 2.603604 33.60360 10.360360   7.207207 117.7477</span></span>
+<span><span class="co">#&gt; 5  0.25781095     0.9062500 1.436782 44.02299  5.977011   9.770115 194.7126</span></span>
+<span><span class="co">#&gt; 6  0.09473684     1.3750000 1.800000 28.18182  9.363636   1.000000 112.7273</span></span>
 <span><span class="co">#&gt;   Fasting_inv  Raynaud HOMA_IR_inv     FIRI    QUICKI Belfiore_basal</span></span>
-<span><span class="co">#&gt; 1  -13.982032 2.860814   -58.12619 52.31357 0.1393508    0.001528072</span></span>
-<span><span class="co">#&gt; 2  -16.037564 2.494144   -66.61505 59.95355 0.1367531    0.001333477</span></span>
-<span><span class="co">#&gt; 3  -15.703667 2.547176   -61.62037 55.45833 0.1382264    0.001441485</span></span>
-<span><span class="co">#&gt; 4   -6.747394 5.928215   -30.47178 27.42460 0.1531319    0.002912840</span></span>
-<span><span class="co">#&gt; 5  -13.626809 2.935390   -56.85119 51.16607 0.1397829    0.001562315</span></span>
-<span><span class="co">#&gt; 6  -16.971980 2.356826   -82.67276 74.40548 0.1328303    0.001074612</span></span>
-<span><span class="co">#&gt;   Ig_ratio_basal Isi_basal    Bennett HOMA_IR_rev_inv IR_Fasting_inv IR_Raynaud</span></span>
-<span><span class="co">#&gt; 1    -0.14948108  7.646200 0.08353409       -3.229233    -0.07152036  0.3495508</span></span>
-<span><span class="co">#&gt; 2    -0.17160184  6.671832 0.07941994       -3.700836    -0.06235361  0.4009391</span></span>
-<span><span class="co">#&gt; 3    -0.17786699  7.212622 0.08104295       -3.423354    -0.06367939  0.3925917</span></span>
-<span><span class="co">#&gt; 4    -0.06640363 14.585444 0.11334634       -1.692877    -0.14820537  0.1686849</span></span>
-<span><span class="co">#&gt; 5    -0.14516647  7.817681 0.08429105       -3.158399    -0.07338475  0.3406702</span></span>
-<span><span class="co">#&gt; 6    -0.15485316  5.375948 0.07519132       -4.592931    -0.05892065  0.4242995</span></span>
-<span><span class="co">#&gt;   IR_HOMA_IR_inv    IR_FIRI IR_QUICKI IR_Belfiore_basal IR_Ig_ratio_basal</span></span>
-<span><span class="co">#&gt; 1    -0.01720395 0.01911550  7.176132          654.4196         -6.689810</span></span>
-<span><span class="co">#&gt; 2    -0.01501162 0.01667958  7.312446          749.9193         -5.827443</span></span>
-<span><span class="co">#&gt; 3    -0.01622840 0.01803156  7.234508          693.7292         -5.622179</span></span>
-<span><span class="co">#&gt; 4    -0.03281725 0.03646361  6.530316          343.3075        -15.059418</span></span>
-<span><span class="co">#&gt; 5    -0.01758978 0.01954420  7.153952          640.0758         -6.888643</span></span>
-<span><span class="co">#&gt; 6    -0.01209588 0.01343987  7.528405          930.5685         -6.457731</span></span>
-<span><span class="co">#&gt;   IR_Isi_basal IR_Bennett IR_HOMA_IR_rev_inv    SPISE    METS_IR prediabetes</span></span>
-<span><span class="co">#&gt; 1   0.13078393  11.971160         -0.3096711 6.538621   175.4422           0</span></span>
-<span><span class="co">#&gt; 2   0.14988387  12.591296         -0.2702092 7.040211   163.2440           0</span></span>
-<span><span class="co">#&gt; 3   0.13864583  12.339136         -0.2921112 6.738432   342.1412           0</span></span>
-<span><span class="co">#&gt; 4   0.06856151   8.822517         -0.5907105 4.125126 -1869.7322           0</span></span>
-<span><span class="co">#&gt; 5   0.12791517  11.863655         -0.3166161 6.245599   270.7383           0</span></span>
-<span><span class="co">#&gt; 6   0.18601371  13.299407         -0.2177259 5.338716   347.0725           0</span></span>
-<span><span class="co">#&gt;   HOMA_CP LAR ASI TyG_index non_HDL_c  remnant_c ratio_TC_HDL ratio_TG_HDL</span></span>
-<span><span class="co">#&gt; 1      NA  NA  NA  8.390992  2.805635 -0.1707940     2.828547    0.6934188</span></span>
-<span><span class="co">#&gt; 2      NA  NA  NA  9.133717  4.411394  1.8086884     3.946180    1.4946281</span></span>
-<span><span class="co">#&gt; 3      NA  NA  NA  8.423506  3.306616  0.9604294     3.702865    0.9518317</span></span>
-<span><span class="co">#&gt; 4      NA  NA  NA  9.073867  3.719980 -0.1980635     4.916000    2.0409466</span></span>
-<span><span class="co">#&gt; 5      NA  NA  NA  8.947845  4.025115  0.7886167     4.085650    1.4183511</span></span>
-<span><span class="co">#&gt; 6      NA  NA  NA  8.365320  3.879587  0.6680692     3.971257    0.6777942</span></span>
-<span><span class="co">#&gt;   ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1      1.939860  0.4725922</span></span>
-<span><span class="co">#&gt; 2      1.738235  0.6374380</span></span>
-<span><span class="co">#&gt; 3      1.917799  0.3916076</span></span>
-<span><span class="co">#&gt; 4      4.124501  0.8039860</span></span>
-<span><span class="co">#&gt; 5      2.481097  0.5155962</span></span>
-<span><span class="co">#&gt; 6      2.459603  0.8798657</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  -11.366667 3.519062   -57.10613 51.39552 0.1396955    0.001555345</span></span>
+<span><span class="co">#&gt; 2   -4.250000 9.411765   -18.87000 16.98300 0.1652595    0.004699524</span></span>
+<span><span class="co">#&gt; 3   -9.766667 4.095563   -42.11387 37.90248 0.1459025    0.002108455</span></span>
+<span><span class="co">#&gt; 4   -8.433333 4.743083   -34.47547 31.02792 0.1502909    0.002575003</span></span>
+<span><span class="co">#&gt; 5  -14.550000 2.749141   -44.34840 39.91356 0.1448102    0.002002325</span></span>
+<span><span class="co">#&gt; 6   -7.883333 5.073996   -28.69533 25.82580 0.1545535    0.003092887</span></span>
+<span><span class="co">#&gt;   Ig_ratio_basal Isi_basal    Bennett HOMA_IR_rev_inv   Isi_120 Cederholm_index</span></span>
+<span><span class="co">#&gt; 1    -0.10055438   7.78278 0.08701970       -3.172563  4.520129     -0.56104336</span></span>
+<span><span class="co">#&gt; 2    -0.04254254  23.55296 0.15010822       -1.048333 11.402795      1.68716261</span></span>
+<span><span class="co">#&gt; 3    -0.10066653  10.55340 0.09591293       -2.339659  8.883204      1.20576626</span></span>
+<span><span class="co">#&gt; 4    -0.09168660  12.89162 0.10372520       -1.915304  5.823433     -0.05089198</span></span>
+<span><span class="co">#&gt; 5    -0.21216098  10.02166 0.08833253       -2.463800 13.770463      0.90805754</span></span>
+<span><span class="co">#&gt; 6    -0.09625560  15.48839 0.10993532       -1.594185 10.794054     -0.03418896</span></span>
+<span><span class="co">#&gt;   Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim Modified_stumvoll</span></span>
+<span><span class="co">#&gt; 1   1.884723    5.167848      3.001414    4.084631        0.08790964</span></span>
+<span><span class="co">#&gt; 2   3.306261   15.908791      7.701989   11.805390        0.11377198</span></span>
+<span><span class="co">#&gt; 3   2.645181    8.277176      6.967219    7.622197        0.10235116</span></span>
+<span><span class="co">#&gt; 4   2.447943    9.878632      4.462401    7.170517        0.10121880</span></span>
+<span><span class="co">#&gt; 5   3.261458   10.881278     14.951643   12.916460        0.09910122</span></span>
+<span><span class="co">#&gt; 6   3.151113   11.434764      7.969032    9.701898        0.10729388</span></span>
+<span><span class="co">#&gt;   Stumvoll_Demographics Matsuda_AUC Matsuda_ISI   BigttSi     Ifc_inv  HIRI_inv</span></span>
+<span><span class="co">#&gt; 1            0.08159114  0.04015632    5.389644  5.641586 -0.33563401 -28.95984</span></span>
+<span><span class="co">#&gt; 2            0.10318358  0.09730413   13.563597  9.675939 -0.66933653 -15.06799</span></span>
+<span><span class="co">#&gt; 3            0.11109956  0.05206414    7.123916  9.024814 -0.08187877 -25.88895</span></span>
+<span><span class="co">#&gt; 4            0.10736040  0.04704409    6.715156  9.047209 -0.57585809 -34.80576</span></span>
+<span><span class="co">#&gt; 5            0.10352132  0.04857617    6.771880 13.404216  0.57345684 -29.52850</span></span>
+<span><span class="co">#&gt; 6            0.06098938  0.07491055   10.244073  9.125401 -0.12876317 -17.30208</span></span>
+<span><span class="co">#&gt;   Belfiore_isi_gly Revised_QUICKI VAI_Men_inv VAI_Women_inv TG_HDL_C_inv</span></span>
+<span><span class="co">#&gt; 1     4.143841e-08      0.3378936  -3.0404154     -4.614469    -5.549830</span></span>
+<span><span class="co">#&gt; 2     8.039832e-08      0.4438001  -0.7834761     -1.190929    -1.351715</span></span>
+<span><span class="co">#&gt; 3     5.137065e-08      0.3484546  -0.9912081     -1.509719    -1.945027</span></span>
+<span><span class="co">#&gt; 4     3.433466e-08      0.3688395  -0.8153524     -1.242666    -1.433451</span></span>
+<span><span class="co">#&gt; 5     4.709091e-08      0.3936017  -1.0959268     -1.673274    -2.362431</span></span>
+<span><span class="co">#&gt; 6     7.246191e-08      0.4069380  -0.7377906     -1.116715    -1.745071</span></span>
+<span><span class="co">#&gt;     TyG_inv LAP_Men_inv LAP_Women_inv McAuley_index Adipo_inv Belfiore_inv_FFA</span></span>
+<span><span class="co">#&gt; 1 -9.665790    -105.525      -127.575      4.921992 -8.058967       -0.2207757</span></span>
+<span><span class="co">#&gt; 2 -8.066312     -24.984       -30.024     10.244069 -1.793500       -0.7159477</span></span>
+<span><span class="co">#&gt; 3 -8.433222     -19.260       -26.750      7.177225 -7.637533       -0.2315476</span></span>
+<span><span class="co">#&gt; 4 -8.228836     -24.012       -30.452      7.836831 -5.591300       -0.3034303</span></span>
+<span><span class="co">#&gt; 5 -8.513343      -9.840       -21.320      5.623300 -5.063400       -0.3298479</span></span>
+<span><span class="co">#&gt; 6 -8.443005     -22.528       -31.488      7.209093 -3.500200       -0.4444247</span></span>
+<span><span class="co">#&gt;     I_AUC FFA_AUC tracer_palmitate_SI tracer_glycerol_SI  LIRI_inv  Lipo_inv</span></span>
+<span><span class="co">#&gt; 1 2856.00   85.08          0.13475138         0.13259669 -1.153177 -27.28000</span></span>
+<span><span class="co">#&gt; 2 1615.25   50.64          0.21412500         0.10768750 -1.027444  -7.32275</span></span>
+<span><span class="co">#&gt; 3 2755.50   93.84          0.11590426         0.22792553 -1.161611 -41.85017</span></span>
+<span><span class="co">#&gt; 4 3591.50   79.56          0.13943662         0.12690141 -1.177375 -22.79530</span></span>
+<span><span class="co">#&gt; 5 3507.25   41.76          0.06589443         0.10252199 -1.295167 -50.86680</span></span>
+<span><span class="co">#&gt; 6 2200.75   53.28          0.03127536         0.04565217 -1.209682 -12.41625</span></span>
+<span><span class="co">#&gt;    ATIRI_inv IR_Fasting_inv IR_Raynaud IR_HOMA_IR_inv    IR_FIRI IR_QUICKI</span></span>
+<span><span class="co">#&gt; 1 -27.723300    -0.08797654  0.2841667    -0.01751125 0.01945695  7.158427</span></span>
+<span><span class="co">#&gt; 2 -14.560500    -0.23529412  0.1062500    -0.05299417 0.05888241  6.051089</span></span>
+<span><span class="co">#&gt; 3 -21.281567    -0.10238908  0.2441667    -0.02374515 0.02638350  6.853892</span></span>
+<span><span class="co">#&gt; 4 -25.047000    -0.11857708  0.2108333    -0.02900613 0.03222904  6.653763</span></span>
+<span><span class="co">#&gt; 5 -32.693850    -0.06872852  0.3637500    -0.02254873 0.02505414  6.905592</span></span>
+<span><span class="co">#&gt; 6  -8.506117    -0.12684989  0.1970833    -0.03484887 0.03872097  6.470250</span></span>
+<span><span class="co">#&gt;   IR_Belfiore_basal IR_Ig_ratio_basal IR_Isi_basal IR_Bennett</span></span>
+<span><span class="co">#&gt; 1          642.9440         -9.944868    0.1284888  11.491651</span></span>
+<span><span class="co">#&gt; 2          212.7875        -23.505882    0.0424575   6.661861</span></span>
+<span><span class="co">#&gt; 3          474.2810         -9.933788    0.0947562  10.426123</span></span>
+<span><span class="co">#&gt; 4          388.3490        -10.906719    0.0775698   9.640858</span></span>
+<span><span class="co">#&gt; 5          499.4195         -4.713402    0.0997839  11.320857</span></span>
+<span><span class="co">#&gt; 6          323.3225        -10.389006    0.0645645   9.096258</span></span>
+<span><span class="co">#&gt;   IR_HOMA_IR_rev_inv IR_Isi_120 IR_Cederholm_index IR_Gutt_index IR_Avignon_Si0</span></span>
+<span><span class="co">#&gt; 1         -0.3152026  0.2212326         -1.7823934     0.5305820     0.19350413</span></span>
+<span><span class="co">#&gt; 2         -0.9538951  0.0876978          0.5927111     0.3024564     0.06285833</span></span>
+<span><span class="co">#&gt; 3         -0.4274127  0.1125720          0.8293481     0.3780459     0.12081415</span></span>
+<span><span class="co">#&gt; 4         -0.5221104  0.1717200        -19.6494632     0.4085063     0.10122859</span></span>
+<span><span class="co">#&gt; 5         -0.4058771  0.0726192          1.1012518     0.3066113     0.09190097</span></span>
+<span><span class="co">#&gt; 6         -0.6272797  0.0926436        -29.2492058     0.3173482     0.08745262</span></span>
+<span><span class="co">#&gt;   IR_Avignon_Si120 IR_Avignon_Sim IR_Modified_stumvoll IR_Stumvoll_Demographics</span></span>
+<span><span class="co">#&gt; 1       0.33317630     0.24482015            11.375317                12.256233</span></span>
+<span><span class="co">#&gt; 2       0.12983659     0.08470707             8.789510                 9.691464</span></span>
+<span><span class="co">#&gt; 3       0.14352930     0.13119577             9.770285                 9.000936</span></span>
+<span><span class="co">#&gt; 4       0.22409460     0.13945996             9.879588                 9.314421</span></span>
+<span><span class="co">#&gt; 5       0.06688228     0.07742059            10.090693                 9.659846</span></span>
+<span><span class="co">#&gt; 6       0.12548576     0.10307262             9.320196                16.396297</span></span>
+<span><span class="co">#&gt;   IR_Matsuda_AUC IR_Matsuda_ISI IR_BigttSi IR_Ifc_inv IR_HIRI_inv</span></span>
+<span><span class="co">#&gt; 1       24.90268     0.18554100 0.17725513  -2.979436 -0.03453058</span></span>
+<span><span class="co">#&gt; 2       10.27706     0.07372675 0.10334914  -1.494017 -0.06636583</span></span>
+<span><span class="co">#&gt; 3       19.20708     0.14037223 0.11080561 -12.213178 -0.03862652</span></span>
+<span><span class="co">#&gt; 4       21.25666     0.14891687 0.11053133  -1.736539 -0.02873088</span></span>
+<span><span class="co">#&gt; 5       20.58622     0.14766948 0.07460339   1.743810 -0.03386558</span></span>
+<span><span class="co">#&gt; 6       13.34925     0.09761742 0.10958423  -7.766196 -0.05779652</span></span>
+<span><span class="co">#&gt;   IR_Belfiore_isi_gly IR_Revised_QUICKI IR_VAI_Men_inv IR_VAI_Women_inv</span></span>
+<span><span class="co">#&gt; 1            24132201          2.959512     -0.3289024       -0.2167097</span></span>
+<span><span class="co">#&gt; 2            12438072          2.253267     -1.2763631       -0.8396808</span></span>
+<span><span class="co">#&gt; 3            19466368          2.869814     -1.0088699       -0.6623748</span></span>
+<span><span class="co">#&gt; 4            29125090          2.711206     -1.2264636       -0.8047215</span></span>
+<span><span class="co">#&gt; 5            21235522          2.540640     -0.9124697       -0.5976307</span></span>
+<span><span class="co">#&gt; 6            13800354          2.457377     -1.3553982       -0.8954833</span></span>
+<span><span class="co">#&gt;   IR_TG_HDL_C_inv IR_TyG_inv IR_LAP_Men_inv IR_LAP_Women_inv IR_McAuley_index</span></span>
+<span><span class="co">#&gt; 1      -0.1801857 -0.1034577   -0.009476427     -0.007838526       0.20316976</span></span>
+<span><span class="co">#&gt; 2      -0.7398009 -0.1239724   -0.040025616     -0.033306688       0.09761746</span></span>
+<span><span class="co">#&gt; 3      -0.5141316 -0.1185786   -0.051921080     -0.037383178       0.13932962</span></span>
+<span><span class="co">#&gt; 4      -0.6976170 -0.1215239   -0.041645844     -0.032838566       0.12760260</span></span>
+<span><span class="co">#&gt; 5      -0.4232927 -0.1174627   -0.101626016     -0.046904315       0.17783152</span></span>
+<span><span class="co">#&gt; 6      -0.5730425 -0.1184412   -0.044389205     -0.031758130       0.13871371</span></span>
+<span><span class="co">#&gt;   IR_Adipo_inv IR_Belfiore_inv_FFA     IR_I_AUC IR_FFA_AUC</span></span>
+<span><span class="co">#&gt; 1   -0.1240854           -4.529483 0.0003501401 0.01175364</span></span>
+<span><span class="co">#&gt; 2   -0.5575690           -1.396750 0.0006190992 0.01974724</span></span>
+<span><span class="co">#&gt; 3   -0.1309323           -4.318767 0.0003629105 0.01065644</span></span>
+<span><span class="co">#&gt; 4   -0.1788493           -3.295650 0.0002784352 0.01256913</span></span>
+<span><span class="co">#&gt; 5   -0.1974958           -3.031700 0.0002851237 0.02394636</span></span>
+<span><span class="co">#&gt; 6   -0.2856980           -2.250100 0.0004543905 0.01876877</span></span>
+<span><span class="co">#&gt;   IR_tracer_palmitate_SI IR_tracer_glycerol_SI IR_LIRI_inv IR_Lipo_inv</span></span>
+<span><span class="co">#&gt; 1               7.421074              7.541667  -0.8671696 -0.03665689</span></span>
+<span><span class="co">#&gt; 2               4.670169              9.286129  -0.9732892 -0.13656072</span></span>
+<span><span class="co">#&gt; 3               8.627811              4.387398  -0.8608735 -0.02389477</span></span>
+<span><span class="co">#&gt; 4               7.171717              7.880133  -0.8493467 -0.04386869</span></span>
+<span><span class="co">#&gt; 5              15.175790              9.754005  -0.7721014 -0.01965919</span></span>
+<span><span class="co">#&gt; 6              31.974050             21.904762  -0.8266637 -0.08053962</span></span>
+<span><span class="co">#&gt;   IR_ATIRI_inv    SPISE  METS_IR prediabetes HOMA_CP LAR ASI TyG_index</span></span>
+<span><span class="co">#&gt; 1  -0.03607074 4.849288 302.5694           0      NA  NA  NA  9.310025</span></span>
+<span><span class="co">#&gt; 2  -0.06867896 7.113989 352.8944           1      NA  NA  NA  7.951901</span></span>
+<span><span class="co">#&gt; 3  -0.04698902 7.510664 298.4802           0      NA  NA  NA  8.523629</span></span>
+<span><span class="co">#&gt; 4  -0.03992494 8.292019 188.0396           0      NA  NA  NA  8.609869</span></span>
+<span><span class="co">#&gt; 5  -0.03058679 8.381122 134.0136           0      NA  NA  NA  8.928386</span></span>
+<span><span class="co">#&gt; 6  -0.11756246 5.086907 179.8589           0      NA  NA  NA  8.678815</span></span>
+<span><span class="co">#&gt;   non_HDL_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1   VAI_Men</span></span>
+<span><span class="co">#&gt; 1      5.14     4.953846    2.4230769      2.853846  0.6899225 3.0404154</span></span>
+<span><span class="co">#&gt; 2      4.58     4.754098    0.5901639      3.483607  0.4120879 0.7834761</span></span>
+<span><span class="co">#&gt; 3      5.70     5.523810    0.8492063      4.134921  0.9924812 0.9912081</span></span>
+<span><span class="co">#&gt; 4      2.97     3.020408    0.6258503      1.734694  1.0826446 0.8153524</span></span>
+<span><span class="co">#&gt; 5      3.12     2.962264    1.0314465      1.490566  0.6736111 1.0959268</span></span>
+<span><span class="co">#&gt; 6      4.00     3.380952    0.7619048      2.035714  0.4509804 0.7377906</span></span>
+<span><span class="co">#&gt;   VAI_Women LAP_Men LAP_Women  TyG_BMI</span></span>
+<span><span class="co">#&gt; 1  4.614469 105.525   127.575 297.9208</span></span>
+<span><span class="co">#&gt; 2  1.190929  24.984    30.024 236.1715</span></span>
+<span><span class="co">#&gt; 3  1.509719  19.260    26.750 230.1380</span></span>
+<span><span class="co">#&gt; 4  1.242666  24.012    30.452 225.5786</span></span>
+<span><span class="co">#&gt; 5  1.673274   9.840    21.320 215.1741</span></span>
+<span><span class="co">#&gt; 6  1.116715  22.528    31.488 317.6446</span></span></code></pre></div>
 <p>The verbose summary will note which insulin sub-panels ran (fasting)
 and which were skipped due to missing OGTT/adipose/tracer inputs.</p>
 </div>
@@ -400,17 +609,71 @@ summary, and a group execution summary.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; all_health_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; Column mapping summary: TC-&gt;TC (user), HDL_c-&gt;HDL_c (user), TG-&gt;TG (user), LDL_c-&gt;LDL_c (user), BMI-&gt;BMI (user)</span></span>
+<span><span class="co">#&gt; all_health_markers(): mapping summary -- 13 key(s) mapped</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): column mapping ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Data: 1 row × 5 columns</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  User-supplied (5):</span></span>
+<span><span class="co">#&gt;    ✔ TC                       -&gt; TC</span></span>
+<span><span class="co">#&gt;    ✔ HDL_c                    -&gt; HDL_c</span></span>
+<span><span class="co">#&gt;    ✔ TG                       -&gt; TG</span></span>
+<span><span class="co">#&gt;    ✔ LDL_c                    -&gt; LDL_c</span></span>
+<span><span class="co">#&gt;    ✔ BMI                      -&gt; BMI</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; health_markers(): calling lipid</span></span>
-<span><span class="co">#&gt; lipid_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; lipid_markers(): column map: TC -&gt; 'TC', HDL_c -&gt; 'HDL_c', TG -&gt; 'TG'</span></span>
+<span><span class="co">#&gt; lipid_markers(): reading input 'data' — 1 rows × 13 variables</span></span>
+<span><span class="co">#&gt; lipid_markers(): col_map (5 columns — 5 inferred from data)</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'    (inferred)</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'    (inferred)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'    (inferred)</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'    (inferred)</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'    (inferred)</span></span>
+<span><span class="co">#&gt; lipid_markers(): pre-computation: glucose cannot be derived -- provide: G0</span></span>
+<span><span class="co">#&gt; lipid_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  BMI</span></span>
+<span><span class="co">#&gt;   missing:  ApoB, ApoA1, waist, glucose</span></span>
+<span><span class="co">#&gt;   indices -&gt; NA:</span></span>
+<span><span class="co">#&gt;   ApoB_ApoA1 -&gt; NA  [missing: ApoB, ApoA1]</span></span>
+<span><span class="co">#&gt;   VAI -&gt; NA  [missing: waist]</span></span>
+<span><span class="co">#&gt;   LAP -&gt; NA  [missing: waist]</span></span>
+<span><span class="co">#&gt;   TyG_BMI -&gt; NA  [missing: glucose]</span></span>
+<span><span class="co">#&gt;   derivable:</span></span>
+<span><span class="co">#&gt;   glucose: provide G0 to enable</span></span>
+<span><span class="co">#&gt; lipid_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   non_HDL_c     [TC, HDL_c]</span></span>
+<span><span class="co">#&gt;   remnant_c     [TC, HDL_c, LDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_TC_HDL  [TC, HDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_TG_HDL  [TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_LDL_HDL [LDL_c, HDL_c]</span></span>
+<span><span class="co">#&gt;   ApoB_ApoA1    NA [ApoB/ApoA1 missing]</span></span>
+<span><span class="co">#&gt;   VAI_Men/Women NA [waist/BMI missing]</span></span>
+<span><span class="co">#&gt;   LAP_Men/Women NA [waist missing]</span></span>
+<span><span class="co">#&gt;   TyG_BMI       NA [BMI/glucose missing]</span></span>
 <span><span class="co">#&gt; lipid_markers(): results: non_HDL_c 1/1, remnant_c 1/1, ratio_TC_HDL 1/1, ratio_TG_HDL 1/1, ratio_LDL_HDL 1/1, ApoB_ApoA1 0/1</span></span>
-<span><span class="co">#&gt; all_health_markers(): summary - computed: lipid</span></span>
-<span><span class="co">#&gt;    TC HDL_c  TG LDL_c BMI non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL</span></span>
-<span><span class="co">#&gt; 1 200    50 150   120  25       150        30            4            3</span></span>
-<span><span class="co">#&gt;   ratio_LDL_HDL ApoB_ApoA1</span></span>
-<span><span class="co">#&gt; 1           2.4         NA</span></span>
+<span><span class="co">#&gt; all_health_markers(): computed: lipid</span></span>
+<span><span class="co">#&gt; ── all_health_markers(): group summary ───────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  Computed (1):</span></span>
+<span><span class="co">#&gt;    ✔ lipid</span></span>
+<span><span class="co">#&gt;  ───────────────────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;    TC HDL_c  TG LDL_c BMI     VLDL non_HDL remnant_c       AIP CRI_I CRI_II</span></span>
+<span><span class="co">#&gt; 1 200    50 150   120  25 68.18182     150        30 0.4771213     4    2.4</span></span>
+<span><span class="co">#&gt;   HDL_TG_ratio LDL_HDL_ratio non_HDL_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL</span></span>
+<span><span class="co">#&gt; 1    0.3333333           2.4       150            4            3           2.4</span></span>
+<span><span class="co">#&gt;   ApoB_ApoA1</span></span>
+<span><span class="co">#&gt; 1         NA</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected across all marker categories, and get a
+ready-to-paste <code>col_map</code> template for any that are not. See
+the <a href="articles/multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms across 10 major
+biobanks.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>

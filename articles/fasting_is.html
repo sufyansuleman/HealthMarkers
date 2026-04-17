@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,8 +66,7 @@
 <p>Compute 10 fasting insulin sensitivity/resistance indices from
 fasting glucose (mmol/L) and insulin (pmol/L). Internally converts
 glucose to mg/dL (x18) and insulin to muU/mL (/6). Handles column
-mapping, numeric coercion, NA policy, optional extreme screening, and
-optional normalization.</p>
+mapping, numeric coercion, NA policy, and optional normalization.</p>
 </div>
 <div class="section level2">
 <h2 id="when-to-use">When to use<a class="anchor" aria-label="anchor" href="#when-to-use"></a>
@@ -76,7 +75,7 @@ optional normalization.</p>
 <li>You have fasting glucose (mmol/L) and insulin (pmol/L) and need
 multiple sensitivity/resistance indices at once.</li>
 <li>You want explicit NA handling (keep/omit/error) plus optional
-extreme-value screening and normalization.</li>
+normalization.</li>
 <li>Your column names differ from the defaults and need mapping.</li>
 </ul>
 </div>
@@ -95,13 +94,9 @@ avoid double-scaling.</li>
 <code>omit</code>, or <code>error</code> governs required-input
 missingness.</li>
 <li>
-<code>check_extreme</code>: optional screening of computed indices
-against <code>extreme_limit</code>; actions: <code>cap</code>,
-<code>NA</code>, or <code>error</code>.</li>
-<li>
 <code>normalize</code>: <code>none</code> (default) or
 <code>z</code>, <code>range</code>, <code>inverse</code>,
-<code>robust</code> applied after extreme handling.</li>
+<code>robust</code> applied after computation.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -155,7 +150,6 @@ as long as they hold the right values.</p>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -164,12 +158,12 @@ as long as they hold the right values.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 10</span></span></span>
 <span><span class="co">#&gt;   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">14.0</span>     2.86       -<span style="color: #BB0000;">58.1</span>  52.3  0.139        0.001<span style="text-decoration: underline;">53</span>        -<span style="color: #BB0000;">0.149</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">16.0</span>     2.49       -<span style="color: #BB0000;">66.6</span>  60.0  0.137        0.001<span style="text-decoration: underline;">33</span>        -<span style="color: #BB0000;">0.172</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.7</span>     2.55       -<span style="color: #BB0000;">61.6</span>  55.5  0.138        0.001<span style="text-decoration: underline;">44</span>        -<span style="color: #BB0000;">0.178</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">6.75</span>    5.93       -<span style="color: #BB0000;">30.5</span>  27.4  0.153        0.002<span style="text-decoration: underline;">91</span>        -<span style="color: #BB0000;">0.066</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">13.6</span>     2.94       -<span style="color: #BB0000;">56.9</span>  51.2  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.145</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">17.0</span>     2.36       -<span style="color: #BB0000;">82.7</span>  74.4  0.133        0.001<span style="text-decoration: underline;">07</span>        -<span style="color: #BB0000;">0.155</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">11.4</span>     3.52       -<span style="color: #BB0000;">57.1</span>  51.4  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.101</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       -<span style="color: #BB0000;">4.25</span>    9.41       -<span style="color: #BB0000;">18.9</span>  17.0  0.165        0.004<span style="text-decoration: underline;">70</span>        -<span style="color: #BB0000;">0.042</span><span style="color: #BB0000; text-decoration: underline;">5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       -<span style="color: #BB0000;">9.77</span>    4.10       -<span style="color: #BB0000;">42.1</span>  37.9  0.146        0.002<span style="text-decoration: underline;">11</span>        -<span style="color: #BB0000;">0.101</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">8.43</span>    4.74       -<span style="color: #BB0000;">34.5</span>  31.0  0.150        0.002<span style="text-decoration: underline;">58</span>        -<span style="color: #BB0000;">0.091</span><span style="color: #BB0000; text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">14.6</span>     2.75       -<span style="color: #BB0000;">44.3</span>  39.9  0.145        0.002<span style="text-decoration: underline;">00</span>        -<span style="color: #BB0000;">0.212</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>       -<span style="color: #BB0000;">7.88</span>    5.07       -<span style="color: #BB0000;">28.7</span>  25.8  0.155        0.003<span style="text-decoration: underline;">09</span>        -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">3</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: Isi_basal &lt;dbl&gt;, Bennett &lt;dbl&gt;, HOMA_IR_rev_inv &lt;dbl&gt;</span></span></span></code></pre></div>
 <p>The preview shows only the newly computed indices. <code>_inv</code>
 columns are inverted so larger negatives indicate greater insulin
@@ -212,42 +206,27 @@ sensitive)</li>
 glucose (mmol/L), <code>I0</code> insulin (pmol/L).</li>
 <li>Internal conversions: glucose x18 -&gt; mg/dL; insulin /6 -&gt;
 muU/mL.</li>
-<li>Extremes: default <code>check_extreme = FALSE</code>; when TRUE,
-outputs are screened against <code>extreme_limit</code>.
-<code>extreme_action = "cap"</code> trims to +/-limit.</li>
 <li>Missingness: <code>na_action</code> controls row handling
 (<code>keep</code>/<code>omit</code>/<code>error</code>).</li>
 <li>Normalization: <code>normalize = "none"</code> by default; other
-options apply columnwise scaling after any extreme handling.</li>
+options apply columnwise scaling after computation.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
 </h2>
-<p>Show how row handling and extreme scanning behave on a tiny
-slice.</p>
+<p>Show how row handling behaves on a tiny slice.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G0"</span>, <span class="st">"I0"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">G0</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
-<span><span class="va">fis_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fasting_is.html">fasting_is</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">fis_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fasting_is.html">fasting_is</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fis_extreme</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fasting_is.html">fasting_is</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_limit <span class="op">=</span> <span class="fl">1e3</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">fis_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fasting_is.html">fasting_is</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="va">fis_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fasting_is.html">fasting_is</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fis_keep</span><span class="op">)</span>,</span>
 <span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fis_omit</span><span class="op">)</span>,</span>
-<span>  extreme_head <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">fis_extreme</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">fis_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  keep_head <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">fis_keep</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">fis_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; $keep_rows</span></span>
 <span><span class="co">#&gt; [1] 6</span></span>
@@ -255,22 +234,20 @@ slice.</p>
 <span><span class="co">#&gt; $omit_rows</span></span>
 <span><span class="co">#&gt; [1] 5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $extreme_head</span></span>
+<span><span class="co">#&gt; $keep_head</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 10</span></span></span>
 <span><span class="co">#&gt;   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">14.0</span>     2.86       -<span style="color: #BB0000;">58.1</span>  52.3  0.139        0.001<span style="text-decoration: underline;">53</span>        -<span style="color: #BB0000;">0.149</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">16.0</span>     2.49        <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">15.7</span>     2.55       -<span style="color: #BB0000;">61.6</span>  55.5  0.138        0.001<span style="text-decoration: underline;">44</span>        -<span style="color: #BB0000;">0.178</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">6.75</span>    5.93       -<span style="color: #BB0000;">30.5</span>  27.4  0.153        0.002<span style="text-decoration: underline;">91</span>        -<span style="color: #BB0000;">0.066</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">13.6</span>     2.94       -<span style="color: #BB0000;">56.9</span>  51.2  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.145</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>      -<span style="color: #BB0000;">17.0</span>     2.36       -<span style="color: #BB0000;">82.7</span>  74.4  0.133        0.001<span style="text-decoration: underline;">07</span>        -<span style="color: #BB0000;">0.155</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">11.4</span>     3.52       -<span style="color: #BB0000;">57.1</span>  51.4  0.140        0.001<span style="text-decoration: underline;">56</span>        -<span style="color: #BB0000;">0.101</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       -<span style="color: #BB0000;">4.25</span>    9.41        <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   <span style="color: #BB0000;">NA</span>           <span style="color: #BB0000;">NA</span>              <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       -<span style="color: #BB0000;">9.77</span>    4.10       -<span style="color: #BB0000;">42.1</span>  37.9  0.146        0.002<span style="text-decoration: underline;">11</span>        -<span style="color: #BB0000;">0.101</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>       -<span style="color: #BB0000;">8.43</span>    4.74       -<span style="color: #BB0000;">34.5</span>  31.0  0.150        0.002<span style="text-decoration: underline;">58</span>        -<span style="color: #BB0000;">0.091</span><span style="color: #BB0000; text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      -<span style="color: #BB0000;">14.6</span>     2.75       -<span style="color: #BB0000;">44.3</span>  39.9  0.145        0.002<span style="text-decoration: underline;">00</span>        -<span style="color: #BB0000;">0.212</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>       -<span style="color: #BB0000;">7.88</span>    5.07       -<span style="color: #BB0000;">28.7</span>  25.8  0.155        0.003<span style="text-decoration: underline;">09</span>        -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">3</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 3 more variables: Isi_basal &lt;dbl&gt;, Bennett &lt;dbl&gt;, HOMA_IR_rev_inv &lt;dbl&gt;</span></span></span></code></pre></div>
 <p>Here <code>na_action = "keep"</code> preserves all six rows (with
-NA-derived outputs), while <code>na_action = "omit"</code> drops the row
-with missing <code>G0</code>. Extreme scanning with
-<code>extreme_action = "cap"</code> would trim outputs exceeding
-<code>extreme_limit</code>; none were capped in this slice.</p>
+NA-derived outputs for the row with missing <code>G0</code>), while
+<code>na_action = "omit"</code> drops that row.</p>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -282,11 +259,6 @@ columns abort.</li>
 <code>na_action</code>: <code>keep</code> leaves NA-derived outputs;
 <code>omit</code> drops rows; <code>error</code> stops on any missing
 input.</li>
-<li>
-<code>check_extreme</code> screens outputs for magnitudes beyond
-<code>extreme_limit</code>; adjust <code>extreme_limit</code> and choose
-<code>extreme_action</code>
-(<code>cap</code>/<code>NA</code>/<code>error</code>).</li>
 <li>
 <code>normalize</code> is optional post-hoc scaling; set to
 <code>"none"</code> to preserve native scales.</li>
@@ -322,9 +294,22 @@ active:</p>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; fasting_is(): preparing inputs</span></span>
-<span><span class="co">#&gt; fasting_is(): column map: G0 -&gt; 'G0', I0 -&gt; 'I0'</span></span>
-<span><span class="co">#&gt; fasting_is(): results: Fasting_inv 5/5, Raynaud 5/5, HOMA_IR_inv 5/5, FIRI 5/5, QUICKI 5/5, Belfiore_basal 5/5, Ig_ratio_basal 5/5, Isi_basal 5/5, Bennett 5/5, HOMA_IR_rev_inv 5/5</span></span>
+<span><span class="co">#&gt; fasting_is(): reading input 'data' — 5 rows × 519 variables</span></span>
+<span><span class="co">#&gt; fasting_is(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   G0                -&gt;  'G0'</span></span>
+<span><span class="co">#&gt;   I0                -&gt;  'I0'</span></span>
+<span><span class="co">#&gt; fasting_is(): computing markers:</span></span>
+<span><span class="co">#&gt;   Fasting_inv          [G0, I0]</span></span>
+<span><span class="co">#&gt;   Raynaud              [G0, I0]</span></span>
+<span><span class="co">#&gt;   HOMA_IR_inv          [G0, I0]</span></span>
+<span><span class="co">#&gt;   FIRI                 [G0, I0]</span></span>
+<span><span class="co">#&gt;   QUICKI               [G0, I0]</span></span>
+<span><span class="co">#&gt;   Belfiore_basal       [G0, I0]</span></span>
+<span><span class="co">#&gt;   Ig_ratio_basal       [G0, I0]</span></span>
+<span><span class="co">#&gt;   Isi_basal            [G0, I0]</span></span>
+<span><span class="co">#&gt;   Bennett              [G0, I0]</span></span>
+<span><span class="co">#&gt;   HOMA_IR_rev_inv      [G0, I0]</span></span>
+<span><span class="co">#&gt; fasting_is(): results: id 5/5, Fasting_inv 5/5, Raynaud 5/5, HOMA_IR_inv 5/5, FIRI 5/5, QUICKI 5/5, Belfiore_basal 5/5, Ig_ratio_basal 5/5, Isi_basal 5/5, Bennett 5/5, HOMA_IR_rev_inv 5/5</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
@@ -339,9 +324,6 @@ NAs triggers a warning.</li>
 <li>For pipelines, prefer <code>na_action = "omit"</code> or
 <code>"error"</code> to avoid silent gaps; use <code>"keep"</code> for
 exploratory summaries.</li>
-<li>Enable <code>check_extreme = TRUE</code> when working with noisy or
-simulated data; use <code>extreme_action = "error"</code> for strict
-QA.</li>
 <li>Set <code>normalize</code> to align scales across indices if feeding
 into distance-based models; leave as <code>"none"</code> for
 interpretability.</li>

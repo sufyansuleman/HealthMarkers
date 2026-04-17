@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title> • HealthMarkers</title>
+<title>Inflammatory age (iAge proxy) • HealthMarkers</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Inflammatory age (iAge proxy)">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1></h1>
+      <h1>Inflammatory age (iAge proxy)</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/inflammatory_age.Rmd" class="external-link"><code>vignettes/articles/inflammatory_age.Rmd</code></a></small>
@@ -60,29 +60,76 @@
 
     
     
-<p>title: “Inflammatory age (iAge proxy)” output:
-rmarkdown::html_vignette —</p>
 <div class="section level2">
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
 <p>Compute a simplified inflammatory age proxy (<code>iAge</code>) as a
-weighted sum of CRP, IL6, and TNFa. Supports NA policies,
-high-missingness warnings, and optional extreme scanning
-(warn/cap/NA/error). Units assumed: CRP mg/L; IL6, TNFa pg/mL (no
+weighted sum of CRP, IL6, and TNFa. Supports NA policies and
+high-missingness warnings. Units assumed: CRP mg/L; IL6, TNFa pg/mL (no
 internal conversions).</p>
+</div>
+<div class="section level2">
+<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
+<p><code>iAge</code> is a simplified implementation of the inflammatory
+age proxy described by Sayed <em>et al.</em> (2021, <em>Nature
+Aging</em>). The original model uses a 50+ cytokine proteomics panel;
+this function computes a weighted sum of three routinely available
+markers—CRP, IL-6, and TNF-α—as a practical, single-site
+approximation.</p>
+<p>Elevated iAge scores have been associated with:</p>
+<ul>
+<li>Biological age acceleration independent of chronological age</li>
+<li>Increased frailty, functional decline, and all-cause mortality risk
+in longitudinal cohorts</li>
+<li>Cardiometabolic and neurodegenerative disease incidence</li>
+</ul>
+<table class="table">
+<colgroup>
+<col width="12%">
+<col width="63%">
+<col width="24%">
+</colgroup>
+<thead><tr class="header">
+<th>Marker</th>
+<th>Biological role</th>
+<th>Default weight</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>CRP</td>
+<td>Acute-phase protein; reflects systemic IL-6 signalling</td>
+<td>0.33</td>
+</tr>
+<tr class="even">
+<td>IL-6</td>
+<td>Pro-inflammatory interleukin; master acute-phase regulator</td>
+<td>0.33</td>
+</tr>
+<tr class="odd">
+<td>TNF-α</td>
+<td>Pleiotropic cytokine; adipose source in metabolic disease</td>
+<td>0.34</td>
+</tr>
+</tbody>
+</table>
+<p>Approximate reference ranges (healthy adults, standard lab units): -
+CRP &lt; 3 mg/L (hs-CRP &lt; 1 mg/L = low cardiovascular risk) - IL-6
+&lt; 7 pg/mL - TNF-α 1–6 pg/mL</p>
 </div>
 <div class="section level2">
 <h2 id="load-packages-and-demo-data">Load packages and demo data<a class="anchor" aria-label="anchor" href="#load-packages-and-demo-data"></a>
 </h2>
-<p>Synthetic data with one missing value to show NA handling.</p>
+<p>Six participants spanning low to markedly elevated inflammatory
+burden, with one missing CRP to demonstrate NA handling.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sufyansuleman.github.io/HealthMarkers/">HealthMarkers</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  CRP  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">3.5</span>, <span class="cn">NA</span><span class="op">)</span>,  <span class="co"># mg/L</span></span>
-<span>  IL6  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.0</span>, <span class="fl">4.1</span>, <span class="fl">1.5</span><span class="op">)</span>, <span class="co"># pg/mL</span></span>
-<span>  TNFa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">1.8</span>, <span class="fl">0.9</span><span class="op">)</span>  <span class="co"># pg/mL</span></span>
+<span>  CRP  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">1.5</span>, <span class="fl">3.5</span>,  <span class="fl">8.0</span>,   <span class="cn">NA</span>, <span class="fl">42.0</span><span class="op">)</span>, <span class="co"># mg/L</span></span>
+<span>  IL6  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">2.0</span>, <span class="fl">4.1</span>,  <span class="fl">6.8</span>,  <span class="fl">3.2</span>, <span class="fl">15.0</span><span class="op">)</span>, <span class="co"># pg/mL</span></span>
+<span>  TNFa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">1.0</span>, <span class="fl">1.8</span>,  <span class="fl">2.5</span>,  <span class="fl">1.4</span>,  <span class="fl">3.2</span><span class="op">)</span>  <span class="co"># pg/mL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -104,17 +151,55 @@ preserving row count.</p>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ia_default</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;    iAge</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1.40 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 3.12 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0.801</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
+<span><span class="co">#&gt;     iAge</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.932</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  1.50 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.12 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  5.73 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  1.53 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 19.9</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="interpreting-iage-scores">Interpreting iAge scores<a class="anchor" aria-label="anchor" href="#interpreting-iage-scores"></a>
+</h2>
+<p>As a weighted sum of (unstandardised) inflammatory markers, the raw
+score is influenced by the absolute magnitude of CRP (which dominates
+when elevated). As a broad guide:</p>
+<table class="table">
+<colgroup>
+<col width="13%">
+<col width="86%">
+</colgroup>
+<thead><tr class="header">
+<th>Score</th>
+<th>Inflammatory profile</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>0–2</td>
+<td>Low burden; typical of healthy younger adults</td>
+</tr>
+<tr class="even">
+<td>2–8</td>
+<td>Sub-clinical elevation; common in overweight, sedentary, or older
+adults</td>
+</tr>
+<tr class="odd">
+<td>&gt; 8</td>
+<td>High chronic inflammation; consistent with metabolic syndrome or
+active disease</td>
+</tr>
+</tbody>
+</table>
+<p>For cross-cohort comparison, normalise the score with
+<code><a href="../reference/normalize_vec.html">normalize_vec()</a></code> (method <code>"z"</code> or
+<code>"robust"</code>) before downstream modelling.</p>
 </div>
 <div class="section level2">
 <h2 id="keep-na-vs-drop">Keep NA vs drop<a class="anchor" aria-label="anchor" href="#keep-na-vs-drop"></a>
@@ -126,44 +211,47 @@ required inputs.</p>
 <code class="sourceCode R"><span><span class="va">ia_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ia_keep</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;    iAge</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  1.40</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  3.12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
+<span><span class="co">#&gt;     iAge</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.932</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  1.50 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.12 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  5.73 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> <span style="color: #BB0000;">NA</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 19.9</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-screening">Extreme screening<a class="anchor" aria-label="anchor" href="#extreme-screening"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Scan for out-of-range inputs and cap into allowed bounds.</p>
+<p>Extreme marker values will produce extreme scores. Pre-filter
+implausible values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_ext</span> <span class="op">&lt;-</span> <span class="va">df</span></span>
 <span><span class="va">df_ext</span><span class="op">$</span><span class="va">CRP</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">500</span>  <span class="co"># extreme on purpose</span></span>
+<span><span class="co"># Pre-filter or cap before passing to iAge</span></span>
+<span><span class="va">df_ext</span><span class="op">$</span><span class="va">CRP</span><span class="op">[</span><span class="va">df_ext</span><span class="op">$</span><span class="va">CRP</span> <span class="op">&gt;</span> <span class="fl">300</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">300</span></span>
 <span></span>
-<span><span class="va">ia_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span></span>
+<span><span class="va">ia_filtered</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df_ext</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ia_cap</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;     iAge</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   1.40</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 101.  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<p><code>extreme_action = "warn"</code> would only warn;
-<code>error</code> aborts; <code>NA</code> blanks flagged values before
-computing.</p>
+<span><span class="va">ia_filtered</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
+<span><span class="co">#&gt;      iAge</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.932</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 100    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>   3.12 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>   5.73 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  <span style="color: #BB0000;">NA</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  19.9</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weights">Weights<a class="anchor" aria-label="anchor" href="#weights"></a>
@@ -176,12 +264,15 @@ weights are reordered to CRP/IL6/TNFa.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="fl">0.5</span>, IL6 <span class="op">=</span> <span class="fl">0.25</span>, TNFa <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
 <span><span class="co">#&gt;    iAge</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  1.35</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  3.22</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  1.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.22</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  6.32</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 25.6</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -202,8 +293,6 @@ markers contribute 0 to the sum; rows preserved.</li>
 <code>error</code>: abort if any required marker is missing/NA.</li>
 </ul>
 </li>
-<li>Extreme scan uses broad defaults (CRP 0–300, IL6 0–1000, TNFa
-0–2000); adjust via <code>extreme_rules</code> for your lab ranges.</li>
 <li>Output: one-column tibble <code>iAge</code>; rows match input unless
 you subset beforehand.</li>
 </ul>
@@ -219,14 +308,42 @@ a results summary.</p>
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="va">df_v</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="fl">1.2</span>, IL6 <span class="op">=</span> <span class="fl">2.0</span>, TNFa <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span><span class="va">df_v</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="st">"CRP"</span>, IL6 <span class="op">=</span> <span class="st">"IL6"</span>, TNFa <span class="op">=</span> <span class="st">"TNFa"</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; iAge(): preparing inputs</span></span>
-<span><span class="co">#&gt; iAge(): column map: CRP -&gt; 'CRP', IL6 -&gt; 'IL6', TNFa -&gt; 'TNFa'</span></span>
+<span><span class="co">#&gt; iAge(): reading input 'df_v' — 1 rows × 3 variables</span></span>
+<span><span class="co">#&gt; iAge(): col_map (3 columns — 3 specified)</span></span>
+<span><span class="co">#&gt;   CRP               -&gt;  'CRP'</span></span>
+<span><span class="co">#&gt;   IL6               -&gt;  'IL6'</span></span>
+<span><span class="co">#&gt;   TNFa              -&gt;  'TNFa'</span></span>
+<span><span class="co">#&gt; iAge(): computing markers:</span></span>
+<span><span class="co">#&gt;   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]</span></span>
 <span><span class="co">#&gt; iAge(): results: iAge 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 1</span></span></span>
 <span><span class="co">#&gt;    iAge</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  1.40</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition-multi-biobank">Column recognition (multi-biobank)<a class="anchor" aria-label="anchor" href="#column-recognition-multi-biobank"></a>
+</h2>
+<p>CRP is widely available in clinical databases (often labelled
+<code>CRP</code>, <code>hs_CRP</code>, <code>hsCRP</code>,
+<code>c_reactive_protein</code>). IL-6 and TNF-α require targeted
+immunoassay panels (e.g., Meso Scale Discovery, Luminex) and are absent
+from most routine clinical extracts.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Check which inflammation markers are present in your cohort data</span></span>
+<span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+<p>For datasets where only CRP is available, pass a single-marker
+<code>col_map</code> and assign all weight to CRP:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/iAge.html">iAge</a></span><span class="op">(</span></span>
+<span>  data    <span class="op">=</span> <span class="va">your_data</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="st">"hs_CRP"</span><span class="op">)</span>,  <span class="co"># IL6/TNFa omitted</span></span>
+<span>  weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span>,          <span class="co"># full weight to CRP</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="multi_biobank.html">Multi-Biobank Compatibility</a>
+article for recognised synonyms across major biobanks.</p>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
@@ -237,11 +354,15 @@ calling if needed.</li>
 <li>Prefer <code>na_action = "keep"</code> when you want to see which
 rows are incomplete; use <code>omit</code> when you want continuity of
 the score despite single missing markers.</li>
-<li>Tighten <code>extreme_rules</code> for cleaner QA; use
-<code>verbose = TRUE</code> during setup to see mapping and
+<li>Use <code>verbose = TRUE</code> during setup to see mapping and
 warnings.</li>
 <li>Impute upstream (e.g., <code><a href="../reference/impute_missing.html">impute_missing()</a></code>) if you prefer
 not to down-weight missing markers to zero.</li>
+<li>Reference: Sayed N, <em>et al.</em> (2021). An inflammatory aging
+clock (iAge) based on deep learning tracks multimorbidity,
+immunosenescence, epigenetic reprogramming, and mortality. <em>Nature
+Aging</em>, 1, 598–615. <a href="https://doi.org/10.1038/s43587-021-00082-y" class="external-link uri">https://doi.org/10.1038/s43587-021-00082-y</a>
+</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -13,7 +13,7 @@ interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,14 +51,11 @@ interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa).</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">iAge</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="fl">0.33</span>, IL6 <span class="op">=</span> <span class="fl">0.33</span>, TNFa <span class="op">=</span> <span class="fl">0.34</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,7 +80,7 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, prints stepwise progress and a completion summary. Default FALSE.</p></dd>
+<dd><p>Logical; if TRUE, prints column mapping and computing messages.</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
@@ -98,23 +95,6 @@ Defaults to c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34).</p></dd>
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
 <dd><p>Proportion in \([0,1]\) above which a high-missingness warning
 is emitted when <code>na_action = "warn"</code>. Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for values outside plausible ranges. Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") controlling what to do when extremes are detected.</p><ul><li><p>"warn": issue a warning, do not modify values (default if check_extreme = TRUE).</p></li>
-<li><p>"cap": truncate values to the allowed range and warn.</p></li>
-<li><p>"error": abort on detection.</p></li>
-<li><p>"ignore": do nothing.</p></li>
-<li><p>"NA": set out-of-range values to NA.</p></li>
-</ul></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa. If NULL, broad defaults are used.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -134,11 +114,7 @@ progress and a final summary.</p>
 machine learning model. This function provides a simple, linear proxy using
 three canonical inflammatory biomarkers. It is not identical to the original
 published iAge but is inspired by its rationale.</p></li>
-</ul><p>Default extreme ranges (if <code>extreme_rules = NULL</code>):</p><ul><li><p>CRP: 0 to 300 mg/L</p></li>
-<li><p>IL6: 0 to 1,000 pg/mL</p></li>
-<li><p>TNFa: 0 to 1,000 pg/mL</p></li>
-</ul><p>These are deliberately broad. Adjust <code>extreme_rules</code> to fit your cohort.</p>
-    </div>
+</ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Sayed N, others (2021).
@@ -165,6 +141,14 @@ published iAge but is inspired by its rationale.</p></li>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="st">"CRP"</span>, IL6 <span class="op">=</span> <span class="st">"IL6"</span>, TNFa <span class="op">=</span> <span class="st">"TNFa"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): reading input 'df' — 3 rows × 3 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): col_map (3 columns — 3 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRP               -&gt;  'CRP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   IL6               -&gt;  'IL6'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TNFa              -&gt;  'TNFa'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): results: iAge 2/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    iAge</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
@@ -178,6 +162,14 @@ published iAge but is inspired by its rationale.</p></li>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="st">"CRP"</span>, IL6 <span class="op">=</span> <span class="st">"IL6"</span>, TNFa <span class="op">=</span> <span class="st">"TNFa"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): reading input 'df' — 3 rows × 3 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): col_map (3 columns — 3 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRP               -&gt;  'CRP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   IL6               -&gt;  'IL6'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TNFa              -&gt;  'TNFa'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): results: iAge 2/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    iAge</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
@@ -185,14 +177,19 @@ published iAge but is inspired by its rationale.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  3.12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span>   </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Scan and cap extreme values</span></span></span>
+<span class="r-in"><span><span class="co"># Verbose output</span></span></span>
 <span class="r-in"><span><span class="fu">iAge</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CRP <span class="op">=</span> <span class="st">"CRP"</span>, IL6 <span class="op">=</span> <span class="st">"IL6"</span>, TNFa <span class="op">=</span> <span class="st">"TNFa"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): preparing inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): column map: CRP -&gt; 'CRP', IL6 -&gt; 'IL6', TNFa -&gt; 'TNFa'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): reading input 'df' — 3 rows × 3 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): col_map (3 columns — 3 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRP               -&gt;  'CRP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   IL6               -&gt;  'IL6'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TNFa              -&gt;  'TNFa'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> iAge(): results: iAge 2/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    iAge</span>

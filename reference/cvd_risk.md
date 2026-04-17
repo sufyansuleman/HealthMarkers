@@ -12,7 +12,7 @@ cvd_risk(
   model = c("ALL", "ASCVD", "QRISK3", "Stroke", "RiskScorescvd", "AIP", "LDL_PN"),
   year = 10,
   ...,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -55,6 +55,11 @@ A tibble.
 ``` r
 df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
 cvd_risk(df, model = "AIP")
+#> cvd_risk: dispatching model 'AIP'
+#> cvd_marker_aip(): col_map (inferred): TG -> 'TG', HDL_c -> 'HDL_c'
+#> cvd_marker_aip(): computing markers:
+#>   AIP [TG, HDL_c]
+#> cvd_marker_aip(): results: AIP 2/2
 #> # A tibble: 2 × 2
 #>   model value
 #>   <chr> <dbl>

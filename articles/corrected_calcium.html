@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,8 +75,7 @@ auto-detect units; supports optional extreme screening.</p>
 calcium.</li>
 <li>Your labs may be in mg/dL+g/dL or mmol/L+g/L, and you want
 unit-aware handling.</li>
-<li>You need row-retention rules for missing inputs and optional bounds
-checks.</li>
+<li>You need row-retention rules for missing inputs.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -92,9 +91,6 @@ Ca/Alb.</li>
 (infers; warns when assuming SI).</li>
 <li>Row policy: na_action = keep (default), omit, error; warn/ignore
 behave like keep but warn.</li>
-<li>Optional screening: check_extreme + extreme_action
-(warn/cap/error/ignore/NA); defaults use Ca 4-15 mg/dL and Alb 2-5 g/dL
-in working units when enabled.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -131,21 +127,19 @@ extremes.</p>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  units <span class="op">=</span> <span class="st">"conventional"</span>,  <span class="co"># use "si" for mmol/L; "auto" to infer</span></span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc_out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
-<span><span class="co">#&gt;   corrected_calcium</span></span>
-<span><span class="co">#&gt;               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              8.73</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              9.16</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              9.85</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>              8.96</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>              9.01</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>             10.0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   id    corrected_calcium</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P001               8.73</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> P002               9.16</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> P003               9.85</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> P004               8.96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> P005               9.01</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> P006              10.0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -157,10 +151,6 @@ mappings abort.</li>
 warns if assuming SI.</li>
 <li>na_action: keep (rows retained, NA outputs for missing), omit (drop
 rows with missing inputs), error (abort on missing).</li>
-<li>check_extreme: FALSE by default; TRUE applies bounds in working
-units (mg/dL, g/dL) before correction.</li>
-<li>extreme_action: warn (default, no change), cap, error, ignore, or
-NA; override bounds via extreme_rules.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -205,24 +195,17 @@ become NA.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="extreme-value-screening-optional">Extreme-value screening (optional)<a class="anchor" aria-label="anchor" href="#extreme-value-screening-optional"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Cap or error on implausible inputs before correction.</p>
+<p>Implausible Ca or Alb values will propagate through the Payne
+formula. Pre-filter before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">demo</span></span>
-<span><span class="va">demo2</span><span class="op">$</span><span class="va">Ca</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2.0</span>  <span class="co"># implausibly low if treated as mg/dL</span></span>
+<span><span class="va">demo2</span><span class="op">$</span><span class="va">Ca</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2.0</span>  <span class="co"># implausibly low</span></span>
 <span></span>
-<span><span class="va">a_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/corrected_calcium.html">corrected_calcium</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  units <span class="op">=</span> <span class="st">"conventional"</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ca_mgdl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">15</span><span class="op">)</span>, alb_gdl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">a_cap</span><span class="op">)</span></span>
+<span><span class="co"># Pre-filter:</span></span>
+<span><span class="va">demo2</span><span class="op">$</span><span class="va">Ca</span><span class="op">[</span><span class="va">demo2</span><span class="op">$</span><span class="va">Ca</span> <span class="op">&lt;</span> <span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/corrected_calcium.html">corrected_calcium</a></span><span class="op">(</span><span class="va">demo2</span>, <span class="va">col_map</span>, units <span class="op">=</span> <span class="st">"conventional"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
 <span><span class="co">#&gt;   corrected_calcium</span></span>
 <span><span class="co">#&gt;               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -230,7 +213,7 @@ become NA.</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              9.16</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>             <span style="color: #BB0000;">NA</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>              8.96</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>              3.74</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>             <span style="color: #BB0000;">NA</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>             10.0</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -266,10 +249,13 @@ active. Reset with <code>options(healthmarkers.verbose = NULL)</code> or
 <span>  units   <span class="op">=</span> <span class="st">"conventional"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; corrected_calcium(): preparing inputs</span></span>
-<span><span class="co">#&gt; corrected_calcium(): column map: calcium -&gt; 'Ca', albumin -&gt; 'Alb'</span></span>
-<span><span class="co">#&gt; corrected_calcium(): completed 30 rows.</span></span>
-<span><span class="co">#&gt; corrected_calcium(): results: corrected_calcium 30/30</span></span>
+<span><span class="co">#&gt; corrected_calcium(): reading input 'sim_small' — 30 rows × 521 variables</span></span>
+<span><span class="co">#&gt; corrected_calcium(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   calcium           -&gt;  'Ca'</span></span>
+<span><span class="co">#&gt;   albumin           -&gt;  'Alb'</span></span>
+<span><span class="co">#&gt; corrected_calcium(): computing markers:</span></span>
+<span><span class="co">#&gt;   corrected_calcium  [Payne formula: Ca + 0.8 * (4.0 - Alb)]</span></span>
+<span><span class="co">#&gt; corrected_calcium(): results: id 30/30, corrected_calcium 30/30</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span>   <span class="co"># restore original setting</span></span></code></pre></div>
 </div>
@@ -291,8 +277,6 @@ on missing.</li>
 inferred.</li>
 <li>Ensure Ca and Alb units match the chosen mode; mismatched units will
 mis-scale results.</li>
-<li>Tighten extreme_rules to your lab ranges; use extreme_action =
-“error” for strict QC.</li>
 <li>Downstream consumers expecting mg/dL should keep units =
 “conventional” or convert explicitly.</li>
 </ul>

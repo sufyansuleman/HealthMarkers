@@ -11,7 +11,7 @@ and the FEV1/FVC ratio."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,10 +48,11 @@ and the FEV1/FVC ratio.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pulmo_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  equation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GLI"</span>, <span class="st">"GLIgl"</span>, <span class="st">"NHANES3"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -67,6 +68,12 @@ and the FEV1/FVC ratio.</p>
 <li><p><code>fev1</code>      (numeric): observed FEV1 in L</p></li>
 <li><p><code>fvc</code>       (numeric): observed FVC in L</p></li>
 </ul></dd>
+
+
+<dt id="arg-col-map">col_map<a class="anchor" aria-label="anchor" href="#arg-col-map"></a></dt>
+<dd><p>Optional named list mapping canonical keys (<code>age</code>, <code>sex</code>, <code>height</code>,
+<code>ethnicity</code>, <code>fev1</code>, <code>fvc</code>) to actual column names in <code>data</code>. If <code>NULL</code>,
+column names are inferred automatically.</p></dd>
 
 
 <dt id="arg-equation">equation<a class="anchor" aria-label="anchor" href="#arg-equation"></a></dt>
@@ -134,6 +141,21 @@ DOI not resolvable in Crossref as of 2026-03-16.</p>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">pulmo_markers</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): reading input 'df' — 2 rows × 6 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): preparing inputs [GLI]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): col_map (6 columns — 6 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   age               -&gt;  'age'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sex               -&gt;  'sex'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   height            -&gt;  'height'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ethnicity         -&gt;  'ethnicity'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fev1              -&gt;  'fev1'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fvc               -&gt;  'fvc'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fev1_pred, fev1_z, fev1_pctpred, fev1_LLN [age, height, sex, ethnicity, fev1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): converting height from cm to m</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> pulmo_markers(): results: fev1_pred 2/2, fev1_z 2/2, fev1_pctpred 2/2, fev1_LLN 2/2, fvc_pred 2/2, fvc_z 2/2, fvc_pctpred 2/2, fvc_LLN 2/2, fev1_fvc_ratio 2/2, fev1_fvc_pred 2/2, fev1_fvc_z 2/2, fev1_fvc_pctpred 2/2, fev1_fvc_LLN 0/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 13</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   fev1_pred fev1_z fev1_pctpred fev1_LLN fvc_pred  fvc_z fvc_pctpred fvc_LLN</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

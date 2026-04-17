@@ -7,9 +7,9 @@ Returns ApoB as a proxy for LDL particle number with HM-CS NA handling.
 ``` r
 cvd_marker_ldl_particle_number(
   data,
-  col_map = list(ApoB = "ApoB"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -48,6 +48,10 @@ A tibble with columns model = "LDL_PN" and value.
 ``` r
 df <- data.frame(ApoB = c(80, 120, 100))
 cvd_marker_ldl_particle_number(df)
+#> cvd_marker_ldl_particle_number(): col_map (inferred): ApoB -> 'ApoB'
+#> cvd_marker_ldl_particle_number(): computing markers:
+#>   LDL_PN [ApoB]
+#> cvd_marker_ldl_particle_number(): results: LDL_PN 3/3
 #> # A tibble: 3 × 2
 #>   model  value
 #>   <chr>  <dbl>

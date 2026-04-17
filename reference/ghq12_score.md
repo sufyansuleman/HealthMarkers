@@ -14,7 +14,7 @@ ghq12_score(
   prefix = "GHQ12",
   method = c("likert", "binary"),
   case_cutoff_binary = 3,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -57,7 +57,8 @@ ghq12_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

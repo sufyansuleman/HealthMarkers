@@ -13,7 +13,7 @@ spq_score(
   missing_prop_max = 0.2,
   impute = c("none", "mean"),
   prefix = "SPQ",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -53,7 +53,8 @@ spq_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

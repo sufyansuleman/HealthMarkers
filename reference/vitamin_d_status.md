@@ -8,12 +8,9 @@ Categorizes vitamin D status based on serum 25-hydroxyvitamin D
 ``` r
 vitamin_d_status(
   data,
-  col_map = list(vitd = "VitD"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -40,19 +37,6 @@ vitamin_d_status(
   - error: abort if required input contains NA
 
   - warn: like keep, but emit missingness warnings
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional named list overriding defaults; default: list(vitamin_d =
-  c(0, 250)).
 
 - verbose:
 
@@ -94,6 +78,13 @@ Practice Guideline.” *Journal of Clinical Endocrinology & Metabolism*,
 ``` r
 df <- data.frame(VitD = c(18, 45, 72))
 vitamin_d_status(df)
+#> vitamin_d_status(): reading input 'df' — 3 rows × 1 variables
+#> vitamin_d_status(): col_map (2 columns — 2 inferred from data)
+#>   vitd              ->  'VitD'    (inferred)
+#>   vitamin_d         ->  'VitD'    (inferred)
+#> vitamin_d_status(): computing markers:
+#>   vitamin_d_status [VitD]
+#> vitamin_d_status(): results: vitamin_d_status 3/3
 #> # A tibble: 3 × 1
 #>   vitamin_d_status
 #>   <ord>           

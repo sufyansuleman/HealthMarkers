@@ -21,15 +21,10 @@ Given routine labs and anthropometry, computes:
 ``` r
 liver_markers(
   data,
-  col_map = list(BMI = "BMI", waist = "waist", TG = "TG", GGT = "GGT", age = "age", AST =
-    "AST", ALT = "ALT", platelets = "platelets", albumin = "albumin", diabetes =
-    "diabetes", bilirubin = "bilirubin", creatinine = "creatinine"),
-  verbose = FALSE,
-  na_action = c("keep", "omit", "error", "ignore", "warn"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  col_map = NULL,
+  verbose = TRUE,
+  na_action = c("keep", "omit", "error"),
+  na_warn_prop = 0.2
 )
 ```
 
@@ -53,47 +48,27 @@ liver_markers(
 
 - verbose:
 
-  Logical; if TRUE, prints stepwise messages and a final summary.
-  Default FALSE.
+  Logical; if `TRUE` (default), prints column mapping, input
+  availability, physiological range information (informational only,
+  values not altered), the list of markers being computed with their
+  inputs, and a per-column results summary.
 
 - na_action:
 
-  One of c("keep","omit","error") controlling missing-data policy.
-  Default "keep" (preserves prior behavior).
-
-  - "keep": leave NAs; they propagate to outputs.
-
-  - "omit": drop rows with NA in any required input.
-
-  - "error": abort if any required input contains NA.
+  One of `c("keep","omit","error")` controlling missing-data policy.
+  Default "keep".
 
 - na_warn_prop:
 
   Numeric in \\\[0,1\]\\; per-variable threshold for high-missingness
   warnings. Default 0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for out-of-range values (see
-  `extreme_rules`). Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore") when extremes are detected
-  (only used if `check_extreme = TRUE`).
-
-  - "warn": only warn (default), "cap": truncate to allowed range,
-    "error": abort, "ignore": do nothing.
-
-- extreme_rules:
-
-  Optional named list of c(min,max) ranges for keys in `col_map`. If
-  NULL, broad defaults are used.
-
 ## Value
 
 A tibble with one column per marker: `FLI`, `NFS`, `APRI`, `FIB4`,
-`BARD`, `ALBI`, `MELD_XI`.
+`BARD`, `ALBI`, `MELD_XI`. If an ID column is detected in `data` (e.g.
+`id`, `IID`, `participant_id`), it is prepended as the first output
+column.
 
 ## Details
 
@@ -193,29 +168,39 @@ df <- tibble(
   bilirubin     = 1.0, # mg/dL
   creatinine    = 0.9  # mg/dL
 )
-liver_markers(df, verbose = TRUE)
-#> liver_markers(): preparing inputs
-#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'TG', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
+liver_markers(df)
+#> liver_markers(): reading input 'df' — 1 rows × 12 variables
+#> liver_markers(): col_map (12 columns — 12 inferred from data)
+#>   BMI               ->  'BMI'    (inferred)
+#>   waist             ->  'waist'    (inferred)
+#>   TG                ->  'TG'    (inferred)
+#>   GGT               ->  'GGT'    (inferred)
+#>   age               ->  'age'    (inferred)
+#>   AST               ->  'AST'    (inferred)
+#>   ALT               ->  'ALT'    (inferred)
+#>   platelets         ->  'platelets'    (inferred)
+#>   albumin           ->  'albumin'    (inferred)
+#>   diabetes          ->  'diabetes'    (inferred)
+#>   bilirubin         ->  'bilirubin'    (inferred)
+#>   creatinine        ->  'creatinine'    (inferred)
+#> liver_markers(): optional inputs
+#>   present:  BMI, waist, TG, GGT, age, AST, ALT, platelets, albumin, diabetes, bilirubin, creatinine
+#> liver_markers(): computing markers:
+#>   FLI        [BMI, waist, TG, GGT]
+#>   NFS        [age, BMI, diabetes, AST, ALT, platelets, albumin]
+#>   APRI       [AST, platelets]
+#>   FIB4       [age, AST, platelets, ALT]
+#>   BARD       [BMI, AST, ALT, diabetes]
+#>   ALBI       [bilirubin, albumin]
+#>   MELD_XI    [bilirubin, creatinine]
 #> liver_markers(): results: FLI 1/1, NFS 1/1, APRI 1/1, FIB4 1/1, BARD 1/1, ALBI 1/1, MELD_XI 1/1
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
 #> 1  27.9 -27.5  0.25  1.01     1 -2.76    8.20
-
-# \donttest{
-# With extreme-value capping and diagnostics
-liver_markers(
-  df,
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
-)
-#> liver_markers(): preparing inputs
-#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'TG', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
-#> liver_markers(): results: FLI 1/1, NFS 1/1, APRI 1/1, FIB4 1/1, BARD 1/1, ALBI 1/1, MELD_XI 1/1
+liver_markers(df, verbose = FALSE)
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
 #> 1  27.9 -27.5  0.25  1.01     1 -2.76    8.20
-# }
 ```

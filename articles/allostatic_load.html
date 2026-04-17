@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,9 +91,8 @@ columns (or be mapped via <code>col_map</code>).</li>
 <li>Data: matching biomarker columns; units should align with the
 thresholds you supply.</li>
 <li>Policies: <code>na_action</code> (<code>keep</code> treats missing
-as unflagged; <code>omit</code> drops rows; <code>error</code> aborts).
-<code>check_extreme</code>/<code>sds_limit</code>/<code>extreme_action</code>
-only affect columns whose names contain “sds”.</li>
+as unflagged; <code>omit</code> drops rows; <code>error</code>
+aborts).</li>
 <li>Optional: <code>return_summary = TRUE</code> for counts of
 flags/omissions; <code>verbose</code> for progress.</li>
 </ul>
@@ -128,53 +127,43 @@ flags/omissions; <code>verbose</code> for progress.</li>
 <span>  thresholds <span class="op">=</span> <span class="va">thresholds</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">al</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 1</span></span></span>
-<span><span class="co">#&gt;   AllostaticLoad</span></span>
-<span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>              1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   id    AllostaticLoad</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P001               1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> P002               1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> P003               0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> P004               0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> P005               2</span></span></code></pre></div>
 <p>Interpretation: <code>AllostaticLoad</code> is the count of
 biomarkers above thresholds. With &gt;1 biomarker the rule is
 <code>&gt;</code>; with a single biomarker it is <code>&gt;=</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-screening">Missing data and screening<a class="anchor" aria-label="anchor" href="#missing-data-and-screening"></a>
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
 </h2>
-<p>Demonstrate row handling and SDS screening (only affects columns
-containing “sds”).</p>
+<p>Demonstrate row handling.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sbp"</span>, <span class="st">"dbp"</span>, <span class="st">"CRP"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">sbp</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">CRP_sds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span>, <span class="op">-</span><span class="fl">8</span>, <span class="fl">1</span>, <span class="cn">NA</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>  <span class="co"># example SDS column to show screening</span></span>
-<span></span>
 <span><span class="va">al_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/allostatic_load.html">allostatic_load</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="va">thresholds</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col_map</span>, CRP_sds <span class="op">=</span> <span class="st">"CRP_sds"</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  sds_limit <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">al_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/allostatic_load.html">allostatic_load</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  thresholds <span class="op">=</span> <span class="va">thresholds</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col_map</span>, CRP_sds <span class="op">=</span> <span class="st">"CRP_sds"</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  sds_limit <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -193,9 +182,9 @@ containing “sds”).</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
 <span><span class="co">#&gt;   AllostaticLoad</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              2</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="diagnostics-summary-with-return_summary">Diagnostics summary with <code>return_summary</code><a class="anchor" aria-label="anchor" href="#diagnostics-summary-with-return_summary"></a>
@@ -269,8 +258,12 @@ active:</p>
 <span></span>
 <span><span class="va">df_v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>SBP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">118</span>, <span class="fl">142</span><span class="op">)</span>, DBP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">76</span>, <span class="fl">92</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/allostatic_load.html">allostatic_load</a></span><span class="op">(</span><span class="va">df_v</span>, thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SBP <span class="op">=</span> <span class="fl">130</span>, DBP <span class="op">=</span> <span class="fl">85</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; allostatic_load(): preparing inputs</span></span>
-<span><span class="co">#&gt; allostatic_load(): column map: SBP -&gt; 'SBP', DBP -&gt; 'DBP'</span></span>
+<span><span class="co">#&gt; allostatic_load(): reading input 'df_v' — 2 rows × 2 variables</span></span>
+<span><span class="co">#&gt; allostatic_load(): col_map (2 columns — 2 inferred from data)</span></span>
+<span><span class="co">#&gt;   SBP               -&gt;  'SBP'    (inferred)</span></span>
+<span><span class="co">#&gt;   DBP               -&gt;  'DBP'    (inferred)</span></span>
+<span><span class="co">#&gt; allostatic_load(): computing markers:</span></span>
+<span><span class="co">#&gt;   AllostaticLoad [SBP, DBP]</span></span>
 <span><span class="co">#&gt; allostatic_load(): results: AllostaticLoad 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 1</span></span></span>
 <span><span class="co">#&gt;   AllostaticLoad</span></span>
@@ -292,9 +285,6 @@ abort.</li>
 <code>na_action</code>: <code>keep</code> treats missing as
 unflagged (flag = 0), <code>omit</code> drops rows, <code>error</code>
 aborts on missing.</li>
-<li>
-<code>check_extreme</code>/<code>sds_limit</code>/<code>extreme_action</code>
-affect only columns whose names contain “sds” (case-insensitive).</li>
 <li>Multi-biomarker rule is <code>&gt;</code>; single-biomarker rule is
 <code>&gt;=</code>.</li>
 </ul>
@@ -307,8 +297,6 @@ affect only columns whose names contain “sds” (case-insensitive).</li>
 units first.</li>
 <li>Passing only one biomarker changes the rule to <code>&gt;=</code>;
 set thresholds accordingly.</li>
-<li>SDS screening does nothing unless column names contain “sds”; rename
-if you expect screening.</li>
 <li>
 <code>na_action = keep</code> leaves missing inputs unflagged
 (zero); use <code>omit</code> for stricter handling.</li>
@@ -322,10 +310,17 @@ if you expect screening.</li>
 (or equals when only one biomarker), else 0.</li>
 <li>Sum of per-biomarker flags should equal <code>AllostaticLoad</code>
 for each row.</li>
-<li>If using <code>check_extreme</code>, verify capped SDS values are
-truncated to +/- <code>sds_limit</code> when
-<code>extreme_action = "cap"</code>.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which biomarker
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

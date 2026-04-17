@@ -5,15 +5,14 @@
 Compute 10 fasting insulin sensitivity/resistance indices from fasting
 glucose (mmol/L) and insulin (pmol/L). Internally converts glucose to
 mg/dL (x18) and insulin to muU/mL (/6). Handles column mapping, numeric
-coercion, NA policy, optional extreme screening, and optional
-normalization.
+coercion, NA policy, and optional normalization.
 
 ## When to use
 
 - You have fasting glucose (mmol/L) and insulin (pmol/L) and need
   multiple sensitivity/resistance indices at once.
 - You want explicit NA handling (keep/omit/error) plus optional
-  extreme-value screening and normalization.
+  normalization.
 - Your column names differ from the defaults and need mapping.
 
 ## Inputs and requirements
@@ -25,10 +24,8 @@ normalization.
   double-scaling.
 - `na_action`: `keep` (default), `omit`, or `error` governs
   required-input missingness.
-- `check_extreme`: optional screening of computed indices against
-  `extreme_limit`; actions: `cap`, `NA`, or `error`.
 - `normalize`: `none` (default) or `z`, `range`, `inverse`, `robust`
-  applied after extreme handling.
+  applied after computation.
 
 ## Load packages and data
 
@@ -80,7 +77,6 @@ fis <- fasting_is(
   col_map = col_map,
   na_action = "keep",
   normalize = "none",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -89,12 +85,12 @@ head(dplyr::select(fis, dplyr::all_of(fis_new)))
 #> # A tibble: 6 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1      -14.0     2.86       -58.1  52.3  0.139        0.00153        -0.149 
-#> 2      -16.0     2.49       -66.6  60.0  0.137        0.00133        -0.172 
-#> 3      -15.7     2.55       -61.6  55.5  0.138        0.00144        -0.178 
-#> 4       -6.75    5.93       -30.5  27.4  0.153        0.00291        -0.0664
-#> 5      -13.6     2.94       -56.9  51.2  0.140        0.00156        -0.145 
-#> 6      -17.0     2.36       -82.7  74.4  0.133        0.00107        -0.155 
+#> 1      -11.4     3.52       -57.1  51.4  0.140        0.00156        -0.101 
+#> 2       -4.25    9.41       -18.9  17.0  0.165        0.00470        -0.0425
+#> 3       -9.77    4.10       -42.1  37.9  0.146        0.00211        -0.101 
+#> 4       -8.43    4.74       -34.5  31.0  0.150        0.00258        -0.0917
+#> 5      -14.6     2.75       -44.3  39.9  0.145        0.00200        -0.212 
+#> 6       -7.88    5.07       -28.7  25.8  0.155        0.00309        -0.0963
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 ```
 
@@ -121,40 +117,26 @@ rows are retained here because `na_action = "keep"`.
 - Required columns (map via `col_map`): `G0` glucose (mmol/L), `I0`
   insulin (pmol/L).
 - Internal conversions: glucose x18 -\> mg/dL; insulin /6 -\> muU/mL.
-- Extremes: default `check_extreme = FALSE`; when TRUE, outputs are
-  screened against `extreme_limit`. `extreme_action = "cap"` trims to
-  +/-limit.
 - Missingness: `na_action` controls row handling
   (`keep`/`omit`/`error`).
 - Normalization: `normalize = "none"` by default; other options apply
-  columnwise scaling after any extreme handling.
+  columnwise scaling after computation.
 
-## Missing data and extremes
+## Missing data handling
 
-Show how row handling and extreme scanning behave on a tiny slice.
+Show how row handling behaves on a tiny slice.
 
 ``` r
 demo <- sim_small[1:6, c("G0", "I0")]
 demo$G0[2] <- NA
 
-fis_keep <- fasting_is(demo, col_map, na_action = "keep", check_extreme = FALSE)
-fis_omit <- fasting_is(demo, col_map, na_action = "omit", check_extreme = FALSE)
-
-fis_extreme <- fasting_is(
-  data = demo,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_limit = 1e3,
-  extreme_action = "cap",
-  normalize = "none",
-  verbose = FALSE
-)
+fis_keep <- fasting_is(demo, col_map, na_action = "keep")
+fis_omit <- fasting_is(demo, col_map, na_action = "omit")
 
 list(
   keep_rows = nrow(fis_keep),
   omit_rows = nrow(fis_omit),
-  extreme_head = head(dplyr::select(fis_extreme, dplyr::all_of(fis_new)))
+  keep_head = head(dplyr::select(fis_keep, dplyr::all_of(fis_new)))
 )
 #> $keep_rows
 #> [1] 6
@@ -162,23 +144,22 @@ list(
 #> $omit_rows
 #> [1] 5
 #> 
-#> $extreme_head
+#> $keep_head
 #> # A tibble: 6 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1      -14.0     2.86       -58.1  52.3  0.139        0.00153        -0.149 
-#> 2      -16.0     2.49        NA    NA   NA           NA              NA     
-#> 3      -15.7     2.55       -61.6  55.5  0.138        0.00144        -0.178 
-#> 4       -6.75    5.93       -30.5  27.4  0.153        0.00291        -0.0664
-#> 5      -13.6     2.94       -56.9  51.2  0.140        0.00156        -0.145 
-#> 6      -17.0     2.36       -82.7  74.4  0.133        0.00107        -0.155 
+#> 1      -11.4     3.52       -57.1  51.4  0.140        0.00156        -0.101 
+#> 2       -4.25    9.41        NA    NA   NA           NA              NA     
+#> 3       -9.77    4.10       -42.1  37.9  0.146        0.00211        -0.101 
+#> 4       -8.43    4.74       -34.5  31.0  0.150        0.00258        -0.0917
+#> 5      -14.6     2.75       -44.3  39.9  0.145        0.00200        -0.212 
+#> 6       -7.88    5.07       -28.7  25.8  0.155        0.00309        -0.0963
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 ```
 
 Here `na_action = "keep"` preserves all six rows (with NA-derived
-outputs), while `na_action = "omit"` drops the row with missing `G0`.
-Extreme scanning with `extreme_action = "cap"` would trim outputs
-exceeding `extreme_limit`; none were capped in this slice.
+outputs for the row with missing `G0`), while `na_action = "omit"` drops
+that row.
 
 ## Expectations
 
@@ -186,9 +167,6 @@ exceeding `extreme_limit`; none were capped in this slice.
   columns abort.
 - `na_action`: `keep` leaves NA-derived outputs; `omit` drops rows;
   `error` stops on any missing input.
-- `check_extreme` screens outputs for magnitudes beyond `extreme_limit`;
-  adjust `extreme_limit` and choose `extreme_action`
-  (`cap`/`NA`/`error`).
 - `normalize` is optional post-hoc scaling; set to `"none"` to preserve
   native scales.
 
@@ -215,9 +193,22 @@ invisible(fasting_is(
   col_map = col_map,
   verbose = TRUE
 ))
-#> fasting_is(): preparing inputs
-#> fasting_is(): column map: G0 -> 'G0', I0 -> 'I0'
-#> fasting_is(): results: Fasting_inv 5/5, Raynaud 5/5, HOMA_IR_inv 5/5, FIRI 5/5, QUICKI 5/5, Belfiore_basal 5/5, Ig_ratio_basal 5/5, Isi_basal 5/5, Bennett 5/5, HOMA_IR_rev_inv 5/5
+#> fasting_is(): reading input 'data' — 5 rows × 519 variables
+#> fasting_is(): col_map (2 columns — 2 specified)
+#>   G0                ->  'G0'
+#>   I0                ->  'I0'
+#> fasting_is(): computing markers:
+#>   Fasting_inv          [G0, I0]
+#>   Raynaud              [G0, I0]
+#>   HOMA_IR_inv          [G0, I0]
+#>   FIRI                 [G0, I0]
+#>   QUICKI               [G0, I0]
+#>   Belfiore_basal       [G0, I0]
+#>   Ig_ratio_basal       [G0, I0]
+#>   Isi_basal            [G0, I0]
+#>   Bennett              [G0, I0]
+#>   HOMA_IR_rev_inv      [G0, I0]
+#> fasting_is(): results: id 5/5, Fasting_inv 5/5, Raynaud 5/5, HOMA_IR_inv 5/5, FIRI 5/5, QUICKI 5/5, Belfiore_basal 5/5, Ig_ratio_basal 5/5, Isi_basal 5/5, Bennett 5/5, HOMA_IR_rev_inv 5/5
 
 options(old_opt)
 ```
@@ -230,8 +221,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   NAs triggers a warning.
 - For pipelines, prefer `na_action = "omit"` or `"error"` to avoid
   silent gaps; use `"keep"` for exploratory summaries.
-- Enable `check_extreme = TRUE` when working with noisy or simulated
-  data; use `extreme_action = "error"` for strict QA.
 - Set `normalize` to align scales across indices if feeding into
   distance-based models; leave as `"none"` for interpretability.
 - See

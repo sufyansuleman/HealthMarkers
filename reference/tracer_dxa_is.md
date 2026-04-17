@@ -8,14 +8,11 @@ compute peripheral and adipose insulin sensitivity and related metrics.
 ``` r
 tracer_dxa_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -47,20 +44,6 @@ tracer_dxa_is(
 
   Proportion \\\[0,1\]\\ to trigger high-missingness warnings on
   required inputs. Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore") when extremes detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) bounds for inputs (keys as in
-  col_map). If NULL, broad defaults are used.
 
 - verbose:
 
@@ -146,6 +129,20 @@ col_map <- list(I0="I0", rate_glycerol="rate_glycerol",
                 rate_palmitate="rate_palmitate", fat_mass="fat_mass",
                 weight="weight", bmi="BMI", HDL_c="HDL_c")
 tracer_dxa_is(df, col_map = col_map)
+#> tracer_dxa_is(): reading input 'df' — 2 rows × 7 variables
+#> tracer_dxa_is(): preparing inputs
+#> tracer_dxa_is(): col_map (7 columns — 7 specified)
+#>   I0                ->  'I0'
+#>   rate_glycerol     ->  'rate_glycerol'
+#>   rate_palmitate    ->  'rate_palmitate'
+#>   fat_mass          ->  'fat_mass'
+#>   weight            ->  'weight'
+#>   bmi               ->  'BMI'
+#>   HDL_c             ->  'HDL_c'
+#> tracer_dxa_is(): computing markers:
+#>   LIRI_inv, Lipo_inv, ATIRI_inv
+#> tracer_dxa_is(): adipose-only indices
+#> tracer_dxa_is(): results: LIRI_inv 2/2, Lipo_inv 2/2, ATIRI_inv 2/2
 #> # A tibble: 2 × 3
 #>   LIRI_inv Lipo_inv ATIRI_inv
 #>      <dbl>    <dbl>     <dbl>

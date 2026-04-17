@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,17 +105,6 @@ aborts when used inputs contain NA.</li>
 <code>na_warn_prop</code>: threshold for high-missingness
 diagnostics (default 0.2; shown in verbose/debug).</li>
 <li>
-<code>check_extreme</code>: set TRUE to scan inputs;
-<code>extreme_action</code>
-(<code>warn</code>/<code>cap</code>/<code>error</code>/<code>ignore</code>/<code>NA</code>)
-controls handling. Defaults are broad (e.g., ferritin 0–2000 ng/mL;
-transferrin_sat 0–100%; albumin 10–60 g/L; total_protein 40–100 g/L;
-EPA/DHA 0–20%; Mg 0.2–3 mmol/L; creatinine 20–2000 umol/L;
-glycated_albumin 0–60 g/L; uric_acid 50–1000 umol/L; BUN 1–150 mg/dL;
-phosphate 0.1–5 mmol/L; calcium 0.5–4 mmol/L; Na 100–200 mmol/L; K 2–8
-mmol/L; Cl 70–130 mmol/L; HCO3 5–45 mmol/L; Tyr 10–300 umol/L; Phe
-20–300 umol/L).</li>
-<li>
 <code>verbose</code>: optional progress and summary logging.</li>
 </ul>
 </div>
@@ -141,7 +130,6 @@ mmol/L; Cl 70–130 mmol/L; HCO3 5–45 mmol/L; Tyr 10–300 umol/L; Phe
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
@@ -153,15 +141,19 @@ mmol/L; Cl 70–130 mmol/L; HCO3 5–45 mmol/L; Tyr 10–300 umol/L; Phe
 <span><span class="co">#&gt; <span style="color: #949494;">#   Tyr_Phe_Ratio &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-scan-and-cap">Extreme scan and cap<a class="anchor" aria-label="anchor" href="#extreme-scan-and-cap"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
+<p>Extreme inputs will produce extreme derived markers. Pre-filter
+implausible values before calling.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nutrient_markers.html">nutrient_markers</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">df</span>,</span>
+<code class="sourceCode R"><span><span class="co"># Pre-filter extreme ferritin</span></span>
+<span><span class="va">df_clean</span> <span class="op">&lt;-</span> <span class="va">df</span></span>
+<span><span class="va">df_clean</span><span class="op">$</span><span class="va">ferritin</span><span class="op">[</span><span class="va">df_clean</span><span class="op">$</span><span class="va">ferritin</span> <span class="op">&gt;</span> <span class="fl">2000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/nutrient_markers.html">nutrient_markers</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">df_clean</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
@@ -214,8 +206,40 @@ warnings; no unit harmonization is applied.</li>
 <span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; nutrient_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; nutrient_markers(): column map: ferritin -&gt; 'ferritin', transferrin_sat -&gt; 'transferrin_sat', albumin -&gt; 'albumin', total_protein -&gt; 'total_protein', EPA -&gt; 'EPA', DHA -&gt; 'DHA', Mg -&gt; 'Mg', creatinine -&gt; 'creatinine', glycated_albumin -&gt; 'glycated_albumin', uric_acid -&gt; 'uric_acid', BUN -&gt; 'BUN', phosphate -&gt; 'phosphate', calcium -&gt; 'calcium', Na -&gt; 'Na', K -&gt; 'K', Cl -&gt; 'Cl', HCO3 -&gt; 'HCO3', Tyr -&gt; 'Tyr', Phe -&gt; 'Phe'</span></span>
+<span><span class="co">#&gt; nutrient_markers(): reading input 'df' — 2 rows × 19 variables</span></span>
+<span><span class="co">#&gt; nutrient_markers(): col_map (19 columns — 19 inferred from data)</span></span>
+<span><span class="co">#&gt;   ferritin          -&gt;  'ferritin'    (inferred)</span></span>
+<span><span class="co">#&gt;   transferrin_sat   -&gt;  'transferrin_sat'    (inferred)</span></span>
+<span><span class="co">#&gt;   albumin           -&gt;  'albumin'    (inferred)</span></span>
+<span><span class="co">#&gt;   total_protein     -&gt;  'total_protein'    (inferred)</span></span>
+<span><span class="co">#&gt;   EPA               -&gt;  'EPA'    (inferred)</span></span>
+<span><span class="co">#&gt;   DHA               -&gt;  'DHA'    (inferred)</span></span>
+<span><span class="co">#&gt;   Mg                -&gt;  'Mg'    (inferred)</span></span>
+<span><span class="co">#&gt;   creatinine        -&gt;  'creatinine'    (inferred)</span></span>
+<span><span class="co">#&gt;   glycated_albumin  -&gt;  'glycated_albumin'    (inferred)</span></span>
+<span><span class="co">#&gt;   uric_acid         -&gt;  'uric_acid'    (inferred)</span></span>
+<span><span class="co">#&gt;   BUN               -&gt;  'BUN'    (inferred)</span></span>
+<span><span class="co">#&gt;   phosphate         -&gt;  'phosphate'    (inferred)</span></span>
+<span><span class="co">#&gt;   calcium           -&gt;  'calcium'    (inferred)</span></span>
+<span><span class="co">#&gt;   Na                -&gt;  'Na'    (inferred)</span></span>
+<span><span class="co">#&gt;   K                 -&gt;  'K'    (inferred)</span></span>
+<span><span class="co">#&gt;   Cl                -&gt;  'Cl'    (inferred)</span></span>
+<span><span class="co">#&gt;   HCO3              -&gt;  'HCO3'    (inferred)</span></span>
+<span><span class="co">#&gt;   Tyr               -&gt;  'Tyr'    (inferred)</span></span>
+<span><span class="co">#&gt;   Phe               -&gt;  'Phe'    (inferred)</span></span>
+<span><span class="co">#&gt; nutrient_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  ferritin, transferrin_sat, albumin, total_protein, EPA, DHA, Mg, creatinine, glycated_albumin, uric_acid, BUN, phosphate, calcium, Na, K, Cl, HCO3, Tyr, Phe</span></span>
+<span><span class="co">#&gt; nutrient_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   FerritinTS           [ferritin, transferrin_sat]</span></span>
+<span><span class="co">#&gt;   AGR                  [albumin, total_protein]</span></span>
+<span><span class="co">#&gt;   Omega3Index          [EPA, DHA]</span></span>
+<span><span class="co">#&gt;   Mg_Cr_Ratio          [Mg, creatinine]</span></span>
+<span><span class="co">#&gt;   GlycatedAlbuminPct   [glycated_albumin, albumin]</span></span>
+<span><span class="co">#&gt;   UA_Cr_Ratio          [uric_acid, creatinine]</span></span>
+<span><span class="co">#&gt;   BUN_Cr_Ratio         [BUN, creatinine]</span></span>
+<span><span class="co">#&gt;   Ca_x_Phosphate       [calcium, phosphate]</span></span>
+<span><span class="co">#&gt;   AnionGap             [Na, K, Cl, HCO3]</span></span>
+<span><span class="co">#&gt;   Tyr_Phe_Ratio        [Tyr, Phe]</span></span>
 <span><span class="co">#&gt; nutrient_markers(): results: FerritinTS 2/2, AGR 2/2, Omega3Index 2/2, Mg_Cr_Ratio 2/2, GlycatedAlbuminPct 2/2, UA_Cr_Ratio 2/2, BUN_Cr_Ratio 2/2, Ca_x_Phosphate 2/2, AnionGap 2/2, Tyr_Phe_Ratio 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 10</span></span></span>
 <span><span class="co">#&gt;   FerritinTS   AGR Omega3Index Mg_Cr_Ratio GlycatedAlbuminPct UA_Cr_Ratio</span></span>
@@ -227,6 +251,16 @@ warnings; no unit harmonization is applied.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
@@ -234,8 +268,6 @@ warnings; no unit harmonization is applied.</li>
 dependent markers.</li>
 <li>Omega3Index expects EPA/DHA as percentages; AGR uses globulin =
 total_protein - albumin.</li>
-<li>Tighten <code>extreme_rules</code> to your lab ranges before using
-<code>extreme_action = "cap"</code> or <code>"error"</code>.</li>
 <li>Use <code>na_action = "omit"</code> when you prefer row-complete
 outputs; use <code>keep</code> during QA to inspect missingness.</li>
 </ul>

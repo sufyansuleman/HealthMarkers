@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,21 +116,6 @@ automatic mode selection based on available columns.</li>
 <td>Default 0.2 (shown in debug/verbose)</td>
 </tr>
 <tr class="odd">
-<td>check_extreme</td>
-<td>Scan inputs against bounds</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="even">
-<td>extreme_action</td>
-<td>Handling for extremes</td>
-<td>“warn” (default), “cap”, “error”, “ignore”</td>
-</tr>
-<tr class="odd">
-<td>extreme_rules</td>
-<td>Optional bounds list c(min, max) per input</td>
-<td>Defaults are broad, see below</td>
-</tr>
-<tr class="even">
 <td>verbose</td>
 <td>Emit progress and completion summaries</td>
 <td>Default FALSE</td>
@@ -158,9 +143,6 @@ drops rows with any required NA; <code>error</code> aborts if required
 inputs contain NA.</li>
 <li>High-missing diagnostics: controlled by <code>na_warn_prop</code>;
 shown when <code>verbose</code> (or debug) is enabled.</li>
-<li>Extreme screening (optional): checks all inputs; defaults are broad
-(see below); <code>extreme_action</code> controls
-warn/cap/error/ignore.</li>
 <li>Safe division/log: all ratios/logs use helpers that set NA for
 zero/invalid denominators or non-positive log arguments, with
 consolidated warnings.</li>
@@ -174,16 +156,6 @@ returns a zero-row tibble with expected columns.</li>
 <h2 id="defaults-and-validation-details">Defaults and validation details<a class="anchor" aria-label="anchor" href="#defaults-and-validation-details"></a>
 </h2>
 <ul>
-<li>Default extreme bounds (applied only if
-<code>check_extreme = TRUE</code>):
-<ul>
-<li>I0/I30/I120: 0–5000 pmol/L</li>
-<li>G0/G30/G120: 0–40 mmol/L</li>
-<li>TG: 0–50 mmol/L; HDL_c: 0–10 mmol/L; FFA: 0–5 mmol/L</li>
-<li>rate_glycerol/rate_palmitate: 0–10000 micromol/min</li>
-<li>fat_mass: 0.1–200 kg; weight: 1–400 kg; bmi: 5–100 kg/m²</li>
-</ul>
-</li>
 <li>Safe logs: only positive, finite values are logged; others become
 NA.</li>
 <li>Consolidated zero-denominator warnings are emitted for all
@@ -244,7 +216,7 @@ dropped rows under <code>omit</code>.</li>
 required inputs are missing or invalid.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-full-mode-cap-extremes-drop-incomplete">Worked example 2: Full mode, cap extremes, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-full-mode-cap-extremes-drop-incomplete"></a>
+<h2 id="worked-example-2-full-mode-drop-incomplete">Worked example 2: Full mode, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-full-mode-drop-incomplete"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
@@ -254,6 +226,10 @@ required inputs are missing or invalid.</p>
 <span>  rate_glycerol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">140</span>, <span class="fl">200</span>, <span class="fl">12000</span><span class="op">)</span>, rate_palmitate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">110</span>, <span class="fl">190</span>, <span class="fl">11000</span><span class="op">)</span>,</span>
 <span>  fat_mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">32</span>, <span class="fl">0.05</span><span class="op">)</span>, weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">72</span>, <span class="fl">85</span>, <span class="fl">500</span><span class="op">)</span>, bmi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">28</span>, <span class="fl">120</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pre-filter implausible values before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">I0</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">I0</span> <span class="op">&gt;</span> <span class="fl">5000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">fat_mass</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">fat_mass</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/tracer_dxa_is.html">tracer_dxa_is</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
@@ -267,36 +243,28 @@ required inputs are missing or invalid.</p>
 <span>    weight <span class="op">=</span> <span class="st">"weight"</span>,</span>
 <span>    bmi <span class="op">=</span> <span class="st">"bmi"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
-<span><span class="co">#&gt;     I_AUC FFA_AUC tracer_palmitate_SI tracer_glycerol_SI LIRI_inv  Lipo_inv</span></span>
-<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   <span style="text-decoration: underline;">3</span>462.      60                4.58               5.83   -<span style="color: #BB0000;">1.21</span>     -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">283.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   <span style="text-decoration: underline;">4</span>325       84                5.94               6.25   -<span style="color: #BB0000;">1.35</span>     -<span style="color: #BB0000; text-decoration: underline;">3</span><span style="color: #BB0000;">000</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="text-decoration: underline;">100</span>000      600           <span style="text-decoration: underline;">100</span>000             <span style="text-decoration: underline;">100</span>000      -<span style="color: #BB0000;">0.649</span> -<span style="color: #BB0000;">8</span><span style="color: #BB0000; text-decoration: underline;">333</span><span style="color: #BB0000;">333.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   I_AUC FFA_AUC tracer_palmitate_SI tracer_glycerol_SI LIRI_inv Lipo_inv</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> <span style="text-decoration: underline;">3</span>462.      60                4.58               5.83    -<span style="color: #BB0000;">1.21</span>   -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">283.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> <span style="text-decoration: underline;">4</span>325       84                5.94               6.25    -<span style="color: #BB0000;">1.35</span>   -<span style="color: #BB0000; text-decoration: underline;">3</span><span style="color: #BB0000;">000</span> </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: ATIRI_inv &lt;dbl&gt;</span></span></span></code></pre></div>
-<p><em>Interpretation:</em> Extremes are capped before computing
-indices; incomplete rows are dropped.</p>
+<p><em>Interpretation:</em> Implausible values are set to NA before
+calling; incomplete rows are then dropped.</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header: keep YAML at the top; stray text before it breaks
-knitting.</li>
 <li>Units: ensure all values match expected units; incorrect units can
 silently distort results.</li>
 <li>Missing columns: ensure every required <code>col_map</code> key is
 mapped to an existing column.</li>
 <li>Zero/invalid denominators: produce NA outputs and a warning; check
 for zero fat mass, weight, or invalid rates.</li>
-<li>Outliers: enable <code>check_extreme</code> with
-<code>extreme_action = "cap"</code> or <code>"NA"</code> to constrain
-implausible values.</li>
 <li>All NA outputs: usually due to missing/invalid inputs, zero
 denominators, or aggressive <code>na_action = "omit"</code>.</li>
 </ul>
@@ -327,8 +295,18 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; tracer_dxa_is(): reading input 'data' — 1 rows × 7 variables</span></span>
 <span><span class="co">#&gt; tracer_dxa_is(): preparing inputs</span></span>
-<span><span class="co">#&gt; tracer_dxa_is(): column map: I0 -&gt; 'I0', rate_palmitate -&gt; 'rate_palmitate', rate_glycerol -&gt; 'rate_glycerol', fat_mass -&gt; 'fat_mass', weight -&gt; 'weight', HDL_c -&gt; 'HDL_c', bmi -&gt; 'bmi'</span></span>
+<span><span class="co">#&gt; tracer_dxa_is(): col_map (7 columns — 7 specified)</span></span>
+<span><span class="co">#&gt;   I0                -&gt;  'I0'</span></span>
+<span><span class="co">#&gt;   rate_glycerol     -&gt;  'rate_glycerol'</span></span>
+<span><span class="co">#&gt;   rate_palmitate    -&gt;  'rate_palmitate'</span></span>
+<span><span class="co">#&gt;   fat_mass          -&gt;  'fat_mass'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'bmi'</span></span>
+<span><span class="co">#&gt; tracer_dxa_is(): computing markers:</span></span>
+<span><span class="co">#&gt;   LIRI_inv, Lipo_inv, ATIRI_inv</span></span>
 <span><span class="co">#&gt; tracer_dxa_is(): adipose-only indices</span></span>
 <span><span class="co">#&gt; tracer_dxa_is(): results: LIRI_inv 1/1, Lipo_inv 1/1, ATIRI_inv 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
@@ -338,17 +316,24 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>
 </h2>
 <ul>
-<li>Use <code>check_extreme = TRUE</code> with
-<code>extreme_action = "cap"</code> to hard-limit inputs to plausible
-ranges.</li>
 <li>Choose <code>na_action = "omit"</code> for modeling datasets that
 require complete cases; use <code>keep</code> for exploratory
 review.</li>
-<li>Review warnings for zero denominators or capped values; these often
-indicate data entry or assay issues.</li>
+<li>Review warnings for zero denominators; these often indicate data
+entry or assay issues.</li>
 <li>Always check that units match the function’s expectations,
 especially for insulin, TG, and HDL-c.</li>
 </ul>
@@ -363,8 +348,6 @@ use safe division/logs.</li>
 flat over 0-120 min.</li>
 <li>All divisions/logs are safe: zero/invalid denominators or
 non-positive log arguments yield NA and a warning.</li>
-<li>Default bounds: see above; applied only if
-<code>check_extreme = TRUE</code>.</li>
 </ul>
 </div>
 <div class="section level2">

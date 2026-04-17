@@ -13,7 +13,7 @@ who5_score(
   impute = c("none", "mean"),
   prefix = "WHO5",
   low_cutoff_percent = 50,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -52,7 +52,8 @@ who5_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

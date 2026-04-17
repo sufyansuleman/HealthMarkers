@@ -36,10 +36,7 @@ obesity_indices(
   include_RFM = FALSE,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -96,25 +93,9 @@ obesity_indices(
   Proportion \\\[0,1\]\\ to trigger high-missingness warnings for
   required inputs. Default 0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for out-of-range values (heuristic).
-  Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore") when extremes are detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) for
-  c("weight_kg","height_m","waist","hip"). NULL uses defaults.
-
 - verbose:
 
-  Logical; if TRUE, prints progress messages and a completion summary.
-  Default FALSE.
+  Logical; if TRUE, prints column mapping and computing messages.
 
 ## Value
 
@@ -220,8 +201,10 @@ obesity_indices(
   include_RFM  = TRUE,
   verbose      = TRUE
 )
-#> obesity_indices(): preparing inputs
-#> obesity_indices(): column map: weight -> 'wt', height -> 'ht', waist -> 'waist', hip -> 'hip', sex -> 'sex'
+#> obesity_indices(): reading input 'df' — 2 rows × 5 variables
+#> obesity_indices(): col_map: weight -> 'wt', height -> 'ht', waist -> 'waist', hip -> 'hip', sex -> 'sex'
+#> obesity_indices(): computing markers:
+#>   BMI, BMI_cat, WHR, WHtR, AVI, BAI, ABSI, BRI, CI, WHRadjBMI, RFM
 #> obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, WHRadjBMI 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2, RFM 2/2
 #> # A tibble: 2 × 15
 #>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio

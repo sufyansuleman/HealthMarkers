@@ -27,10 +27,7 @@ glycemic_markers(
   col_map = NULL,
   na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -63,41 +60,21 @@ glycemic_markers(
   Proportion (0-1) threshold for high-missingness warnings among used
   columns when `na_action = "warn"`. Default 0.2.
 
-- check_extreme:
-
-  Logical; if `TRUE`, scan selected input variables for values outside
-  plausible ranges defined in `extreme_rules`. Default `FALSE`.
-
-- extreme_action:
-
-  One of `c("warn","cap","error","ignore","NA")` controlling how to
-  handle extremes when `check_extreme = TRUE`. If "cap", values are
-  truncated to the allowed range; if "NA", out-of-range values become
-  NA. Default "warn".
-
-- extreme_rules:
-
-  Named list of numeric length-2 ranges for inputs to scan when
-  `check_extreme = TRUE`. Defaults are broad medical plausibility
-  ranges:
-
-  - HDL_c: c(0.1, 5), TG: c(0.1, 20), BMI: c(10, 80),
-
-  - glucose: c(2, 30), HbA1c: c(20, 200), C_peptide: c(0, 5000),
-
-  - G0: c(2, 30), I0: c(0, 3000), leptin: c(0, 200), adiponectin: c(0,
-    300). Only variables present in `data` are checked.
-
 - verbose:
 
-  Logical; if `TRUE`, prints progress and a completion summary. Default
-  FALSE.
+  Logical; if `TRUE` (default), prints step-by-step progress including
+  column mapping, optional input availability, pre-computation notes,
+  physiological range information (informational only, values are not
+  altered), the list of markers being computed with their inputs, and a
+  per-column results summary.
 
 ## Value
 
 A tibble with columns:
 
-- SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index
+- SPISE, METS_IR, prediabetes, diabetes, HOMA_CP, LAR, ASI, TyG_index If
+  an ID column is detected in `data` (e.g. `id`, `IID`,
+  `participant_id`), it is prepended as the first output column.
 
 ## Details
 
@@ -134,13 +111,17 @@ Quality controls and options:
 
 - Verbose mode prints step-by-step progress and a completion summary.
 
-Optional marker detection: When `col_map = NULL` (default), an identity
-map for all 10 keys is built automatically. The seven optional keys
-(glucose, HbA1c, C_peptide, G0, I0, leptin, adiponectin) are computed
-only when the corresponding column exists in `data`. When
-`verbose = TRUE`, any optional markers whose columns are absent are
-listed in an informational message so the caller knows which derived
-metrics (e.g., prediabetes, HOMA_CP, LAR) will be NA.
+Optional marker detection and pre-computation (one level deep): When
+`col_map = NULL` (default), column names are inferred automatically. The
+seven optional keys (glucose, HbA1c, C_peptide, G0, I0, leptin,
+adiponectin) are computed only when present in `data`. If `BMI` is
+absent but `weight` (kg) and `height` (m or cm) are present, BMI is
+computed automatically. If `glucose` is absent but `G0` column exists
+(or vice versa), the missing key is derived via alias. With
+`verbose = TRUE` (default), the function reports: column mapping, what
+is missing and which raw inputs could provide it, which indices will be
+NA and why, any physiological range notes, and a per-column results
+summary.
 
 Notes on HOMA_CP:
 
@@ -198,22 +179,46 @@ df <- tibble::tibble(
   leptin      = c(10, 20),
   adiponectin = c(8, 5)
 )
-# Quiet defaults
+# Full verbose output (default — shows mapping, missing notes, results)
 glycemic_markers(df)
+#> glycemic_markers(): reading input 'df' — 2 rows × 10 variables
+#> glycemic_markers(): col_map (10 columns — 10 inferred from data)
+#>   HDL_c             ->  'HDL_c'    (inferred)
+#>   TG                ->  'TG'    (inferred)
+#>   BMI               ->  'BMI'    (inferred)
+#>   HbA1c             ->  'HbA1c'    (inferred)
+#>   C_peptide         ->  'C_peptide'    (inferred)
+#>   G0                ->  'G0'    (inferred)
+#>   I0                ->  'I0'    (inferred)
+#>   leptin            ->  'leptin'    (inferred)
+#>   adiponectin       ->  'adiponectin'    (inferred)
+#>   glucose           ->  'glucose'    (inferred)
+#> glycemic_markers(): optional inputs
+#>   present:  glucose, HbA1c, C_peptide, G0, I0, leptin, adiponectin
+#> glycemic_markers(): computing markers:
+#>   SPISE           [HDL_c, TG, BMI]
+#>   METS_IR         [glucose, TG, BMI, HDL_c]
+#>   prediabetes     [HbA1c]
+#>   diabetes        [HbA1c]
+#>   HOMA_CP         [G0, C_peptide]
+#>   LAR             [leptin, adiponectin]
+#>   ASI             [adiponectin, I0]
+#>   TyG_index       [TG, glucose]
+#> glycemic_markers(): results: SPISE 2/2, METS_IR 1/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
 #> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
 #> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
-# Warn on missingness and scan for extremes with capping
-glycemic_markers(df,
-  na_action = "warn", na_warn_prop = 0.1,
-  check_extreme = TRUE, extreme_action = "cap",
-  verbose = TRUE
-)
-#> glycemic_markers(): preparing inputs
-#> glycemic_markers(): column map: HDL_c -> 'HDL_c', TG -> 'TG', BMI -> 'BMI'
-#> glycemic_markers(): results: SPISE 2/2, METS_IR 1/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2
+# Suppress messaging for batch use
+glycemic_markers(df, verbose = FALSE)
+#> # A tibble: 2 × 8
+#>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
+#>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
+#> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
+#> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
+# Drop rows with any missing input
+glycemic_markers(df, na_action = "omit", verbose = FALSE)
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>

@@ -122,6 +122,7 @@ psych_markers(
   verbose = TRUE
 )
 #> psych_markers(): preparing inputs
+#> phq9_score(): preparing inputs
 #> psych_markers(): results: 1 rows, 4 new columns
 #> # A tibble: 1 × 4
 #>   PHQ9_total PHQ9_severity GAD7_total GAD7_severity

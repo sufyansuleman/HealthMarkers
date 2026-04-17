@@ -17,10 +17,8 @@ plot_frailty_age(
   bins = 7,
   na_action = c("ignore", "warn", "error", "keep", "omit"),
   na_warn_prop = 0.2,
-  check_extreme = NULL,
-  extreme_action = c("warn", "ignore", "error", "cap", "NA"),
   return = c("list", "data"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -82,26 +80,6 @@ plot_frailty_age(
   Proportion in \\\[0,1\]\\ above which a high-missingness warning is
   emitted (per column) when na_action = "warn". Default 0.2.
 
-- check_extreme:
-
-  NULL/TRUE/FALSE gate for out-of-range scan:
-
-  - NULL (default): legacy behavior (scan only when rescale = FALSE)
-
-  - TRUE: always scan selected deficits for values \< 0 or \> 1 before
-    di::di
-
-  - FALSE: never scan for extremes
-
-- extreme_action:
-
-  One of "warn","ignore","error","cap","NA" for out-of-range handling
-  when scanning is enabled.
-
-  - "cap": truncate to \\\[0,1\]\\
-
-  - "NA": set out-of-range to NA Default "warn".
-
 - return:
 
   One of c("list","data"). "list" (default) returns the original di::di
@@ -111,8 +89,7 @@ plot_frailty_age(
 
 - verbose:
 
-  Logical; if TRUE, prints progress and a completion summary. Default
-  FALSE.
+  Logical; if TRUE, prints progress and a completion summary.
 
 ## Value
 
@@ -126,7 +103,10 @@ if (requireNamespace("di", quietly = TRUE)) {
     d2 = c(0.2, 0.8, 1.0), d3 = c(TRUE, FALSE, TRUE))
   plot_frailty_age(df, cols = c("d1", "d2", "d3"), age = "age")
 }
+#> frailty_index(): preparing inputs (3 rows, 3 deficits, age provided)
+#> frailty_index(): col_map: d1, d2, d3
 
+#> frailty_index(): results: di range [0.333, 1.000] (3 rows, 3 deficits)
 #> $di
 #> [1] 0.3333333 0.5833333 1.0000000
 #> 

@@ -12,8 +12,7 @@ All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
 
 - You have triglycerides and HDL cholesterol and want AIP.
 - You also have total and/or LDL cholesterol and want Castelli indices.
-- You need optional extreme-value screening or strict missing-data
-  handling.
+- You need strict missing-data handling.
 
 ## Requirements checklist
 
@@ -23,8 +22,6 @@ All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
 - Numeric lipids; non-numeric are coerced with warnings; non-finite
   become NA.
 - Decide row policy: na_action = keep (default), omit, or error.
-- Optional extreme screening: enable check_extreme and choose
-  extreme_action.
 
 ## Load packages and example data
 
@@ -70,8 +67,6 @@ aip_out <- atherogenic_indices(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn",
   verbose = FALSE
 )
 
@@ -80,12 +75,12 @@ head(select(aip_out, all_of(new_cols)))
 #> # A tibble: 6 × 3
 #>       AIP CRI_I CRI_II
 #>     <dbl> <dbl>  <dbl>
-#> 1 -0.159   2.83   1.94
-#> 2  0.175   3.95   1.74
-#> 3 -0.0214  3.70   1.92
-#> 4  0.310   4.92   4.12
-#> 5  0.152   4.09   2.48
-#> 6 -0.169   3.97   2.46
+#> 1  0.384   4.95   2.85
+#> 2 -0.229   4.75   3.48
+#> 3 -0.0710  5.52   4.13
+#> 4 -0.204   3.02   1.73
+#> 5  0.0134  2.96   1.49
+#> 6 -0.118   3.38   2.04
 ```
 
 ## Arguments that matter
@@ -94,11 +89,6 @@ head(select(aip_out, all_of(new_cols)))
   LDL_c. Missing required keys error.
 - na_action: keep (default, rows retained; ratios become NA), omit (drop
   rows with NA in used lipids), error (abort on NA).
-- check_extreme: FALSE by default; if TRUE, screen lipids using
-  extreme_rules.
-- extreme_action: warn (default, no change), cap, error, ignore, or NA.
-  Defaults use wide mg/dL ranges: TG 0-10000, HDL_c 0-1000, LDL_c
-  0-10000, TC 0-10000.
 - verbose: emit step messages.
 
 ## Handling missing and zero denominators
@@ -116,7 +106,29 @@ demo <- sim_small
 demo$HDL_c[c(2, 5)] <- NA
 
 aip_keep <- atherogenic_indices(demo, col_map, na_action = "keep")
+#> atherogenic_indices(): reading input 'demo' — 30 rows × 519 variables
+#> atherogenic_indices(): col_map (4 columns — 4 specified)
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   TC                ->  'TC'
+#>   LDL_c             ->  'LDL_c'
+#> atherogenic_indices(): computing markers:
+#>   AIP        [log10(TG / HDL_c)]
+#>   CRI_I      [TC / HDL_c [if TC available]]
+#>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]
+#> atherogenic_indices(): results: id 30/30, AIP 28/30, CRI_I 28/30, CRI_II 28/30
 aip_omit <- atherogenic_indices(demo, col_map, na_action = "omit")
+#> atherogenic_indices(): reading input 'demo' — 30 rows × 519 variables
+#> atherogenic_indices(): col_map (4 columns — 4 specified)
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   TC                ->  'TC'
+#>   LDL_c             ->  'LDL_c'
+#> atherogenic_indices(): computing markers:
+#>   AIP        [log10(TG / HDL_c)]
+#>   CRI_I      [TC / HDL_c [if TC available]]
+#>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]
+#> atherogenic_indices(): results: id 28/28, AIP 28/28, CRI_I 28/28, CRI_II 28/28
 
 list(
   keep_rows = nrow(aip_keep),
@@ -133,43 +145,44 @@ list(
 #> # A tibble: 6 × 3
 #>       AIP CRI_I CRI_II
 #>     <dbl> <dbl>  <dbl>
-#> 1 -0.159   2.83   1.94
+#> 1  0.384   4.95   2.85
 #> 2 NA      NA     NA   
-#> 3 -0.0214  3.70   1.92
-#> 4  0.310   4.92   4.12
+#> 3 -0.0710  5.52   4.13
+#> 4 -0.204   3.02   1.73
 #> 5 NA      NA     NA   
-#> 6 -0.169   3.97   2.46
+#> 6 -0.118   3.38   2.04
 ```
 
 ## Extreme-value screening (optional)
 
-Enable check_extreme to cap, warn, error, ignore, or set NA for
-out-of-range lipids.
+Zero or negative HDL_c denominators yield NA ratios and a warning.
+Filter or remove such values before calling.
 
 ``` r
 demo2 <- sim_small
 demo2$TG[5] <- 12000  # extreme TG
-
-aip_screen <- atherogenic_indices(
-  data = demo2,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(TG = c(0, 10000), HDL_c = c(0, 1000), LDL_c = c(0, 10000), TC = c(0, 10000)),
-  verbose = FALSE
-)
-
-head(select(aip_screen, AIP, CRI_I, CRI_II))
+# Note: extreme values will produce extreme ratio outputs; pre-filter if needed
+head(select(atherogenic_indices(demo2, col_map = col_map), AIP, CRI_I, CRI_II))
+#> atherogenic_indices(): reading input 'demo2' — 30 rows × 519 variables
+#> atherogenic_indices(): col_map (4 columns — 4 specified)
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   TC                ->  'TC'
+#>   LDL_c             ->  'LDL_c'
+#> atherogenic_indices(): computing markers:
+#>   AIP        [log10(TG / HDL_c)]
+#>   CRI_I      [TC / HDL_c [if TC available]]
+#>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]
+#> atherogenic_indices(): results: id 30/30, AIP 30/30, CRI_I 30/30, CRI_II 30/30
 #> # A tibble: 6 × 3
 #>       AIP CRI_I CRI_II
 #>     <dbl> <dbl>  <dbl>
-#> 1 -0.159   2.83   1.94
-#> 2  0.175   3.95   1.74
-#> 3 -0.0214  3.70   1.92
-#> 4  0.310   4.92   4.12
-#> 5  3.88    4.09   2.48
-#> 6 -0.169   3.97   2.46
+#> 1  0.384   4.95   2.85
+#> 2 -0.229   4.75   3.48
+#> 3 -0.0710  5.52   4.13
+#> 4 -0.204   3.02   1.73
+#> 5  3.88    2.96   1.49
+#> 6 -0.118   3.38   2.04
 ```
 
 ## Outputs
@@ -188,8 +201,6 @@ head(select(aip_screen, AIP, CRI_I, CRI_II))
   yield NA Castelli indices.
 - Zero HDL_c produces NA ratios and a warning; address true zeros before
   computing.
-- Tighten extreme_rules if your lab ranges are narrower; use
-  extreme_action = “error” for strict QA.
 - Use na_action = “error” for pipelines that must fail fast on missing
   lipids.
 
@@ -231,8 +242,16 @@ atherogenic_indices(
   col_map = list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c"),
   verbose = TRUE
 )
-#> atherogenic_indices(): preparing inputs
-#> atherogenic_indices(): column map: TG -> 'TG', HDL_c -> 'HDL_c', TC -> 'TC', LDL_c -> 'LDL_c'
+#> atherogenic_indices(): reading input 'df_v' — 2 rows × 4 variables
+#> atherogenic_indices(): col_map (4 columns — 4 specified)
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   TC                ->  'TC'
+#>   LDL_c             ->  'LDL_c'
+#> atherogenic_indices(): computing markers:
+#>   AIP        [log10(TG / HDL_c)]
+#>   CRI_I      [TC / HDL_c [if TC available]]
+#>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]
 #> atherogenic_indices(): results: AIP 2/2, CRI_I 2/2, CRI_II 2/2
 #> # A tibble: 2 × 3
 #>     AIP CRI_I CRI_II
@@ -244,6 +263,17 @@ options(old_opt)
 ```
 
 Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which lipid/analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## See also
 

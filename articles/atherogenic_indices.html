@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,8 +76,7 @@ mmol/L).</p>
 <li>You have triglycerides and HDL cholesterol and want AIP.</li>
 <li>You also have total and/or LDL cholesterol and want Castelli
 indices.</li>
-<li>You need optional extreme-value screening or strict missing-data
-handling.</li>
+<li>You need strict missing-data handling.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -90,8 +89,6 @@ HDL_c. Optional: TC and LDL_c.</li>
 <li>Numeric lipids; non-numeric are coerced with warnings; non-finite
 become NA.</li>
 <li>Decide row policy: na_action = keep (default), omit, or error.</li>
-<li>Optional extreme screening: enable check_extreme and choose
-extreme_action.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -137,8 +134,6 @@ ratios.</p>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -147,12 +142,12 @@ ratios.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.175   3.95   1.74</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.152   4.09   2.48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.384   4.95   2.85</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.229</span>   4.75   3.48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">0</span>  5.52   4.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">0.204</span>   3.02   1.73</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  0.013<span style="text-decoration: underline;">4</span>  2.96   1.49</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.118</span>   3.38   2.04</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -162,11 +157,6 @@ ratios.</p>
 LDL_c. Missing required keys error.</li>
 <li>na_action: keep (default, rows retained; ratios become NA), omit
 (drop rows with NA in used lipids), error (abort on NA).</li>
-<li>check_extreme: FALSE by default; if TRUE, screen lipids using
-extreme_rules.</li>
-<li>extreme_action: warn (default, no change), cap, error, ignore, or
-NA. Defaults use wide mg/dL ranges: TG 0-10000, HDL_c 0-1000, LDL_c
-0-10000, TC 0-10000.</li>
 <li>verbose: emit step messages.</li>
 </ul>
 </div>
@@ -188,7 +178,29 @@ indices use HDL_c as the divisor.</li>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">HDL_c</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="va">aip_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atherogenic_indices.html">atherogenic_indices</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): reading input 'demo' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): col_map (4 columns — 4 specified)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): computing markers:</span></span>
+<span><span class="co">#&gt;   AIP        [log10(TG / HDL_c)]</span></span>
+<span><span class="co">#&gt;   CRI_I      [TC / HDL_c [if TC available]]</span></span>
+<span><span class="co">#&gt;   CRI_II     [LDL_c / HDL_c [if LDL_c available]]</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): results: id 30/30, AIP 28/30, CRI_I 28/30, CRI_II 28/30</span></span>
 <span><span class="va">aip_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atherogenic_indices.html">atherogenic_indices</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): reading input 'demo' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): col_map (4 columns — 4 specified)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): computing markers:</span></span>
+<span><span class="co">#&gt;   AIP        [log10(TG / HDL_c)]</span></span>
+<span><span class="co">#&gt;   CRI_I      [TC / HDL_c [if TC available]]</span></span>
+<span><span class="co">#&gt;   CRI_II     [LDL_c / HDL_c [if LDL_c available]]</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): results: id 28/28, AIP 28/28, CRI_I 28/28, CRI_II 28/28</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">aip_keep</span><span class="op">)</span>,</span>
@@ -205,43 +217,44 @@ indices use HDL_c as the divisor.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.384   4.95   2.85</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">0</span>  5.52   4.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">0.204</span>   3.02   1.73</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.118</span>   3.38   2.04</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="extreme-value-screening-optional">Extreme-value screening (optional)<a class="anchor" aria-label="anchor" href="#extreme-value-screening-optional"></a>
 </h2>
-<p>Enable check_extreme to cap, warn, error, ignore, or set NA for
-out-of-range lipids.</p>
+<p>Zero or negative HDL_c denominators yield NA ratios and a warning.
+Filter or remove such values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">sim_small</span></span>
 <span><span class="va">demo2</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">12000</span>  <span class="co"># extreme TG</span></span>
-<span></span>
-<span><span class="va">aip_screen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atherogenic_indices.html">atherogenic_indices</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TG <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10000</span><span class="op">)</span>, HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1000</span><span class="op">)</span>, LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10000</span><span class="op">)</span>, TC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10000</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">aip_screen</span>, <span class="va">AIP</span>, <span class="va">CRI_I</span>, <span class="va">CRI_II</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Note: extreme values will produce extreme ratio outputs; pre-filter if needed</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="../reference/atherogenic_indices.html">atherogenic_indices</a></span><span class="op">(</span><span class="va">demo2</span>, col_map <span class="op">=</span> <span class="va">col_map</span><span class="op">)</span>, <span class="va">AIP</span>, <span class="va">CRI_I</span>, <span class="va">CRI_II</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): reading input 'demo2' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): col_map (4 columns — 4 specified)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): computing markers:</span></span>
+<span><span class="co">#&gt;   AIP        [log10(TG / HDL_c)]</span></span>
+<span><span class="co">#&gt;   CRI_I      [TC / HDL_c [if TC available]]</span></span>
+<span><span class="co">#&gt;   CRI_II     [LDL_c / HDL_c [if LDL_c available]]</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): results: id 30/30, AIP 30/30, CRI_I 30/30, CRI_II 30/30</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;       AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.159</span>   2.83   1.94</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  0.175   3.95   1.74</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span>  3.70   1.92</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  0.310   4.92   4.12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  3.88    4.09   2.48</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.169</span>   3.97   2.46</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.384   4.95   2.85</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.229</span>   4.75   3.48</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">0</span>  5.52   4.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">0.204</span>   3.02   1.73</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  3.88    2.96   1.49</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> -<span style="color: #BB0000;">0.118</span>   3.38   2.04</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -264,8 +277,6 @@ share units.</li>
 just yield NA Castelli indices.</li>
 <li>Zero HDL_c produces NA ratios and a warning; address true zeros
 before computing.</li>
-<li>Tighten extreme_rules if your lab ranges are narrower; use
-extreme_action = “error” for strict QA.</li>
 <li>Use na_action = “error” for pipelines that must fail fast on missing
 lipids.</li>
 </ul>
@@ -318,8 +329,16 @@ active:</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TG <span class="op">=</span> <span class="st">"TG"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TC <span class="op">=</span> <span class="st">"TC"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; atherogenic_indices(): preparing inputs</span></span>
-<span><span class="co">#&gt; atherogenic_indices(): column map: TG -&gt; 'TG', HDL_c -&gt; 'HDL_c', TC -&gt; 'TC', LDL_c -&gt; 'LDL_c'</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): reading input 'df_v' — 2 rows × 4 variables</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): col_map (4 columns — 4 specified)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'</span></span>
+<span><span class="co">#&gt; atherogenic_indices(): computing markers:</span></span>
+<span><span class="co">#&gt;   AIP        [log10(TG / HDL_c)]</span></span>
+<span><span class="co">#&gt;   CRI_I      [TC / HDL_c [if TC available]]</span></span>
+<span><span class="co">#&gt;   CRI_II     [LDL_c / HDL_c [if LDL_c available]]</span></span>
 <span><span class="co">#&gt; atherogenic_indices(): results: AIP 2/2, CRI_I 2/2, CRI_II 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
 <span><span class="co">#&gt;     AIP CRI_I CRI_II</span></span>
@@ -330,6 +349,16 @@ active:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
 <code>"none"</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which
+lipid/analyte columns are auto-detected before building your
+<code>col_map</code>. See the <a href="multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

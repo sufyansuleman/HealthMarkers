@@ -17,7 +17,7 @@ CRI_II: Castelli Risk Index II = LDL_c / HDL_c
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,13 +54,10 @@ CRI_II: Castelli Risk Index II = LDL_c / HDL_c
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">atherogenic_indices</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"log10"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,29 +77,19 @@ CRI_II: Castelli Risk Index II = LDL_c / HDL_c
 <dd><p>one of c("keep","omit","error").</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>logical; if TRUE, screen inputs for extremes using <code>extreme_rules</code>.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>one of c("warn","cap","error","ignore","NA").</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>optional named list of bounds per key or column, each c(min, max).</p></dd>
-
-
 <dt id="arg-normalize">normalize<a class="anchor" aria-label="anchor" href="#arg-normalize"></a></dt>
 <dd><p>one of c("none","log10"). Reserved; AIP always uses log10(TG/HDL_c).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>logical; prints step messages via hm_inform when TRUE.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>tibble with columns AIP, CRI_I, CRI_II</p>
+    <p>tibble with columns AIP, CRI_I, CRI_II. If an ID column is detected
+in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>), it is prepended.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -137,7 +124,18 @@ Castelli WP, Doyle JT, Gordon T, et al. (1977).
 <span class="r-in"><span>  LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">150</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TG <span class="op">=</span> <span class="st">"TG"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TC <span class="op">=</span> <span class="st">"TC"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">atherogenic_indices</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="va">cm</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">atherogenic_indices</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="va">cm</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> atherogenic_indices(): reading input 'df' — 2 rows × 4 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> atherogenic_indices(): col_map (4 columns — 4 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TG                -&gt;  'TG'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HDL_c             -&gt;  'HDL_c'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TC                -&gt;  'TC'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   LDL_c             -&gt;  'LDL_c'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> atherogenic_indices(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   AIP        [log10(TG / HDL_c)]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRI_I      [TC / HDL_c [if TC available]]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> atherogenic_indices(): results: AIP 2/2, CRI_I 2/2, CRI_II 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     AIP CRI_I CRI_II</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

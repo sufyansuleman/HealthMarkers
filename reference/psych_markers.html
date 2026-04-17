@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@
 <span>  bis_key <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  spq_key <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cognitive_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"z_mean"</span>, <span class="st">"pca1"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,7 +96,7 @@
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical flag for verbose messaging (reserved).</p></dd>
+<dd><p>Logical; if <code>TRUE</code>, emits informational messages about column resolution and scoring progress via <code>hm_inform()</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -113,6 +113,9 @@
 <span class="r-in"><span>  gad7_06 <span class="op">=</span> <span class="fl">1</span>, gad7_07 <span class="op">=</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">psych_markers</span><span class="op">(</span><span class="va">df</span>, which <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"phq9"</span>, <span class="st">"gad7"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> psych_markers(): preparing inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> phq9_score(): preparing inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> psych_markers(): results: 1 rows, 4 new columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   PHQ9_total PHQ9_severity GAD7_total GAD7_severity</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        </span>

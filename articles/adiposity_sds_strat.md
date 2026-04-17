@@ -3,8 +3,7 @@
 ## Scope
 
 Sex-stratified SDS (z-scores) for anthropometric measures using separate
-male/female references, with NA policies, optional extreme screening,
-and flexible variable mapping.
+male/female references, with NA policies and flexible variable mapping.
 
 ## When to use this
 
@@ -41,11 +40,11 @@ sim <- readRDS(sim_path)
 # Normalize sex labels to M/F and ensure both sexes appear in the demo slice
 sim_small <- sim %>%
   mutate(sex = case_when(
-    sex %in% c("M", "F") ~ sex,
+    as.character(sex) %in% c("M", "F") ~ as.character(sex),
     sex %in% c("male", "Male", "m") ~ "M",
     sex %in% c("female", "Female", "f") ~ "F",
-    sex %in% c(1, "1") ~ "M",
-    sex %in% c(2, "2") ~ "F",
+    sex %in% c(1L, "1") ~ "M",
+    sex %in% c(2L, "2") ~ "F",
     TRUE ~ NA_character_
   )) %>%
   filter(!is.na(sex)) %>%
@@ -138,8 +137,6 @@ asds_strat <- adiposity_sds_strat(
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = "",
   verbose = FALSE
@@ -155,23 +152,19 @@ Interpretation: each `<var>_SDS` is standardized against sex-specific
 mean/SD; values near 0 are average for that sex, positive above,
 negative below.
 
-## Missing data and extremes
+## Missing data handling
 
-Compare row handling and capping.
+Compare row handling with NA policy.
 
 ``` r
 demo <- sim_small[1:8, c("sex", "BMI", "waist", "height")]
 demo$BMI[3] <- NA         # missing
-demo$waist[5] <- 300      # extreme high waist
-demo$height[2] <- 20      # extreme low height
 
 demo_keep <- adiposity_sds_strat(
   data = demo,
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = ""
 )
@@ -181,8 +174,6 @@ demo_omit <- adiposity_sds_strat(
   col_map = col_map,
   ref = ref,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   allow_partial = FALSE,
   prefix = ""
 )
@@ -190,7 +181,7 @@ demo_omit <- adiposity_sds_strat(
 list(
   keep_rows = nrow(demo_keep),
   omit_rows = nrow(demo_omit),
-  capped_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
+  keep_preview = demo_keep %>% select(ends_with("_SDS")) %>% slice_head(n = 3)
 )
 ```
 
@@ -226,8 +217,12 @@ Set `verbose = TRUE` to emit three structured messages per call:
 ``` r
 old_opt <- options(healthmarkers.verbose = "inform")
 invisible(adiposity_sds_strat(df_demo, col_map = col_map, ref = ref))
-#> adiposity_sds_strat(): preparing inputs (2 vars, 4 rows)
-#> adiposity_sds_strat(): column map: BMI -> 'BMI', waist -> 'waist'
+#> adiposity_sds_strat(): reading input 'df_demo' — 4 rows × 3 variables
+#> adiposity_sds_strat(): col_map (2 columns — 2 specified)
+#>   BMI               ->  'BMI'
+#>   waist             ->  'waist'
+#> adiposity_sds_strat(): computing markers:
+#>   BMI_SDS, waist_SDS
 #> adiposity_sds_strat(): results: BMI_SDS 4/4, waist_SDS 4/4
 options(old_opt)
 ```
@@ -244,8 +239,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   case missing variables are skipped with an info message.
 - `na_action` controls whether rows with missing inputs are kept,
   dropped, or error; missing values propagate to SDS when kept.
-- `check_extreme` + `extreme_action` screen raw inputs before
-  standardizing; SDS outputs themselves are not capped.
 - Numeric coercion happens with warnings if NAs are introduced; align
   your data units with the reference units.
 
@@ -266,8 +259,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   match the data population.
 - Spot-check a variable: `(value - sex_mean)/sex_sd` should match the
   corresponding `<var>_SDS`.
-- Use `check_extreme = TRUE` with tailored `extreme_rules` to catch
-  implausible anthropometrics before standardizing.
 
 ## See also
 

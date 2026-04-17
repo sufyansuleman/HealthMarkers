@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -77,8 +77,7 @@ packaged simulated data for runnable examples.</p>
 resistance/sensitivity proxies.</li>
 <li>You can supply glucose/HbA1c/C-peptide/insulin/adipokines when
 available to enrich outputs.</li>
-<li>You need explicit NA handling and optional extreme-value
-screening.</li>
+<li>You need explicit NA handling.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -97,10 +96,6 @@ screening.</li>
 <code>keep</code>/<code>ignore</code>/<code>warn</code> retain rows with
 NA outputs; <code>omit</code> drops rows with missing used inputs;
 <code>error</code> aborts.</li>
-<li>
-<code>check_extreme</code>: when TRUE, scans inputs with default
-broad ranges; <code>extreme_action</code> =
-<code>warn</code>/<code>cap</code>/<code>NA</code>/<code>error</code>/<code>ignore</code>.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -166,11 +161,10 @@ are fixed.</p>
 <p>Compute all markers and show only newly created columns.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
+<span>  data     <span class="op">=</span> <span class="va">sim_small</span>,</span>
+<span>  col_map  <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose  <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gm_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">gm</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
@@ -178,12 +172,12 @@ are fixed.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">#&gt;   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  6.54    175.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.39</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.04    163.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.13</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  6.74    342.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.42</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  4.13  -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">870.</span>           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.07</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  6.25    271.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.95</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.34    347.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.37</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  4.85    336.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.67</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.11    369.           1      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.07</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  7.51    289.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.43</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  8.29    164.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.23</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  8.38    116.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.51</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.09    165.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.44</span></span></code></pre></div>
 <p>Interpretation: SPISE and METS_IR summarize insulin
 sensitivity/resistance; TyG_index rises with higher TG/glucose; HOMA_CP
 approximates insulin resistance via C-peptide and glucose; LAR and ASI
@@ -196,137 +190,223 @@ retained here because <code>na_action = "keep"</code>.</p>
 </h2>
 <ul>
 <li>Required: <code>HDL_c</code> (mmol/L), <code>TG</code> (mmol/L),
-<code>BMI</code> (kg/m^2).</li>
+<code>BMI</code> (kg/m^2). Auto-derived: BMI from <code>weight</code>
+(kg) + <code>height</code> (m/cm) if BMI absent.</li>
 <li>Optional if present/mapped: <code>glucose</code>,
 <code>HbA1c</code>, <code>C_peptide</code>, <code>G0</code>,
-<code>I0</code>, <code>leptin</code>, <code>adiponectin</code>.</li>
+<code>I0</code>, <code>leptin</code>, <code>adiponectin</code>.
+Auto-derived: <code>glucose</code> from <code>G0</code> (or vice versa)
+if one is absent.</li>
 <li>TyG converts TG to mg/dL (88.57) and glucose to mg/dL (18)
 internally.</li>
 <li>HOMA_CP uses <code>(G0 * (C_peptide/6)) / 22.5</code>; verify your
 units for C-peptide.</li>
 <li>Missingness: <code>na_action</code> controls row handling
 (<code>keep</code>/<code>omit</code>/<code>error</code>/<code>warn</code>/<code>ignore</code>).</li>
-<li>Extreme screening: <code>check_extreme = TRUE</code> can
-warn/cap/NA/error using default broad ranges; override via
-<code>extreme_rules</code>.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="pre-computation-example">Pre-computation example<a class="anchor" aria-label="anchor" href="#pre-computation-example"></a>
 </h2>
-<p>Show row handling and extreme screening on a tiny slice.</p>
+<p>Providing <code>weight</code> and <code>height</code> instead of
+<code>BMI</code> works automatically:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_no_bmi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  HDL_c   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">1.2</span><span class="op">)</span>,</span>
+<span>  TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.3</span>, <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  weight  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">70</span>, <span class="fl">85</span><span class="op">)</span>,    <span class="co"># kg</span></span>
+<span>  height  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">175</span>, <span class="fl">180</span><span class="op">)</span>,  <span class="co"># cm</span></span>
+<span>  glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.5</span>, <span class="fl">6.0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_precomp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span><span class="va">df_no_bmi</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">gm_precomp</span><span class="op">$</span><span class="va">SPISE</span>  <span class="co"># computed via auto-derived BMI</span></span>
+<span><span class="co">#&gt; [1] 8.649504 7.229832</span></span></code></pre></div>
+<p>Similarly, providing <code>G0</code> without <code>glucose</code>
+enables METS_IR and TyG_index via alias:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_g0_only</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  HDL_c <span class="op">=</span> <span class="fl">1.2</span>, TG <span class="op">=</span> <span class="fl">1.3</span>, BMI <span class="op">=</span> <span class="fl">24</span>, G0 <span class="op">=</span> <span class="fl">5.5</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_alias</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span><span class="va">df_g0_only</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>METS_IR <span class="op">=</span> <span class="va">gm_alias</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_alias</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   METS_IR TyG_index </span></span>
+<span><span class="co">#&gt; 330.35250   8.64813</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="non-standard-column-names">Non-standard column names<a class="anchor" aria-label="anchor" href="#non-standard-column-names"></a>
+</h2>
+<p>When your data frame uses different column names
+(e.g. <code>pglu0</code> instead of <code>G0</code>), pass a
+<code>col_map</code> that redirects them. The function materialises the
+alias and runs pre-computation normally.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Data has 'pglu0' instead of 'G0'</span></span>
+<span><span class="va">df_mapped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  HDL_c <span class="op">=</span> <span class="fl">1.2</span>, TG <span class="op">=</span> <span class="fl">1.3</span>, BMI <span class="op">=</span> <span class="fl">24.0</span>, pglu0 <span class="op">=</span> <span class="fl">5.5</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_mapped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_mapped</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"pglu0"</span><span class="op">)</span>,   <span class="co"># only need to specify what differs</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>METS_IR <span class="op">=</span> <span class="va">gm_mapped</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_mapped</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   METS_IR TyG_index </span></span>
+<span><span class="co">#&gt; 330.35250   8.64813</span></span></code></pre></div>
+<p>Similarly, map <code>weight</code> / <code>height</code> to
+differently-named anthropometric columns and BMI is derived
+automatically:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_wh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  HDL_c <span class="op">=</span> <span class="fl">1.1</span>, TG <span class="op">=</span> <span class="fl">1.4</span>, wt_kg <span class="op">=</span> <span class="fl">80</span>, ht_cm <span class="op">=</span> <span class="fl">175</span>, glucose <span class="op">=</span> <span class="fl">5.8</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_wh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_wh</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"wt_kg"</span>, height <span class="op">=</span> <span class="st">"ht_cm"</span><span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_wh</span><span class="op">$</span><span class="va">SPISE</span>   <span class="co"># BMI was derived from wt_kg / ht_cm</span></span>
+<span><span class="co">#&gt; [1] 7.254687</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="partial-col_map-and-dictionary-inference">Partial col_map and dictionary inference<a class="anchor" aria-label="anchor" href="#partial-col_map-and-dictionary-inference"></a>
+</h2>
+<p>You only need to specify the keys that <em>differ</em> from
+dictionary defaults. For any key you omit,
+<code><a href="../reference/glycemic_markers.html">glycemic_markers()</a></code> auto-infers the mapping from common
+synonym patterns (e.g. <code>hdlc</code>, <code>hdl_cholesterol</code>,
+<code>hdl.c</code> all resolve to <code>HDL_c</code>). Provide a partial
+<code>col_map</code> with just the non-standard entries:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Column names match common synonyms — no col_map needed for those</span></span>
+<span><span class="va">df_syn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  hdlc <span class="op">=</span> <span class="fl">1.0</span>, trig <span class="op">=</span> <span class="fl">1.3</span>, bmi <span class="op">=</span> <span class="fl">24.0</span>, pglu0 <span class="op">=</span> <span class="fl">5.5</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gm_syn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_syn</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"pglu0"</span><span class="op">)</span>,   <span class="co"># only override the non-obvious one</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SPISE <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">SPISE</span>, METS_IR <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     SPISE   METS_IR TyG_index </span></span>
+<span><span class="co">#&gt;   8.10289        NA   8.64813</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
+</h2>
+<p>Show row handling on a small slice.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HDL_c"</span>, <span class="st">"TG"</span>, <span class="st">"BMI"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">glucose</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.5</span>, <span class="fl">6.2</span>, <span class="fl">7.0</span>, <span class="fl">5.8</span>, <span class="fl">6.0</span>, <span class="fl">5.4</span><span class="op">)</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">HbA1c</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">42</span>, <span class="fl">39</span>, <span class="fl">41</span>, <span class="fl">45</span>, <span class="fl">44</span>, <span class="fl">40</span><span class="op">)</span></span>
+<span><span class="va">demo</span><span class="op">$</span><span class="va">glucose</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.5</span>, <span class="fl">6.2</span>, <span class="fl">7.0</span>, <span class="fl">5.8</span>, <span class="fl">6.0</span>, <span class="fl">5.4</span><span class="op">)</span></span>
+<span><span class="va">demo</span><span class="op">$</span><span class="va">HbA1c</span>     <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">42</span>, <span class="cn">NA</span>, <span class="fl">41</span>, <span class="fl">45</span>, <span class="fl">44</span>, <span class="fl">40</span><span class="op">)</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">C_peptide</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">300</span>, <span class="fl">450</span>, <span class="fl">500</span>, <span class="fl">400</span>, <span class="fl">380</span>, <span class="fl">360</span><span class="op">)</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">G0</span> <span class="op">&lt;-</span> <span class="va">demo</span><span class="op">$</span><span class="va">glucose</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">I0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">90</span>, <span class="fl">120</span>, <span class="fl">80</span>, <span class="fl">75</span>, <span class="fl">70</span><span class="op">)</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">leptin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">12</span>, <span class="fl">15</span>, <span class="fl">11</span>, <span class="fl">9</span>, <span class="fl">13</span><span class="op">)</span></span>
+<span><span class="va">demo</span><span class="op">$</span><span class="va">G0</span>        <span class="op">&lt;-</span> <span class="va">demo</span><span class="op">$</span><span class="va">glucose</span></span>
+<span><span class="va">demo</span><span class="op">$</span><span class="va">I0</span>        <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">90</span>, <span class="fl">120</span>, <span class="fl">80</span>, <span class="fl">75</span>, <span class="fl">70</span><span class="op">)</span></span>
+<span><span class="va">demo</span><span class="op">$</span><span class="va">leptin</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">12</span>, <span class="fl">15</span>, <span class="fl">11</span>, <span class="fl">9</span>, <span class="fl">13</span><span class="op">)</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">adiponectin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">7</span>, <span class="fl">6</span>, <span class="fl">9</span>, <span class="fl">10</span>, <span class="fl">7</span><span class="op">)</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">30</span>       <span class="co"># extreme TG</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">HbA1c</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>    <span class="co"># missing HbA1c</span></span>
 <span></span>
-<span><span class="va">gm_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="va">cm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TG <span class="op">=</span> <span class="st">"TG"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span>,</span>
+<span>  glucose <span class="op">=</span> <span class="st">"glucose"</span>, HbA1c <span class="op">=</span> <span class="st">"HbA1c"</span>,</span>
+<span>  C_peptide <span class="op">=</span> <span class="st">"C_peptide"</span>, G0 <span class="op">=</span> <span class="st">"G0"</span>, I0 <span class="op">=</span> <span class="st">"I0"</span>,</span>
+<span>  leptin <span class="op">=</span> <span class="st">"leptin"</span>, adiponectin <span class="op">=</span> <span class="st">"adiponectin"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">gm_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">gm_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">demo</span>, col_map <span class="op">=</span> <span class="va">cm2</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>,  verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">gm_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">demo</span>, col_map <span class="op">=</span> <span class="va">cm2</span>, na_action <span class="op">=</span> <span class="st">"omit"</span>,  verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gm_keep</span><span class="op">)</span>,</span>
-<span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gm_omit</span><span class="op">)</span>,</span>
-<span>  capped_preview <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">gm_keep</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">gm_new</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gm_keep</span><span class="op">)</span>, omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gm_omit</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $keep_rows</span></span>
 <span><span class="co">#&gt; [1] 6</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $omit_rows</span></span>
-<span><span class="co">#&gt; [1] 5</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $capped_preview</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   SPISE METS_IR prediabetes HOMA_CP   LAR    ASI TyG_index</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  6.54    179.           1    12.2  1.25 0.133       8.45</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.04    173.          <span style="color: #BB0000;">NA</span>    20.7  1.71 0.077<span style="text-decoration: underline;">8</span>      9.31</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  3.82    504.           0    25.9  2.5  0.05       11.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  4.13  -<span style="color: #BB0000; text-decoration: underline;">1</span><span style="color: #BB0000;">886.</span>           1    17.2  1.22 0.112       9.10</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  6.25    284.           1    16.9  0.9  0.133       9.09</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.34    332.           0    14.4  1.86 0.1         8.25</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
 <p><code>na_action = "keep"</code> preserves all rows (missing inputs
 flow to <code>NA</code> outputs); <code>na_action = "omit"</code> drops
-rows with missing/invalid used inputs.
-<code>extreme_action = "cap"</code> trims out-of-range values (e.g., TG
-= 30) before computation.</p>
+rows with missing/invalid used inputs.</p>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
 </h2>
 <ul>
-<li>Required inputs must be present/mapped; missing required columns
-abort.</li>
+<li>Required inputs must be present/mapped or derivable (BMI from
+weight/height); missing required columns abort.</li>
 <li>
 <code>na_action</code> governs whether missing/invalid inputs drop
 rows, warn, or error.</li>
-<li>
-<code>check_extreme</code>/<code>extreme_action</code> can cap,
-blank, warn, or abort on out-of-range inputs.</li>
 <li>Optional columns drive optional markers; absent inputs yield
 <code>NA</code> in their markers.</li>
+<li>Range checks are informational only — values outside physiological
+plausibility ranges are noted in <code>verbose</code> output but not
+altered.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
-<p>Set <code>verbose = TRUE</code> (and
-<code>healthmarkers.verbose = "inform"</code>) to surface three
-structured messages on each call: preparing inputs, the column map, and
-a results summary.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
-<span><span class="va">df_v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>HDL_c <span class="op">=</span> <span class="fl">1.0</span>, TG <span class="op">=</span> <span class="fl">1.3</span>, BMI <span class="op">=</span> <span class="fl">24</span>, glucose <span class="op">=</span> <span class="fl">5.6</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
+<p>Set <code>verbose = TRUE</code> (the default) to surface five
+structured messages: column mapping, optional inputs (what is
+present/missing and which indices they affect), pre-computation actions,
+the full list of markers being computed with their inputs, and a
+per-column results summary.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>HDL_c <span class="op">=</span> <span class="fl">1.0</span>, TG <span class="op">=</span> <span class="fl">1.3</span>, BMI <span class="op">=</span> <span class="fl">24</span>, glucose <span class="op">=</span> <span class="fl">5.6</span><span class="op">)</span></span>
+<span><span class="va">glycem_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span></span>
 <span>  <span class="va">df_v</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TG <span class="op">=</span> <span class="st">"TG"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span>, glucose <span class="op">=</span> <span class="st">"glucose"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; glycemic_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; glycemic_markers(): column map: HDL_c -&gt; 'HDL_c', TG -&gt; 'TG', BMI -&gt; 'BMI'</span></span>
-<span><span class="co">#&gt; glycemic_markers(): optional markers not computed (columns absent): HbA1c, C_peptide, G0, I0, leptin, adiponectin</span></span>
-<span><span class="co">#&gt; glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  8.10      <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.67</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">#&gt; glycemic_markers(): reading input 'df_v' — 1 rows × 4 variables</span></span>
+<span><span class="co">#&gt; glycemic_markers(): col_map (5 columns — 4 specified, 1 inferred from data)</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   glucose           -&gt;  'glucose'</span></span>
+<span><span class="co">#&gt;   G0                -&gt;  'glucose'    (inferred)</span></span>
+<span><span class="co">#&gt; glycemic_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  glucose, G0</span></span>
+<span><span class="co">#&gt;   missing:  HbA1c, C_peptide, I0, leptin, adiponectin</span></span>
+<span><span class="co">#&gt;   indices -&gt; NA:</span></span>
+<span><span class="co">#&gt;   prediabetes -&gt; NA  [missing: HbA1c]</span></span>
+<span><span class="co">#&gt;   diabetes -&gt; NA  [missing: HbA1c]</span></span>
+<span><span class="co">#&gt;   HOMA_CP -&gt; NA  [missing: C_peptide]</span></span>
+<span><span class="co">#&gt;   LAR -&gt; NA  [missing: leptin, adiponectin]</span></span>
+<span><span class="co">#&gt;   ASI -&gt; NA  [missing: adiponectin, I0]</span></span>
+<span><span class="co">#&gt; glycemic_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   SPISE           [HDL_c, TG, BMI]</span></span>
+<span><span class="co">#&gt;   METS_IR         [glucose, TG, BMI, HDL_c]</span></span>
+<span><span class="co">#&gt;   prediabetes     NA [HbA1c missing]</span></span>
+<span><span class="co">#&gt;   diabetes        NA [HbA1c missing]</span></span>
+<span><span class="co">#&gt;   HOMA_CP         NA [C_peptide/G0 missing]</span></span>
+<span><span class="co">#&gt;   LAR             NA [leptin/adiponectin missing]</span></span>
+<span><span class="co">#&gt;   ASI             NA [adiponectin/I0 missing]</span></span>
+<span><span class="co">#&gt;   TyG_index       [TG, glucose]</span></span>
+<span><span class="co">#&gt; glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="articles/multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms across major
+biobanks.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
-<li>Start with fasting lipids and BMI; add
-glucose/HbA1c/C-peptide/insulin/adipokines when available for richer
-markers.</li>
+<li>Start with fasting lipids and BMI (or weight/height); add
+glucose/HbA1c/C-peptide/insulin/adipokines for richer markers.</li>
+<li>Provide <code>weight</code> and <code>height</code> instead of BMI
+when BMI is not directly available — it is computed automatically.</li>
 <li>Convert units beforehand if your data are not in the expected
 mmol/L/pmol/L/ng/mL units.</li>
 <li>For stricter pipelines, use <code>na_action = "omit"</code> or
 <code>"error"</code>; keep/warn for exploratory work.</li>
-<li>Turn on <code>check_extreme = TRUE</code> with
-<code>extreme_action = "cap"</code> when working with noisy or simulated
-inputs.</li>
+<li>Use <code>verbose = TRUE</code> (default) for detailed output
+messages and diagnostics.</li>
 <li>See <code><a href="../reference/glycemic_markers.html">?glycemic_markers</a></code> for full argument details and
 marker definitions.</li>
 </ul>

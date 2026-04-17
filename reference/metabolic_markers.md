@@ -7,7 +7,7 @@ Aggregate selected metabolic marker groups
 ``` r
 metabolic_markers(
   data,
-  col_map,
+  col_map = NULL,
   which = c("insulin", "adiposity_sds", "cardio", "lipid", "liver", "glycemic", "mets"),
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
@@ -77,6 +77,6 @@ metabolic_markers(df, col_map = list(), which = c("lipid","liver"),
                   normalize = "none", mode = "both", verbose = FALSE, na_action = "keep")
 #>    TC HDL_c  TG LDL_c ALT AST BMI non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL
 #> 1 200    50 150   120  30  20  25       150        30            4            3
-#>   ratio_LDL_HDL ApoB_ApoA1
-#> 1           2.4         NA
+#>   ratio_LDL_HDL ApoB_ApoA1 FLI NFS APRI FIB4 BARD ALBI MELD_XI
+#> 1           2.4         NA  NA  NA   NA   NA    0   NA      NA
 ```

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,15 +98,8 @@ deficit selection.</li>
 aliases <code>keep</code> (like ignore) and <code>omit</code> (drops
 rows with any missing selected deficit).</li>
 <li>
-<code>check_extreme</code>: <code>NULL</code> (default; scans only
-when <code>rescale = FALSE</code>), <code>TRUE</code> (always scan &lt;0
-or &gt;1), or <code>FALSE</code> (never scan).
-<code>extreme_action</code>:
-<code>warn</code>/<code>ignore</code>/<code>error</code>/<code>cap</code>/<code>NA</code>.</li>
-<li>
-<code>rescale</code>: default <code>TRUE</code>; when
-<code>FALSE</code>, range scanning is active by default
-(<code>check_extreme = NULL</code>).</li>
+<code>rescale</code>: default <code>TRUE</code>; rescales numeric
+deficits to [0,1] before FI computation.</li>
 <li>
 <code>return</code>: <code>list</code> (di object) or
 <code>data</code> (tibble with <code>di</code> plus selected deficits [+
@@ -155,8 +148,6 @@ FI alongside deficits.</p>
 <span>    age <span class="op">=</span> <span class="st">"age"</span>,</span>
 <span>    rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>    check_extreme <span class="op">=</span> <span class="cn">NULL</span>,   <span class="co"># legacy: scan only if rescale = FALSE</span></span>
-<span>    extreme_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
 <span>    return <span class="op">=</span> <span class="st">"data"</span>,</span>
 <span>    verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
@@ -195,14 +186,6 @@ rows with missing deficits; <code>omit</code> drops rows;
 <code>error</code> stops on any missing selected deficit;
 <code>warn</code> emits warnings.</li>
 <li>
-<code>check_extreme</code>: <code>TRUE</code> scans for &lt;0 or
-&gt;1; <code>NULL</code> scans only when <code>rescale = FALSE</code>;
-<code>FALSE</code> skips scanning.</li>
-<li>
-<code>extreme_action</code>: <code>cap</code> truncates to [0,1];
-<code>NA</code> blanks; <code>warn</code>/<code>ignore</code> leave
-as-is; <code>error</code> stops.</li>
-<li>
 <code>return</code>: <code>data</code> yields a tibble (di +
 selected deficits [+ age]); <code>list</code> returns the
 <code><a href="https://rdrr.io/pkg/di/man/di-di.html" class="external-link">di::di</a></code> object.</li>
@@ -216,16 +199,14 @@ selected deficits [+ age]); <code>list</code> returns the
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="va">has_di</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">demo_miss</span> <span class="op">&lt;-</span> <span class="va">demo_df</span></span>
 <span>  <span class="va">demo_miss</span><span class="op">$</span><span class="va">d2</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>       <span class="co"># introduce missing</span></span>
-<span>  <span class="va">demo_miss</span><span class="op">$</span><span class="va">d1</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1.2</span>      <span class="co"># out-of-range to be capped</span></span>
+<span>  <span class="va">demo_miss</span><span class="op">$</span><span class="va">d1</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1.2</span>      <span class="co"># out-of-range; rescale will normalise it</span></span>
 <span></span>
 <span>  <span class="va">fi_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frailty_index.html">frailty_index</a></span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">demo_miss</span>,</span>
 <span>    cols <span class="op">=</span> <span class="va">cols</span>,</span>
 <span>    age <span class="op">=</span> <span class="st">"age"</span>,</span>
-<span>    rescale <span class="op">=</span> <span class="cn">FALSE</span>,          <span class="co"># triggers range scan when check_extreme is NULL</span></span>
+<span>    rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>    check_extreme <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>    return <span class="op">=</span> <span class="st">"data"</span>,</span>
 <span>    verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
@@ -234,10 +215,8 @@ selected deficits [+ age]); <code>list</code> returns the
 <span>    data <span class="op">=</span> <span class="va">demo_miss</span>,</span>
 <span>    cols <span class="op">=</span> <span class="va">cols</span>,</span>
 <span>    age <span class="op">=</span> <span class="st">"age"</span>,</span>
-<span>    rescale <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    rescale <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>    check_extreme <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>    extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>    return <span class="op">=</span> <span class="st">"data"</span>,</span>
 <span>    verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
@@ -245,7 +224,7 @@ selected deficits [+ age]); <code>list</code> returns the
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fi_keep</span><span class="op">)</span>,</span>
 <span>    omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fi_omit</span><span class="op">)</span>,</span>
-<span>    capped_example <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">fi_keep</span>, <span class="va">di</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    keep_example <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">fi_keep</span>, <span class="va">di</span>, <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Install the 'di' package to run the examples."</span><span class="op">)</span></span>
@@ -256,21 +235,19 @@ selected deficits [+ age]); <code>list</code> returns the
 <span><span class="co">#&gt; $omit_rows</span></span>
 <span><span class="co">#&gt; [1] 7</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $capped_example</span></span>
+<span><span class="co">#&gt; $keep_example</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;       di    d1    d2 d3   </span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.4      0     0.2 TRUE </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0.667    1.2   0.8 FALSE</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1        1    <span style="color: #BB0000;">NA</span>   TRUE </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0.467    0     0.4 TRUE </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0.033<span style="text-decoration: underline;">3</span>   0     0.1 FALSE</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0.967    1     0.9 TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.407    0     0.2 TRUE </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0.630    1.2   0.8 FALSE</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0.917    1    <span style="color: #BB0000;">NA</span>   TRUE </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0.481    0     0.4 TRUE </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0.037<span style="text-decoration: underline;">0</span>   0     0.1 FALSE</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0.944    1     0.9 TRUE</span></span></code></pre></div>
 <p>With <code>na_action = "keep"</code>, all rows remain (missing
 deficits propagate to FI). With <code>na_action = "omit"</code>, rows
-with any missing selected deficit are dropped.
-<code>extreme_action = "cap"</code> trims out-of-range deficits (e.g.,
-1.2) into [0,1] before FI calculation.</p>
+with any missing selected deficit are dropped.</p>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -283,8 +260,6 @@ with any missing selected deficit are dropped.
 numeric columns (age excluded when present).</li>
 <li>Choose <code>na_action</code> to control row retention vs. dropping
 on missing deficits.</li>
-<li>Use <code>check_extreme</code>/<code>extreme_action</code> to scan
-and cap or blank values outside [0,1] when desired.</li>
 <li>
 <code>return = "data"</code> gives a tibble (<code>di</code> +
 selected deficits [+ age]); <code>return = "list"</code> returns the raw
@@ -334,7 +309,7 @@ active:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Install the 'di' package to run the examples."</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; frailty_index(): preparing inputs (8 rows, 3 deficits, age provided)</span></span>
-<span><span class="co">#&gt; frailty_index(): column map: d1, d2, d3</span></span>
+<span><span class="co">#&gt; frailty_index(): col_map: d1, d2, d3</span></span>
 <span><span class="co">#&gt; frailty_index(): results: di 8/8</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
 <code>"none"</code>.</p>
@@ -343,13 +318,8 @@ active:</p>
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
-<li>Keep deficits close to [0,1]; <code>rescale = TRUE</code> can
-normalize mild deviations, but extreme outliers may still need
-capping.</li>
-<li>Use <code>extreme_action = "cap"</code> with
-<code>check_extreme = TRUE</code> (or <code>rescale = FALSE</code> +
-<code>check_extreme = NULL</code>) when your deficits might stray
-outside [0,1].</li>
+<li>Keep deficits close to [0,1]; <code>rescale = TRUE</code> normalises
+mild deviations before FI computation.</li>
 <li>Choose <code>na_action = "omit"</code> or <code>"error"</code> for
 stricter pipelines; <code>keep</code>/<code>ignore</code> for
 exploratory summaries.</li>

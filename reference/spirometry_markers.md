@@ -8,13 +8,9 @@ bronchodilator response
 ``` r
 spirometry_markers(
   data,
-  col_map = list(fev1 = "FEV1", fvc = "FVC", fev1_post = NULL, fvc_post = NULL, age =
-    NULL, height = NULL, sex = NULL, ethnicity = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = list(fev1 = c(0, 8), fvc = c(0, 10)),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -33,21 +29,9 @@ spirometry_markers(
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
-
-  Logical; scan for implausible values (liters).
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional list with c(min,max) for fev1,fvc.
-
 - verbose:
 
-  Logical; if TRUE, emits progress via rlang::inform.
+  Logical; if TRUE (default), emits progress via rlang::inform.
 
 ## Value
 
@@ -77,6 +61,17 @@ report; no DOI assigned, <https://goldcopd.org/2025-gold-report/>.
 ``` r
 df <- data.frame(FEV1 = c(3.2, 2.1, 1.5), FVC = c(4.0, 3.0, 2.5))
 spirometry_markers(df)
+#> spirometry_markers(): reading input 'df' — 3 rows × 2 variables
+#> spirometry_markers(): col_map (2 columns — 2 inferred from data)
+#>   fev1              ->  'FEV1'    (inferred)
+#>   fvc               ->  'FVC'    (inferred)
+#> spirometry_markers(): computing markers:
+#>   ratio_pre/post  [FEV1/FVC]
+#>   copd_flag_fixed [ratio < 0.70]
+#>   obstruction_lln [LLN-based]
+#>   fev1_pp/fvc_pp  [% predicted]
+#>   gold_grade      [GOLD severity]
+#> spirometry_markers(): results: ratio_pre 3/3, ratio_post 0/3, copd_flag_fixed 3/3, obstruction_lln 0/3, fev1_pp 0/3, fvc_pp 0/3, fev1_z 0/3, fvc_z 0/3, ratio_z 0/3, gold_grade 0/3, bdr_fev1 0/3, bdr_fvc 0/3
 #> # A tibble: 3 × 12
 #>   ratio_pre ratio_post copd_flag_fixed obstruction_lln fev1_pp fvc_pp fev1_z
 #>       <dbl>      <dbl> <lgl>           <lgl>             <dbl>  <dbl>  <dbl>

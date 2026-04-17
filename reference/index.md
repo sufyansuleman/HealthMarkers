@@ -201,6 +201,8 @@ Fasting, OGTT, adipose-tissue, tracer and DXA-based indices.
 
 ## Utilities
 
+- [`hm_col_report()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.md)
+  : Diagnose and report column name mapping for your data
 - [`infer_cols()`](https://sufyansuleman.github.io/HealthMarkers/reference/infer_cols.md)
   [`hm_infer_cols()`](https://sufyansuleman.github.io/HealthMarkers/reference/infer_cols.md)
   : Infer column names from user data based on flexible patterns, with

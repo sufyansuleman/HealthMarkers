@@ -16,8 +16,6 @@ Component scoring: FEV1% (\>=65 -\> 0, 50-64 -\> 1, 36-49 -\> 2, \<=35
 
 - You have spirometry plus 6MWD, mMRC, and BMI for COPD risk
   stratification.
-- You need optional extreme-value screening and explicit row-retention
-  rules.
 - You want to derive FEV1% from raw/predicted FEV1 or use an existing
   percent-predicted column.
 
@@ -30,8 +28,6 @@ Component scoring: FEV1% (\>=65 -\> 0, 50-64 -\> 1, 36-49 -\> 2, \<=35
   become NA.
 - Row policy via na_action: keep (default), omit, error; warn/ignore
   behave like keep but emit messages.
-- Optional extreme screening: check_extreme + extreme_action
-  (warn/cap/error/ignore/NA).
 
 ## Load packages and example data
 
@@ -76,22 +72,20 @@ bode_out <- bode_index(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn",
   verbose = FALSE
 )
 
 new_cols <- setdiff(names(bode_out), names(sim_small))
 head(select(bode_out, all_of(new_cols)))
-#> # A tibble: 6 × 6
-#>   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score
-#>        <int>    <dbl>      <int>      <int>      <int>     <int>
-#> 1          1     80.9          0          0          1         0
-#> 2          3    103.           0          0          3         0
-#> 3          2    114.           0          0          2         0
-#> 4          0     88.0          0          0          0         0
-#> 5          1    104.           0          0          1         0
-#> 6          1    113.           0          0          1         0
+#> # A tibble: 6 × 5
+#>   bode_index fev1_score walk_score mmrc_score bmi_score
+#>        <int>      <int>      <int>      <int>     <int>
+#> 1          3          1          2          0         0
+#> 2          0          0          0          0         0
+#> 3          3          0          0          3         0
+#> 4          0          0          0          0         0
+#> 5          2          0          2          0         0
+#> 6          1          0          0          1         0
 ```
 
 ## Arguments that matter
@@ -100,10 +94,6 @@ head(select(bode_out, all_of(new_cols)))
   fev1_pp) plus sixmwd, mmrc, bmi; missing required keys error.
 - na_action: keep (default), omit (drop rows with any missing required
   inputs), error (abort on missing); warn/ignore act like keep but warn.
-- check_extreme: FALSE by default; TRUE enables bounds-based screening.
-- extreme_action: warn (default, no change), cap, error, ignore, or NA.
-  Defaults (units as stored): fev1_pct 10-140, sixmwd 50-800, mmrc 0-4,
-  bmi 10-60.
 - verbose: emit step messages.
 
 ## Handling missing inputs
@@ -120,7 +110,29 @@ demo <- sim_small
 demo$mmrc[c(2, 6)] <- NA
 
 a_keep <- bode_index(demo, col_map, na_action = "keep")
+#> bode_index(): reading input 'demo' — 30 rows × 519 variables
+#> bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)
+#>   fev1_pct          ->  'FEV1pct'
+#>   sixmwd            ->  'sixmwd'
+#>   mmrc              ->  'mmrc'
+#>   bmi               ->  'BMI'
+#>   fev1_pp           ->  'FEV1pct'    (inferred)
+#>   fev1              ->  'FEV1'    (inferred)
+#> bode_index(): computing markers:
+#>   bode_index  [0-10 COPD severity score]
+#> bode_index(): results: id 30/30, bode_index 28/30, fev1_pct 30/30, fev1_score 30/30, walk_score 30/30, mmrc_score 28/30, bmi_score 30/30
 a_omit <- bode_index(demo, col_map, na_action = "omit")
+#> bode_index(): reading input 'demo' — 30 rows × 519 variables
+#> bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)
+#>   fev1_pct          ->  'FEV1pct'
+#>   sixmwd            ->  'sixmwd'
+#>   mmrc              ->  'mmrc'
+#>   bmi               ->  'BMI'
+#>   fev1_pp           ->  'FEV1pct'    (inferred)
+#>   fev1              ->  'FEV1'    (inferred)
+#> bode_index(): computing markers:
+#>   bode_index  [0-10 COPD severity score]
+#> bode_index(): results: id 28/28, bode_index 28/28, fev1_pct 28/28, fev1_score 28/28, walk_score 28/28, mmrc_score 28/28, bmi_score 28/28
 
 list(
   keep_rows = nrow(a_keep),
@@ -137,44 +149,44 @@ list(
 #> # A tibble: 6 × 5
 #>   bode_index fev1_score walk_score mmrc_score bmi_score
 #>        <int>      <int>      <int>      <int>     <int>
-#> 1          1          0          0          1         0
+#> 1          3          1          2          0         0
 #> 2         NA          0          0         NA         0
-#> 3          2          0          0          2         0
+#> 3          3          0          0          3         0
 #> 4          0          0          0          0         0
-#> 5          1          0          0          1         0
+#> 5          2          0          2          0         0
 #> 6         NA          0          0         NA         0
 ```
 
-## Extreme-value screening (optional)
+## Extreme values
 
-Screen inputs before scoring; cap, warn, error, ignore, or set NA for
-extremes.
+Extreme inputs will produce extreme scores. Pre-filter implausible
+values before calling.
 
 ``` r
 demo2 <- sim_small
 demo2$sixmwd[5] <- 20   # extreme low walk
 demo2$BMI[6] <- 80      # extreme high BMI
 
-a_screen <- bode_index(
-  data = demo2,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(fev1_pct = c(10, 140), sixmwd = c(50, 800), mmrc = c(0, 4), bmi = c(10, 60)),
-  verbose = FALSE
-)
-#> Warning: bode_index(): capped 2 extreme input values into allowed ranges.
-
-head(select(a_screen, bode_index, fev1_score, walk_score, mmrc_score, bmi_score))
+head(select(bode_index(demo2, col_map = col_map, na_action = "keep"), bode_index, fev1_score, walk_score, mmrc_score, bmi_score))
+#> bode_index(): reading input 'demo2' — 30 rows × 519 variables
+#> bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)
+#>   fev1_pct          ->  'FEV1pct'
+#>   sixmwd            ->  'sixmwd'
+#>   mmrc              ->  'mmrc'
+#>   bmi               ->  'BMI'
+#>   fev1_pp           ->  'FEV1pct'    (inferred)
+#>   fev1              ->  'FEV1'    (inferred)
+#> bode_index(): computing markers:
+#>   bode_index  [0-10 COPD severity score]
+#> bode_index(): results: id 30/30, bode_index 30/30, fev1_pct 30/30, fev1_score 30/30, walk_score 30/30, mmrc_score 30/30, bmi_score 30/30
 #> # A tibble: 6 × 5
 #>   bode_index fev1_score walk_score mmrc_score bmi_score
 #>        <int>      <int>      <int>      <int>     <int>
-#> 1          1          0          0          1         0
-#> 2          3          0          0          3         0
-#> 3          2          0          0          2         0
+#> 1          3          1          2          0         0
+#> 2          0          0          0          0         0
+#> 3          3          0          0          3         0
 #> 4          0          0          0          0         0
-#> 5          4          0          3          1         0
+#> 5          3          0          3          0         0
 #> 6          1          0          0          1         0
 ```
 
@@ -191,7 +203,6 @@ head(select(a_screen, bode_index, fev1_score, walk_score, mmrc_score, bmi_score)
   sources is not allowed.
 - Keep units consistent: FEV1 in liters when deriving percent, 6MWD in
   meters, BMI in kg/m^2.
-- Use extreme_action = “error” for strict QA; cap for winsorization.
 - mMRC must be 0-4; true zeros are valid.
 - warn/ignore behave like keep; choose omit or error for strict
   pipelines.
@@ -234,8 +245,15 @@ bode_index(
   col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI"),
   verbose = TRUE
 )
-#> bode_index(): preparing inputs
-#> bode_index(): column map: fev1_pct -> 'FEV1pct', sixmwd -> 'Walk_m', mmrc -> 'mMRC', bmi -> 'BMI'
+#> bode_index(): reading input 'df_v' — 3 rows × 4 variables
+#> bode_index(): col_map (5 columns — 4 specified, 1 inferred from data)
+#>   fev1_pct          ->  'FEV1pct'
+#>   sixmwd            ->  'Walk_m'
+#>   mmrc              ->  'mMRC'
+#>   bmi               ->  'BMI'
+#>   fev1_pp           ->  'FEV1pct'    (inferred)
+#> bode_index(): computing markers:
+#>   bode_index  [0-10 COPD severity score]
 #> bode_index(): results: bode_index 3/3, fev1_pct 3/3, fev1_score 3/3, walk_score 3/3, mmrc_score 3/3, bmi_score 3/3
 #> # A tibble: 3 × 6
 #>   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score

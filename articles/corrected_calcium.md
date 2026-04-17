@@ -12,8 +12,7 @@ auto-detect units; supports optional extreme screening.
   calcium.
 - Your labs may be in mg/dL+g/dL or mmol/L+g/L, and you want unit-aware
   handling.
-- You need row-retention rules for missing inputs and optional bounds
-  checks.
+- You need row-retention rules for missing inputs.
 
 ## Requirements checklist
 
@@ -25,9 +24,6 @@ auto-detect units; supports optional extreme screening.
   warns when assuming SI).
 - Row policy: na_action = keep (default), omit, error; warn/ignore
   behave like keep but warn.
-- Optional screening: check_extreme + extreme_action
-  (warn/cap/error/ignore/NA); defaults use Ca 4-15 mg/dL and Alb 2-5
-  g/dL in working units when enabled.
 
 ## Load packages and example data
 
@@ -63,21 +59,19 @@ cc_out <- corrected_calcium(
   data = sim_small,
   col_map = col_map,
   units = "conventional",  # use "si" for mmol/L; "auto" to infer
-  na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn"
+  na_action = "keep"
 )
 
 head(cc_out)
-#> # A tibble: 6 × 1
-#>   corrected_calcium
-#>               <dbl>
-#> 1              8.73
-#> 2              9.16
-#> 3              9.85
-#> 4              8.96
-#> 5              9.01
-#> 6             10.0
+#> # A tibble: 6 × 2
+#>   id    corrected_calcium
+#>   <chr>             <dbl>
+#> 1 P001               8.73
+#> 2 P002               9.16
+#> 3 P003               9.85
+#> 4 P004               8.96
+#> 5 P005               9.01
+#> 6 P006              10.0
 ```
 
 ## Arguments that matter
@@ -88,10 +82,6 @@ head(cc_out)
   warns if assuming SI.
 - na_action: keep (rows retained, NA outputs for missing), omit (drop
   rows with missing inputs), error (abort on missing).
-- check_extreme: FALSE by default; TRUE applies bounds in working units
-  (mg/dL, g/dL) before correction.
-- extreme_action: warn (default, no change), cap, error, ignore, or NA;
-  override bounds via extreme_rules.
 
 ## Handling missing and non-numeric inputs
 
@@ -131,25 +121,18 @@ list(
 #> 6             10.0
 ```
 
-## Extreme-value screening (optional)
+## Extreme values
 
-Cap or error on implausible inputs before correction.
+Implausible Ca or Alb values will propagate through the Payne formula.
+Pre-filter before calling.
 
 ``` r
 demo2 <- demo
-demo2$Ca[5] <- 2.0  # implausibly low if treated as mg/dL
+demo2$Ca[5] <- 2.0  # implausibly low
 
-a_cap <- corrected_calcium(
-  data = demo2,
-  col_map = col_map,
-  units = "conventional",
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(ca_mgdl = c(4, 15), alb_gdl = c(2, 5))
-)
-
-head(a_cap)
+# Pre-filter:
+demo2$Ca[demo2$Ca < 4] <- NA
+head(corrected_calcium(demo2, col_map, units = "conventional", na_action = "keep"))
 #> # A tibble: 6 × 1
 #>   corrected_calcium
 #>               <dbl>
@@ -157,7 +140,7 @@ head(a_cap)
 #> 2              9.16
 #> 3             NA   
 #> 4              8.96
-#> 5              3.74
+#> 5             NA   
 #> 6             10.0
 ```
 
@@ -187,10 +170,13 @@ cc_verbose <- corrected_calcium(
   units   = "conventional",
   verbose = TRUE
 )
-#> corrected_calcium(): preparing inputs
-#> corrected_calcium(): column map: calcium -> 'Ca', albumin -> 'Alb'
-#> corrected_calcium(): completed 30 rows.
-#> corrected_calcium(): results: corrected_calcium 30/30
+#> corrected_calcium(): reading input 'sim_small' — 30 rows × 521 variables
+#> corrected_calcium(): col_map (2 columns — 2 specified)
+#>   calcium           ->  'Ca'
+#>   albumin           ->  'Alb'
+#> corrected_calcium(): computing markers:
+#>   corrected_calcium  [Payne formula: Ca + 0.8 * (4.0 - Alb)]
+#> corrected_calcium(): results: id 30/30, corrected_calcium 30/30
 
 options(old_opt)   # restore original setting
 ```
@@ -208,8 +194,6 @@ options(old_opt)   # restore original setting
   inferred.
 - Ensure Ca and Alb units match the chosen mode; mismatched units will
   mis-scale results.
-- Tighten extreme_rules to your lab ranges; use extreme_action = “error”
-  for strict QC.
 - Downstream consumers expecting mg/dL should keep units =
   “conventional” or convert explicitly.
 

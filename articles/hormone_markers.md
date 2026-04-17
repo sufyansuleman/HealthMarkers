@@ -1,6 +1,4 @@
-# 
-
-title: “Hormone marker ratios” output: rmarkdown::html_vignette —
+# Hormone marker ratios
 
 ## Scope
 
@@ -29,8 +27,6 @@ screening can warn, cap, blank, or error on out-of-range labs.
   aldosterone/renin in matching units).
 - `na_action`: `keep`/`ignore` retain rows with NA outputs; `omit` drops
   rows with missing required inputs; `error` aborts.
-- `check_extreme`: optional; `extreme_action` =
-  `warn`/`cap`/`NA`/`error`/`ignore`.
 
 ## Load packages and demo data
 
@@ -110,7 +106,6 @@ hm_out <- hormone_markers(
   data = horm_demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -136,15 +131,13 @@ horm_demo_na$ft3[2] <- NA
 keep_res <- hormone_markers(
   data = horm_demo_na,
   col_map = col_map,
-  na_action = "keep",
-  check_extreme = FALSE
+  na_action = "keep"
 )
 
 omit_res <- hormone_markers(
   data = horm_demo_na,
   col_map = col_map,
-  na_action = "omit",
-  check_extreme = FALSE
+  na_action = "omit"
 )
 
 list(keep_rows = nrow(keep_res), omit_rows = nrow(omit_res))
@@ -155,32 +148,25 @@ list(keep_rows = nrow(keep_res), omit_rows = nrow(omit_res))
 #> [1] 3
 ```
 
-## Extreme screening
+## Extreme values
 
-Enable range scanning and cap out-of-range inputs into allowed bounds.
+Extreme labs will produce extreme ratios. Pre-filter implausible values
+before calling.
 
 ``` r
 horm_demo_ext <- horm_demo
 horm_demo_ext$aldo[1] <- 2000  # intentionally extreme
-
-cap_res <- hormone_markers(
-  data = horm_demo_ext,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  verbose = TRUE
-)
-
-cap_res[1, c("ARR", "FAI")]
-#> # A tibble: 1 × 2
+# Pre-filter or cap before calling
+horm_demo_ext$aldo[horm_demo_ext$aldo > 1000] <- 1000
+head(hormone_markers(horm_demo_ext, col_map = col_map, na_action = "keep")[, c("ARR", "FAI")])
+#> # A tibble: 4 × 2
 #>     ARR   FAI
 #>   <dbl> <dbl>
 #> 1  83.3  16.7
+#> 2  12    17.5
+#> 3  12.7  16.1
+#> 4  14.4  17.7
 ```
-
-`extreme_action = "cap"` trims inputs into the allowed ranges; `warn` or
-`error` emit warnings or abort instead.
 
 ## Expectations
 
@@ -188,8 +174,6 @@ cap_res[1, c("ARR", "FAI")]
   mappings/columns abort.
 - `na_action`: `keep`/`ignore` retains rows with `NA` outputs; `omit`
   drops rows with missing required inputs; `error` stops on missingness.
-- Extreme screening is optional; when enabled, choose how to handle
-  flagged values with `extreme_action`.
 - Outputs are numeric ratios; divisions by zero/non-finite are converted
   to `NA`.
 
@@ -211,9 +195,40 @@ hormone_markers(df_v,
   col_map = setNames(as.list(names(df_v)), names(df_v)),
   verbose = TRUE
 )
+#> hormone_markers(): reading input 'df_v' — 1 rows × 17 variables
 #> hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4
-#> hormone_markers(): preparing inputs
-#> hormone_markers(): column map: total_testosterone -> 'total_testosterone', SHBG -> 'SHBG', LH -> 'LH', FSH -> 'FSH', estradiol -> 'estradiol', progesterone -> 'progesterone', free_T3 -> 'free_T3', free_T4 -> 'free_T4', aldosterone -> 'aldosterone', renin -> 'renin', insulin -> 'insulin', glucagon -> 'glucagon', GH -> 'GH', IGF1 -> 'IGF1', prolactin -> 'prolactin', cortisol_0 -> 'cortisol_0', cortisol_30 -> 'cortisol_30'
+#> hormone_markers(): col_map (15 columns — 15 specified)
+#>   total_testosterone->  'total_testosterone'
+#>   SHBG              ->  'SHBG'
+#>   LH                ->  'LH'
+#>   FSH               ->  'FSH'
+#>   estradiol         ->  'estradiol'
+#>   progesterone      ->  'progesterone'
+#>   free_T3           ->  'free_T3'
+#>   free_T4           ->  'free_T4'
+#>   aldosterone       ->  'aldosterone'
+#>   renin             ->  'renin'
+#>   insulin           ->  'insulin'
+#>   IGF1              ->  'IGF1'
+#>   prolactin         ->  'prolactin'
+#>   cortisol_0        ->  'cortisol_0'
+#>   cortisol_30       ->  'cortisol_30'
+#> hormone_markers(): optional inputs
+#>   present:  total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4, aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30
+#>   missing:  TSH
+#>   ratios skipped (missing inputs): TSH_fT4
+#> hormone_markers(): computing markers:
+#>   FAI          [total_testosterone, SHBG]
+#>   LH_FSH       [LH, FSH]
+#>   E2_P         [estradiol, progesterone]
+#>   E2_T         [estradiol, total_testosterone]
+#>   T3_T4        [free_T3, free_T4]
+#>   TSH_fT4      NA [missing: TSH]
+#>   ARR          [aldosterone, renin]
+#>   Ins_Glu      [insulin, glucagon]
+#>   GH_IGF1      [GH, IGF1]
+#>   PRL_T        [prolactin, total_testosterone]
+#>   CAR_slope    [cortisol_0, cortisol_30]
 #> hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, E2_T 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1
 #> # A tibble: 1 × 10
 #>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
@@ -222,13 +237,22 @@ hormone_markers(df_v,
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which hormone assay columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
+```
+
 ## Tips
 
 - Keep units consistent across rows (e.g., cortisol nmol/L,
   aldosterone/renin in matching units) to make ratios meaningful.
 - Use `na_action = "omit"` when you prefer complete-case ratios;
   keep/ignore if you want row counts preserved.
-- Tighten `extreme_rules` if your lab reference ranges are narrower than
-  the broad defaults.
 - Turn on `verbose = TRUE` to see coercion, missingness scan, and
-  extreme handling summaries.
+  handling summaries.

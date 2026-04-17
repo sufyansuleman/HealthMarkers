@@ -28,11 +28,42 @@ z-scores with configurable NA and extreme handling.
   required inputs; `error` aborts; `ignore` acts like keep; `warn` acts
   like keep plus high-missingness warnings via `na_warn_prop` (default
   0.2).
-- `check_extreme`: set TRUE to scan using `extreme_action`
-  (`warn`/`cap`/`error`/`ignore`/`NA`) with default bounds unless
-  overridden by `extreme_rules` (defaults: chol_total 0.5–20; chol_ldl
-  0.1–15; chol_hdl 0.1–5; triglycerides 0.1–30; age_year 0–120; z_HOMA
-  -5–5; glucose 2–40; HbA1c 15–200; bp_sys_z/bp_dia_z -5–5).
+
+## Preparing derived inputs
+
+Two required inputs are **derived**, not raw lab values:
+
+### z_HOMA (standardised HOMA-IR)
+
+Compute HOMA-IR from fasting glucose (mmol/L) and fasting insulin
+(µIU/mL), then standardise to a z-score relative to a healthy reference
+population:
+
+``` r
+# Step 1: compute HOMA-IR
+data$HOMA_IR <- (data$fasting_glucose_mmol * data$fasting_insulin_uIU) / 22.5
+
+# Step 2: standardise within cohort (or use external reference parameters)
+data$z_HOMA  <- normalize_vec(data$HOMA_IR, method = "z")
+```
+
+Published paediatric reference values: Keskin *et al.* (2005, *Pediatr
+Diabetes*); for adults, a 90th-percentile cutpoint (z ≈ 1.28) is
+commonly applied.
+
+### BP z-scores (bp_sys_z / bp_dia_z)
+
+BP z-scores must be derived using sex- and age-specific normative tables
+(AAP 2017 Fourth Report or WHO paediatric reference). The
+[`calc_sds()`](https://sufyansuleman.github.io/HealthMarkers/reference/calc_sds.md)
+function can apply stratified reference parameters if you have them;
+alternatively the `childsds` package (CRAN) provides ready-to-use
+paediatric normative tables.
+
+``` r
+# Manual z-score: (observed − reference_mean) / reference_sd
+data$bp_sys_z <- (data$sbp - ref_sbp_mean) / ref_sbp_sd
+```
 
 ## Quick start
 
@@ -40,17 +71,18 @@ z-scores with configurable NA and extreme handling.
 library(HealthMarkers)
 library(tibble)
 
+# Six children/adolescents spanning multiple metabolic risk combinations
 peds <- tibble::tibble(
-  chol_total = c(5.4, 4.8),
-  chol_ldl   = c(3.6, 2.9),
-  chol_hdl   = c(0.9, 1.2),
-  triglycerides = c(1.6, 1.0),
-  age_year   = c(15, 9),
-  z_HOMA     = c(1.5, 0.8),
-  glucose    = c(5.8, 5.1),
-  HbA1c      = c(40, 35),
-  bp_sys_z   = c(1.2, 1.8),
-  bp_dia_z   = c(0.5, 1.7)
+  chol_total    = c(5.4, 4.8, 3.9, 6.2, 5.1, 4.5),
+  chol_ldl      = c(3.6, 2.9, 2.4, 4.1, 3.2, 2.8),
+  chol_hdl      = c(0.9, 1.2, 1.4, 0.8, 1.0, 1.3),
+  triglycerides = c(1.6, 1.0, 0.8, 2.0, 1.3, 0.9),
+  age_year      = c(15,  9,  12,  17,  11,   8 ),
+  z_HOMA        = c(1.5, 0.8, 0.2, 2.1, 1.0, -0.3),
+  glucose       = c(5.8, 5.1, 4.9, 6.5, 5.4, 4.8),
+  HbA1c         = c(40,  35,  32,  46,  38,  30 ),
+  bp_sys_z      = c(1.2, 1.8, 0.3, 2.1, 0.8, -0.2),
+  bp_dia_z      = c(0.5, 1.7, 0.2, 1.9, 0.6,  0.1)
 )
 
 metabolic_risk_features(
@@ -62,19 +94,28 @@ metabolic_risk_features(
   ),
   na_action = "keep"
 )
-#> # A tibble: 2 × 4
+#> # A tibble: 6 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
 #> 1 1            1                  1             0           
-#> 2 0            0                  0             1
+#> 2 0            0                  0             1           
+#> 3 0            0                  0             0           
+#> 4 1            1                  1             1           
+#> 5 0            0                  0             0           
+#> 6 0            0                  0             0
 ```
 
-## Scan, cap, and warn
+## Extreme values
+
+Extreme inputs will produce extreme or incorrect flags. Pre-filter
+implausible values before calling.
 
 ``` r
 extreme <- peds
-extreme$triglycerides[1] <- 40  # high
-extreme$bp_sys_z[2] <- 9        # out of range
+extreme$triglycerides[1] <- 40  # extreme; pre-filter
+extreme$bp_sys_z[2] <- 9        # out of expected range; pre-filter
+extreme$triglycerides[extreme$triglycerides > 30] <- NA
+extreme$bp_sys_z[abs(extreme$bp_sys_z) > 5] <- NA
 
 metabolic_risk_features(
   data = extreme,
@@ -84,15 +125,17 @@ metabolic_risk_features(
     bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
   ),
   na_action = "warn",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
-#> # A tibble: 2 × 4
+#> # A tibble: 6 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
 #> 1 1            1                  1             0           
-#> 2 0            0                  0             1
+#> 2 0            0                  0             1           
+#> 3 0            0                  0             0           
+#> 4 1            1                  1             1           
+#> 5 0            0                  0             0           
+#> 6 0            0                  0             0
 ```
 
 ## Missing data policy
@@ -108,10 +151,14 @@ metabolic_risk_features(
                  bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"),
   na_action = "omit"
 )
-#> # A tibble: 1 × 4
+#> # A tibble: 5 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
-#> 1 1            1                  1             0
+#> 1 1            1                  1             0           
+#> 2 0            0                  0             0           
+#> 3 1            1                  1             1           
+#> 4 0            0                  0             0           
+#> 5 0            0                  0             0
 
 metabolic_risk_features(
   data = missing,
@@ -120,14 +167,18 @@ metabolic_risk_features(
                  bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"),
   na_action = "warn"
 )
-#> # A tibble: 2 × 4
+#> # A tibble: 6 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
 #> 1 1            1                  1             0           
-#> 2 0            0                  NA            1
+#> 2 0            0                  NA            1           
+#> 3 0            0                  0             0           
+#> 4 1            1                  1             1           
+#> 5 0            0                  0             0           
+#> 6 0            0                  0             0
 ```
 
-## Expanded example: cap extremes, drop incomplete rows
+## Expanded example: drop incomplete rows
 
 ``` r
 ext_cap <- peds
@@ -143,20 +194,22 @@ out_cap <- metabolic_risk_features(
     bp_sys_z = "bp_sys_z", bp_dia_z = "bp_dia_z"
   ),
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 
 list(rows_returned = nrow(out_cap), flags = out_cap)
 #> $rows_returned
-#> [1] 1
+#> [1] 5
 #> 
 #> $flags
-#> # A tibble: 1 × 4
+#> # A tibble: 5 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
-#> 1 1            1                  1             0
+#> 1 1            1                  1             0           
+#> 2 0            0                  0             0           
+#> 3 1            1                  1             1           
+#> 4 0            0                  0             0           
+#> 5 0            0                  0             0
 ```
 
 ## Threshold quick-reference
@@ -173,9 +226,6 @@ list(rows_returned = nrow(out_cap), flags = out_cap)
 - Missingness: `keep/ignore` propagate NA; `omit` drops rows with
   missing required inputs; `warn` logs high-missingness; `error` aborts
   on missing required inputs.
-- Extreme values: with `check_extreme = TRUE`, scan against defaults or
-  `extreme_rules`; choose `extreme_action` to warn, cap, NA, ignore, or
-  error.
 - Outputs: tibble with factor columns `dyslipidemia`,
   `insulin_resistance`, `hyperglycemia`, `hypertension` (levels
   `0`/`1`). Age-based TG cutoffs: \>1.1 mmol/L (0–9 y) or \>1.5 mmol/L
@@ -196,14 +246,33 @@ metabolic_risk_features(
   ),
   verbose = TRUE
 )
-#> metabolic_risk_features(): preparing inputs
-#> metabolic_risk_features(): column map: chol_total -> 'chol_total', chol_ldl -> 'chol_ldl', chol_hdl -> 'chol_hdl', triglycerides -> 'triglycerides', age_year -> 'age_year', z_HOMA -> 'z_HOMA', glucose -> 'glucose', HbA1c -> 'HbA1c', bp_sys_z -> 'bp_sys_z', bp_dia_z -> 'bp_dia_z'
-#> metabolic_risk_features(): results: dyslipidemia 2/2, insulin_resistance 2/2, hyperglycemia 2/2, hypertension 2/2
-#> # A tibble: 2 × 4
+#> metabolic_risk_features(): reading input 'peds' — 6 rows × 10 variables
+#> metabolic_risk_features(): col_map (10 columns — 10 specified)
+#>   chol_total        ->  'chol_total'
+#>   chol_ldl          ->  'chol_ldl'
+#>   chol_hdl          ->  'chol_hdl'
+#>   triglycerides     ->  'triglycerides'
+#>   age_year          ->  'age_year'
+#>   z_HOMA            ->  'z_HOMA'
+#>   glucose           ->  'glucose'
+#>   HbA1c             ->  'HbA1c'
+#>   bp_sys_z          ->  'bp_sys_z'
+#>   bp_dia_z          ->  'bp_dia_z'
+#> metabolic_risk_features(): computing markers:
+#>   dyslipidemia       [chol_total, chol_ldl, chol_hdl, triglycerides, age_year]
+#>   insulin_resistance [z_HOMA]
+#>   hyperglycemia      [glucose, HbA1c]
+#>   hypertension       [bp_sys_z, bp_dia_z]
+#> metabolic_risk_features(): results: dyslipidemia 6/6, insulin_resistance 6/6, hyperglycemia 6/6, hypertension 6/6
+#> # A tibble: 6 × 4
 #>   dyslipidemia insulin_resistance hyperglycemia hypertension
 #>   <fct>        <fct>              <fct>         <fct>       
 #> 1 1            1                  1             0           
-#> 2 0            0                  0             1
+#> 2 0            0                  0             1           
+#> 3 0            0                  0             0           
+#> 4 1            1                  1             1           
+#> 5 0            0                  0             0           
+#> 6 0            0                  0             0
 options(old_opt)
 ```
 
@@ -211,8 +280,6 @@ options(old_opt)
 
 - Keep lipids/glucose in mmol/L and HbA1c in mmol/mol; BP inputs must
   already be z-scores.
-- Tighten `extreme_rules` to your cohort before using
-  `extreme_action = "cap"` or `"error"`.
 - Use `na_action = "omit"` for analysis-ready flags; keep/warn during QA
   to inspect missingness.
 - Watch for HbA1c reported in % (values \<=14 suggest percent) and

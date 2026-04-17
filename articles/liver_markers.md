@@ -25,12 +25,6 @@ MELD-XI) with configurable handling for missing data and extreme values.
 - `na_action`: `keep` (default) propagates NA; `omit` drops rows missing
   required inputs; `error` aborts; `ignore` treated as keep; `warn`
   keeps but issues high-missingness warnings via `na_warn_prop`.
-- `check_extreme`: set TRUE to scan inputs with `extreme_action`
-  (`warn`, `cap`, `error`, `ignore`, `NA`) using default bounds unless
-  `extreme_rules` overrides them. Defaults: BMI 10-70; waist 40-200 cm;
-  TG 10-1500 mg/dL; GGT 1-2000 U/L; age 18-120; AST/ALT 1-5000;
-  platelets 10-1000 (10^9/L); albumin 15-60 g/L; bilirubin 0.1-40 mg/dL;
-  creatinine 0.2-20 mg/dL.
 - Numeric coercion: mapped columns (except `diabetes`) are coerced to
   numeric; non-finite values become NA before policies. `diabetes` is
   coerced to integer 0/1 with a warning if values are outside
@@ -74,16 +68,58 @@ liver_markers(
 #> 3  73.8 -22.6 0.5    2.53     3 -2.52   10.8
 ```
 
-## Handling missingness and extremes
+## Non-standard column names
+
+When your data use different column names, only supply `col_map` entries
+for keys that differ. The remaining keys are matched automatically via a
+built-in synonym dictionary (case-insensitive, common abbreviations:
+`bili` → `bilirubin`, `creat` → `creatinine`, `platelet_count` →
+`platelets`, etc.).
+
+``` r
+df_ns <- tibble::tibble(
+  bmi_kgm2      = 27,
+  waist_cm      = 92,
+  trig_mgdl     = 180,   # mg/dL
+  ggt           = 40,
+  age_years     = 52,
+  AST           = 32,
+  ALT           = 28,
+  PLT           = 220,   # platelets, 10^9/L
+  serum_albumin = 40,    # g/L
+  dm            = 1L,
+  bili          = 0.8,   # mg/dL
+  creat         = 1.0    # mg/dL
+)
+
+liver_markers(
+  data    = df_ns,
+  col_map = list(
+    BMI        = "bmi_kgm2",
+    waist      = "waist_cm",
+    TG         = "trig_mgdl",
+    age        = "age_years",
+    diabetes   = "dm"
+  ),
+  verbose = FALSE
+)
+#> # A tibble: 1 × 7
+#>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
+#>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
+#> 1  61.8 -24.2 0.364  1.43     2 -2.66    8.30
+```
+
+`GGT`, `AST`, `ALT`, `PLT` (→ `platelets`), `serum_albumin` (→
+`albumin`), `bili` (→ `bilirubin`), and `creat` (→ `creatinine`) were
+all matched automatically; only the five renamed keys required explicit
+`col_map` entries.
+
+## Handling missingness
 
 - Missing values: `keep/ignore` propagate NA; `omit` drops rows missing
   required inputs; `warn` keeps but logs high-missingness by column;
   `error` aborts on missing required inputs.
-- Extreme values: with `check_extreme = TRUE`, scan against defaults (or
-  `extreme_rules`); choose
-  `extreme_action = "warn"|"cap"|"error"|"ignore"|"NA"` to warn, cap
-  in-range, abort, skip, or blank-out flagged inputs. Non-finite values
-  become NA before checks.
+- Non-finite values become NA before any policy is applied.
 
 ## Outputs
 
@@ -107,8 +143,30 @@ liver_markers(
   ),
   verbose = TRUE
 )
-#> liver_markers(): preparing inputs
-#> liver_markers(): column map: BMI -> 'BMI', waist -> 'waist', TG -> 'triglycerides', GGT -> 'GGT', age -> 'age', AST -> 'AST', ALT -> 'ALT', platelets -> 'platelets', albumin -> 'albumin', diabetes -> 'diabetes', bilirubin -> 'bilirubin', creatinine -> 'creatinine'
+#> liver_markers(): reading input 'liver' — 3 rows × 12 variables
+#> liver_markers(): col_map (12 columns — 12 specified)
+#>   BMI               ->  'BMI'
+#>   waist             ->  'waist'
+#>   TG                ->  'triglycerides'
+#>   GGT               ->  'GGT'
+#>   age               ->  'age'
+#>   AST               ->  'AST'
+#>   ALT               ->  'ALT'
+#>   platelets         ->  'platelets'
+#>   albumin           ->  'albumin'
+#>   diabetes          ->  'diabetes'
+#>   bilirubin         ->  'bilirubin'
+#>   creatinine        ->  'creatinine'
+#> liver_markers(): optional inputs
+#>   present:  BMI, waist, TG, GGT, age, AST, ALT, platelets, albumin, diabetes, bilirubin, creatinine
+#> liver_markers(): computing markers:
+#>   FLI        [BMI, waist, TG, GGT]
+#>   NFS        [age, BMI, diabetes, AST, ALT, platelets, albumin]
+#>   APRI       [AST, platelets]
+#>   FIB4       [age, AST, platelets, ALT]
+#>   BARD       [BMI, AST, ALT, diabetes]
+#>   ALBI       [bilirubin, albumin]
+#>   MELD_XI    [bilirubin, creatinine]
 #> liver_markers(): results: FLI 3/3, NFS 3/3, APRI 3/3, FIB4 3/3, BARD 3/3, ALBI 3/3, MELD_XI 3/3
 #> # A tibble: 3 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
@@ -119,10 +177,19 @@ liver_markers(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
+```
+
 ## Tips
 
 - Confirm triglycerides are in mg/dL (not mmol/L) and albumin in g/L.
-- Enable `check_extreme = TRUE` with `extreme_action = "cap"` to bound
-  implausible values before scoring; use `warn` during QA to see flags.
 - For modeling-ready outputs, prefer `na_action = "omit"`; use `keep` or
   `warn` when inspecting data quality.

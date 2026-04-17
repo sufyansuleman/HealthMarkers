@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,11 +48,8 @@
 <span>    <span class="st">"hemiplegia"</span>, renal <span class="op">=</span> <span class="st">"renal"</span>, cancer <span class="op">=</span> <span class="st">"cancer"</span>, leukemia <span class="op">=</span> <span class="st">"leukemia"</span>, lymphoma <span class="op">=</span></span>
 <span>    <span class="st">"lymphoma"</span>, sev_liver <span class="op">=</span> <span class="st">"sev_liver"</span>, metastatic_cancer <span class="op">=</span> <span class="st">"metastatic_cancer"</span>, hiv <span class="op">=</span></span>
 <span>    <span class="st">"hiv"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -76,18 +73,6 @@ hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
 <dd><p>One of c("keep","omit","error","ignore","warn").</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for plausible ranges (binary 0-1).</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA").</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional overrides (applied per key); default bounds c(0,1) for all.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -122,6 +107,11 @@ leukemia, lymphoma, diabetes with complications</p></li>
 <span class="r-in"><span>  <span class="va">patient</span>,</span></span>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">patient</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">patient</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> charlson_index(): reading input 'patient' — 1 rows × 19 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> charlson_index(): col_map: mi -&gt; 'mi', chf -&gt; 'chf', pvd -&gt; 'pvd', stroke -&gt; 'stroke', dementia -&gt; 'dementia', copd -&gt; 'copd', rheum -&gt; 'rheum', ulcer -&gt; 'ulcer', mild_liver -&gt; 'mild_liver', diabetes -&gt; 'diabetes', diab_comp -&gt; 'diab_comp', hemiplegia -&gt; 'hemiplegia', renal -&gt; 'renal', cancer -&gt; 'cancer', leukemia -&gt; 'leukemia', lymphoma -&gt; 'lymphoma', sev_liver -&gt; 'sev_liver', metastatic_cancer -&gt; 'metastatic_cancer', hiv -&gt; 'hiv'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> charlson_index(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> charlson_index(): results: charlson_index 1/1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 1</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   charlson_index</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>

@@ -14,7 +14,7 @@ mdq_score(
   symptom_cutoff = 7,
   require_clustering = TRUE,
   require_impairment = TRUE,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -56,7 +56,8 @@ mdq_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

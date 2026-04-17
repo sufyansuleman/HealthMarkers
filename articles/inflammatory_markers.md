@@ -6,8 +6,7 @@ Compute inflammatory ratios/panels. Panels: - Classic: NLR, PLR, LMR,
 dNLR, SII, SIRI, AISI, CRP_category. - Eosinophil: NLR, PLR, LMR, NER,
 SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR passthrough. - Both: union of
 classic + eos metrics. Inputs are coerced to numeric; non-finite become
-`NA`. Zero denominators warn. Optional extreme handling can
-warn/cap/blank/error.
+`NA`. Zero denominators warn.
 
 ## Load packages and demo data
 
@@ -59,7 +58,6 @@ classic_out <- inflammatory_markers(
   col_map = cm,
   panel = "classic",
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -72,33 +70,31 @@ classic_out
 #> 3  2.33   120  3.75  1.4    420 0.933   168 high
 ```
 
-## Eosinophil panel with extreme capping
+## Eosinophil panel
 
 ``` r
 df_ext <- df
-df_ext$CRP[3] <- 400  # intentional extreme
+df_ext$CRP[3] <- 400  # intentional extreme value
 
 eos_out <- inflammatory_markers(
   data = df_ext,
   col_map = cm,
   panel = "eos",
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 
 eos_out
 #> # A tibble: 3 × 12
-#>     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR    CAR   PCR  mGPS   ESR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>  <dbl> <dbl> <int> <dbl>
-#> 1  2      100  4      4     400 1       200   1.25 0.0625  80       0    12
-#> 2  2      150  3.33   2     300 0.6      90   0.8  0.0190 188.      0    15
-#> 3  2.33   120  3.75   3.5   420 0.933   168 200    9.09     0.6     2    18
+#>     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR     CAR    PCR  mGPS   ESR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>   <dbl>  <dbl> <int> <dbl>
+#> 1  2      100  4     20     400 1       200   1.25  0.0625  80        0    12
+#> 2  2      150  3.33  20     300 0.6      90   0.8   0.0190 188.       0    15
+#> 3  2.33   120  3.75  23.3   420 0.933   168 267.   12.1      0.45     2    18
 ```
 
-`extreme_action = "cap"` trims out-of-range inputs; `warn` only warns;
-`error` aborts; `NA` blanks flagged values.
+Extremely high CRP values propagate through the ratios; use
+`na_action = "keep"` for exploratory review.
 
 ## Missing data handling
 
@@ -126,8 +122,6 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 - Provide required keys per panel; missing mappings abort.
 - Inputs are coerced to numeric; non-finite become `NA`; zero
   denominators warn.
-- Extreme scan uses broad defaults for blood counts/CRP/albumin; adjust
-  via `extreme_action` and built-in ranges.
 - Panel selection: `auto` uses eos if `eosinophils` mapping is present;
   `both` returns the union.
 
@@ -143,8 +137,17 @@ df_v <- tibble::tibble(neutrophils = 4, lymphocytes = 2, monocytes = 0.5, platel
 cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes",
              monocytes = "monocytes", platelets = "platelets", CRP = "CRP")
 inflammatory_markers(df_v, cm_v, panel = "classic", verbose = TRUE)
-#> inflammatory_markers(): preparing inputs
-#> inflammatory_markers(): column map: neutrophils -> 'neutrophils', lymphocytes -> 'lymphocytes'
+#> inflammatory_markers(): reading input 'df_v' — 1 rows × 5 variables
+#> inflammatory_markers(): col_map (5 columns — 5 specified)
+#>   neutrophils       ->  'neutrophils'
+#>   lymphocytes       ->  'lymphocytes'
+#>   monocytes         ->  'monocytes'
+#>   platelets         ->  'platelets'
+#>   CRP               ->  'CRP'
+#> inflammatory_markers(): optional inputs (panel = classic)
+#>   present:  neutrophils, lymphocytes, monocytes, platelets, CRP
+#>   missing:  WBC, albumin, eosinophils, ESR
+#> inflammatory_markers(): computing markers: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category
 #> inflammatory_markers(): results: NLR 1/1, PLR 1/1, LMR 1/1, dNLR 0/1, SII 1/1, SIRI 1/1, AISI 1/1, CRP_category 1/1
 #> # A tibble: 1 × 8
 #>     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category

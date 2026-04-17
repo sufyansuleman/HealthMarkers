@@ -12,12 +12,9 @@ adiposity_sds_strat(
   col_map,
   ref,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  extreme_rules = NULL,
   allow_partial = FALSE,
   prefix = "",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -53,26 +50,6 @@ adiposity_sds_strat(
   - "omit" - drop rows with NA in any required variable
 
   - "error" - abort if any required variable has NA
-
-- check_extreme:
-
-  Logical; if TRUE, screen raw variables for extremes before SDS
-
-- extreme_action:
-
-  One of:
-
-  - "cap" - winsorize to bounds
-
-  - "NA" - set out-of-range to NA
-
-  - "error" - abort on out-of-range
-
-- extreme_rules:
-
-  Optional named list of c(min, max) per variable (raw scale). If NULL,
-  broad defaults are applied for common measures (BMI, waist, weight,
-  height, hip, WC, HC).
 
 - allow_partial:
 
@@ -119,8 +96,12 @@ adiposity_sds_strat(
   col_map = list(sex = "sex", vars = list(BMI = "BMI", waist = "waist")),
   ref = ref
 )
-#> adiposity_sds_strat(): preparing inputs (2 vars, 3 rows)
-#> adiposity_sds_strat(): column map: BMI -> 'BMI', waist -> 'waist'
+#> adiposity_sds_strat(): reading input 'df' — 3 rows × 3 variables
+#> adiposity_sds_strat(): col_map (2 columns — 2 specified)
+#>   BMI               ->  'BMI'
+#>   waist             ->  'waist'
+#> adiposity_sds_strat(): computing markers:
+#>   BMI_SDS, waist_SDS
 #> adiposity_sds_strat(): results: BMI_SDS 3/3, waist_SDS 3/3
 #> # A tibble: 3 × 2
 #>   BMI_SDS waist_SDS

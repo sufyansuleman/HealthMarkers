@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,8 +64,8 @@
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
 <p>Non-stratified SDS (z-scores) for anthropometric measures using a
-single reference (mean/sd), with NA policies, optional raw extreme
-screening, and SDS capping.</p>
+single reference (mean/sd), with NA policies and optional SDS
+capping.</p>
 </div>
 <div class="section level2">
 <h2 id="when-to-use-this">When to use this<a class="anchor" aria-label="anchor" href="#when-to-use-this"></a>
@@ -88,10 +88,9 @@ and <code>sd &gt; 0</code> per variable, and matching columns in your
 data (via <code>col_map$vars</code> or identity names).</li>
 <li>Units: data units must match the reference (e.g., BMI kg/m^2, waist
 cm, height cm).</li>
-<li>Policies: choose <code>na_action</code> (keep/omit/error),
-<code>check_extreme</code> + <code>extreme_action</code> for raw
-screening, and <code>sds_cap</code> + <code>extreme_action</code> for
-large SDS values.</li>
+<li>Policies: choose <code>na_action</code> (keep/omit/error) and
+<code>sds_cap</code> + <code>extreme_action</code> to cap large SDS
+magnitudes.</li>
 <li>Optional: <code>return_summary = TRUE</code> to get diagnostics,
 <code>diagnostics = TRUE</code> for warnings,
 <code>verbose = TRUE</code> for progress.</li>
@@ -141,7 +140,6 @@ Bind back with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.ht
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  sds_cap <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -152,32 +150,29 @@ Bind back with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.ht
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
 <span><span class="co">#&gt;   BMI_SDS waist_SDS height_SDS</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.294     -<span style="color: #BB0000;">1.46</span>      -<span style="color: #BB0000;">0.523</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.597</span>      0.105     -<span style="color: #BB0000;">0.187</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.077</span><span style="color: #BB0000; text-decoration: underline;">7</span>     0.297      1.64 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  1.48       1.30       0.120</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">8</span>     0.930      0.180</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.696     0.506      0.625</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.279     0.617      1.15 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  -<span style="color: #BB0000;">0.209</span>    -<span style="color: #BB0000;">0.935</span>      0.654</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  -<span style="color: #BB0000;">0.354</span>    -<span style="color: #BB0000;">0.182</span>      1.13 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  -<span style="color: #BB0000;">0.734</span>    -<span style="color: #BB0000;">2.05</span>      -<span style="color: #BB0000;">1.11</span></span></span></code></pre></div>
 <p>Interpretation: each <code>&lt;var&gt;_SDS</code> is
 <code>(x - mean)/sd</code>; values near 0 are average, positive above,
-negative below the reference. <code>extreme_action = "cap"</code> would
-cap SDS beyond <code>sds_cap</code> if present.</p>
+negative below the reference. <code>extreme_action = "cap"</code> trims
+SDS values beyond <code>sds_cap</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="missing-data-and-sds-capping">Missing data and SDS capping<a class="anchor" aria-label="anchor" href="#missing-data-and-sds-capping"></a>
 </h2>
-<p>Compare NA policies and raw screening.</p>
+<p>Compare NA policies and SDS capping.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"BMI"</span>, <span class="st">"waist"</span>, <span class="st">"height"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">BMI</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>        <span class="co"># missing</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">waist</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">300</span>     <span class="co"># extreme high waist</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">height</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">20</span>     <span class="co"># extreme low height</span></span>
 <span></span>
 <span><span class="va">demo_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adiposity_sds.html">adiposity_sds</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  sds_cap <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -188,7 +183,6 @@ cap SDS beyond <code>sds_cap</code> if present.</p>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  sds_cap <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -209,9 +203,9 @@ cap SDS beyond <code>sds_cap</code> if present.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   BMI_SDS waist_SDS height_SDS</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.294    -<span style="color: #BB0000;">1.46</span>      -<span style="color: #BB0000;">0.523</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  -<span style="color: #BB0000;">0.597</span>     0.105     -<span style="color: #BB0000;">5</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  <span style="color: #BB0000;">NA</span>         0.297      1.64</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.696     0.506      0.625</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.279     0.617      1.15 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  <span style="color: #BB0000;">NA</span>        -<span style="color: #BB0000;">0.935</span>      0.654</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="diagnostics-summary-with-return_summary">Diagnostics summary with <code>return_summary</code><a class="anchor" aria-label="anchor" href="#diagnostics-summary-with-return_summary"></a>
@@ -225,10 +219,10 @@ extremes:</p>
 <span>  col_map        <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref            <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action      <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme  <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  sds_cap        <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  return_summary <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  return_summary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  verbose        <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">summary</span></span>
@@ -242,32 +236,25 @@ extremes:</p>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $total_extreme</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $raw_adjusted</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="co">#&gt; [1] 0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $per_var</span></span>
 <span><span class="co">#&gt;   variable n_missing n_extreme</span></span>
 <span><span class="co">#&gt; 1      BMI         0         0</span></span>
-<span><span class="co">#&gt; 2    waist         0         1</span></span>
-<span><span class="co">#&gt; 3   height         0         1</span></span>
+<span><span class="co">#&gt; 2    waist         0         0</span></span>
+<span><span class="co">#&gt; 3   height         0         0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">data</span><span class="op">)</span>     <span class="co"># SDS tibble</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   BMI_SDS waist_SDS height_SDS</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.294     -<span style="color: #BB0000;">1.46</span>      -<span style="color: #BB0000;">0.523</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.597</span>      0.105     -<span style="color: #BB0000;">5</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  1.48       1.30       0.120</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">8</span>     5          0.180</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  1.26       0.339      1.80 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.34      -<span style="color: #BB0000;">1.30</span>       0.518</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.696     0.506      0.625</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.279     0.617      1.15 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  -<span style="color: #BB0000;">0.354</span>    -<span style="color: #BB0000;">0.182</span>      1.13 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  -<span style="color: #BB0000;">0.734</span>    -<span style="color: #BB0000;">2.05</span>      -<span style="color: #BB0000;">1.11</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>   1.53     -<span style="color: #BB0000;">0.972</span>     -<span style="color: #BB0000;">1.36</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  -<span style="color: #BB0000;">1.77</span>     -<span style="color: #BB0000;">1.12</span>      -<span style="color: #BB0000;">0.761</span></span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">warnings</span>       <span class="co"># any diagnostic messages collected</span></span>
-<span><span class="co">#&gt; [1] "adiposity_sds(): 'BMI' missingness 12.5%"                            </span></span>
-<span><span class="co">#&gt; [2] "adiposity_sds(): adjusted 2 raw extreme values (cap)."               </span></span>
-<span><span class="co">#&gt; [3] "adiposity_sds(): capped 1 SDS beyond +/-5 for 'waist'."              </span></span>
-<span><span class="co">#&gt; [4] "adiposity_sds(): capped 1 SDS beyond +/-5 for 'height'."             </span></span>
-<span><span class="co">#&gt; [5] "adiposity_sds(): high extreme SDS proportion 9.52% (threshold 1.00%)"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "adiposity_sds(): 'BMI' missingness 12.5%"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
@@ -299,8 +286,12 @@ active:</p>
 <span>  ref   <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; adiposity_sds(): preparing inputs (5 rows, 3 vars)</span></span>
-<span><span class="co">#&gt; adiposity_sds(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist', height -&gt; 'height'</span></span>
+<span><span class="co">#&gt; adiposity_sds(): col_map (3 columns — 3 specified)</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'</span></span>
+<span><span class="co">#&gt; adiposity_sds(): computing markers:</span></span>
+<span><span class="co">#&gt;   BMI_SDS, waist_SDS, height_SDS</span></span>
 <span><span class="co">#&gt; adiposity_sds(): results: BMI_SDS 5/5, waist_SDS 5/5, height_SDS 5/5</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
@@ -316,9 +307,8 @@ finite <code>mean</code> and <code>sd &gt; 0</code> for it.</li>
 <code>na_action</code> controls row handling: <code>keep</code>
 propagates NA, <code>omit</code> drops, <code>error</code> aborts.</li>
 <li>
-<code>check_extreme</code> + <code>extreme_action</code> operate on
-raw values before SDS; <code>sds_cap</code> +
-<code>extreme_action</code> govern large SDS magnitudes.</li>
+<code>sds_cap</code> + <code>extreme_action</code> govern large SDS
+magnitudes.</li>
 <li>Numeric coercion warns if NAs are introduced; align data units with
 reference units.</li>
 <li>
@@ -336,9 +326,6 @@ the reference.</li>
 unstable SDS; use an appropriate reference population.</li>
 <li>Forgetting to map all variables in <code>col_map$vars</code> causes
 missing-column errors.</li>
-<li>Leaving <code>extreme_action = "ignore"</code> or very high
-<code>sds_cap</code> can hide implausible values; review extremes when
-QC matters.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -349,10 +336,17 @@ QC matters.</li>
 the reference.</li>
 <li>Spot-check: <code>(value - ref_mean)/ref_sd</code> for one row
 should equal <code>&lt;var&gt;_SDS</code>.</li>
-<li>Enable <code>check_extreme = TRUE</code> with tailored
-<code>extreme_rules</code> to flag implausible anthropometrics prior to
-standardizing.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which
+anthropometric columns are auto-detected before building your
+<code>col_map</code>. See the <a href="multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

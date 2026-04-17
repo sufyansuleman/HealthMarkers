@@ -17,7 +17,7 @@ both:    union of classic and eos panels
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,12 +54,10 @@ both:    union of classic and eos panels
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">inflammatory_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  panel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"classic"</span>, <span class="st">"eos"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -82,25 +80,19 @@ Keys: neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinop
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
 <dd><p>one of c("keep","omit","error"). Default "keep" propagates NA
-in outputs where inputs are missing. "omit" drops rows with any NA in required
-inputs. "error" aborts if required inputs contain NA.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>logical; if TRUE, handle extremes per <code>extreme_action</code></p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>one of c("warn","cap","error","ignore","NA")</p></dd>
+in outputs where inputs are missing.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>logical; if TRUE, prints progress messages via hm_inform</p></dd>
+<dd><p>logical; if <code>TRUE</code> (default), prints column mapping, optional input
+availability, physiological range information (informational only), the list of
+markers being computed, and a results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>tibble with selected inflammatory indices</p>
+    <p>tibble with selected inflammatory indices, with ID column prepended if
+detected (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -174,24 +166,54 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 <span class="r-in"><span><span class="co"># Classic panel (no eosinophils key)</span></span></span>
 <span class="r-in"><span><span class="va">classic_cm</span> <span class="op">&lt;-</span> <span class="va">cm</span>; <span class="va">classic_cm</span><span class="op">$</span><span class="va">eosinophils</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">classic_cm</span><span class="op">$</span><span class="va">ESR</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></span>
 <span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">classic_cm</span>, panel <span class="op">=</span> <span class="st">"classic"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): col_map (9 columns — 7 specified, 2 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   neutrophils       -&gt;  'neutrophils'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   lymphocytes       -&gt;  'lymphocytes'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   monocytes         -&gt;  'monocytes'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   platelets         -&gt;  'platelets'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   WBC               -&gt;  'WBC'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRP               -&gt;  'CRP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   albumin           -&gt;  'albumin'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eosinophils       -&gt;  'eosinophils'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ESR               -&gt;  'ESR'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): optional inputs (panel = classic)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): range note (informational, values not altered):</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   lymphocytes: 1 value(s) outside plausible range</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): computing markers: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>inflammatory_markers(): zero denominators detected.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, dNLR 2/2, SII 2/2, SIRI 2/2, AISI 2/2, CRP_category 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100     4  1.33   400     1   200 moderate    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>     0  0.8    <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span> low         </span>
 <span class="r-in"><span><span class="co"># Eosinophil panel</span></span></span>
-<span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span>, panel <span class="op">=</span> <span class="st">"eos"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>,</span></span>
-<span class="r-in"><span>                     check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): preparing inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): column map: neutrophils -&gt; 'neutrophils', lymphocytes -&gt; 'lymphocytes', monocytes -&gt; 'monocytes', platelets -&gt; 'platelets', CRP -&gt; 'CRP'</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>inflammatory_markers(): capped out-of-range extreme input values.</span>
+<span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span>, panel <span class="op">=</span> <span class="st">"eos"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): col_map (9 columns — 9 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   neutrophils       -&gt;  'neutrophils'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   lymphocytes       -&gt;  'lymphocytes'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   monocytes         -&gt;  'monocytes'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   platelets         -&gt;  'platelets'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   WBC               -&gt;  'WBC'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CRP               -&gt;  'CRP'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   albumin           -&gt;  'albumin'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   eosinophils       -&gt;  'eosinophils'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ESR               -&gt;  'ESR'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): optional inputs (panel = eos)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): range note (informational, values not altered):</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   lymphocytes: 1 value(s) outside plausible range</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): computing markers: NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>inflammatory_markers(): zero denominators detected.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, NER 2/2, SII 2/2, SIRI 2/2, PIV 2/2, CLR 2/2, CAR 2/2, PCR 2/2, mGPS 2/2, ESR 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 12</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     NLR   PLR   LMR   NER   SII  SIRI   PIV   CLR    CAR   PCR  mGPS   ESR</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100  4        4   400   1     200  1.25 0.062<span style="text-decoration: underline;">5</span>   80      0    12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2   150  3.33     2   300   0.6    90  0.8  0.019<span style="text-decoration: underline;">0</span>  188.     0    15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR    CAR   PCR  mGPS   ESR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100     4    20   400     1   200   1.25 0.062<span style="text-decoration: underline;">5</span>   80      0    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>     0    20   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span> <span style="color: #BB0000;">Inf</span>    0.019<span style="text-decoration: underline;">0</span>  188.     0    15</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

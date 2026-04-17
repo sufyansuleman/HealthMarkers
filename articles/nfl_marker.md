@@ -7,8 +7,7 @@ into the analysis pipeline. NfL is a biomarker of neuroaxonal injury;
 elevated plasma or CSF levels indicate neurodegeneration and typically
 increase with age and neurological disease. This function validates and
 passes through the input values (assumed plasma pg/mL) with optional NA
-handling and extreme-value scanning, returning a tidy tibble ready for
-downstream analysis.
+handling, returning a tidy tibble ready for downstream analysis.
 
 ## Load packages and demo data
 
@@ -36,7 +35,6 @@ out <- nfl_marker(
   data = df,
   col_map = cm,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 
@@ -71,48 +69,21 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 #> [1] 2
 ```
 
-## Extreme-value handling
+## Extreme values
 
-`check_extreme = TRUE` scans values against a broad default range of
-\[0, 1e6\] pg/mL.  
-`extreme_action` controls the response: `"warn"` emits a warning without
-altering values, `"cap"` clips to the range boundary, `"NA"` blanks
-flagged values, `"error"` aborts.
+Negative or implausibly high NfL values will be passed through as-is.
+Pre-filter before calling.
 
 ``` r
-df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is out of range
-
-nfl_marker(
-  data = df_ext,
-  col_map = cm,
-  check_extreme = TRUE,
-  extreme_action = "warn"
-)
-#> Warning: nfl_marker(): negative NfL values detected; check input data.
-#> Warning: nfl_marker(): detected 1 extreme input values (not altered).
+df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is implausible; pre-filter
+# Pre-filter:
+df_ext$NfL[df_ext$NfL < 0] <- NA
+nfl_marker(df_ext, col_map = cm, na_action = "keep")
 #> # A tibble: 3 × 1
 #>   nfl_value
 #>       <dbl>
 #> 1       8.5
-#> 2      -5  
-#> 3      22.1
-```
-
-Custom range override:
-
-``` r
-nfl_marker(
-  data = tibble::tibble(NfL = c(8.5, 5000, 22.1)),
-  col_map = cm,
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = list(nfl = c(0, 1000))
-)
-#> # A tibble: 3 × 1
-#>   nfl_value
-#>       <dbl>
-#> 1       8.5
-#> 2    1000  
+#> 2      NA  
 #> 3      22.1
 ```
 
@@ -125,8 +96,11 @@ map, and a results summary.
 ``` r
 old_opt <- options(healthmarkers.verbose = "inform")
 nfl_marker(tibble::tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
-#> nfl_marker(): preparing inputs
-#> nfl_marker(): column map: nfl -> 'NfL'
+#> nfl_marker(): reading input 'data' — 3 rows × 1 variables
+#> nfl_marker(): col_map (1 column — 1 specified)
+#>   nfl               ->  'NfL'
+#> nfl_marker(): computing markers:
+#>   nfl_value  [passthrough of NfL input]
 #> nfl_marker(): results: nfl_value 3/3
 #> # A tibble: 3 × 1
 #>   nfl_value
@@ -135,6 +109,17 @@ nfl_marker(tibble::tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
 #> 2      14.2
 #> 3      22.1
 options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
 ```
 
 ## Tips

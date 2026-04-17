@@ -8,7 +8,7 @@ tracer/DXA)
 ``` r
 all_insulin_indices(
   data,
-  col_map,
+  col_map = NULL,
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
   verbose = TRUE,

@@ -3,8 +3,7 @@
 ## Scope
 
 Non-stratified SDS (z-scores) for anthropometric measures using a single
-reference (mean/sd), with NA policies, optional raw extreme screening,
-and SDS capping.
+reference (mean/sd), with NA policies and optional SDS capping.
 
 ## When to use this
 
@@ -22,9 +21,8 @@ and SDS capping.
   identity names).
 - Units: data units must match the reference (e.g., BMI kg/m^2, waist
   cm, height cm).
-- Policies: choose `na_action` (keep/omit/error), `check_extreme` +
-  `extreme_action` for raw screening, and `sds_cap` + `extreme_action`
-  for large SDS values.
+- Policies: choose `na_action` (keep/omit/error) and `sds_cap` +
+  `extreme_action` to cap large SDS magnitudes.
 - Optional: `return_summary = TRUE` to get diagnostics,
   `diagnostics = TRUE` for warnings, `verbose = TRUE` for progress.
 
@@ -76,7 +74,6 @@ asds <- adiposity_sds(
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = FALSE,
   extreme_action = "cap",
   sds_cap = 6,
   verbose = FALSE
@@ -87,33 +84,30 @@ asds %>% slice_head(n = 5) %>% select(all_of(new_cols))
 #> # A tibble: 5 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1  0.294     -1.46      -0.523
-#> 2 -0.597      0.105     -0.187
-#> 3 -0.0777     0.297      1.64 
-#> 4  1.48       1.30       0.120
-#> 5 -0.0968     0.930      0.180
+#> 1   0.696     0.506      0.625
+#> 2   0.279     0.617      1.15 
+#> 3  -0.209    -0.935      0.654
+#> 4  -0.354    -0.182      1.13 
+#> 5  -0.734    -2.05      -1.11
 ```
 
 Interpretation: each `<var>_SDS` is `(x - mean)/sd`; values near 0 are
 average, positive above, negative below the reference.
-`extreme_action = "cap"` would cap SDS beyond `sds_cap` if present.
+`extreme_action = "cap"` trims SDS values beyond `sds_cap`.
 
-## Missing data and extremes
+## Missing data and SDS capping
 
-Compare NA policies and raw screening.
+Compare NA policies and SDS capping.
 
 ``` r
 demo <- sim_small[1:8, c("BMI", "waist", "height")]
 demo$BMI[3] <- NA        # missing
-demo$waist[5] <- 300     # extreme high waist
-demo$height[2] <- 20     # extreme low height
 
 demo_keep <- adiposity_sds(
   data = demo,
   col_map = col_map,
   ref = ref,
   na_action = "keep",
-  check_extreme = TRUE,
   extreme_action = "cap",
   sds_cap = 5,
   verbose = FALSE
@@ -124,7 +118,6 @@ demo_omit <- adiposity_sds(
   col_map = col_map,
   ref = ref,
   na_action = "omit",
-  check_extreme = TRUE,
   extreme_action = "cap",
   sds_cap = 5,
   verbose = FALSE
@@ -145,9 +138,9 @@ list(
 #> # A tibble: 3 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1   0.294    -1.46      -0.523
-#> 2  -0.597     0.105     -5    
-#> 3  NA         0.297      1.64
+#> 1   0.696     0.506      0.625
+#> 2   0.279     0.617      1.15 
+#> 3  NA        -0.935      0.654
 ```
 
 ## Diagnostics summary with `return_summary`
@@ -161,10 +154,10 @@ res <- adiposity_sds(
   col_map        = col_map,
   ref            = ref,
   na_action      = "omit",
-  check_extreme  = TRUE,
   extreme_action = "cap",
   sds_cap        = 5,
-  return_summary = TRUE
+  return_summary = TRUE,
+  verbose        = FALSE
 )
 
 res$summary
@@ -178,32 +171,25 @@ res$summary
 #> [1] 1
 #> 
 #> $total_extreme
-#> [1] 2
-#> 
-#> $raw_adjusted
-#> [1] 2
+#> [1] 0
 #> 
 #> $per_var
 #>   variable n_missing n_extreme
 #> 1      BMI         0         0
-#> 2    waist         0         1
-#> 3   height         0         1
+#> 2    waist         0         0
+#> 3   height         0         0
 head(res$data)     # SDS tibble
 #> # A tibble: 6 × 3
 #>   BMI_SDS waist_SDS height_SDS
 #>     <dbl>     <dbl>      <dbl>
-#> 1  0.294     -1.46      -0.523
-#> 2 -0.597      0.105     -5    
-#> 3  1.48       1.30       0.120
-#> 4 -0.0968     5          0.180
-#> 5  1.26       0.339      1.80 
-#> 6  1.34      -1.30       0.518
+#> 1   0.696     0.506      0.625
+#> 2   0.279     0.617      1.15 
+#> 3  -0.354    -0.182      1.13 
+#> 4  -0.734    -2.05      -1.11 
+#> 5   1.53     -0.972     -1.36 
+#> 6  -1.77     -1.12      -0.761
 res$warnings       # any diagnostic messages collected
-#> [1] "adiposity_sds(): 'BMI' missingness 12.5%"                            
-#> [2] "adiposity_sds(): adjusted 2 raw extreme values (cap)."               
-#> [3] "adiposity_sds(): capped 1 SDS beyond +/-5 for 'waist'."              
-#> [4] "adiposity_sds(): capped 1 SDS beyond +/-5 for 'height'."             
-#> [5] "adiposity_sds(): high extreme SDS proportion 9.52% (threshold 1.00%)"
+#> [1] "adiposity_sds(): 'BMI' missingness 12.5%"
 ```
 
 ## Verbose diagnostics
@@ -229,8 +215,12 @@ invisible(adiposity_sds(
   ref   = ref,
   na_action = "keep"
 ))
-#> adiposity_sds(): preparing inputs (5 rows, 3 vars)
-#> adiposity_sds(): column map: BMI -> 'BMI', waist -> 'waist', height -> 'height'
+#> adiposity_sds(): col_map (3 columns — 3 specified)
+#>   BMI               ->  'BMI'
+#>   waist             ->  'waist'
+#>   height            ->  'height'
+#> adiposity_sds(): computing markers:
+#>   BMI_SDS, waist_SDS, height_SDS
 #> adiposity_sds(): results: BMI_SDS 5/5, waist_SDS 5/5, height_SDS 5/5
 options(old_opt)
 ```
@@ -243,8 +233,7 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   `sd > 0` for it.
 - `na_action` controls row handling: `keep` propagates NA, `omit` drops,
   `error` aborts.
-- `check_extreme` + `extreme_action` operate on raw values before SDS;
-  `sds_cap` + `extreme_action` govern large SDS magnitudes.
+- `sds_cap` + `extreme_action` govern large SDS magnitudes.
 - Numeric coercion warns if NAs are introduced; align data units with
   reference units.
 - `return_summary = TRUE` returns data plus summaries of omissions and
@@ -258,8 +247,6 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   an appropriate reference population.
 - Forgetting to map all variables in `col_map$vars` causes
   missing-column errors.
-- Leaving `extreme_action = "ignore"` or very high `sds_cap` can hide
-  implausible values; review extremes when QC matters.
 
 ## Validation notes
 
@@ -267,8 +254,17 @@ Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
   the reference.
 - Spot-check: `(value - ref_mean)/ref_sd` for one row should equal
   `<var>_SDS`.
-- Enable `check_extreme = TRUE` with tailored `extreme_rules` to flag
-  implausible anthropometrics prior to standardizing.
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which anthropometric columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## See also
 

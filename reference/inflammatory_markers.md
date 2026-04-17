@@ -14,12 +14,10 @@ Panels:
 ``` r
 inflammatory_markers(
   data,
-  col_map,
+  col_map = NULL,
   panel = c("auto", "classic", "eos", "both"),
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -43,24 +41,18 @@ inflammatory_markers(
 - na_action:
 
   one of c("keep","omit","error"). Default "keep" propagates NA in
-  outputs where inputs are missing. "omit" drops rows with any NA in
-  required inputs. "error" aborts if required inputs contain NA.
-
-- check_extreme:
-
-  logical; if TRUE, handle extremes per `extreme_action`
-
-- extreme_action:
-
-  one of c("warn","cap","error","ignore","NA")
+  outputs where inputs are missing.
 
 - verbose:
 
-  logical; if TRUE, prints progress messages via hm_inform
+  logical; if `TRUE` (default), prints column mapping, optional input
+  availability, physiological range information (informational only),
+  the list of markers being computed, and a results summary.
 
 ## Value
 
-tibble with selected inflammatory indices
+tibble with selected inflammatory indices, with ID column prepended if
+detected (e.g. `id`, `IID`, `participant_id`).
 
 ## Details
 
@@ -144,22 +136,52 @@ cm <- list(
 # Classic panel (no eosinophils key)
 classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
 inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
+#> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables
+#> inflammatory_markers(): col_map (9 columns — 7 specified, 2 inferred from data)
+#>   neutrophils       ->  'neutrophils'
+#>   lymphocytes       ->  'lymphocytes'
+#>   monocytes         ->  'monocytes'
+#>   platelets         ->  'platelets'
+#>   WBC               ->  'WBC'
+#>   CRP               ->  'CRP'
+#>   albumin           ->  'albumin'
+#>   eosinophils       ->  'eosinophils'    (inferred)
+#>   ESR               ->  'ESR'    (inferred)
+#> inflammatory_markers(): optional inputs (panel = classic)
+#>   present:  neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR
+#> inflammatory_markers(): range note (informational, values not altered):
+#>   lymphocytes: 1 value(s) outside plausible range
+#> inflammatory_markers(): computing markers: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category
 #> Warning: inflammatory_markers(): zero denominators detected.
+#> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, dNLR 2/2, SII 2/2, SIRI 2/2, AISI 2/2, CRP_category 2/2
 #> # A tibble: 2 × 8
 #>     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <ord>       
 #> 1     2   100     4  1.33   400     1   200 moderate    
 #> 2   Inf   Inf     0  0.8    Inf   Inf   Inf low         
 # Eosinophil panel
-inflammatory_markers(df, cm, panel = "eos", na_action = "keep",
-                     check_extreme = TRUE, extreme_action = "cap", verbose = TRUE)
-#> inflammatory_markers(): preparing inputs
-#> inflammatory_markers(): column map: neutrophils -> 'neutrophils', lymphocytes -> 'lymphocytes', monocytes -> 'monocytes', platelets -> 'platelets', CRP -> 'CRP'
-#> Warning: inflammatory_markers(): capped out-of-range extreme input values.
+inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
+#> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables
+#> inflammatory_markers(): col_map (9 columns — 9 specified)
+#>   neutrophils       ->  'neutrophils'
+#>   lymphocytes       ->  'lymphocytes'
+#>   monocytes         ->  'monocytes'
+#>   platelets         ->  'platelets'
+#>   WBC               ->  'WBC'
+#>   CRP               ->  'CRP'
+#>   albumin           ->  'albumin'
+#>   eosinophils       ->  'eosinophils'
+#>   ESR               ->  'ESR'
+#> inflammatory_markers(): optional inputs (panel = eos)
+#>   present:  neutrophils, lymphocytes, monocytes, platelets, WBC, CRP, albumin, eosinophils, ESR
+#> inflammatory_markers(): range note (informational, values not altered):
+#>   lymphocytes: 1 value(s) outside plausible range
+#> inflammatory_markers(): computing markers: NLR, PLR, LMR, NER, SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR
+#> Warning: inflammatory_markers(): zero denominators detected.
 #> inflammatory_markers(): results: NLR 2/2, PLR 2/2, LMR 2/2, NER 2/2, SII 2/2, SIRI 2/2, PIV 2/2, CLR 2/2, CAR 2/2, PCR 2/2, mGPS 2/2, ESR 2/2
 #> # A tibble: 2 × 12
-#>     NLR   PLR   LMR   NER   SII  SIRI   PIV   CLR    CAR   PCR  mGPS   ESR
-#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl> <dbl> <int> <dbl>
-#> 1     2   100  4        4   400   1     200  1.25 0.0625   80      0    12
-#> 2     2   150  3.33     2   300   0.6    90  0.8  0.0190  188.     0    15
+#>     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR    CAR   PCR  mGPS   ESR
+#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>  <dbl> <dbl> <int> <dbl>
+#> 1     2   100     4    20   400     1   200   1.25 0.0625   80      0    12
+#> 2   Inf   Inf     0    20   Inf   Inf   Inf Inf    0.0190  188.     0    15
 ```

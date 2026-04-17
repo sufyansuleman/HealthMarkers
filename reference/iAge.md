@@ -11,14 +11,11 @@ necrosis factor-alpha (TNFa).
 ``` r
 iAge(
   data,
-  col_map,
+  col_map = NULL,
   weights = c(CRP = 0.33, IL6 = 0.33, TNFa = 0.34),
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  na_warn_prop = 0.2
 )
 ```
 
@@ -46,8 +43,7 @@ iAge(
 
 - verbose:
 
-  Logical; if TRUE, prints stepwise progress and a completion summary.
-  Default FALSE.
+  Logical; if TRUE, prints column mapping and computing messages.
 
 - na_action:
 
@@ -70,32 +66,6 @@ iAge(
 
   Proportion in \\\[0,1\]\\ above which a high-missingness warning is
   emitted when `na_action = "warn"`. Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for values outside plausible ranges.
-  Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") controlling what to do
-  when extremes are detected.
-
-  - "warn": issue a warning, do not modify values (default if
-    check_extreme = TRUE).
-
-  - "cap": truncate values to the allowed range and warn.
-
-  - "error": abort on detection.
-
-  - "ignore": do nothing.
-
-  - "NA": set out-of-range values to NA.
-
-- extreme_rules:
-
-  Optional named list of numeric ranges c(min, max) for CRP, IL6, TNFa.
-  If NULL, broad defaults are used.
 
 ## Value
 
@@ -126,16 +96,6 @@ Note:
   identical to the original published iAge but is inspired by its
   rationale.
 
-Default extreme ranges (if `extreme_rules = NULL`):
-
-- CRP: 0 to 300 mg/L
-
-- IL6: 0 to 1,000 pg/mL
-
-- TNFa: 0 to 1,000 pg/mL
-
-These are deliberately broad. Adjust `extreme_rules` to fit your cohort.
-
 ## References
 
 Sayed N, others (2021). “An inflammatory aging clock (iAge) predicts
@@ -163,6 +123,14 @@ iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
 )
+#> iAge(): reading input 'df' — 3 rows × 3 variables
+#> iAge(): col_map (3 columns — 3 specified)
+#>   CRP               ->  'CRP'
+#>   IL6               ->  'IL6'
+#>   TNFa              ->  'TNFa'
+#> iAge(): computing markers:
+#>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]
+#> iAge(): results: iAge 2/3
 #> # A tibble: 3 × 1
 #>    iAge
 #>   <dbl>
@@ -176,6 +144,14 @@ iAge(
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
   na_action = "keep"
 )
+#> iAge(): reading input 'df' — 3 rows × 3 variables
+#> iAge(): col_map (3 columns — 3 specified)
+#>   CRP               ->  'CRP'
+#>   IL6               ->  'IL6'
+#>   TNFa              ->  'TNFa'
+#> iAge(): computing markers:
+#>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]
+#> iAge(): results: iAge 2/3
 #> # A tibble: 3 × 1
 #>    iAge
 #>   <dbl>
@@ -183,14 +159,19 @@ iAge(
 #> 2  3.12
 #> 3 NA   
 
-# Scan and cap extreme values
+# Verbose output
 iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
-  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+  verbose = TRUE
 )
-#> iAge(): preparing inputs
-#> iAge(): column map: CRP -> 'CRP', IL6 -> 'IL6', TNFa -> 'TNFa'
+#> iAge(): reading input 'df' — 3 rows × 3 variables
+#> iAge(): col_map (3 columns — 3 specified)
+#>   CRP               ->  'CRP'
+#>   IL6               ->  'IL6'
+#>   TNFa              ->  'TNFa'
+#> iAge(): computing markers:
+#>   iAge  [weighted sum: CRP*0.33 + IL6*0.33 + TNFa*0.34]
 #> iAge(): results: iAge 2/3
 #> # A tibble: 3 × 1
 #>    iAge

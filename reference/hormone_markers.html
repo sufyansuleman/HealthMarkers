@@ -29,7 +29,7 @@ CAR_slope = (cortisol_30 - cortisol_0) / 30
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,13 +72,10 @@ CAR_slope = (cortisol_30 - cortisol_0) / 30
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hormone_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ignore"</span>, <span class="st">"warn"</span>, <span class="st">"error"</span>, <span class="st">"keep"</span>, <span class="st">"omit"</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"warn"</span>, <span class="st">"ignore"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,32 +94,28 @@ aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore; omit drops rows with any NA in used inputs.</p></dd>
+<dd><p>One of <code>c("keep","omit","error","warn","ignore")</code>. <code>"keep"</code>/<code>"ignore"</code> leave NAs;
+<code>"omit"</code> drops rows with any NA in used inputs; <code>"error"</code> aborts;
+<code>"warn"</code> also warns about high missingness.</p></dd>
 
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
-<dd><p>Proportion in \([0,1]\) for high-missingness warnings when na_action="warn". Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for out-of-range values (see extreme_rules). Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of "warn","cap","error","ignore","NA" when check_extreme=TRUE. "cap" truncates to range; "NA" sets out-of-range to NA.</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional list of c(min,max) per key to override defaults.</p></dd>
+<dd><p>Proportion in \([0,1]\) for high-missingness warnings
+when <code>na_action = "warn"</code>. Default 0.2.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; print progress and completion summary.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints column mapping, input
+availability, inference notes, physiological range information
+(informational only, values not altered), computing markers, and a
+per-column results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Tibble with the nine ratio markers.</p>
+    <p>Tibble with one column per computable ratio. If an ID column is
+detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>), it is prepended
+as the first output column.</p>
     </div>
 
     <div class="section level2">
@@ -143,6 +136,41 @@ aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol
 <span class="r-in"><span>  prolactin <span class="op">=</span> <span class="st">"Prl"</span>, cortisol_0 <span class="op">=</span> <span class="st">"Cort0"</span>, cortisol_30 <span class="op">=</span> <span class="st">"Cort30"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">hormone_markers</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="va">col_map</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): reading input 'df' — 2 rows × 17 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): col_map (15 columns — 15 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   total_testosterone-&gt;  'TT'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   SHBG              -&gt;  'SHBG'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   LH                -&gt;  'LH'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FSH               -&gt;  'FSH'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   estradiol         -&gt;  'E2'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   progesterone      -&gt;  'Prog'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   free_T3           -&gt;  'fT3'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   free_T4           -&gt;  'fT4'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   aldosterone       -&gt;  'Aldo'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   renin             -&gt;  'Renin'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   insulin           -&gt;  'Ins'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   IGF1              -&gt;  'IGF1'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   prolactin         -&gt;  'Prl'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   cortisol_0        -&gt;  'Cort0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   cortisol_30       -&gt;  'Cort30'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): optional inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4, aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   missing:  TSH</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ratios skipped (missing inputs): TSH_fT4</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FAI          [total_testosterone, SHBG]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   LH_FSH       [LH, FSH]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   E2_P         [estradiol, progesterone]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   E2_T         [estradiol, total_testosterone]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   T3_T4        [free_T3, free_T4]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TSH_fT4      NA [missing: TSH]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ARR          [aldosterone, renin]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ins_Glu      [insulin, glucagon]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   GH_IGF1      [GH, IGF1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   PRL_T        [prolactin, total_testosterone]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   CAR_slope    [cortisol_0, cortisol_30]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> hormone_markers(): results: FAI 2/2, LH_FSH 2/2, E2_P 2/2, E2_T 2/2, T3_T4 2/2, ARR 2/2, Ins_Glu 2/2, GH_IGF1 2/2, PRL_T 2/2, CAR_slope 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

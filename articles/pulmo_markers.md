@@ -152,10 +152,32 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
   )
   options(old_opt)
 }
+#> pulmo_markers(): reading input 'df' — 3 rows × 6 variables
 #> pulmo_markers(): preparing inputs [GLI]
-#> pulmo_markers(): column map: age -> 'age', sex -> 'sex', height -> 'height', ethnicity -> 'ethnicity', fev1 -> 'fev1', fvc -> 'fvc'
+#> pulmo_markers(): col_map (6 columns — 6 inferred from data)
+#>   age               ->  'age'    (inferred)
+#>   sex               ->  'sex'    (inferred)
+#>   height            ->  'height'    (inferred)
+#>   ethnicity         ->  'ethnicity'    (inferred)
+#>   fev1              ->  'fev1'    (inferred)
+#>   fvc               ->  'fvc'    (inferred)
+#> pulmo_markers(): computing markers:
+#>   fev1_pred, fev1_z, fev1_pctpred, fev1_LLN [age, height, sex, ethnicity, fev1]
+#>   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]
+#>   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]
 #> pulmo_markers(): converting height from cm to m
 #> pulmo_markers(): results: fev1_pred 3/3, fev1_z 3/3, fev1_pctpred 3/3, fev1_LLN 3/3, fvc_pred 3/3, fvc_z 3/3, fvc_pctpred 3/3, fvc_LLN 3/3, fev1_fvc_ratio 3/3, fev1_fvc_pred 3/3, fev1_fvc_z 3/3, fev1_fvc_pctpred 3/3, fev1_fvc_LLN 0/3
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
 ```
 
 ## Tips for best results

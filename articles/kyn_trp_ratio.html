@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,9 +64,61 @@
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
 <p>Compute the kynurenine/tryptophan ratio (KTR), a marker of IDO
-activity and immune activation. Supports NA policies, optional extreme
-screening (warn/cap/NA/error), and verbose progress. Inputs must already
-be Kyn (nmol/L) and Trp (µmol/L); no unit conversion.</p>
+activity and immune activation. Supports NA policies and verbose
+progress. Inputs must already be Kyn (nmol/L) and Trp (µmol/L); no unit
+conversion.</p>
+</div>
+<div class="section level2">
+<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
+<p>The kynurenine/tryptophan ratio (KTR) quantifies the activity of
+indoleamine 2,3-dioxygenase 1 (IDO1), the rate-limiting enzyme in the
+kynurenine pathway of tryptophan catabolism. Elevated KTR reflects:</p>
+<ul>
+<li>
+<strong>Immune activation:</strong> IDO1 is upregulated by
+interferon-γ and other pro-inflammatory signals; high KTR indicates
+cell-mediated immune response.</li>
+<li>
+<strong>Immune escape:</strong> tumour cells exploit IDO1 to
+suppress T-cell activity; KTR is elevated in many malignancies.</li>
+<li>
+<strong>Ageing and inflammation:</strong> KTR rises with biological
+age and correlates with inflammatory burden (CRP, IL-6).</li>
+</ul>
+<p>Formula: <span class="math inline">$\text{KTR} =
+\frac{\text{kynurenine (nmol/L)}}{\text{tryptophan (\mu
+mol/L)}}$</span></p>
+<p>Approximate reference values in healthy adults:</p>
+<table class="table">
+<thead><tr class="header">
+<th>Population</th>
+<th>Typical KTR</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Healthy adults (&lt; 50 yr)</td>
+<td>15–30</td>
+</tr>
+<tr class="even">
+<td>Older adults (&gt; 65 yr)</td>
+<td>25–45</td>
+</tr>
+<tr class="odd">
+<td>Active infection / sepsis</td>
+<td>80–400+</td>
+</tr>
+<tr class="even">
+<td>Cancer (some types)</td>
+<td>50–200</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Unit note:</strong> Kyn must be in nmol/L and Trp in µmol/L
+for the ratio to yield values in the physiological range. The resulting
+KTR is unitless (nmol/µmol).</p>
+</blockquote>
 </div>
 <div class="section level2">
 <h2 id="load-packages-and-demo-data">Load packages and demo data<a class="anchor" aria-label="anchor" href="#load-packages-and-demo-data"></a>
@@ -75,10 +127,14 @@ be Kyn (nmol/L) and Trp (µmol/L); no unit conversion.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sufyansuleman.github.io/HealthMarkers/">HealthMarkers</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Eight participants: healthy → chronically ill → acute infection range</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  Kyn_nM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1800</span>, <span class="fl">2500</span>, <span class="fl">3200</span><span class="op">)</span>,</span>
-<span>  Trp_uM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">42</span>, <span class="fl">12</span><span class="op">)</span></span>
+<span>  Kyn_nM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1200</span>, <span class="fl">1800</span>, <span class="fl">2500</span>, <span class="fl">3200</span>, <span class="fl">4500</span>, <span class="fl">8000</span>, <span class="fl">15000</span>, <span class="fl">25000</span><span class="op">)</span>,</span>
+<span>  Trp_uM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">62</span>,   <span class="fl">50</span>,   <span class="fl">42</span>,   <span class="fl">38</span>,   <span class="fl">35</span>,   <span class="fl">28</span>,   <span class="fl">18</span>,    <span class="fl">12</span>   <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p><em>Row interpretation:</em> rows 1–2 ≈ healthy adults; rows 3–4 ≈
+sub-clinical inflammation; rows 5–6 ≈ chronic immune activation; rows
+7–8 ≈ acute infection or high-grade malignancy.</p>
 </div>
 <div class="section level2">
 <h2 id="column-map-required">Column map (required)<a class="anchor" aria-label="anchor" href="#column-map-required"></a>
@@ -96,44 +152,51 @@ where inputs are missing; no extreme scan.</p>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ktr</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 1</span></span></span>
 <span><span class="co">#&gt;   kyn_trp_ratio</span></span>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          36  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          59.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         267.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          19.4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          36  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          59.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          84.2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         129. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         286. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>         833. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        <span style="text-decoration: underline;">2</span>083.</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-screening">Extreme screening<a class="anchor" aria-label="anchor" href="#extreme-screening"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Scan and cap into default ranges.</p>
+<p>Extreme Kyn or Trp values will produce extreme KTR. Pre-filter
+implausible inputs before calling.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_ext</span> <span class="op">&lt;-</span> <span class="va">df</span></span>
-<span><span class="va">df_ext</span><span class="op">$</span><span class="va">Kyn_nM</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">50000</span>  <span class="co"># extreme</span></span>
+<span><span class="va">df_ext</span><span class="op">$</span><span class="va">Kyn_nM</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">50000</span>  <span class="co"># extreme; pre-filter</span></span>
+<span><span class="va">df_ext</span><span class="op">$</span><span class="va">Kyn_nM</span><span class="op">[</span><span class="va">df_ext</span><span class="op">$</span><span class="va">Kyn_nM</span> <span class="op">&gt;</span> <span class="fl">20000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
-<span><span class="va">ktr_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kyn_trp_ratio.html">kyn_trp_ratio</a></span><span class="op">(</span></span>
+<span><span class="va">ktr_filtered</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/kyn_trp_ratio.html">kyn_trp_ratio</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df_ext</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ktr_cap</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
+<span><span class="va">ktr_filtered</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 1</span></span></span>
 <span><span class="co">#&gt;   kyn_trp_ratio</span></span>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>           36 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          476.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          267.</span></span></code></pre></div>
-<p><code>extreme_action = "warn"</code> only warns; <code>error</code>
-aborts; <code>NA</code> blanks flagged values.</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          19.4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          <span style="color: #BB0000;">NA</span>  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          59.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          84.2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         129. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         286. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>         833. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>          <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
@@ -150,10 +213,10 @@ with NA ratios; <code>omit</code> drops rows with missing inputs;
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">keep_out</span><span class="op">)</span>, omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">omit_out</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $keep_rows</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="co">#&gt; [1] 8</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $omit_rows</span></span>
-<span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 7</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -163,8 +226,6 @@ with NA ratios; <code>omit</code> drops rows with missing inputs;
 coerced with warnings if NAs are introduced.</li>
 <li>Trp must be positive; nonpositive values are set to <code>NA</code>
 with a warning.</li>
-<li>Extreme defaults: Kyn 100–20000 nmol/L, Trp 10–150 µmol/L, ratio
-0–200; adjust with <code>extreme_rules</code>.</li>
 <li>Output: one-column tibble <code>kyn_trp_ratio</code>; row count
 follows <code>na_action</code> if you omit rows.</li>
 </ul>
@@ -179,16 +240,40 @@ follows <code>na_action</code> if you omit rows.</li>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; kyn_trp_ratio(): reading input 'df' — 8 rows × 2 variables</span></span>
 <span><span class="co">#&gt; kyn_trp_ratio(): preparing inputs</span></span>
-<span><span class="co">#&gt; kyn_trp_ratio(): column map: kynurenine -&gt; 'Kyn_nM', tryptophan -&gt; 'Trp_uM'</span></span>
-<span><span class="co">#&gt; kyn_trp_ratio(): results: kyn_trp_ratio 3/3</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
+<span><span class="co">#&gt; kyn_trp_ratio(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   kynurenine        -&gt;  'Kyn_nM'</span></span>
+<span><span class="co">#&gt;   tryptophan        -&gt;  'Trp_uM'</span></span>
+<span><span class="co">#&gt; kyn_trp_ratio(): computing markers:</span></span>
+<span><span class="co">#&gt;   kyn_trp_ratio  [kynurenine (nmol/L) / tryptophan (mumol/L)]</span></span>
+<span><span class="co">#&gt; kyn_trp_ratio(): results: kyn_trp_ratio 8/8</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 1</span></span></span>
 <span><span class="co">#&gt;   kyn_trp_ratio</span></span>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          36  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          59.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>         267.</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          19.4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          36  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          59.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          84.2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         129. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         286. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>         833. </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span>        <span style="text-decoration: underline;">2</span>083.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition-multi-biobank">Column recognition (multi-biobank)<a class="anchor" aria-label="anchor" href="#column-recognition-multi-biobank"></a>
+</h2>
+<p>Kynurenine and tryptophan are measured by targeted HPLC or
+mass-spectrometry panels. Column names vary widely across platforms. Use
+<code><a href="../reference/hm_col_report.html">hm_col_report()</a></code> to check what is auto-detected in your
+dataset:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span>  <span class="co"># shows matched keys and suggests col_map entries</span></span></code></pre></div>
+<p>See the <a href="multi_biobank.html">Multi-Biobank Compatibility</a>
+article for a full list of recognised synonyms (e.g.,
+<code>kynurenine_nmol_L</code>, <code>KYN</code>, <code>TRP</code>,
+<code>tryptophan_umol</code>).</p>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
@@ -196,8 +281,10 @@ follows <code>na_action</code> if you omit rows.</li>
 <ul>
 <li>Re-check units when ratios are very high (&gt;100); Kyn should be
 nmol/L and Trp µmol/L.</li>
-<li>Use <code>extreme_action = "cap"</code> sparingly and adjust ranges
-to your cohort.</li>
+<li>Reference: Badawy AA-B (2019). Tryptophan metabolism: a versatile
+area providing multiple targets for pharmacological intervention.
+<em>Egypt J Basic Clin Pharmacol</em>. <a href="https://doi.org/10.32527/2019/101415" class="external-link uri">https://doi.org/10.32527/2019/101415</a>
+</li>
 <li>For modeling, consider scaling/transforming KTR separately after
 computation.</li>
 </ul>

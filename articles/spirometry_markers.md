@@ -21,15 +21,12 @@ values and ratios \> 1 warnings.
 
 ## What you need (inputs & options)
 
-| Argument       | Purpose / Options                         | Notes                                                                           |
-|----------------|-------------------------------------------|---------------------------------------------------------------------------------|
-| data           | Data frame/tibble with spirometry         | Volumes must be in liters                                                       |
-| col_map        | Named list mapping columns                | Required: fev1, fvc; Optional: fev1_post, fvc_post, age, height, sex, ethnicity |
-| na_action      | Missing-data policy for required fev1/fvc | “keep” (default), “omit”, “error”, “ignore”, “warn”                             |
-| check_extreme  | Scan inputs against bounds                | Default FALSE                                                                   |
-| extreme_action | Handling for extremes                     | “warn” (default), “cap”, “error”, “ignore”, “NA”                                |
-| extreme_rules  | Bounds list `c(min, max)` per input       | Default fev1 0–8 L, fvc 0–10 L                                                  |
-| verbose        | Emit progress messages                    | Default FALSE                                                                   |
+| Argument  | Purpose / Options                         | Notes                                                                           |
+|-----------|-------------------------------------------|---------------------------------------------------------------------------------|
+| data      | Data frame/tibble with spirometry         | Volumes must be in liters                                                       |
+| col_map   | Named list mapping columns                | Required: fev1, fvc; Optional: fev1_post, fvc_post, age, height, sex, ethnicity |
+| na_action | Missing-data policy for required fev1/fvc | “keep” (default), “omit”, “error”, “ignore”, “warn”                             |
+| verbose   | Emit progress messages                    | Default FALSE                                                                   |
 
 **Units:** Inputs must be liters. No unit conversion is performed.
 
@@ -43,9 +40,6 @@ a debug fallback reference is used or GLI fields stay NA.
   volumes are coerced with warnings; non-finite become NA.
 - Missingness: `keep`/`ignore`/`warn` propagate NA; `omit` drops rows
   with required NA; `error` aborts if required NA.
-- Extreme screening (optional): bounds on fev1/fvc; `extreme_action`
-  controls warn/cap/error/ignore/NA. Defaults cap to 0–8/0–10 only if
-  enabled.
 - Domain warnings: zero FVC -\> ratio NA with warning; negative volumes
   warn; ratios \> 1 warn to check units.
 - GLI references: used only when age/height/sex/ethnicity provided and
@@ -56,21 +50,15 @@ a debug fallback reference is used or GLI fields stay NA.
   percent-predicted thresholds.
 - Bronchodilator response: percent change `(post - pre) / pre * 100`;
   requires both pre and post columns.
-- Padding: if rows are omitted under `na_action = "omit"`, outputs are
-  padded back to input row count when NA policy keeps rows.
 
 ## Defaults and validation details
 
-- Default extreme bounds: fev1 0–8 L, fvc 0–10 L (applied only when
-  `check_extreme = TRUE`).
 - GLI mapping: sex strings starting with m/1 -\> Male; f/0/2 -\> Female;
   ethnicity regex maps to GLI categories (Caucasian, African American,
   North East Asian, South East Asian, Other).
 - Fallback reference (if `rspiro` unavailable): rough height/age
   equations for testability; not clinical—aimed to avoid all-NA outputs
   in tests.
-- High-missing diagnostics are not emitted unless `verbose`/debug
-  logging is enabled via `hm_inform`.
 - Empty result: if `na_action = "omit"` drops all rows, returns a
   zero-row tibble with expected columns.
 
@@ -112,7 +100,7 @@ spirometry_markers(
 *Interpretation:* Returns pre FEV1/FVC ratios and fixed-ratio flags; NA
 propagates where inputs are missing.
 
-## Worked example 2: With post-BD, GLI inputs, cap extremes
+## Worked example 2: With post-BD and GLI inputs
 
 ``` r
 df2 <- tibble::tibble(
@@ -125,6 +113,10 @@ df2 <- tibble::tibble(
   sex = c("male", "female", "male"),
   ethnicity = c("Caucasian", "African American", "Other")
 )
+
+# Pre-filter implausible volumes before calling
+df2$fev1_pre[df2$fev1_pre > 8] <- NA
+df2$fvc_pre[df2$fvc_pre > 10] <- NA
 
 cm2 <- list(
   fev1 = "fev1_pre",
@@ -140,24 +132,22 @@ cm2 <- list(
 spirometry_markers(
   data = df2,
   col_map = cm2,
-  check_extreme = TRUE,
-  extreme_action = "cap",
   na_action = "keep",
   verbose = TRUE
 )
 #> # A tibble: 3 × 12
 #>   ratio_pre ratio_post copd_flag_fixed obstruction_lln fev1_pp fvc_pp fev1_z
 #>       <dbl>      <dbl> <lgl>           <lgl>             <dbl>  <dbl>  <dbl>
-#> 1      0.7       0.75  FALSE           FALSE              40.8   42.1  -5.92
-#> 2      0.5       0.579 TRUE            TRUE               23.7   31.2  -7.63
-#> 3      0.75      0.686 TRUE            TRUE              126.   125.    2.65
+#> 1       0.7      0.75  FALSE           FALSE              40.8   42.1  -5.92
+#> 2       0.5      0.579 TRUE            TRUE               23.7   31.2  -7.63
+#> 3      NA        0.686 TRUE            TRUE              126.    NA     2.65
 #> # ℹ 5 more variables: fvc_z <dbl>, ratio_z <dbl>, gold_grade <chr>,
 #> #   bdr_fev1 <dbl>, bdr_fvc <dbl>
 ```
 
-*Interpretation:* Extremes are capped before ratios; GLI fields are
-computed when `rspiro` is available, otherwise fall back or remain NA.
-Bronchodilator deltas are percent changes pre→post.
+*Interpretation:* Implausible volumes are set to NA before calling; GLI
+fields are computed when `rspiro` is available, otherwise fall back or
+remain NA. Bronchodilator deltas are percent changes pre→post.
 
 ## Worked example 3: Strict missing policy
 
@@ -177,8 +167,6 @@ try(
 
 ## Troubleshooting & common pitfalls
 
-- YAML/header: keep YAML at the top; stray text before it breaks
-  knitting.
 - Units: volumes must be liters; convert upstream. Ratios \> 1 often
   indicate unit issues.
 - Missing columns: ensure `fev1` and `fvc` are mapped; post and GLI
@@ -186,8 +174,6 @@ try(
 - GLI availability: requires `rspiro` plus age/height/sex/ethnicity;
   otherwise GLI outputs may be NA or use fallback approximations.
 - Zero/negative volumes: produce warnings; zero FVC yields NA ratios.
-- Outliers: enable `check_extreme` with `extreme_action = "cap"` or
-  `"NA"` to constrain implausible volumes.
 
 ## Verbose diagnostics
 
@@ -201,8 +187,16 @@ spirometry_markers(
   col_map = list(fev1 = "FEV1", fvc = "FVC"),
   verbose = TRUE
 )
-#> spirometry_markers(): preparing inputs
-#> spirometry_markers(): column map: fev1 -> 'FEV1', fvc -> 'FVC'
+#> spirometry_markers(): reading input 'data' — 1 rows × 2 variables
+#> spirometry_markers(): col_map (2 columns — 2 specified)
+#>   fev1              ->  'FEV1'
+#>   fvc               ->  'FVC'
+#> spirometry_markers(): computing markers:
+#>   ratio_pre/post  [FEV1/FVC]
+#>   copd_flag_fixed [ratio < 0.70]
+#>   obstruction_lln [LLN-based]
+#>   fev1_pp/fvc_pp  [% predicted]
+#>   gold_grade      [GOLD severity]
 #> spirometry_markers(): results: ratio_pre 1/1, ratio_post 0/1, copd_flag_fixed 1/1, obstruction_lln 0/1, fev1_pp 0/1, fvc_pp 0/1, fev1_z 0/1, fvc_z 0/1, ratio_z 0/1, gold_grade 0/1, bdr_fev1 0/1, bdr_fvc 0/1
 #> # A tibble: 1 × 12
 #>   ratio_pre ratio_post copd_flag_fixed obstruction_lln fev1_pp fvc_pp fev1_z
@@ -211,6 +205,17 @@ spirometry_markers(
 #> # ℹ 5 more variables: fvc_z <dbl>, ratio_z <dbl>, gold_grade <chr>,
 #> #   bdr_fev1 <dbl>, bdr_fvc <dbl>
 options(old_opt)
+```
+
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
 ```
 
 ## Tips for best results

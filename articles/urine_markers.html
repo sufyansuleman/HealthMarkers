@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,21 +114,6 @@ Inf/NaN.</li>
 <td>Default 0.2 (shown in debug/verbose)</td>
 </tr>
 <tr class="even">
-<td>check_extreme</td>
-<td>Scan inputs against bounds</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="odd">
-<td>extreme_action</td>
-<td>Handling for extremes</td>
-<td>“warn” (default), “cap”, “error”, “ignore”</td>
-</tr>
-<tr class="even">
-<td>extreme_rules</td>
-<td>Optional bounds list c(min, max) per input</td>
-<td>Defaults are broad, see below</td>
-</tr>
-<tr class="odd">
 <td>verbose</td>
 <td>Emit progress and completion summaries</td>
 <td>Default FALSE</td>
@@ -155,10 +140,6 @@ drops rows with required NA; <code>error</code> aborts if required
 inputs contain NA.</li>
 <li>High-missing diagnostics: controlled by <code>na_warn_prop</code>;
 shown when <code>verbose</code> (or debug) is enabled.</li>
-<li>Extreme screening (optional): defaults are broad
-(albumin/protein/markers 0–100000 mg/L; creatinine 0.01–500 mg/dL; Na
-0–400; K 0–200); <code>extreme_action</code> controls
-warn/cap/error/ignore.</li>
 <li>Safe division: zero/invalid denominators set outputs to NA with a
 consolidated warning.</li>
 <li>Albuminuria staging: A1 &lt; 30 mg/g, A2 30–300 mg/g, A3 &gt; 300
@@ -215,51 +196,48 @@ U_Na_K_ratio, and NGAL_per_gCr where inputs exist; NA propagates for
 missing or zero denominators (e.g., urine_K = 0).</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-cap-extremes-drop-incomplete">Worked example 2: Cap extremes, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-cap-extremes-drop-incomplete"></a>
+<h2 id="worked-example-2-drop-incomplete-rows">Worked example 2: Drop incomplete rows<a class="anchor" aria-label="anchor" href="#worked-example-2-drop-incomplete-rows"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  urine_albumin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">120000</span><span class="op">)</span>,    <span class="co"># extreme albumin</span></span>
-<span>  urine_creatinine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">0.005</span><span class="op">)</span>, <span class="co"># very low creatinine</span></span>
+<span>  urine_albumin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">120000</span><span class="op">)</span>,    <span class="co"># extreme albumin; pre-filter</span></span>
+<span>  urine_creatinine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">0.005</span><span class="op">)</span>, <span class="co"># very low creatinine; pre-filter</span></span>
 <span>  urine_protein <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>, <span class="fl">90000</span><span class="op">)</span>,</span>
-<span>  urine_Na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">500</span><span class="op">)</span>,            <span class="co"># extreme Na</span></span>
-<span>  urine_K <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">35</span>, <span class="fl">210</span><span class="op">)</span>,             <span class="co"># extreme K</span></span>
+<span>  urine_Na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">500</span><span class="op">)</span>,</span>
+<span>  urine_K <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">35</span>, <span class="fl">210</span><span class="op">)</span>,</span>
 <span>  NGAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">200000</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Pre-filter implausible values before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">urine_albumin</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">urine_albumin</span> <span class="op">&gt;</span> <span class="fl">100000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">NGAL</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">NGAL</span> <span class="op">&gt;</span> <span class="fl">100000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/urine_markers.html">urine_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 12</span></span></span>
-<span><span class="co">#&gt;         UACR albuminuria_stage microalbuminuria   UPCR U_Na_K_ratio NGAL_per_gCr</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>    1.67<span style="color: #949494;">e</span> 4 A3                normal           6.67<span style="color: #949494;">e</span>3         2.57         833.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>    1   <span style="color: #949494;">e</span>10 A3                normal           9   <span style="color: #949494;">e</span>8         2     <span style="text-decoration: underline;">1</span>000<span style="text-decoration: underline;">000</span>000 </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 12</span></span></span>
+<span><span class="co">#&gt;     UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> <span style="text-decoration: underline;">16</span>667. A3                normal           <span style="text-decoration: underline;">6</span>667.         2.57         833.</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: KIM1_per_gCr &lt;dbl&gt;, NAG_per_gCr &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   Beta2Micro_per_gCr &lt;dbl&gt;, A1Micro_per_gCr &lt;dbl&gt;, IL18_per_gCr &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   L_FABP_per_gCr &lt;dbl&gt;</span></span></span></code></pre></div>
-<p><em>Interpretation:</em> Extremes are capped before ratios;
-incomplete rows are dropped; zero-denominator warnings list counts.</p>
+<p><em>Interpretation:</em> Implausible values are set to NA before
+calling; incomplete rows are then dropped; zero-denominator warnings
+list counts.</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header: keep YAML at the top; stray text before it breaks
-knitting.</li>
 <li>Units: ensure albumin/protein mg/L, creatinine mg/dL; Na/K mmol/L;
 tubular marker units consistent across markers.</li>
 <li>Missing columns: required columns must be present; optional markers
 only emit outputs when supplied.</li>
 <li>Zero denominators: check urine_creatinine, urine_K; warnings list
 how many cases; outputs set to NA.</li>
-<li>Outliers: enable <code>check_extreme</code> with
-<code>extreme_action = "cap"</code> or <code>"NA"</code> to constrain
-implausible values.</li>
 <li>All NA outputs: often due to missing required inputs, zero
 denominators, or aggressive <code>na_action = "omit"</code>.</li>
 </ul>
@@ -273,8 +251,15 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span>  data <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>urine_albumin <span class="op">=</span> <span class="fl">30</span>, urine_creatinine <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; urine_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; urine_markers(): column map: urine_albumin -&gt; 'urine_albumin', urine_creatinine -&gt; 'urine_creatinine'</span></span>
+<span><span class="co">#&gt; urine_markers(): reading input 'data' — 1 rows × 2 variables</span></span>
+<span><span class="co">#&gt; urine_markers(): col_map (2 columns — 2 inferred from data)</span></span>
+<span><span class="co">#&gt;   urine_albumin     -&gt;  'urine_albumin'    (inferred)</span></span>
+<span><span class="co">#&gt;   urine_creatinine  -&gt;  'urine_creatinine'    (inferred)</span></span>
+<span><span class="co">#&gt; urine_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   UACR, albuminuria_stage, microalbuminuria [urine_albumin, urine_creatinine]</span></span>
+<span><span class="co">#&gt;   UPCR [urine_protein, urine_creatinine]</span></span>
+<span><span class="co">#&gt;   U_Na_K_ratio [urine_Na, urine_K]</span></span>
+<span><span class="co">#&gt;   NGAL/KIM1/NAG/Beta2Micro/A1Micro/IL18/L_FABP per gCr [optional]</span></span>
 <span><span class="co">#&gt; urine_markers(): results: UACR 1/1, albuminuria_stage 1/1, microalbuminuria 1/1, UPCR 0/1, U_Na_K_ratio 0/1, NGAL_per_gCr 0/1, KIM1_per_gCr 0/1, NAG_per_gCr 0/1, Beta2Micro_per_gCr 0/1, A1Micro_per_gCr 0/1, IL18_per_gCr 0/1, L_FABP_per_gCr 0/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 12</span></span></span>
 <span><span class="co">#&gt;    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr</span></span>
@@ -286,12 +271,19 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>
 </h2>
 <ul>
-<li>Start with <code>check_extreme = TRUE</code>,
-<code>extreme_action = "warn"</code> to gauge outliers; switch to
-<code>cap</code> to truncate.</li>
 <li>Use <code>na_action = "omit"</code> when downstream analyses need
 complete cases; <code>keep</code> for exploratory review.</li>
 <li>Monitor zero-denominator warnings—extremely low creatinine or K
@@ -309,9 +301,6 @@ analogous when protein present.</li>
 where denominator is g/L.</li>
 <li>Divisions are safe: non-finite/zero denominators yield NA with a
 consolidated warning.</li>
-<li>Default bounds (applied only if <code>check_extreme = TRUE</code>):
-albumin/protein/markers 0–100000 mg/L; creatinine 0.01–500 mg/dL; Na
-0–400; K 0–200.</li>
 </ul>
 </div>
 <div class="section level2">

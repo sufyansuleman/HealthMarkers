@@ -7,9 +7,9 @@ Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 ``` r
 cvd_marker_aip(
   data,
-  col_map = list(TG = "TG", HDL_c = "HDL_c"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -50,6 +50,10 @@ A tibble with columns model = "AIP" and value.
 ``` r
 df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
 cvd_marker_aip(df)
+#> cvd_marker_aip(): col_map (inferred): TG -> 'TG', HDL_c -> 'HDL_c'
+#> cvd_marker_aip(): computing markers:
+#>   AIP [TG, HDL_c]
+#> cvd_marker_aip(): results: AIP 2/2
 #> # A tibble: 2 × 2
 #>   model value
 #>   <chr> <dbl>

@@ -15,7 +15,7 @@ summary output, and optional verbose progress messages."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,17 +59,13 @@ summary output, and optional verbose progress messages.</p>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cap"</span>, <span class="st">"NA"</span>, <span class="st">"error"</span>, <span class="st">"warn"</span>, <span class="st">"ignore"</span><span class="op">)</span>,</span>
 <span>  sds_cap <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  diagnostics <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  warn_thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>na_prop <span class="op">=</span> <span class="fl">0.05</span>, extreme_prop <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
 <span>  id_col <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  return_summary <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_strategy <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  extreme_strategy <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  check_raw_extreme <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  raw_extreme_rules <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  extreme_strategy <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -105,16 +101,6 @@ SDS values exceeding <code>sds_cap</code>.</p></dd>
 <dd><p>Positive numeric; absolute cap used when <code>extreme_action = "cap"</code>.</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE run raw-value extreme screening using
-<code>extreme_rules</code> before SDS computation.</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min, max) ranges for raw variables;
-if NULL, broad defaults are used for common anthropometric measures.</p></dd>
-
-
 <dt id="arg-diagnostics">diagnostics<a class="anchor" aria-label="anchor" href="#arg-diagnostics"></a></dt>
 <dd><p>Logical; if TRUE emit informational/warning messages
 (coercions, missingness, extremes). FALSE suppresses non-critical warnings.</p></dd>
@@ -147,14 +133,6 @@ and <code>extreme_prop</code> (default 0.01) used for proportion-based diagnosti
 <dd><p>Soft-deprecated alias for <code>extreme_action</code> (if provided
 and <code>extreme_action</code> missing, it is used).</p></dd>
 
-
-<dt id="arg-check-raw-extreme">check_raw_extreme<a class="anchor" aria-label="anchor" href="#arg-check-raw-extreme"></a></dt>
-<dd><p>Soft-deprecated alias for <code>check_extreme</code>.</p></dd>
-
-
-<dt id="arg-raw-extreme-rules">raw_extreme_rules<a class="anchor" aria-label="anchor" href="#arg-raw-extreme-rules"></a></dt>
-<dd><p>Soft-deprecated alias for <code>extreme_rules</code>.</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -183,8 +161,11 @@ is controlled by <code>extreme_action</code>. Legacy argument aliases (<code>na_
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>BMI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">23</span>, sd <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>, waist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">80</span>, sd <span class="op">=</span> <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>BMI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="cn">NA</span>, <span class="fl">60</span>, <span class="fl">18</span><span class="op">)</span>, waist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">85</span>, <span class="fl">70</span>, <span class="fl">300</span>, <span class="fl">55</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">adiposity_sds</span><span class="op">(</span><span class="va">df</span>, <span class="va">ref</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds(): preparing inputs (4 rows, 2 vars)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds(): col_map (2 columns — 2 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI               -&gt;  'BMI'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   waist             -&gt;  'waist'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI_SDS, waist_SDS</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> adiposity_sds(): results: BMI_SDS 3/4, waist_SDS 4/4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   BMI_SDS waist_SDS</span>

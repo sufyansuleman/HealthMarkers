@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,8 +78,6 @@ raw/predicted FEV1. Higher scores indicate worse prognosis.</p>
 <ul>
 <li>You have spirometry plus 6MWD, mMRC, and BMI for COPD risk
 stratification.</li>
-<li>You need optional extreme-value screening and explicit row-retention
-rules.</li>
 <li>You want to derive FEV1% from raw/predicted FEV1 or use an existing
 percent-predicted column.</li>
 </ul>
@@ -95,8 +93,6 @@ fev1_pred) OR fev1_pp; plus sixmwd, mmrc, bmi.</li>
 become NA.</li>
 <li>Row policy via na_action: keep (default), omit, error; warn/ignore
 behave like keep but emit messages.</li>
-<li>Optional extreme screening: check_extreme + extreme_action
-(warn/cap/error/ignore/NA).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -141,22 +137,20 @@ scores.</p>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">new_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bode_out</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bode_out</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">new_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score</span></span>
-<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1     80.9          0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          3    103.           0          0          3         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2    114.           0          0          2         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0     88.0          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          1    104.           0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          1    113.           0          0          1         0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
+<span><span class="co">#&gt;   bode_index fev1_score walk_score mmrc_score bmi_score</span></span>
+<span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3          1          2          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3          0          0          3         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          2          0          2          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          1          0          0          1         0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -167,11 +161,6 @@ fev1_pp) plus sixmwd, mmrc, bmi; missing required keys error.</li>
 <li>na_action: keep (default), omit (drop rows with any missing required
 inputs), error (abort on missing); warn/ignore act like keep but
 warn.</li>
-<li>check_extreme: FALSE by default; TRUE enables bounds-based
-screening.</li>
-<li>extreme_action: warn (default, no change), cap, error, ignore, or
-NA. Defaults (units as stored): fev1_pct 10-140, sixmwd 50-800, mmrc
-0-4, bmi 10-60.</li>
 <li>verbose: emit step messages.</li>
 </ul>
 </div>
@@ -192,7 +181,29 @@ keep/warn/ignore; rows drop with omit; error aborts.</li>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">mmrc</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">6</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bode_index.html">bode_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; bode_index(): reading input 'demo' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)</span></span>
+<span><span class="co">#&gt;   fev1_pct          -&gt;  'FEV1pct'</span></span>
+<span><span class="co">#&gt;   sixmwd            -&gt;  'sixmwd'</span></span>
+<span><span class="co">#&gt;   mmrc              -&gt;  'mmrc'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   fev1_pp           -&gt;  'FEV1pct'    (inferred)</span></span>
+<span><span class="co">#&gt;   fev1              -&gt;  'FEV1'    (inferred)</span></span>
+<span><span class="co">#&gt; bode_index(): computing markers:</span></span>
+<span><span class="co">#&gt;   bode_index  [0-10 COPD severity score]</span></span>
+<span><span class="co">#&gt; bode_index(): results: id 30/30, bode_index 28/30, fev1_pct 30/30, fev1_score 30/30, walk_score 30/30, mmrc_score 28/30, bmi_score 30/30</span></span>
 <span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bode_index.html">bode_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; bode_index(): reading input 'demo' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)</span></span>
+<span><span class="co">#&gt;   fev1_pct          -&gt;  'FEV1pct'</span></span>
+<span><span class="co">#&gt;   sixmwd            -&gt;  'sixmwd'</span></span>
+<span><span class="co">#&gt;   mmrc              -&gt;  'mmrc'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   fev1_pp           -&gt;  'FEV1pct'    (inferred)</span></span>
+<span><span class="co">#&gt;   fev1              -&gt;  'FEV1'    (inferred)</span></span>
+<span><span class="co">#&gt; bode_index(): computing markers:</span></span>
+<span><span class="co">#&gt;   bode_index  [0-10 COPD severity score]</span></span>
+<span><span class="co">#&gt; bode_index(): results: id 28/28, bode_index 28/28, fev1_pct 28/28, fev1_score 28/28, walk_score 28/28, mmrc_score 28/28, bmi_score 28/28</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">a_keep</span><span class="op">)</span>,</span>
@@ -209,44 +220,44 @@ keep/warn/ignore; rows drop with omit; error aborts.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_score walk_score mmrc_score bmi_score</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1          0          0          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3          1          2          0         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         <span style="color: #BB0000;">NA</span>          0          0         <span style="color: #BB0000;">NA</span>         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2          0          0          2         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3          0          0          3         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          1          0          0          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          2          0          2          0         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>         <span style="color: #BB0000;">NA</span>          0          0         <span style="color: #BB0000;">NA</span>         0</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="extreme-value-screening-optional">Extreme-value screening (optional)<a class="anchor" aria-label="anchor" href="#extreme-value-screening-optional"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Screen inputs before scoring; cap, warn, error, ignore, or set NA for
-extremes.</p>
+<p>Extreme inputs will produce extreme scores. Pre-filter implausible
+values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">sim_small</span></span>
 <span><span class="va">demo2</span><span class="op">$</span><span class="va">sixmwd</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">20</span>   <span class="co"># extreme low walk</span></span>
 <span><span class="va">demo2</span><span class="op">$</span><span class="va">BMI</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">80</span>      <span class="co"># extreme high BMI</span></span>
 <span></span>
-<span><span class="va">a_screen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bode_index.html">bode_index</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1_pct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">140</span><span class="op">)</span>, sixmwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">800</span><span class="op">)</span>, mmrc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span>, bmi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: bode_index(): capped 2 extreme input values into allowed ranges.</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">a_screen</span>, <span class="va">bode_index</span>, <span class="va">fev1_score</span>, <span class="va">walk_score</span>, <span class="va">mmrc_score</span>, <span class="va">bmi_score</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="../reference/bode_index.html">bode_index</a></span><span class="op">(</span><span class="va">demo2</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span>, <span class="va">bode_index</span>, <span class="va">fev1_score</span>, <span class="va">walk_score</span>, <span class="va">mmrc_score</span>, <span class="va">bmi_score</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; bode_index(): reading input 'demo2' — 30 rows × 519 variables</span></span>
+<span><span class="co">#&gt; bode_index(): col_map (6 columns — 4 specified, 2 inferred from data)</span></span>
+<span><span class="co">#&gt;   fev1_pct          -&gt;  'FEV1pct'</span></span>
+<span><span class="co">#&gt;   sixmwd            -&gt;  'sixmwd'</span></span>
+<span><span class="co">#&gt;   mmrc              -&gt;  'mmrc'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   fev1_pp           -&gt;  'FEV1pct'    (inferred)</span></span>
+<span><span class="co">#&gt;   fev1              -&gt;  'FEV1'    (inferred)</span></span>
+<span><span class="co">#&gt; bode_index(): computing markers:</span></span>
+<span><span class="co">#&gt;   bode_index  [0-10 COPD severity score]</span></span>
+<span><span class="co">#&gt; bode_index(): results: id 30/30, bode_index 30/30, fev1_pct 30/30, fev1_score 30/30, walk_score 30/30, mmrc_score 30/30, bmi_score 30/30</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 5</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_score walk_score mmrc_score bmi_score</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          1          0          0          1         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          3          0          0          3         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          2          0          0          2         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          3          1          2          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0          0          0          0         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          3          0          0          3         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0          0          0          0         0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          4          0          3          1         0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          3          0          3          0         0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          1          0          0          1         0</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -267,8 +278,6 @@ or when na_action = “error” aborts.</li>
 sources is not allowed.</li>
 <li>Keep units consistent: FEV1 in liters when deriving percent, 6MWD in
 meters, BMI in kg/m^2.</li>
-<li>Use extreme_action = “error” for strict QA; cap for
-winsorization.</li>
 <li>mMRC must be 0-4; true zeros are valid.</li>
 <li>warn/ignore behave like keep; choose omit or error for strict
 pipelines.</li>
@@ -322,8 +331,15 @@ active:</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1_pct <span class="op">=</span> <span class="st">"FEV1pct"</span>, sixmwd <span class="op">=</span> <span class="st">"Walk_m"</span>, mmrc <span class="op">=</span> <span class="st">"mMRC"</span>, bmi <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; bode_index(): preparing inputs</span></span>
-<span><span class="co">#&gt; bode_index(): column map: fev1_pct -&gt; 'FEV1pct', sixmwd -&gt; 'Walk_m', mmrc -&gt; 'mMRC', bmi -&gt; 'BMI'</span></span>
+<span><span class="co">#&gt; bode_index(): reading input 'df_v' — 3 rows × 4 variables</span></span>
+<span><span class="co">#&gt; bode_index(): col_map (5 columns — 4 specified, 1 inferred from data)</span></span>
+<span><span class="co">#&gt;   fev1_pct          -&gt;  'FEV1pct'</span></span>
+<span><span class="co">#&gt;   sixmwd            -&gt;  'Walk_m'</span></span>
+<span><span class="co">#&gt;   mmrc              -&gt;  'mMRC'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   fev1_pp           -&gt;  'FEV1pct'    (inferred)</span></span>
+<span><span class="co">#&gt; bode_index(): computing markers:</span></span>
+<span><span class="co">#&gt;   bode_index  [0-10 COPD severity score]</span></span>
 <span><span class="co">#&gt; bode_index(): results: bode_index 3/3, fev1_pct 3/3, fev1_score 3/3, walk_score 3/3, mmrc_score 3/3, bmi_score 3/3</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">#&gt;   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score</span></span>

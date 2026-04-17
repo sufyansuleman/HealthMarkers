@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,8 +67,7 @@
 dNLR, SII, SIRI, AISI, CRP_category. - Eosinophil: NLR, PLR, LMR, NER,
 SII, SIRI, PIV, CLR, CAR, PCR, mGPS, ESR passthrough. - Both: union of
 classic + eos metrics. Inputs are coerced to numeric; non-finite become
-<code>NA</code>. Zero denominators warn. Optional extreme handling can
-warn/cap/blank/error.</p>
+<code>NA</code>. Zero denominators warn.</p>
 </div>
 <div class="section level2">
 <h2 id="load-packages-and-demo-data">Load packages and demo data<a class="anchor" aria-label="anchor" href="#load-packages-and-demo-data"></a>
@@ -122,7 +121,6 @@ passthrough.</li>
 <span>  col_map <span class="op">=</span> <span class="va">cm</span>,</span>
 <span>  panel <span class="op">=</span> <span class="st">"classic"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -135,32 +133,29 @@ passthrough.</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  2.33   120  3.75  1.4    420 0.933   168 high</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="eosinophil-panel-with-extreme-capping">Eosinophil panel with extreme capping<a class="anchor" aria-label="anchor" href="#eosinophil-panel-with-extreme-capping"></a>
+<h2 id="eosinophil-panel">Eosinophil panel<a class="anchor" aria-label="anchor" href="#eosinophil-panel"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_ext</span> <span class="op">&lt;-</span> <span class="va">df</span></span>
-<span><span class="va">df_ext</span><span class="op">$</span><span class="va">CRP</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">400</span>  <span class="co"># intentional extreme</span></span>
+<span><span class="va">df_ext</span><span class="op">$</span><span class="va">CRP</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">400</span>  <span class="co"># intentional extreme value</span></span>
 <span></span>
 <span><span class="va">eos_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/inflammatory_markers.html">inflammatory_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df_ext</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">cm</span>,</span>
 <span>  panel <span class="op">=</span> <span class="st">"eos"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">eos_out</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 12</span></span></span>
-<span><span class="co">#&gt;     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR    CAR   PCR  mGPS   ESR</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  2      100  4      4     400 1       200   1.25 0.062<span style="text-decoration: underline;">5</span>  80       0    12</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  2      150  3.33   2     300 0.6      90   0.8  0.019<span style="text-decoration: underline;">0</span> 188.      0    15</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  2.33   120  3.75   3.5   420 0.933   168 200    9.09     0.6     2    18</span></span></code></pre></div>
-<p><code>extreme_action = "cap"</code> trims out-of-range inputs;
-<code>warn</code> only warns; <code>error</code> aborts; <code>NA</code>
-blanks flagged values.</p>
+<span><span class="co">#&gt;     NLR   PLR   LMR   NER   SII  SIRI   PIV    CLR     CAR    PCR  mGPS   ESR</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  2      100  4     20     400 1       200   1.25  0.062<span style="text-decoration: underline;">5</span>  80        0    12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  2      150  3.33  20     300 0.6      90   0.8   0.019<span style="text-decoration: underline;">0</span> 188.       0    15</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  2.33   120  3.75  23.3   420 0.933   168 267.   12.1      0.45     2    18</span></span></code></pre></div>
+<p>Extremely high CRP values propagate through the ratios; use
+<code>na_action = "keep"</code> for exploratory review.</p>
 </div>
 <div class="section level2">
 <h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
@@ -190,8 +185,6 @@ missing/non-finite.</p>
 <li>Provide required keys per panel; missing mappings abort.</li>
 <li>Inputs are coerced to numeric; non-finite become <code>NA</code>;
 zero denominators warn.</li>
-<li>Extreme scan uses broad defaults for blood counts/CRP/albumin;
-adjust via <code>extreme_action</code> and built-in ranges.</li>
 <li>Panel selection: <code>auto</code> uses eos if
 <code>eosinophils</code> mapping is present; <code>both</code> returns
 the union.</li>
@@ -210,8 +203,17 @@ a results summary.</p>
 <span><span class="va">cm_v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>neutrophils <span class="op">=</span> <span class="st">"neutrophils"</span>, lymphocytes <span class="op">=</span> <span class="st">"lymphocytes"</span>,</span>
 <span>             monocytes <span class="op">=</span> <span class="st">"monocytes"</span>, platelets <span class="op">=</span> <span class="st">"platelets"</span>, CRP <span class="op">=</span> <span class="st">"CRP"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/inflammatory_markers.html">inflammatory_markers</a></span><span class="op">(</span><span class="va">df_v</span>, <span class="va">cm_v</span>, panel <span class="op">=</span> <span class="st">"classic"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; inflammatory_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; inflammatory_markers(): column map: neutrophils -&gt; 'neutrophils', lymphocytes -&gt; 'lymphocytes'</span></span>
+<span><span class="co">#&gt; inflammatory_markers(): reading input 'df_v' — 1 rows × 5 variables</span></span>
+<span><span class="co">#&gt; inflammatory_markers(): col_map (5 columns — 5 specified)</span></span>
+<span><span class="co">#&gt;   neutrophils       -&gt;  'neutrophils'</span></span>
+<span><span class="co">#&gt;   lymphocytes       -&gt;  'lymphocytes'</span></span>
+<span><span class="co">#&gt;   monocytes         -&gt;  'monocytes'</span></span>
+<span><span class="co">#&gt;   platelets         -&gt;  'platelets'</span></span>
+<span><span class="co">#&gt;   CRP               -&gt;  'CRP'</span></span>
+<span><span class="co">#&gt; inflammatory_markers(): optional inputs (panel = classic)</span></span>
+<span><span class="co">#&gt;   present:  neutrophils, lymphocytes, monocytes, platelets, CRP</span></span>
+<span><span class="co">#&gt;   missing:  WBC, albumin, eosinophils, ESR</span></span>
+<span><span class="co">#&gt; inflammatory_markers(): computing markers: NLR, PLR, LMR, dNLR, SII, SIRI, AISI, CRP_category</span></span>
 <span><span class="co">#&gt; inflammatory_markers(): results: NLR 1/1, PLR 1/1, LMR 1/1, dNLR 0/1, SII 1/1, SIRI 1/1, AISI 1/1, CRP_category 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">#&gt;     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category</span></span>

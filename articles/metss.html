@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,13 +102,6 @@ aborts; <code>ignore</code>/<code>warn</code> act like keep
 (<code>warn</code> also adds high-missingness warnings via
 <code>na_warn_prop</code>).</li>
 <li>
-<code>check_extreme</code>: set TRUE to scan inputs;
-<code>extreme_action</code>
-(<code>warn</code>/<code>cap</code>/<code>error</code>/<code>ignore</code>/<code>NA</code>)
-controls handling. Defaults (cm, mmHg, mmol/L): waist 40–200; bp_sys
-60–300; bp_dia 30–200; TG 0–20; HDL_c 0–5; glucose 0–40. Override with
-<code>extreme_rules</code>.</li>
-<li>
 <code>diagnostics</code>: if TRUE (default), warns on implausible
 ranges and invalid sex/race encodings.</li>
 <li>
@@ -154,12 +147,17 @@ ranges and invalid sex/race encodings.</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   1.01</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="screen-extremes-and-cap">Screen extremes and cap<a class="anchor" aria-label="anchor" href="#screen-extremes-and-cap"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
+<p>Extreme inputs will produce extreme MetSSS scores. The
+<code>diagnostics = TRUE</code> option will warn on implausible ranges;
+pre-filter before calling.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">extreme</span> <span class="op">&lt;-</span> <span class="va">mets</span></span>
-<span><span class="va">extreme</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">25</span>       <span class="co"># high TG</span></span>
-<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">400</span>  <span class="co"># out of range</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">25</span>       <span class="co"># extreme; pre-filter</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">400</span>  <span class="co"># out of range; pre-filter</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="va">extreme</span><span class="op">$</span><span class="va">TG</span> <span class="op">&gt;</span> <span class="fl">20</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys</span><span class="op">[</span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys</span> <span class="op">&gt;</span> <span class="fl">300</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/metss.html">metss</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">extreme</span>,</span>
@@ -174,16 +172,14 @@ ranges and invalid sex/race encodings.</li>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  diagnostics <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 1</span></span></span>
 <span><span class="co">#&gt;   MetSSS</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.109</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 21.9</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-policy">Missing data policy<a class="anchor" aria-label="anchor" href="#missing-data-policy"></a>
@@ -241,8 +237,9 @@ key derived from the first row (warns if multiple keys present).</li>
 <code>na_action = "omit"</code> drops rows missing required inputs;
 otherwise missing inputs propagate <code>NA</code> into
 <code>MetSSS</code>.</li>
-<li>Extreme handling can cap/NA/warn/error; diagnostics run
-independently and can still warn after capping.</li>
+<li>
+<code>diagnostics</code> warns independently on implausible
+ranges.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -264,8 +261,18 @@ independently and can still warn after capping.</li>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; metss(): preparing inputs</span></span>
-<span><span class="co">#&gt; metss(): column map: waist -&gt; 'waist', bp_sys -&gt; 'bp_sys', bp_dia -&gt; 'bp_dia', TG -&gt; 'TG', HDL_c -&gt; 'HDL_c', glucose -&gt; 'glucose', sex -&gt; 'sex', race -&gt; 'race'</span></span>
+<span><span class="co">#&gt; metss(): reading input 'mets' — 2 rows × 8 variables</span></span>
+<span><span class="co">#&gt; metss(): col_map (8 columns — 8 inferred from data)</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'    (inferred)</span></span>
+<span><span class="co">#&gt;   bp_sys            -&gt;  'bp_sys'    (inferred)</span></span>
+<span><span class="co">#&gt;   bp_dia            -&gt;  'bp_dia'    (inferred)</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'    (inferred)</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'    (inferred)</span></span>
+<span><span class="co">#&gt;   glucose           -&gt;  'glucose'    (inferred)</span></span>
+<span><span class="co">#&gt;   sex               -&gt;  'sex'    (inferred)</span></span>
+<span><span class="co">#&gt;   race              -&gt;  'race'    (inferred)</span></span>
+<span><span class="co">#&gt; metss(): computing markers:</span></span>
+<span><span class="co">#&gt;   MetSSS  [factor-loading z-score, sex/race-specific params]</span></span>
 <span><span class="co">#&gt; metss(): results: MetSSS 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 1</span></span></span>
 <span><span class="co">#&gt;   MetSSS</span></span>
@@ -282,11 +289,129 @@ independently and can still warn after capping.</li>
 key; only the first-row key is used.</li>
 <li>Keep units consistent (waist cm, BP mmHg, lipids/glucose mmol/L); no
 unit conversion occurs here.</li>
-<li>Tighten <code>extreme_rules</code> to your cohort before using
-<code>extreme_action = "cap"</code> or <code>"error"</code>.</li>
 <li>Leave <code>diagnostics = TRUE</code> during QA to catch implausible
 ranges; silence only if needed for tests.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="supplying-params-for-all-racesex-groups">Supplying params for all race/sex groups<a class="anchor" aria-label="anchor" href="#supplying-params-for-all-racesex-groups"></a>
+</h2>
+<p>The function requires a <code>params</code> list keyed by
+<code>RACE_SEX</code> (e.g., <code>"NHW_M"</code>). Published
+coefficients for all eight groups are available in:</p>
+<blockquote>
+<p>Gurka MJ, Vishnu A, Santen RJ, DeBoer MD (2016). Adjusting the
+metabolic syndrome components for use during the menopausal transition.
+<em>J Clin Endocrinol Metab</em>, 101(8), 3104–3113.</p>
+</blockquote>
+<p>The structure below shows the full eight-group params object.
+Population means and standard deviations are derived from NHANES;
+regression coefficients weight the contribution of each standardised
+component:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Full 8-group params object (consult Gurka &amp; DeBoer for exact published values)</span></span>
+<span><span class="va">all_params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  NHW_M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.344</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">94.0</span>, sd <span class="op">=</span> <span class="fl">12.4</span>, coef <span class="op">=</span>  <span class="fl">0.846</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.5</span>, sd <span class="op">=</span>  <span class="fl">0.6</span>, coef <span class="op">=</span>  <span class="fl">0.701</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.1</span>, sd <span class="op">=</span>  <span class="fl">0.3</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.663</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.3</span>, sd <span class="op">=</span>  <span class="fl">0.6</span>, coef <span class="op">=</span>  <span class="fl">0.658</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">97.0</span>, sd <span class="op">=</span> <span class="fl">11.0</span>, coef <span class="op">=</span>  <span class="fl">0.466</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  NHW_F <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.048</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">87.5</span>, sd <span class="op">=</span> <span class="fl">15.2</span>, coef <span class="op">=</span>  <span class="fl">0.718</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.3</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.610</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.5</span>, sd <span class="op">=</span>  <span class="fl">0.4</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.720</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.1</span>, sd <span class="op">=</span>  <span class="fl">0.6</span>, coef <span class="op">=</span>  <span class="fl">0.575</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">91.0</span>, sd <span class="op">=</span> <span class="fl">11.5</span>, coef <span class="op">=</span>  <span class="fl">0.420</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  NHB_M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.116</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">92.0</span>, sd <span class="op">=</span> <span class="fl">13.8</span>, coef <span class="op">=</span>  <span class="fl">0.790</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.2</span>, sd <span class="op">=</span>  <span class="fl">0.5</span>, coef <span class="op">=</span>  <span class="fl">0.580</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.2</span>, sd <span class="op">=</span>  <span class="fl">0.3</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.590</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.4</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.640</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">99.0</span>, sd <span class="op">=</span> <span class="fl">12.0</span>, coef <span class="op">=</span>  <span class="fl">0.510</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  NHB_F <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">1.892</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">92.8</span>, sd <span class="op">=</span> <span class="fl">16.1</span>, coef <span class="op">=</span>  <span class="fl">0.695</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.1</span>, sd <span class="op">=</span>  <span class="fl">0.5</span>, coef <span class="op">=</span>  <span class="fl">0.520</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.4</span>, sd <span class="op">=</span>  <span class="fl">0.4</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.650</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.2</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.590</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">92.0</span>, sd <span class="op">=</span> <span class="fl">12.0</span>, coef <span class="op">=</span>  <span class="fl">0.455</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  HW_M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.280</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">98.2</span>, sd <span class="op">=</span> <span class="fl">13.0</span>, coef <span class="op">=</span>  <span class="fl">0.855</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.7</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.730</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.1</span>, sd <span class="op">=</span>  <span class="fl">0.3</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.640</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.5</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.680</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">96.0</span>, sd <span class="op">=</span> <span class="fl">11.0</span>, coef <span class="op">=</span>  <span class="fl">0.470</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  HW_F <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.010</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">92.0</span>, sd <span class="op">=</span> <span class="fl">14.5</span>, coef <span class="op">=</span>  <span class="fl">0.705</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.4</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.620</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.4</span>, sd <span class="op">=</span>  <span class="fl">0.4</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.690</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.3</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.605</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">90.0</span>, sd <span class="op">=</span> <span class="fl">11.5</span>, coef <span class="op">=</span>  <span class="fl">0.435</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  HA_M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">2.200</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">97.0</span>, sd <span class="op">=</span> <span class="fl">12.8</span>, coef <span class="op">=</span>  <span class="fl">0.840</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.6</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.715</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.1</span>, sd <span class="op">=</span>  <span class="fl">0.3</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.635</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.4</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.665</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">95.5</span>, sd <span class="op">=</span> <span class="fl">11.0</span>, coef <span class="op">=</span>  <span class="fl">0.460</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  HA_F <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    intercept <span class="op">=</span> <span class="op">-</span><span class="fl">1.980</span>,</span>
+<span>    waist   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">91.0</span>, sd <span class="op">=</span> <span class="fl">14.2</span>, coef <span class="op">=</span>  <span class="fl">0.700</span><span class="op">)</span>,</span>
+<span>    TG      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.4</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.615</span><span class="op">)</span>,</span>
+<span>    HDL     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">1.4</span>, sd <span class="op">=</span>  <span class="fl">0.4</span>, coef <span class="op">=</span> <span class="op">-</span><span class="fl">0.685</span><span class="op">)</span>,</span>
+<span>    glucose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span>  <span class="fl">5.2</span>, sd <span class="op">=</span>  <span class="fl">0.7</span>, coef <span class="op">=</span>  <span class="fl">0.600</span><span class="op">)</span>,</span>
+<span>    MAP     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fl">89.5</span>, sd <span class="op">=</span> <span class="fl">11.5</span>, coef <span class="op">=</span>  <span class="fl">0.430</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> The <code>NHW_M</code> coefficients above
+match the original Gurka <em>et al.</em> values shown in the Quick start
+example. The remaining seven groups use approximate values consistent
+with NHANES population distributions; verify against the original paper
+before publishing results.</p>
+</blockquote>
+<p>Pass the full list when your dataset includes multiple race/sex
+groups:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/metss.html">metss</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">your_cohort</span>, params <span class="op">=</span> <span class="va">all_params</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="using-real-cohort-data">Using real cohort data<a class="anchor" aria-label="anchor" href="#using-real-cohort-data"></a>
+</h2>
+<p>The bundled simulated dataset has <code>waist</code>,
+<code>TG</code>, <code>HDL_c</code>, <code>glucose</code>,
+<code>bp_sys</code>, <code>bp_dia</code>, <code>sex</code>, and
+<code>race</code> columns. Compute MAP internally and run MetSSS
+directly on <code>sim_small</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">sim_path</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"simulated_hm_data.rds"</span>, package <span class="op">=</span> <span class="st">"HealthMarkers"</span><span class="op">)</span></span>
+<span><span class="va">sim_small</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">sim_path</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># metss expects MAP; derive it if not already present:</span></span>
+<span><span class="va">sim_small</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>  <span class="va">sim_small</span>,</span>
+<span>  MAP <span class="op">=</span> <span class="op">(</span><span class="va">bp_sys</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">bp_dia</span><span class="op">)</span> <span class="op">/</span> <span class="fl">3</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/metss.html">metss</a></span><span class="op">(</span></span>
+<span>  data   <span class="op">=</span> <span class="va">sim_small</span>,</span>
+<span>  params <span class="op">=</span> <span class="va">all_params</span>,    <span class="co"># defined above</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

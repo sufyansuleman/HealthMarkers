@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,8 +74,8 @@ NA/extreme handling, and safe-division guards.</p>
 <ul>
 <li>You have weight/height/waist/hip (and optionally sex) and want a
 comprehensive set of body composition proxies in one call.</li>
-<li>You need built-in unit conversion (kg/lb, cm/m), NA policy controls,
-and optional extreme-value scanning/capping.</li>
+<li>You need built-in unit conversion (kg/lb, cm/m) and NA policy
+controls.</li>
 <li>You want optional BMI-adjusted WHR and Relative Fat Mass when sex
 coding is available.</li>
 </ul>
@@ -109,12 +109,6 @@ aborts when required inputs contain NA.</li>
 <code>na_warn_prop</code>: threshold for high-missingness debug
 messages (default 0.2).</li>
 <li>
-<code>check_extreme</code>: set TRUE to scan
-weight_kg/height_m/waist/hip; <code>extreme_action</code>
-(<code>warn</code>/<code>cap</code>/<code>error</code>/<code>ignore</code>)
-controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist
-30–200 cm; hip 30–200 cm.</li>
-<li>
 <code>verbose</code>: optional progress and summary logging.</li>
 </ul>
 </div>
@@ -145,7 +139,6 @@ controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist
 <span>  adjust_WHR <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  include_RFM <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 15</span></span></span>
@@ -157,10 +150,11 @@ controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist
 <span><span class="co">#&gt; <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-scan-and-cap">Extreme scan and cap<a class="anchor" aria-label="anchor" href="#extreme-scan-and-cap"></a>
+<h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/obesity_indices.html">obesity_indices</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/obesity_indices.html">obesity_indices</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  weight <span class="op">=</span> <span class="va">wt</span>,</span>
 <span>  height <span class="op">=</span> <span class="va">ht</span>,</span>
@@ -172,17 +166,22 @@ controls handling. Defaults: weight_kg 20–400; height_m 1.2–2.5; waist
 <span>  adjust_WHR <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include_RFM <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; obesity_indices(): reading input 'df' — 2 rows × 5 variables</span></span>
+<span><span class="co">#&gt; obesity_indices(): col_map: weight -&gt; 'wt', height -&gt; 'ht', waist -&gt; 'waist', hip -&gt; 'hip', sex -&gt; 'sex'</span></span>
+<span><span class="co">#&gt; obesity_indices(): computing markers:</span></span>
+<span><span class="co">#&gt;   BMI, BMI_cat, WHR, WHtR, AVI, BAI, ABSI, BRI, CI, RFM</span></span>
+<span><span class="co">#&gt; obesity_indices(): omitting 0 rows with NA in required inputs</span></span>
+<span><span class="co">#&gt; obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2, RFM 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 14</span></span></span>
 <span><span class="co">#&gt;   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        70     1.75  22.9 Normal weight 0.8                    45.7</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        80     1.65  29.4 Overweight    0.947                  54.5</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: waist_to_BMI_ratio &lt;dbl&gt;, weight_to_height_ratio &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-policy">Missing-data policy<a class="anchor" aria-label="anchor" href="#missing-data-policy"></a>
@@ -221,34 +220,6 @@ requires variance in WHR and BMI; RFM requires sex coded 0/1.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/obesity_indices.html">obesity_indices</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">df</span>,</span>
-<span>  weight <span class="op">=</span> <span class="va">wt</span>,</span>
-<span>  height <span class="op">=</span> <span class="va">ht</span>,</span>
-<span>  waist <span class="op">=</span> <span class="va">waist</span>,</span>
-<span>  hip <span class="op">=</span> <span class="va">hip</span>,</span>
-<span>  sex <span class="op">=</span> <span class="va">sex</span>,</span>
-<span>  weight_unit <span class="op">=</span> <span class="st">"kg"</span>,</span>
-<span>  height_unit <span class="op">=</span> <span class="st">"cm"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; obesity_indices(): preparing inputs</span></span>
-<span><span class="co">#&gt; obesity_indices(): column map: weight -&gt; 'wt', height -&gt; 'ht', waist -&gt; 'waist', hip -&gt; 'hip', sex -&gt; 'sex'</span></span>
-<span><span class="co">#&gt; obesity_indices(): results: weight_kg 2/2, height_m 2/2, BMI 2/2, BMI_cat 2/2, WHR 2/2, waist_to_height_ratio 2/2, waist_to_BMI_ratio 2/2, weight_to_height_ratio 2/2, AVI 2/2, BAI 2/2, ABSI 2/2, BRI 2/2, CI 2/2</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 13</span></span></span>
-<span><span class="co">#&gt;   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio</span></span>
-<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        70     1.75  22.9 Normal weight 0.8                    45.7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        80     1.65  29.4 Overweight    0.947                  54.5</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: waist_to_BMI_ratio &lt;dbl&gt;, weight_to_height_ratio &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;</span></span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
@@ -257,8 +228,6 @@ requires variance in WHR and BMI; RFM requires sex coded 0/1.</li>
 leave FALSE otherwise.</li>
 <li>WHRadjBMI needs variation in WHR and BMI; otherwise it returns
 <code>NA</code> with a warning.</li>
-<li>Tighten <code>extreme_rules</code> to your cohort before using
-<code>extreme_action = "cap"</code> or <code>"error"</code>.</li>
 <li>Use <code>na_action = "omit"</code> for row-complete outputs; keep
 during QA to see missingness.</li>
 </ul>

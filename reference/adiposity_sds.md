@@ -17,17 +17,13 @@ adiposity_sds(
   na_action = c("keep", "omit", "error"),
   extreme_action = c("cap", "NA", "error", "warn", "ignore"),
   sds_cap = 6,
-  check_extreme = FALSE,
-  extreme_rules = NULL,
   diagnostics = FALSE,
   warn_thresholds = list(na_prop = 0.05, extreme_prop = 0.01),
   id_col = NULL,
   return_summary = FALSE,
-  verbose = FALSE,
+  verbose = TRUE,
   na_strategy = NULL,
-  extreme_strategy = NULL,
-  check_raw_extreme = NULL,
-  raw_extreme_rules = NULL
+  extreme_strategy = NULL
 )
 ```
 
@@ -61,16 +57,6 @@ adiposity_sds(
 - sds_cap:
 
   Positive numeric; absolute cap used when `extreme_action = "cap"`.
-
-- check_extreme:
-
-  Logical; if TRUE run raw-value extreme screening using `extreme_rules`
-  before SDS computation.
-
-- extreme_rules:
-
-  Optional named list of c(min, max) ranges for raw variables; if NULL,
-  broad defaults are used for common anthropometric measures.
 
 - diagnostics:
 
@@ -106,14 +92,6 @@ adiposity_sds(
   Soft-deprecated alias for `extreme_action` (if provided and
   `extreme_action` missing, it is used).
 
-- check_raw_extreme:
-
-  Soft-deprecated alias for `check_extreme`.
-
-- raw_extreme_rules:
-
-  Soft-deprecated alias for `extreme_rules`.
-
 ## Value
 
 A tibble with one `<var>_SDS` column per reference variable, or a list
@@ -141,8 +119,11 @@ Method and Penalized Likelihood.” *Statistics in Medicine*, **11**(10),
 ref <- list(BMI = c(mean = 23, sd = 4), waist = c(mean = 80, sd = 12))
 df <- data.frame(BMI = c(25, NA, 60, 18), waist = c(85, 70, 300, 55))
 adiposity_sds(df, ref)
-#> adiposity_sds(): preparing inputs (4 rows, 2 vars)
-#> adiposity_sds(): column map: BMI -> 'BMI', waist -> 'waist'
+#> adiposity_sds(): col_map (2 columns — 2 inferred from data)
+#>   BMI               ->  'BMI'    (inferred)
+#>   waist             ->  'waist'    (inferred)
+#> adiposity_sds(): computing markers:
+#>   BMI_SDS, waist_SDS
 #> adiposity_sds(): results: BMI_SDS 3/4, waist_SDS 4/4
 #> # A tibble: 4 × 2
 #>   BMI_SDS waist_SDS

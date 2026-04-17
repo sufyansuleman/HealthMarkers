@@ -9,10 +9,11 @@ FVC, and the FEV1/FVC ratio.
 ``` r
 pulmo_markers(
   data,
+  col_map = NULL,
   equation = c("GLI", "GLIgl", "NHANES3"),
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -35,6 +36,12 @@ pulmo_markers(
   - `fev1` (numeric): observed FEV1 in L
 
   - `fvc` (numeric): observed FVC in L
+
+- col_map:
+
+  Optional named list mapping canonical keys (`age`, `sex`, `height`,
+  `ethnicity`, `fev1`, `fvc`) to actual column names in `data`. If
+  `NULL`, column names are inferred automatically.
 
 - equation:
 
@@ -103,6 +110,21 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
   )
   pulmo_markers(df)
 }
+#> pulmo_markers(): reading input 'df' — 2 rows × 6 variables
+#> pulmo_markers(): preparing inputs [GLI]
+#> pulmo_markers(): col_map (6 columns — 6 inferred from data)
+#>   age               ->  'age'    (inferred)
+#>   sex               ->  'sex'    (inferred)
+#>   height            ->  'height'    (inferred)
+#>   ethnicity         ->  'ethnicity'    (inferred)
+#>   fev1              ->  'fev1'    (inferred)
+#>   fvc               ->  'fvc'    (inferred)
+#> pulmo_markers(): computing markers:
+#>   fev1_pred, fev1_z, fev1_pctpred, fev1_LLN [age, height, sex, ethnicity, fev1]
+#>   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]
+#>   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]
+#> pulmo_markers(): converting height from cm to m
+#> pulmo_markers(): results: fev1_pred 2/2, fev1_z 2/2, fev1_pctpred 2/2, fev1_LLN 2/2, fvc_pred 2/2, fvc_z 2/2, fvc_pctpred 2/2, fvc_LLN 2/2, fev1_fvc_ratio 2/2, fev1_fvc_pred 2/2, fev1_fvc_z 2/2, fev1_fvc_pctpred 2/2, fev1_fvc_LLN 0/2
 #> # A tibble: 2 × 13
 #>   fev1_pred fev1_z fev1_pctpred fev1_LLN fvc_pred  fvc_z fvc_pctpred fvc_LLN
 #>       <dbl>  <dbl>        <dbl>    <dbl>    <dbl>  <dbl>       <dbl>   <dbl>

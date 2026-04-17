@@ -11,7 +11,7 @@ extreme-value handling, and verbose progress reporting."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,10 +51,7 @@ extreme-value handling, and verbose progress reporting.</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"age"</span>, sex <span class="op">=</span> <span class="st">"sex"</span>, eGFR <span class="op">=</span> <span class="st">"eGFR"</span>, UACR <span class="op">=</span> <span class="st">"UACR"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"error"</span>, <span class="st">"omit"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,24 +81,6 @@ extreme-value handling, and verbose progress reporting.</p>
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
 <dd><p>Numeric in \([0,1]\); per-variable threshold for high-missingness warnings. Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan for out-of-range values (see <code>extreme_rules</code>). Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") used when <code>check_extreme = TRUE</code>.</p><ul><li><p>"warn": only warn about out-of-range values (default).</p></li>
-<li><p>"cap": truncate to range and warn.</p></li>
-<li><p>"error": abort if any out-of-range is detected.</p></li>
-<li><p>"ignore": do nothing.</p></li>
-<li><p>"NA": set out-of-range input values to NA before computation.</p></li>
-</ul></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of numeric c(min,max) ranges for c(age, eGFR, UACR).
-If NULL, broad defaults are used: age (18, 120), eGFR (1, 200), UACR (0.1, 10000) (mg/g).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -168,21 +147,30 @@ where male = 1 if sex == 1, else 0.</p></li>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"age"</span>, sex <span class="op">=</span> <span class="st">"sex"</span>, eGFR <span class="op">=</span> <span class="st">"eGFR"</span>, UACR <span class="op">=</span> <span class="st">"UACR"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): reading input 'df' — 2 rows × 4 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): col_map: age -&gt; 'age', sex -&gt; 'sex', eGFR -&gt; 'eGFR', UACR -&gt; 'UACR'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   KFRE_2yr  [age, sex, eGFR, UACR -- 2-year kidney failure risk]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   KFRE_5yr  [age, sex, eGFR, UACR -- 5-year kidney failure risk]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): results: KFRE_2yr 2/2, KFRE_5yr 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   KFRE_2yr KFRE_5yr</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>    0.329    0.523</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>    0.536    0.759</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># With diagnostics and capping</span></span></span>
+<span class="r-in"><span><span class="co"># With verbose output</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
 <span class="r-in"><span><span class="fu">kidney_failure_risk</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">df</span>,</span></span>
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"age"</span>, sex <span class="op">=</span> <span class="st">"sex"</span>, eGFR <span class="op">=</span> <span class="st">"eGFR"</span>, UACR <span class="op">=</span> <span class="st">"UACR"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): preparing inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): column map: age -&gt; 'age', sex -&gt; 'sex', eGFR -&gt; 'eGFR', UACR -&gt; 'UACR'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): reading input 'df' — 2 rows × 4 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): col_map: age -&gt; 'age', sex -&gt; 'sex', eGFR -&gt; 'eGFR', UACR -&gt; 'UACR'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   KFRE_2yr  [age, sex, eGFR, UACR -- 2-year kidney failure risk]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   KFRE_5yr  [age, sex, eGFR, UACR -- 5-year kidney failure risk]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> kidney_failure_risk(): results: KFRE_2yr 2/2, KFRE_5yr 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   KFRE_2yr KFRE_5yr</span>

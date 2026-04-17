@@ -38,13 +38,10 @@ worse adipose IR):
 ``` r
 adipo_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = "none",
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  extreme_rules = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   ...
 )
 ```
@@ -67,22 +64,10 @@ adipo_is(
 
   One of c("keep","omit","error"); default "keep"
 
-- check_extreme:
-
-  Logical; if TRUE, applies range checks before computing
-
-- extreme_action:
-
-  One of c("cap","NA","error"); default "cap" when
-  `check_extreme = TRUE`
-
-- extreme_rules:
-
-  Optional named list of c(min,max) per key (in original units)
-
 - verbose:
 
-  Logical; when TRUE, emits progress via `hm_inform()`
+  Logical; if `TRUE` (default), prints column mapping, the list of
+  indices being computed, and a per-column results summary.
 
 - ...:
 
@@ -92,7 +77,9 @@ adipo_is(
 
 A tibble with columns: `Revised_QUICKI`, `VAI_Men_inv`, `VAI_Women_inv`,
 `TG_HDL_C_inv`, `TyG_inv`, `LAP_Men_inv`, `LAP_Women_inv`,
-`McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`
+`McAuley_index`, `Adipo_inv`, `Belfiore_inv_FFA`. If an ID column is
+detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
+as the first output column.
 
 ## References
 
@@ -146,12 +133,4 @@ df <- tibble::tibble(
 )
 cm <- as.list(names(df)); names(cm) <- names(df)
 out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
-head(out)
-#> # A tibble: 2 × 10
-#>   Revised_QUICKI VAI_Men_inv VAI_Women_inv TG_HDL_C_inv TyG_inv LAP_Men_inv
-#>            <dbl>       <dbl>         <dbl>        <dbl>   <dbl>       <dbl>
-#> 1          0.389       -1.18         -1.80        -2.11   -8.51       -24  
-#> 2          0.324       -2.38         -3.62        -4.12   -9.08       -66.6
-#> # ℹ 4 more variables: LAP_Women_inv <dbl>, McAuley_index <dbl>,
-#> #   Adipo_inv <dbl>, Belfiore_inv_FFA <dbl>
 ```

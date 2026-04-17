@@ -13,7 +13,7 @@ phq9_score(
   impute = c("none", "mean"),
   variant = c("PHQ9", "PHQ8"),
   prefix = "PHQ9",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -52,7 +52,8 @@ phq9_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 
@@ -74,6 +75,8 @@ df <- data.frame(phq9_01 = 0, phq9_02 = 1, phq9_03 = 2, phq9_04 = 1,
                  phq9_05 = 0, phq9_06 = 1, phq9_07 = 2, phq9_08 = 1,
                  phq9_09 = 0)
 phq9_score(df)
+#> phq9_score(): preparing inputs
+#> phq9_score(): results: PHQ9_total 1/1, PHQ9_severity 1/1
 #> # A tibble: 1 × 2
 #>   PHQ9_total PHQ9_severity
 #>        <dbl> <fct>        

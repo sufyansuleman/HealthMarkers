@@ -10,13 +10,10 @@ internally: G0_mg = G0\*18 (mg/dL), I0_u = I0/6 (muU/mL).
 ``` r
 fasting_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = c("none", "z", "inverse", "range", "robust"),
   na_action = c("keep", "omit", "error", "warn"),
-  check_extreme = FALSE,
-  extreme_limit = 1000,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -51,25 +48,16 @@ fasting_is(
 
   - "warn" (emit a warning for rows with missing inputs, then keep them)
 
-- check_extreme:
-
-  Logical; if TRUE, scan computed indices for large magnitudes.
-
-- extreme_limit:
-
-  Positive numeric threshold used when check_extreme = TRUE.
-
-- extreme_action:
-
-  One of: "cap","NA","error".
-
 - verbose:
 
-  Logical; if TRUE, emit progress/completion messages.
+  Logical; if `TRUE` (default), prints column mapping, the list of
+  indices being computed, and a per-column results summary.
 
 ## Value
 
-Tibble with 10 columns (indices listed above).
+Tibble with 10 columns (indices listed above). If an ID column is
+detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
+as the first output column.
 
 ## References
 
@@ -123,6 +111,22 @@ Clinical Endocrinology & Metabolism*, **109**(11), 2754–2763.
 # Minimal example (units: G0 in mmol/L, I0 in pmol/L)
 df <- data.frame(G0 = c(5.2, 6.1, 4.8), I0 = c(60, 120, 80))
 res <- fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))
+#> fasting_is(): reading input 'df' — 3 rows × 2 variables
+#> fasting_is(): col_map (2 columns — 2 specified)
+#>   G0                ->  'G0'
+#>   I0                ->  'I0'
+#> fasting_is(): computing markers:
+#>   Fasting_inv          [G0, I0]
+#>   Raynaud              [G0, I0]
+#>   HOMA_IR_inv          [G0, I0]
+#>   FIRI                 [G0, I0]
+#>   QUICKI               [G0, I0]
+#>   Belfiore_basal       [G0, I0]
+#>   Ig_ratio_basal       [G0, I0]
+#>   Isi_basal            [G0, I0]
+#>   Bennett              [G0, I0]
+#>   HOMA_IR_rev_inv      [G0, I0]
+#> fasting_is(): results: Fasting_inv 3/3, Raynaud 3/3, HOMA_IR_inv 3/3, FIRI 3/3, QUICKI 3/3, Belfiore_basal 3/3, Ig_ratio_basal 3/3, Isi_basal 3/3, Bennett 3/3, HOMA_IR_rev_inv 3/3
 head(res)
 #> # A tibble: 3 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
@@ -132,10 +136,25 @@ head(res)
 #> 3       -13.3       3       -51.2  46.1  0.142       0.00173          -0.154
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 
-# With NA handling and extreme checking
+# With NA handling
 df2 <- data.frame(G0 = c(5.0, NA), I0 = c(90, 150))
-fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep",
-           check_extreme = TRUE, extreme_limit = 1e3, extreme_action = "cap")
+fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep")
+#> fasting_is(): reading input 'df2' — 2 rows × 2 variables
+#> fasting_is(): col_map (2 columns — 2 specified)
+#>   G0                ->  'G0'
+#>   I0                ->  'I0'
+#> fasting_is(): computing markers:
+#>   Fasting_inv          [G0, I0]
+#>   Raynaud              [G0, I0]
+#>   HOMA_IR_inv          [G0, I0]
+#>   FIRI                 [G0, I0]
+#>   QUICKI               [G0, I0]
+#>   Belfiore_basal       [G0, I0]
+#>   Ig_ratio_basal       [G0, I0]
+#>   Isi_basal            [G0, I0]
+#>   Bennett              [G0, I0]
+#>   HOMA_IR_rev_inv      [G0, I0]
+#> fasting_is(): results: Fasting_inv 2/2, Raynaud 2/2, HOMA_IR_inv 1/2, FIRI 1/2, QUICKI 1/2, Belfiore_basal 1/2, Ig_ratio_basal 1/2, Isi_basal 1/2, Bennett 1/2, HOMA_IR_rev_inv 1/2
 #> # A tibble: 2 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>

@@ -10,9 +10,7 @@ policies.
 
 - You have binary comorbidity indicators and need the canonical Charlson
   score (no age points here).
-- You want explicit row-retention rules for missing indicators and
-  optional bounds checks on 0/1 flags.
-- You may need to cap or error on out-of-bounds inputs.
+- You want explicit row-retention rules for missing indicators.
 
 ## Requirements checklist
 
@@ -21,8 +19,6 @@ policies.
 - Column map: provide all 19 keys -\> columns; missing mappings abort.
 - Row policy: na_action = keep (default), omit, error; warn/ignore act
   like keep but warn.
-- Optional bounds screening: check_extreme + extreme_action
-  (warn/cap/error/ignore/NA); defaults use 0-1.
 
 ## Load packages and example data
 
@@ -86,21 +82,19 @@ cci_out <- charlson_index(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
-  extreme_action = "warn",
   verbose = FALSE
 )
 
 head(cci_out)
-#> # A tibble: 6 × 1
-#>   charlson_index
-#>            <int>
-#> 1              4
-#> 2              1
-#> 3              0
-#> 4              0
-#> 5              1
-#> 6              1
+#> # A tibble: 6 × 2
+#>   id    charlson_index
+#>   <chr>          <int>
+#> 1 P001               4
+#> 2 P002               1
+#> 3 P003               0
+#> 4 P004               0
+#> 5 P005               1
+#> 6 P006               1
 ```
 
 ## Arguments that matter
@@ -108,9 +102,6 @@ head(cci_out)
 - col_map: all 19 keys required; missing or empty entries abort.
 - na_action: keep (default), omit (drop rows with missing indicators),
   error (abort on missing); warn/ignore behave like keep but warn.
-- check_extreme: FALSE by default; TRUE enforces bounds.
-- extreme_action: warn (default), cap, error, ignore, NA; default bounds
-  0-1 per indicator unless overridden via extreme_rules.
 - verbose: emit step messages.
 
 ## Handling missing and non-binary inputs
@@ -119,8 +110,8 @@ head(cci_out)
   become NA.
 - Missing indicators yield NA scores unless na_action = “omit” or
   “error”.
-- Out-of-range (non 0/1) values warn; enable check_extreme to
-  cap/error/NA.
+- Out-of-range (non 0/1) values warn; recode non-binary values to 0/1
+  before passing.
 
 ### Compare row policies
 
@@ -128,8 +119,8 @@ head(cci_out)
 demo <- sim_small[1:8, names(col_map)]
 demo$renal[3] <- NA
 
-a_keep <- charlson_index(demo, col_map, na_action = "keep", check_extreme = FALSE)
-a_omit <- charlson_index(demo, col_map, na_action = "omit", check_extreme = FALSE)
+a_keep <- charlson_index(demo, col_map, na_action = "keep")
+a_omit <- charlson_index(demo, col_map, na_action = "omit")
 
 list(
   keep_rows = nrow(a_keep),
@@ -146,25 +137,17 @@ list(
 #> [1]  4  1 NA  0  1  1
 ```
 
-## Bounds screening (optional)
+## Out-of-bounds indicators
 
-Cap or error on inputs outside chosen ranges.
+Indicators outside 0-1 will warn. Pre-filter or recode non-binary values
+before calling.
 
 ``` r
 demo2 <- demo
-demo2$mi[5] <- 2  # out of bounds
-
-a_cap <- charlson_index(
-  data = demo2,
-  col_map = col_map,
-  na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
-  extreme_rules = NULL,
-  verbose = FALSE
-)
-
-head(a_cap$charlson_index)
+demo2$mi[5] <- 2  # out of bounds — will warn
+# Recode to valid binary before passing if needed
+demo2$mi[5] <- as.integer(demo2$mi[5] > 0)
+head(charlson_index(demo2, col_map = col_map, na_action = "keep")$charlson_index)
 #> [1]  4  1 NA  0  1  1
 ```
 
@@ -173,15 +156,13 @@ head(a_cap$charlson_index)
 - charlson_index integer total
 - Rows drop only with na_action = “omit”; na_action = “error” aborts on
   missing.
-- Optional bounds handling via check_extreme/extreme_action.
 
 ## Pitfalls and tips
 
-- Indicators must be truly binary; non-binary values warn and can be
-  capped if screening is on.
+- Indicators must be truly binary; non-binary values warn; recode before
+  passing.
 - Provide all 19 mappings; missing keys error.
 - Age points are not included here; add separately if needed.
-- Use extreme_rules to adjust bounds if your inputs differ.
 
 ## Validation ideas
 
@@ -215,8 +196,10 @@ patient <- tibble::tibble(
 )
 cm_v <- as.list(stats::setNames(names(patient), names(patient)))
 charlson_index(patient, col_map = cm_v, verbose = TRUE)
-#> charlson_index(): preparing inputs
-#> charlson_index(): column map: mi -> 'mi', chf -> 'chf', pvd -> 'pvd', stroke -> 'stroke', dementia -> 'dementia', copd -> 'copd', rheum -> 'rheum', ulcer -> 'ulcer', mild_liver -> 'mild_liver', diabetes -> 'diabetes', diab_comp -> 'diab_comp', hemiplegia -> 'hemiplegia', renal -> 'renal', cancer -> 'cancer', leukemia -> 'leukemia', lymphoma -> 'lymphoma', sev_liver -> 'sev_liver', metastatic_cancer -> 'metastatic_cancer', hiv -> 'hiv'
+#> charlson_index(): reading input 'patient' — 1 rows × 19 variables
+#> charlson_index(): col_map: mi -> 'mi', chf -> 'chf', pvd -> 'pvd', stroke -> 'stroke', dementia -> 'dementia', copd -> 'copd', rheum -> 'rheum', ulcer -> 'ulcer', mild_liver -> 'mild_liver', diabetes -> 'diabetes', diab_comp -> 'diab_comp', hemiplegia -> 'hemiplegia', renal -> 'renal', cancer -> 'cancer', leukemia -> 'leukemia', lymphoma -> 'lymphoma', sev_liver -> 'sev_liver', metastatic_cancer -> 'metastatic_cancer', hiv -> 'hiv'
+#> charlson_index(): computing markers:
+#>   charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]
 #> charlson_index(): results: charlson_index 1/1
 #> # A tibble: 1 × 1
 #>   charlson_index

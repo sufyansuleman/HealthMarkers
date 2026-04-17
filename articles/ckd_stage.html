@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,8 +73,7 @@ KDIGO risk assumes A1 for mapping.</p>
 <ul>
 <li>You have eGFR (mL/min/1.73 m^2) and optionally UACR (mg/g) and want
 KDIGO staging.</li>
-<li>You need explicit handling of missing inputs and optional
-extreme-value screening.</li>
+<li>You need explicit handling of missing inputs.</li>
 <li>You want a lightweight KDIGO risk label without age adjustment.</li>
 </ul>
 </div>
@@ -88,8 +87,6 @@ UACR mg/g.</li>
 <li>Column map: list(eGFR = …, UACR = …) with UACR optional; mapping
 missing columns errors (except optional UACR).</li>
 <li>Row policy: na_action = keep (default), omit, error.</li>
-<li>Extreme screening: check_extreme + extreme_action (cap/NA/error);
-defaults cap eGFR 0-200, UACR 0-5000 when enabled.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -121,21 +118,19 @@ them.</p>
 <code class="sourceCode R"><span><span class="va">ckd_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ckd_out</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   CKD_stage Albuminuria_stage KDIGO_risk</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> G1        A2                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> G2        A1                Low       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> G2        A2                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> G3a       A1                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> G1        A1                Low       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> G2        A2                Moderate</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> G5        A1                Very High</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -145,10 +140,6 @@ them.</p>
 in data, albuminuria is NA and a warning is issued.</li>
 <li>na_action: keep (default, retain rows; stages become NA), omit (drop
 rows with missing inputs), error (abort on missing).</li>
-<li>check_extreme: FALSE by default; TRUE enables bounds checks (eGFR
-0-200; UACR 0-5000 mg/g by default).</li>
-<li>extreme_action: cap (default), NA, or error when check_extreme =
-TRUE.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -168,8 +159,8 @@ for mapping.</li>
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">eGFR</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
-<span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">a_keep</span><span class="op">)</span>,</span>
@@ -186,40 +177,33 @@ for mapping.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   CKD_stage Albuminuria_stage KDIGO_risk</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> G1        A2                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> G2        A1                Low       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span>        A2                <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> G3a       A1                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> G1        A1                Low       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> G2        A2                Moderate</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span>        A1                <span style="color: #BB0000;">NA</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> G5        A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> G5        A1                Very High</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="extreme-value-screening-optional">Extreme-value screening (optional)<a class="anchor" aria-label="anchor" href="#extreme-value-screening-optional"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Cap or error on out-of-range values.</p>
+<p>Extreme eGFR or UACR will map to the most extreme KDIGO categories.
+Pre-filter implausible values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">demo</span></span>
 <span><span class="va">demo2</span><span class="op">$</span><span class="va">UACR</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">6000</span>  <span class="co"># extreme albuminuria</span></span>
 <span></span>
-<span><span class="va">a_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">a_cap</span>, <span class="va">Albuminuria_stage</span>, <span class="va">KDIGO_risk</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="../reference/ckd_stage.html">ckd_stage</a></span><span class="op">(</span><span class="va">demo2</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span>, <span class="va">Albuminuria_stage</span>, <span class="va">KDIGO_risk</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   Albuminuria_stage KDIGO_risk</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A2                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A1                Low       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> A2                <span style="color: #BB0000;">NA</span>        </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> A1                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> A3                Moderate  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> A2                Moderate</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> A1                <span style="color: #BB0000;">NA</span>        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> A1                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> A3                Very High </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> A1                Very High</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -240,8 +224,6 @@ albuminuria is missing for risk mapping) Rows drop only with na_action =
 mg/g with mg/mmol.</li>
 <li>If you do not have UACR, remove it from col_map; albuminuria stays
 NA and risk assumes A1.</li>
-<li>Use extreme_action = “error” for strict QC; cap for gentle
-cleaning.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -286,8 +268,14 @@ active:</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>eGFR <span class="op">=</span> <span class="st">"eGFR"</span>, UACR <span class="op">=</span> <span class="st">"UACR"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; ckd_stage(): column map: eGFR -&gt; 'eGFR', UACR -&gt; 'UACR'</span></span>
-<span><span class="co">#&gt; ckd_stage(): completed</span></span>
+<span><span class="co">#&gt; ckd_stage(): reading input 'df_v' — 3 rows × 2 variables</span></span>
+<span><span class="co">#&gt; ckd_stage(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   eGFR              -&gt;  'eGFR'</span></span>
+<span><span class="co">#&gt;   UACR              -&gt;  'UACR'</span></span>
+<span><span class="co">#&gt; ckd_stage(): computing markers:</span></span>
+<span><span class="co">#&gt;   CKD_stage          [eGFR G-stage]</span></span>
+<span><span class="co">#&gt;   Albuminuria_stage  [UACR A-stage]</span></span>
+<span><span class="co">#&gt;   KDIGO_risk         [combined KDIGO risk category]</span></span>
 <span><span class="co">#&gt; ckd_stage(): results: CKD_stage 3/3, Albuminuria_stage 2/3, KDIGO_risk 3/3</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   CKD_stage Albuminuria_stage KDIGO_risk</span></span>
@@ -299,6 +287,16 @@ active:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
 <code>"none"</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which renal marker
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a>

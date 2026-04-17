@@ -22,13 +22,10 @@ Given routine blood and urine assays, `renal_markers()` computes:
 ``` r
 renal_markers(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -67,38 +64,28 @@ renal_markers(
 
 - na_action:
 
-  One of c("keep","omit","error") for handling missing values in
+  One of `c("keep","omit","error")` for handling missing values in
   required inputs. Default "keep".
 
 - na_warn_prop:
 
-  Proportion \\\[0,1\]\\ to trigger high-missingness warnings for
-  required inputs. Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scans selected inputs for out-of-range values using
-  simple heuristics. Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore") when extremes are detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) bounds keyed by input names (e.g.,
-  "creatinine","BUN","cystatin_C","urea_serum","creatinine_urine","urea_urine").
-  If NULL, built-in defaults are used.
+  Proportion (0-1) threshold for high-missingness diagnostics. Default
+  0.2.
 
 - verbose:
 
-  Logical; if TRUE, prints progress messages and a completion summary.
+  Logical; if `TRUE` (default), prints step-by-step progress including
+  column mapping, optional input availability, physiological range
+  information (informational only, values are not altered), the list of
+  markers being computed, and a per-column results summary.
 
 ## Value
 
-A tibble with columns: eGFR_cr, eGFR_cys, eGFR_combined, BUN_Cr_ratio,
-FE_Urea, NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP
+A tibble with computed renal markers: `eGFR_cr`, `eGFR_cys`,
+`eGFR_combined`, `BUN_Cr_ratio`, `FE_Urea`, `NGAL`, `KIM1`, `NAG`,
+`Beta2Micro`, `IL18`, `L_FABP`. If an ID column is detected in `data`
+(e.g. `id`, `IID`, `participant_id`), it is prepended as the first
+output column.
 
 ## Details
 
@@ -157,6 +144,26 @@ protein as a biomarker of acute kidney injury.” *Kidney International*,
 df <- tibble::tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14)
 cm <- list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN")
 renal_markers(df, cm)
+#> renal_markers(): reading input 'df' — 1 rows × 5 variables
+#> renal_markers(): col_map (5 columns — 5 specified)
+#>   creatinine        ->  'Cr'
+#>   age               ->  'Age'
+#>   sex               ->  'Sex'
+#>   race              ->  'Race'
+#>   BUN               ->  'BUN'
+#> renal_markers(): optional inputs
+#>   missing:  cystatin_C, urea_serum, creatinine_urine, urea_urine, NGAL, KIM1, NAG, beta2_micro, IL18, L_FABP
+#>   indices -> NA:
+#>   eGFR_cys -> NA  [missing: cystatin_C]
+#>   eGFR_combined -> NA  [missing: cystatin_C]
+#>   FE_Urea -> NA  [missing: urea_serum, creatinine_urine, urea_urine]
+#> renal_markers(): computing markers:
+#>   eGFR_cr        [creatinine, age, sex, race]
+#>   eGFR_cys       NA [cystatin_C missing]
+#>   eGFR_combined  NA [cystatin_C missing]
+#>   BUN_Cr_ratio   [BUN, creatinine]
+#>   FE_Urea        NA [urea/urine inputs missing]
+#> renal_markers(): results: eGFR_cr 1/1, eGFR_cys 0/1, eGFR_combined 0/1, BUN_Cr_ratio 1/1, FE_Urea 0/1, NGAL 0/1, KIM1 0/1, NAG 0/1, Beta2Micro 0/1, IL18 0/1, L_FABP 0/1
 #> # A tibble: 1 × 11
 #>   eGFR_cr eGFR_cys eGFR_combined BUN_Cr_ratio FE_Urea  NGAL  KIM1   NAG
 #>     <dbl>    <dbl>         <dbl>        <dbl>   <dbl> <dbl> <dbl> <dbl>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,14 +95,6 @@ high alcohol.</li>
 <code>keep</code>/<code>ignore</code>/<code>warn</code> retain rows with
 NA outputs; <code>omit</code> drops rows missing required inputs;
 <code>error</code> aborts.</li>
-<li>
-<code>check_extreme</code>: when TRUE, scan age and BMD; default
-bounds age 40–90, BMD T -6 to 2 (override with
-<code>extreme_rules</code>).</li>
-<li>
-<code>extreme_action</code>: <code>warn</code> (default) leaves
-values; <code>cap</code> trims into bounds; <code>NA</code> blanks;
-<code>error</code> aborts; <code>ignore</code> skips messages.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -170,8 +162,6 @@ adjustment when present.</li>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -205,49 +195,35 @@ are coerced; non-finite values become NA.</li>
 <code>keep</code>/<code>ignore</code>/<code>warn</code> retain rows with
 NA outputs; <code>omit</code> drops rows missing required inputs;
 <code>error</code> aborts.</li>
-<li>
-<code>check_extreme</code>: when TRUE, scan age and BMD; defaults
-bounds age 40–90, BMD T -6 to 2 (override with
-<code>extreme_rules</code>).</li>
-<li>
-<code>extreme_action</code>: <code>warn</code> (default) leaves
-values; <code>cap</code> trims into bounds; <code>NA</code> blanks;
-<code>error</code> aborts; <code>ignore</code> skips messages.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
 </h2>
-<p>Show row handling, capping, and dropping on a small slice.</p>
+<p>Show row handling on a small slice.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo_miss</span> <span class="op">&lt;-</span> <span class="va">demo</span></span>
 <span><span class="va">demo_miss</span><span class="op">$</span><span class="va">Age</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>      <span class="co"># missing age</span></span>
 <span><span class="va">demo_miss</span><span class="op">$</span><span class="va">Sex</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"X"</span>    <span class="co"># unknown sex -&gt; NA</span></span>
-<span><span class="va">demo_miss</span><span class="op">$</span><span class="va">Age</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">105</span>     <span class="co"># extreme age</span></span>
-<span><span class="va">demo_miss</span><span class="op">$</span><span class="va">bmd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">7</span>      <span class="co"># extreme BMD</span></span>
 <span></span>
-<span><span class="va">keep_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frax_score.html">frax_score</a></span><span class="op">(</span></span>
+<span><span class="va">keep_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frax_score.html">frax_score</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo_miss</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">omit_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frax_score.html">frax_score</a></span><span class="op">(</span></span>
+<span><span class="va">omit_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/frax_score.html">frax_score</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo_miss</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">keep_cap</span><span class="op">)</span>,</span>
-<span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">omit_cap</span><span class="op">)</span>,</span>
-<span>  capped_preview <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">keep_cap</span>, <span class="va">frax_age_used</span>, <span class="va">frax_bmd_tscore</span>, <span class="va">frax_major_percent</span>, <span class="va">frax_hip_percent</span><span class="op">)</span><span class="op">)</span></span>
+<span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">keep_res</span><span class="op">)</span>,</span>
+<span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">omit_res</span><span class="op">)</span>,</span>
+<span>  preview <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">keep_res</span>, <span class="va">frax_age_used</span>, <span class="va">frax_bmd_tscore</span>, <span class="va">frax_major_percent</span>, <span class="va">frax_hip_percent</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; $keep_rows</span></span>
 <span><span class="co">#&gt; [1] 6</span></span>
@@ -255,21 +231,19 @@ values; <code>cap</code> trims into bounds; <code>NA</code> blanks;
 <span><span class="co">#&gt; $omit_rows</span></span>
 <span><span class="co">#&gt; [1] 4</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $capped_preview</span></span>
+<span><span class="co">#&gt; $preview</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   frax_age_used frax_bmd_tscore frax_major_percent frax_hip_percent</span></span>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>            65            -<span style="color: #BB0000;">2</span>                 15.5              8.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>            72            -<span style="color: #BB0000;">6</span>                 14.4              8.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>            72            -<span style="color: #BB0000;">1</span>                 14.4              8.9</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>            <span style="color: #BB0000;">NA</span>            -<span style="color: #BB0000;">2.5</span>               <span style="color: #BB0000;">NA</span>               <span style="color: #BB0000;">NA</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>            68            -<span style="color: #BB0000;">1.5</span>               <span style="color: #BB0000;">NA</span>               <span style="color: #BB0000;">NA</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>            90            -<span style="color: #BB0000;">0.8</span>               15               12  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>            74            -<span style="color: #BB0000;">0.8</span>               11.8              7.6</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>            60            <span style="color: #BB0000;">NA</span>                  7                3.5</span></span></code></pre></div>
 <p>Here <code>na_action = "keep"</code> retains rows even with
 missing/unknown sex or age (outputs become NA).
-<code>na_action = "omit"</code> drops rows missing required inputs.
-<code>extreme_action = "cap"</code> trims age/BMD into allowed ranges
-before risk calculation.</p>
+<code>na_action = "omit"</code> drops rows missing required inputs.</p>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -282,9 +256,6 @@ or columns abort.</li>
 <li>Choose <code>na_action</code> to enforce or relax completeness;
 <code>error</code> is strict, <code>omit</code> drops, <code>keep</code>
 retains.</li>
-<li>Use <code>check_extreme</code>/<code>extreme_action</code> to cap,
-blank, or reject out-of-range age/BMD (defaults age 40–90, BMD T -6 to
-2).</li>
 <li>
 <code>verbose = TRUE</code> surfaces progress and QA messages.</li>
 </ul>
@@ -305,8 +276,14 @@ a results summary.</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>age <span class="op">=</span> <span class="st">"Age"</span>, sex <span class="op">=</span> <span class="st">"Sex"</span>, bmd <span class="op">=</span> <span class="st">"bmd"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; frax_score(): preparing inputs</span></span>
-<span><span class="co">#&gt; frax_score(): column map: age -&gt; 'Age', sex -&gt; 'Sex'</span></span>
+<span><span class="co">#&gt; frax_score(): reading input 'df_v' — 2 rows × 3 variables</span></span>
+<span><span class="co">#&gt; frax_score(): col_map (3 columns — 2 specified, 1 inferred from data)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'Age'</span></span>
+<span><span class="co">#&gt;   sex               -&gt;  'Sex'</span></span>
+<span><span class="co">#&gt;   bmd_t             -&gt;  'bmd'    (inferred)</span></span>
+<span><span class="co">#&gt; frax_score(): computing markers:</span></span>
+<span><span class="co">#&gt;   frax_major_percent [age, sex, risk factors, bmd]</span></span>
+<span><span class="co">#&gt;   frax_hip_percent [age, sex, risk factors, bmd]</span></span>
 <span><span class="co">#&gt; frax_score(): results: frax_major_percent 2/2, frax_hip_percent 2/2, frax_sex_norm 2/2, frax_age_used 2/2, frax_bmd_tscore 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 5</span></span></span>
 <span><span class="co">#&gt;   frax_major_percent frax_hip_percent frax_sex_norm frax_age_used</span></span>
@@ -317,13 +294,21 @@ a results summary.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
 <li>Normalize sex coding to <code>M</code>/<code>F</code> or 1/0 before
 calling to avoid NA normalization.</li>
-<li>Adjust <code>extreme_rules</code> if your bounds differ; set
-<code>check_extreme = FALSE</code> to skip scanning.</li>
 <li>Use <code>na_action = "error"</code> for strict pipelines;
 <code>omit</code> to filter incomplete rows;
 <code>keep</code>/<code>warn</code> for exploratory use.</li>

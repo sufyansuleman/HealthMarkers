@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,31 +103,19 @@ coercible to numeric; coercion that introduces NAs emits a warning.</li>
 <code>warn</code>/<code>ignore</code> behave like keep;
 <code>omit</code> drops those rows; <code>error</code> aborts.</li>
 <li>
-<code>check_extreme = FALSE</code>: turn on plausible-range
-screening.</li>
-<li>
-<code>extreme_action = c("warn","cap","error","ignore","NA")</code>
-(default “warn”): response to values outside bounds.</li>
-<li>
-<code>extreme_rules = NULL</code>: override default bounds for
-vitamin D (defaults to 0 to 250 ng/mL).</li>
-<li>
 <code>verbose = FALSE</code>: emit progress messages.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="how-missingness-and-extremes-are-handled">How missingness and extremes are handled<a class="anchor" aria-label="anchor" href="#how-missingness-and-extremes-are-handled"></a>
+<h2 id="how-missingness-is-handled">How missingness is handled<a class="anchor" aria-label="anchor" href="#how-missingness-is-handled"></a>
 </h2>
 <ul>
 <li>Missing 25(OH)D follows <code>na_action</code>; <code>omit</code>
 shrinks the output; <code>error</code> aborts.</li>
 <li>Non-numeric inputs are coerced to numeric; any NAs introduced
 trigger a warning.</li>
-<li>With <code>check_extreme = TRUE</code>, values outside the bounds
-are handled per <code>extreme_action</code>: warn only, cap into range,
-abort, ignore, or blank to NA.</li>
 <li>Negative values and very high medians (suggesting nmol/L) warn when
-extreme scanning is off.</li>
+values appear implausible.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -162,23 +150,24 @@ output aligns with input row count.</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Insufficient    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Sufficient      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<p>Screen and cap extremes</p>
+<p>Pre-filter and classify</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">280</span>, <span class="fl">8</span>, <span class="fl">65</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span>  <span class="co"># 280 is extreme by default (0-250)</span></span>
+<code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">280</span>, <span class="fl">8</span>, <span class="fl">65</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span>  <span class="co"># 280 is implausible; pre-filter</span></span>
+<span></span>
+<span><span class="co"># Pre-filter before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">d</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">d</span> <span class="op">&gt;</span> <span class="fl">250</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/vitamin_d_status.html">vitamin_d_status</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vitd <span class="op">=</span> <span class="st">"d"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 1</span></span></span>
 <span><span class="co">#&gt;   vitamin_d_status</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Deficient       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Sufficient      </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> <span style="color: #BB0000;">NA</span>              </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Deficient       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Sufficient      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
@@ -193,8 +182,12 @@ output aligns with input row count.</li>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vitamin_d <span class="op">=</span> <span class="st">"VitD"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; vitamin_d_status(): preparing inputs</span></span>
-<span><span class="co">#&gt; vitamin_d_status(): column map: vitamin_d -&gt; 'VitD'</span></span>
+<span><span class="co">#&gt; vitamin_d_status(): reading input 'data' — 2 rows × 1 variables</span></span>
+<span><span class="co">#&gt; vitamin_d_status(): col_map (2 columns — 1 specified, 1 inferred from data)</span></span>
+<span><span class="co">#&gt;   vitamin_d         -&gt;  'VitD'</span></span>
+<span><span class="co">#&gt;   vitd              -&gt;  'VitD'    (inferred)</span></span>
+<span><span class="co">#&gt; vitamin_d_status(): computing markers:</span></span>
+<span><span class="co">#&gt;   vitamin_d_status [VitD]</span></span>
 <span><span class="co">#&gt; vitamin_d_status(): results: vitamin_d_status 2/2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 1</span></span></span>
 <span><span class="co">#&gt;   vitamin_d_status</span></span>
@@ -211,8 +204,6 @@ output aligns with input row count.</li>
 (nmol/L should be divided by 2.5 to get ng/mL).</li>
 <li>Set <code>na_action = "omit"</code> when downstream steps cannot
 handle NA statuses.</li>
-<li>Tighten <code>extreme_rules</code> to your assay range, or leave
-<code>check_extreme = FALSE</code> when values are already QCed.</li>
 <li>Keep <code>col_map</code> named; missing or empty mappings abort
 with classed errors you can assert in tests.</li>
 </ul>

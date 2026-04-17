@@ -22,12 +22,10 @@ Computes (urine-only):
 ``` r
 urine_markers(
   data,
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore"),
-  extreme_rules = NULL
+  na_warn_prop = 0.2
 )
 ```
 
@@ -37,6 +35,12 @@ urine_markers(
 
   A data.frame or tibble with at least urine_albumin and
   urine_creatinine.
+
+- col_map:
+
+  Optional named list mapping canonical keys (e.g., `urine_albumin`,
+  `urine_creatinine`) to actual column names in `data`. If `NULL`,
+  column names are inferred automatically.
 
 - verbose:
 
@@ -52,20 +56,6 @@ urine_markers(
 
   Proportion \\\[0,1\]\\ to trigger high-missingness warnings for
   required inputs. Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for extreme values. Default FALSE.
-
-- extreme_action:
-
-  One of `c("warn","cap","error","ignore")` when extremes detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) bounds for inputs. If NULL, broad
-  defaults are used.
 
 ## Value
 
@@ -156,6 +146,18 @@ df <- tibble::tibble(
   urine_protein    = 150
 )
 urine_markers(df)
+#> urine_markers(): reading input 'df' — 1 rows × 8 variables
+#> urine_markers(): col_map (4 columns — 4 inferred from data)
+#>   urine_albumin     ->  'urine_albumin'    (inferred)
+#>   urine_creatinine  ->  'urine_creatinine'    (inferred)
+#>   urine_protein     ->  'urine_protein'    (inferred)
+#>   urine_Na          ->  'urine_Na'    (inferred)
+#> urine_markers(): computing markers:
+#>   UACR, albuminuria_stage, microalbuminuria [urine_albumin, urine_creatinine]
+#>   UPCR [urine_protein, urine_creatinine]
+#>   U_Na_K_ratio [urine_Na, urine_K]
+#>   NGAL/KIM1/NAG/Beta2Micro/A1Micro/IL18/L_FABP per gCr [optional]
+#> urine_markers(): results: UACR 1/1, albuminuria_stage 1/1, microalbuminuria 1/1, UPCR 1/1, U_Na_K_ratio 0/1, NGAL_per_gCr 0/1, KIM1_per_gCr 0/1, NAG_per_gCr 0/1, Beta2Micro_per_gCr 0/1, A1Micro_per_gCr 0/1, IL18_per_gCr 0/1, L_FABP_per_gCr 0/1
 #> # A tibble: 1 × 12
 #>    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
 #>   <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>

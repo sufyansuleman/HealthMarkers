@@ -8,12 +8,9 @@ and immune activation.
 ``` r
 kyn_trp_ratio(
   data,
-  col_map = list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM"),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -35,26 +32,15 @@ kyn_trp_ratio(
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides; defaults: list(kynurenine_nmolL = c(100, 20000),
-  tryptophan_umolL = c(10, 150), ratio = c(0, 200)).
-
 - verbose:
 
-  Logical; if TRUE, emits progress via rlang::inform.
+  Logical; if `TRUE` (default), prints column mapping and a per-column
+  results summary.
 
 ## Value
 
-A tibble with one column: kyn_trp_ratio (numeric).
+A tibble with one column: kyn_trp_ratio (numeric). If an ID column is
+detected, it is prepended.
 
 ## Details
 
@@ -82,6 +68,14 @@ cancer.” *International Journal of Cancer*, **156**(3), 552–565.
 ``` r
 df <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
 kyn_trp_ratio(df)
+#> kyn_trp_ratio(): reading input 'df' — 3 rows × 2 variables
+#> kyn_trp_ratio(): preparing inputs
+#> kyn_trp_ratio(): col_map (2 columns — 2 inferred from data)
+#>   kynurenine        ->  'Kyn_nM'    (inferred)
+#>   tryptophan        ->  'Trp_uM'    (inferred)
+#> kyn_trp_ratio(): computing markers:
+#>   kyn_trp_ratio  [kynurenine (nmol/L) / tryptophan (mumol/L)]
+#> kyn_trp_ratio(): results: kyn_trp_ratio 3/3
 #> # A tibble: 3 × 1
 #>   kyn_trp_ratio
 #>           <dbl>

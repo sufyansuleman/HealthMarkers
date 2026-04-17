@@ -70,7 +70,6 @@ ais <- adipo_is(
   data = sim_small,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = FALSE,
   normalize = "none"
 )
 
@@ -81,11 +80,11 @@ ais %>%
 #> # A tibble: 5 × 5
 #>   Revised_QUICKI McAuley_index Adipo_inv Belfiore_inv_FFA TyG_inv
 #>            <dbl>         <dbl>     <dbl>            <dbl>   <dbl>
-#> 1          0.342          6.50     -8.96           -0.201   -8.39
-#> 2          0.354          4.97     -7.18           -0.245   -9.13
-#> 3          0.352          6.12     -7.81           -0.227   -8.42
-#> 4          0.360          6.62     -5.90           -0.290   -9.07
-#> 5          0.340          5.52     -9.22           -0.196   -8.95
+#> 1          0.338          4.92     -8.06           -0.221   -9.67
+#> 2          0.444         10.2      -1.79           -0.716   -8.07
+#> 3          0.348          7.18     -7.64           -0.232   -8.43
+#> 4          0.369          7.84     -5.59           -0.303   -8.23
+#> 5          0.394          5.62     -5.06           -0.330   -8.51
 
 # Group 2 — sex-specific and ratio indices
 ais %>%
@@ -94,11 +93,11 @@ ais %>%
 #> # A tibble: 5 × 5
 #>   TG_HDL_C_inv VAI_Men_inv VAI_Women_inv LAP_Men_inv LAP_Women_inv
 #>          <dbl>       <dbl>         <dbl>       <dbl>         <dbl>
-#> 1        -1.59      -0.689         -1.05       -11.9         -19.3
-#> 2        -3.42      -2.08          -3.17       -71.3         -87.0
-#> 3        -2.18      -1.28          -1.95       -40.1         -48.2
-#> 4        -4.67      -2.67          -4.04       -92.4        -106. 
-#> 5        -3.25      -2.08          -3.16       -79.2         -92.1
+#> 1        -5.55      -3.04          -4.61     -106.          -128. 
+#> 2        -1.35      -0.783         -1.19      -25.0          -30.0
+#> 3        -1.95      -0.991         -1.51      -19.3          -26.8
+#> 4        -1.43      -0.815         -1.24      -24.0          -30.5
+#> 5        -2.36      -1.10          -1.67       -9.84         -21.3
 ```
 
 Values ending in `_inv` are inverted so **more negative = worse adipose
@@ -120,21 +119,18 @@ ais_with_sex %>%
   slice_head(n = 5)
 ```
 
-## Missing data and extremes
+## Missing data handling
 
-Screen a small slice, cap extremes, and compare row handling.
+Compare NA policies on a small slice.
 
 ``` r
 demo <- sim_small[1:6, c("G0", "I0", "TG", "HDL_c", "FFA", "waist", "BMI")]
 demo$G0[2] <- NA        # missing glucose
-demo$TG[3] <- 30        # extreme TG (mmol/L)
 
 ais_keep <- adipo_is(
   data = demo,
   col_map = col_map,
   na_action = "keep",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   normalize = "none",
   verbose = FALSE
 )
@@ -143,8 +139,6 @@ ais_omit <- adipo_is(
   data = demo,
   col_map = col_map,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   normalize = "none",
   verbose = FALSE
 )
@@ -152,7 +146,7 @@ ais_omit <- adipo_is(
 list(
   keep_rows = nrow(ais_keep),
   omit_rows = nrow(ais_omit),
-  capped_preview = ais_keep %>% select(ends_with("_inv")) %>% slice_head(n = 3)
+  keep_preview = ais_keep %>% select(ends_with("_inv")) %>% slice_head(n = 3)
 )
 #> $keep_rows
 #> [1] 6
@@ -160,52 +154,14 @@ list(
 #> $omit_rows
 #> [1] 5
 #> 
-#> $capped_preview
+#> $keep_preview
 #> # A tibble: 3 × 7
 #>   VAI_Men_inv VAI_Women_inv TG_HDL_C_inv TyG_inv LAP_Men_inv LAP_Women_inv
 #>         <dbl>         <dbl>        <dbl>   <dbl>       <dbl>         <dbl>
-#> 1      -0.689         -1.05        -1.59   -8.39       -11.9         -19.3
-#> 2      -2.08          -3.17        -3.42   NA          -71.3         -87.0
-#> 3     -22.0          -33.5        -37.4   -11.3       -688.         -828. 
+#> 1      -3.04          -4.61        -5.55   -9.67      -106.         -128. 
+#> 2      -0.783         -1.19        -1.35   NA          -25.0         -30.0
+#> 3      -0.991         -1.51        -1.95   -8.43       -19.3         -26.8
 #> # ℹ 1 more variable: Adipo_inv <dbl>
-```
-
-## Custom extreme rules
-
-Override the built-in plausibility bounds with `extreme_rules` (values
-in original units before any conversion):
-
-``` r
-custom_rules <- list(
-  G0    = c(2, 25),    # mmol/L — tighter glucose cap
-  TG    = c(0.1, 15),  # mmol/L — tighter TG cap
-  I0    = c(5, 1500),  # pmol/L
-  FFA   = c(0.05, 2),  # mmol/L
-  waist = c(50, 200)   # cm
-)
-
-ais_custom <- adipo_is(
-  data           = demo,
-  col_map        = col_map,
-  na_action      = "keep",
-  check_extreme  = TRUE,
-  extreme_action = "cap",
-  extreme_rules  = custom_rules,
-  normalize      = "none"
-)
-
-ais_custom %>%
-  select(Revised_QUICKI, TyG_inv, TG_HDL_C_inv) %>%
-  slice_head(n = 6)
-#> # A tibble: 6 × 3
-#>   Revised_QUICKI TyG_inv TG_HDL_C_inv
-#>            <dbl>   <dbl>        <dbl>
-#> 1          0.342   -8.39        -1.59
-#> 2         NA       NA           -3.42
-#> 3          0.352  -11.0        -28.1 
-#> 4          0.360   -9.07        -4.67
-#> 5          0.340   -8.95        -3.25
-#> 6          0.321   -8.37        -1.55
 ```
 
 ## Normalise outputs
@@ -227,11 +183,11 @@ ais_z %>%
 #> # A tibble: 5 × 4
 #>   Revised_QUICKI McAuley_index TyG_inv Adipo_inv
 #>            <dbl>         <dbl>   <dbl>     <dbl>
-#> 1       -0.342           0.711  1.53     -0.285 
-#> 2        0.00367        -1.01  -0.583     0.191 
-#> 3       -0.0407          0.284  1.44      0.0219
-#> 4        0.186           0.843 -0.412     0.530 
-#> 5       -0.389          -0.392 -0.0537   -0.354
+#> 1        -0.442         -0.721  -1.37     0.0702
+#> 2         1.38           2.34    1.49     1.06  
+#> 3        -0.260          0.575   0.835    0.137 
+#> 4         0.0915         0.954   1.20     0.459 
+#> 5         0.519         -0.318   0.692    0.543
 ```
 
 Available options: `"none"` (default — raw scale), `"z"` (mean 0 / SD
@@ -261,13 +217,30 @@ invisible(adipo_is(
   data          = sim_small[1:5, ],
   col_map       = col_map,
   na_action     = "keep",
-  check_extreme = TRUE,
   normalize     = "none",
   verbose       = TRUE
 ))
-#> adipo_is(): preparing inputs
-#> adipo_is(): column map: G0 -> 'G0', I0 -> 'I0', TG -> 'TG', HDL_c -> 'HDL_c', FFA -> 'FFA', waist -> 'waist', bmi -> 'BMI'
-#> adipo_is(): results: Revised_QUICKI 5/5, VAI_Men_inv 5/5, VAI_Women_inv 5/5, TG_HDL_C_inv 5/5, TyG_inv 5/5, LAP_Men_inv 5/5, LAP_Women_inv 5/5, McAuley_index 5/5, Adipo_inv 5/5, Belfiore_inv_FFA 5/5
+#> adipo_is(): reading input 'data' — 5 rows × 519 variables
+#> adipo_is(): col_map (7 columns — 7 specified)
+#>   G0                ->  'G0'
+#>   I0                ->  'I0'
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   FFA               ->  'FFA'
+#>   waist             ->  'waist'
+#>   bmi               ->  'BMI'
+#> adipo_is(): computing markers:
+#>   Revised_QUICKI       [G0, I0, FFA]
+#>   VAI_Men_inv          [waist, bmi, TG, HDL_c]
+#>   VAI_Women_inv        [waist, bmi, TG, HDL_c]
+#>   TG_HDL_C_inv         [TG, HDL_c]
+#>   TyG_inv              [TG, G0]
+#>   LAP_Men_inv          [waist, TG]
+#>   LAP_Women_inv        [waist, TG]
+#>   McAuley_index        [I0, TG]
+#>   Adipo_inv            [FFA, I0]
+#>   Belfiore_inv_FFA     [I0, FFA]
+#> adipo_is(): results: id 5/5, Revised_QUICKI 5/5, VAI_Men_inv 5/5, VAI_Women_inv 5/5, TG_HDL_C_inv 5/5, TyG_inv 5/5, LAP_Men_inv 5/5, LAP_Women_inv 5/5, McAuley_index 5/5, Adipo_inv 5/5, Belfiore_inv_FFA 5/5
 
 options(old_opt)  # restore
 ```
@@ -283,8 +256,6 @@ Enable globally for an entire session:
   columns abort.
 - `na_action` controls row handling: `keep` propagates NA outputs;
   `omit` drops rows with missing required inputs; `error` aborts.
-- `check_extreme` screens raw inputs before conversion; `extreme_action`
-  can warn, cap, NA, or error.
 - Built-in conversions: glucose *18 (mg/dL), insulin /6 (muU/mL), TG*
   88.57 (mg/dL), HDL \*38.67 (mg/dL); FFA/waist/BMI unchanged.
 
@@ -297,10 +268,7 @@ Enable globally for an entire session:
   applies per subject; interpret accordingly.
 - For modelling, use `normalize = "z"` (z-score), `"range"` (0–1), or
   `"robust"` (median/IQR); default `"none"` keeps raw index scales. See
-  the *Normalise outputs* section above.
-
-## Validation notes
-
+  the *Normalise outputs* section above. \## Validation notes
 - **Revised_QUICKI**: typical adults ~0.3–0.6; lower is worse IR.
   Computed from log10(I0 \[mU/L\]) + log10(G0 \[mg/dL\]) + log10(FFA
   \[mmol/L\]).
@@ -316,8 +284,6 @@ Enable globally for an entire session:
   Amato 2010 reference constants (1.03, 1.31, 0.81, 1.52). Typical range
   −1 to −5; more negative = worse.
 - Spot-check `TG_HDL_C_inv`: should equal `−(TG_mg/dL / HDL_mg/dL)`.
-- Use `check_extreme = TRUE` with lab-appropriate `extreme_rules` before
-  capping or erroring.
 
 ## See also
 

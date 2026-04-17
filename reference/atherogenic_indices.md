@@ -13,13 +13,10 @@ Calculates:
 ``` r
 atherogenic_indices(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   normalize = c("none", "log10"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -38,29 +35,19 @@ atherogenic_indices(
 
   one of c("keep","omit","error").
 
-- check_extreme:
-
-  logical; if TRUE, screen inputs for extremes using `extreme_rules`.
-
-- extreme_action:
-
-  one of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  optional named list of bounds per key or column, each c(min, max).
-
 - normalize:
 
   one of c("none","log10"). Reserved; AIP always uses log10(TG/HDL_c).
 
 - verbose:
 
-  logical; prints step messages via hm_inform when TRUE.
+  Logical; if `TRUE` (default), prints column mapping, the list of
+  indices being computed, and a per-column results summary.
 
 ## Value
 
-tibble with columns AIP, CRI_I, CRI_II
+tibble with columns AIP, CRI_I, CRI_II. If an ID column is detected in
+`data` (e.g. `id`, `IID`, `participant_id`), it is prepended.
 
 ## Details
 
@@ -102,7 +89,18 @@ df <- tibble::tibble(
   LDL_c = c(120, 150)
 )
 cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
-atherogenic_indices(df, col_map = cm, verbose = FALSE)
+atherogenic_indices(df, col_map = cm)
+#> atherogenic_indices(): reading input 'df' — 2 rows × 4 variables
+#> atherogenic_indices(): col_map (4 columns — 4 specified)
+#>   TG                ->  'TG'
+#>   HDL_c             ->  'HDL_c'
+#>   TC                ->  'TC'
+#>   LDL_c             ->  'LDL_c'
+#> atherogenic_indices(): computing markers:
+#>   AIP        [log10(TG / HDL_c)]
+#>   CRI_I      [TC / HDL_c [if TC available]]
+#>   CRI_II     [LDL_c / HDL_c [if LDL_c available]]
+#> atherogenic_indices(): results: AIP 2/2, CRI_I 2/2, CRI_II 2/2
 #> # A tibble: 2 × 3
 #>     AIP CRI_I CRI_II
 #>   <dbl> <dbl>  <dbl>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,14 +97,6 @@ albumin (g/L), diabetes (0/1 or logical), bilirubin (mg/dL), creatinine
 <code>omit</code> drops rows missing required inputs; <code>error</code>
 aborts; <code>ignore</code> treated as keep; <code>warn</code> keeps but
 issues high-missingness warnings via <code>na_warn_prop</code>.</li>
-<li>
-<code>check_extreme</code>: set TRUE to scan inputs with
-<code>extreme_action</code> (<code>warn</code>, <code>cap</code>,
-<code>error</code>, <code>ignore</code>, <code>NA</code>) using default
-bounds unless <code>extreme_rules</code> overrides them. Defaults: BMI
-10-70; waist 40-200 cm; TG 10-1500 mg/dL; GGT 1-2000 U/L; age 18-120;
-AST/ALT 1-5000; platelets 10-1000 (10^9/L); albumin 15-60 g/L; bilirubin
-0.1-40 mg/dL; creatinine 0.2-20 mg/dL.</li>
 <li>Numeric coercion: mapped columns (except <code>diabetes</code>) are
 coerced to numeric; non-finite values become NA before policies.
 <code>diabetes</code> is coerced to integer 0/1 with a warning if values
@@ -150,18 +142,61 @@ are outside {0,1,TRUE,FALSE}.</li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  73.8 -<span style="color: #BB0000;">22.6</span> 0.5    2.53     3 -<span style="color: #BB0000;">2.52</span>   10.8</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="handling-missingness-and-extremes">Handling missingness and extremes<a class="anchor" aria-label="anchor" href="#handling-missingness-and-extremes"></a>
+<h2 id="non-standard-column-names">Non-standard column names<a class="anchor" aria-label="anchor" href="#non-standard-column-names"></a>
+</h2>
+<p>When your data use different column names, only supply
+<code>col_map</code> entries for keys that differ. The remaining keys
+are matched automatically via a built-in synonym dictionary
+(case-insensitive, common abbreviations: <code>bili</code> →
+<code>bilirubin</code>, <code>creat</code> → <code>creatinine</code>,
+<code>platelet_count</code> → <code>platelets</code>, etc.).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_ns</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  bmi_kgm2      <span class="op">=</span> <span class="fl">27</span>,</span>
+<span>  waist_cm      <span class="op">=</span> <span class="fl">92</span>,</span>
+<span>  trig_mgdl     <span class="op">=</span> <span class="fl">180</span>,   <span class="co"># mg/dL</span></span>
+<span>  ggt           <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>  age_years     <span class="op">=</span> <span class="fl">52</span>,</span>
+<span>  AST           <span class="op">=</span> <span class="fl">32</span>,</span>
+<span>  ALT           <span class="op">=</span> <span class="fl">28</span>,</span>
+<span>  PLT           <span class="op">=</span> <span class="fl">220</span>,   <span class="co"># platelets, 10^9/L</span></span>
+<span>  serum_albumin <span class="op">=</span> <span class="fl">40</span>,    <span class="co"># g/L</span></span>
+<span>  dm            <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  bili          <span class="op">=</span> <span class="fl">0.8</span>,   <span class="co"># mg/dL</span></span>
+<span>  creat         <span class="op">=</span> <span class="fl">1.0</span>    <span class="co"># mg/dL</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/liver_markers.html">liver_markers</a></span><span class="op">(</span></span>
+<span>  data    <span class="op">=</span> <span class="va">df_ns</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    BMI        <span class="op">=</span> <span class="st">"bmi_kgm2"</span>,</span>
+<span>    waist      <span class="op">=</span> <span class="st">"waist_cm"</span>,</span>
+<span>    TG         <span class="op">=</span> <span class="st">"trig_mgdl"</span>,</span>
+<span>    age        <span class="op">=</span> <span class="st">"age_years"</span>,</span>
+<span>    diabetes   <span class="op">=</span> <span class="st">"dm"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
+<span><span class="co">#&gt;     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  61.8 -<span style="color: #BB0000;">24.2</span> 0.364  1.43     2 -<span style="color: #BB0000;">2.66</span>    8.30</span></span></code></pre></div>
+<p><code>GGT</code>, <code>AST</code>, <code>ALT</code>,
+<code>PLT</code> (→ <code>platelets</code>), <code>serum_albumin</code>
+(→ <code>albumin</code>), <code>bili</code> (→ <code>bilirubin</code>),
+and <code>creat</code> (→ <code>creatinine</code>) were all matched
+automatically; only the five renamed keys required explicit
+<code>col_map</code> entries.</p>
+</div>
+<div class="section level2">
+<h2 id="handling-missingness">Handling missingness<a class="anchor" aria-label="anchor" href="#handling-missingness"></a>
 </h2>
 <ul>
 <li>Missing values: <code>keep/ignore</code> propagate NA;
 <code>omit</code> drops rows missing required inputs; <code>warn</code>
 keeps but logs high-missingness by column; <code>error</code> aborts on
 missing required inputs.</li>
-<li>Extreme values: with <code>check_extreme = TRUE</code>, scan against
-defaults (or <code>extreme_rules</code>); choose
-<code>extreme_action = "warn"|"cap"|"error"|"ignore"|"NA"</code> to
-warn, cap in-range, abort, skip, or blank-out flagged inputs. Non-finite
-values become NA before checks.</li>
+<li>Non-finite values become NA before any policy is applied.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -180,7 +215,7 @@ negative ALT trigger warnings and yield NA in affected indices.</li>
 <div class="section level2">
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/liver_markers.html">liver_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">liver</span>,</span>
@@ -191,8 +226,30 @@ negative ALT trigger warnings and yield NA in affected indices.</li>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; liver_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; liver_markers(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist', TG -&gt; 'triglycerides', GGT -&gt; 'GGT', age -&gt; 'age', AST -&gt; 'AST', ALT -&gt; 'ALT', platelets -&gt; 'platelets', albumin -&gt; 'albumin', diabetes -&gt; 'diabetes', bilirubin -&gt; 'bilirubin', creatinine -&gt; 'creatinine'</span></span>
+<span><span class="co">#&gt; liver_markers(): reading input 'liver' — 3 rows × 12 variables</span></span>
+<span><span class="co">#&gt; liver_markers(): col_map (12 columns — 12 specified)</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'triglycerides'</span></span>
+<span><span class="co">#&gt;   GGT               -&gt;  'GGT'</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   AST               -&gt;  'AST'</span></span>
+<span><span class="co">#&gt;   ALT               -&gt;  'ALT'</span></span>
+<span><span class="co">#&gt;   platelets         -&gt;  'platelets'</span></span>
+<span><span class="co">#&gt;   albumin           -&gt;  'albumin'</span></span>
+<span><span class="co">#&gt;   diabetes          -&gt;  'diabetes'</span></span>
+<span><span class="co">#&gt;   bilirubin         -&gt;  'bilirubin'</span></span>
+<span><span class="co">#&gt;   creatinine        -&gt;  'creatinine'</span></span>
+<span><span class="co">#&gt; liver_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  BMI, waist, TG, GGT, age, AST, ALT, platelets, albumin, diabetes, bilirubin, creatinine</span></span>
+<span><span class="co">#&gt; liver_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   FLI        [BMI, waist, TG, GGT]</span></span>
+<span><span class="co">#&gt;   NFS        [age, BMI, diabetes, AST, ALT, platelets, albumin]</span></span>
+<span><span class="co">#&gt;   APRI       [AST, platelets]</span></span>
+<span><span class="co">#&gt;   FIB4       [age, AST, platelets, ALT]</span></span>
+<span><span class="co">#&gt;   BARD       [BMI, AST, ALT, diabetes]</span></span>
+<span><span class="co">#&gt;   ALBI       [bilirubin, albumin]</span></span>
+<span><span class="co">#&gt;   MELD_XI    [bilirubin, creatinine]</span></span>
 <span><span class="co">#&gt; liver_markers(): results: FLI 3/3, NFS 3/3, APRI 3/3, FIB4 3/3, BARD 3/3, ALBI 3/3, MELD_XI 3/3</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
 <span><span class="co">#&gt;     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI</span></span>
@@ -203,14 +260,22 @@ negative ALT trigger warnings and yield NA in affected indices.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="articles/multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms across major
+biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
 </h2>
 <ul>
 <li>Confirm triglycerides are in mg/dL (not mmol/L) and albumin in
 g/L.</li>
-<li>Enable <code>check_extreme = TRUE</code> with
-<code>extreme_action = "cap"</code> to bound implausible values before
-scoring; use <code>warn</code> during QA to see flags.</li>
 <li>For modeling-ready outputs, prefer <code>na_action = "omit"</code>;
 use <code>keep</code> or <code>warn</code> when inspecting data
 quality.</li>

@@ -23,7 +23,7 @@ Optionally returns a tidy tibble instead of the original list.
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,10 +73,8 @@ Optionally returns a tidy tibble instead of the original list.
 <span>  visible <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ignore"</span>, <span class="st">"warn"</span>, <span class="st">"error"</span>, <span class="st">"keep"</span>, <span class="st">"omit"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"ignore"</span>, <span class="st">"error"</span>, <span class="st">"cap"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
 <span>  return <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="st">"data"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -144,20 +142,6 @@ Default <code>"ignore"</code> (retained for backward compatibility; equivalent t
 is emitted (per column) when na_action = "warn". Default 0.2.</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>NULL/TRUE/FALSE gate for out-of-range scan:</p><ul><li><p>NULL (default): legacy behavior (scan only when rescale = FALSE)</p></li>
-<li><p>TRUE: always scan selected deficits for values &lt; 0 or &gt; 1 before di::di</p></li>
-<li><p>FALSE: never scan for extremes</p></li>
-</ul></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of "warn","ignore","error","cap","NA" for out-of-range handling when scanning is enabled.</p><ul><li><p>"cap": truncate to \([0,1]\)</p></li>
-<li><p>"NA": set out-of-range to NA
-Default "warn".</p></li>
-</ul></dd>
-
-
 <dt id="arg-return">return<a class="anchor" aria-label="anchor" href="#arg-return"></a></dt>
 <dd><p>One of c("list","data"). "list" (default) returns the original
 di::di result (backward compatible). "data" returns a tibble with one row
@@ -166,7 +150,7 @@ columns (post-capping if applied). Age is included if present.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, prints progress and a completion summary. Default FALSE.</p></dd>
+<dd><p>Logical; if TRUE, prints progress and a completion summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -234,10 +218,10 @@ Cesari M, Gambassi G, van Kan GA, Vellas B (2014).
 <span class="r-in"><span>                       return <span class="op">=</span> <span class="st">"data"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): preparing inputs (3 rows, 2 deficits, age provided)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): column map: d1, d2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): col_map: d1, d2</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): results: di range [0.000, 1.000] (3 rows, 2 deficits)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): preparing inputs (3 rows, 3 deficits, age provided)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): column map: d1, d2, d3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): col_map: d1, d2, d3</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> frailty_index(): results: di 3/3</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

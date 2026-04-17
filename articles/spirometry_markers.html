@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -115,21 +115,6 @@ sex, ethnicity</td>
 <td>“keep” (default), “omit”, “error”, “ignore”, “warn”</td>
 </tr>
 <tr class="even">
-<td>check_extreme</td>
-<td>Scan inputs against bounds</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="odd">
-<td>extreme_action</td>
-<td>Handling for extremes</td>
-<td>“warn” (default), “cap”, “error”, “ignore”, “NA”</td>
-</tr>
-<tr class="even">
-<td>extreme_rules</td>
-<td>Bounds list <code>c(min, max)</code> per input</td>
-<td>Default fev1 0–8 L, fvc 0–10 L</td>
-</tr>
-<tr class="odd">
 <td>verbose</td>
 <td>Emit progress messages</td>
 <td>Default FALSE</td>
@@ -152,9 +137,6 @@ volumes are coerced with warnings; non-finite become NA.</li>
 <li>Missingness: <code>keep</code>/<code>ignore</code>/<code>warn</code>
 propagate NA; <code>omit</code> drops rows with required NA;
 <code>error</code> aborts if required NA.</li>
-<li>Extreme screening (optional): bounds on fev1/fvc;
-<code>extreme_action</code> controls warn/cap/error/ignore/NA. Defaults
-cap to 0–8/0–10 only if enabled.</li>
 <li>Domain warnings: zero FVC -&gt; ratio NA with warning; negative
 volumes warn; ratios &gt; 1 warn to check units.</li>
 <li>GLI references: used only when age/height/sex/ethnicity provided and
@@ -166,26 +148,18 @@ percent-predicted thresholds.</li>
 <li>Bronchodilator response: percent change
 <code>(post - pre) / pre * 100</code>; requires both pre and post
 columns.</li>
-<li>Padding: if rows are omitted under <code>na_action = "omit"</code>,
-outputs are padded back to input row count when NA policy keeps
-rows.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="defaults-and-validation-details">Defaults and validation details<a class="anchor" aria-label="anchor" href="#defaults-and-validation-details"></a>
 </h2>
 <ul>
-<li>Default extreme bounds: fev1 0–8 L, fvc 0–10 L (applied only when
-<code>check_extreme = TRUE</code>).</li>
 <li>GLI mapping: sex strings starting with m/1 -&gt; Male; f/0/2 -&gt;
 Female; ethnicity regex maps to GLI categories (Caucasian, African
 American, North East Asian, South East Asian, Other).</li>
 <li>Fallback reference (if <code>rspiro</code> unavailable): rough
 height/age equations for testability; not clinical—aimed to avoid all-NA
 outputs in tests.</li>
-<li>High-missing diagnostics are not emitted unless
-<code>verbose</code>/debug logging is enabled via
-<code>hm_inform</code>.</li>
 <li>Empty result: if <code>na_action = "omit"</code> drops all rows,
 returns a zero-row tibble with expected columns.</li>
 </ul>
@@ -231,7 +205,7 @@ missing for deltas.</li>
 flags; NA propagates where inputs are missing.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-with-post-bd-gli-inputs-cap-extremes">Worked example 2: With post-BD, GLI inputs, cap extremes<a class="anchor" aria-label="anchor" href="#worked-example-2-with-post-bd-gli-inputs-cap-extremes"></a>
+<h2 id="worked-example-2-with-post-bd-and-gli-inputs">Worked example 2: With post-BD and GLI inputs<a class="anchor" aria-label="anchor" href="#worked-example-2-with-post-bd-and-gli-inputs"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
@@ -244,6 +218,10 @@ flags; NA propagates where inputs are missing.</p>
 <span>  sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"male"</span>, <span class="st">"female"</span>, <span class="st">"male"</span><span class="op">)</span>,</span>
 <span>  ethnicity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Caucasian"</span>, <span class="st">"African American"</span>, <span class="st">"Other"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pre-filter implausible volumes before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">fev1_pre</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">fev1_pre</span> <span class="op">&gt;</span> <span class="fl">8</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">fvc_pre</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">fvc_pre</span> <span class="op">&gt;</span> <span class="fl">10</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="va">cm2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  fev1 <span class="op">=</span> <span class="st">"fev1_pre"</span>,</span>
@@ -259,23 +237,21 @@ flags; NA propagates where inputs are missing.</p>
 <span><span class="fu"><a href="../reference/spirometry_markers.html">spirometry_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">cm2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 12</span></span></span>
 <span><span class="co">#&gt;   ratio_pre ratio_post copd_flag_fixed obstruction_lln fev1_pp fvc_pp fev1_z</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      0.7       0.75  FALSE           FALSE              40.8   42.1  -<span style="color: #BB0000;">5.92</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      0.5       0.579 TRUE            TRUE               23.7   31.2  -<span style="color: #BB0000;">7.63</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      0.75      0.686 TRUE            TRUE              126.   125.    2.65</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       0.7      0.75  FALSE           FALSE              40.8   42.1  -<span style="color: #BB0000;">5.92</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>       0.5      0.579 TRUE            TRUE               23.7   31.2  -<span style="color: #BB0000;">7.63</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      <span style="color: #BB0000;">NA</span>        0.686 TRUE            TRUE              126.    <span style="color: #BB0000;">NA</span>     2.65</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: fvc_z &lt;dbl&gt;, ratio_z &lt;dbl&gt;, gold_grade &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   bdr_fev1 &lt;dbl&gt;, bdr_fvc &lt;dbl&gt;</span></span></span></code></pre></div>
-<p><em>Interpretation:</em> Extremes are capped before ratios; GLI
-fields are computed when <code>rspiro</code> is available, otherwise
-fall back or remain NA. Bronchodilator deltas are percent changes
-pre→post.</p>
+<p><em>Interpretation:</em> Implausible volumes are set to NA before
+calling; GLI fields are computed when <code>rspiro</code> is available,
+otherwise fall back or remain NA. Bronchodilator deltas are percent
+changes pre→post.</p>
 </div>
 <div class="section level2">
 <h2 id="worked-example-3-strict-missing-policy">Worked example 3: Strict missing policy<a class="anchor" aria-label="anchor" href="#worked-example-3-strict-missing-policy"></a>
@@ -296,8 +272,6 @@ pre→post.</p>
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header: keep YAML at the top; stray text before it breaks
-knitting.</li>
 <li>Units: volumes must be liters; convert upstream. Ratios &gt; 1 often
 indicate unit issues.</li>
 <li>Missing columns: ensure <code>fev1</code> and <code>fvc</code> are
@@ -307,9 +281,6 @@ age/height/sex/ethnicity; otherwise GLI outputs may be NA or use
 fallback approximations.</li>
 <li>Zero/negative volumes: produce warnings; zero FVC yields NA
 ratios.</li>
-<li>Outliers: enable <code>check_extreme</code> with
-<code>extreme_action = "cap"</code> or <code>"NA"</code> to constrain
-implausible volumes.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -324,8 +295,16 @@ result summaries during QC:</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1 <span class="op">=</span> <span class="st">"FEV1"</span>, fvc <span class="op">=</span> <span class="st">"FVC"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; spirometry_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; spirometry_markers(): column map: fev1 -&gt; 'FEV1', fvc -&gt; 'FVC'</span></span>
+<span><span class="co">#&gt; spirometry_markers(): reading input 'data' — 1 rows × 2 variables</span></span>
+<span><span class="co">#&gt; spirometry_markers(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   fev1              -&gt;  'FEV1'</span></span>
+<span><span class="co">#&gt;   fvc               -&gt;  'FVC'</span></span>
+<span><span class="co">#&gt; spirometry_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   ratio_pre/post  [FEV1/FVC]</span></span>
+<span><span class="co">#&gt;   copd_flag_fixed [ratio &lt; 0.70]</span></span>
+<span><span class="co">#&gt;   obstruction_lln [LLN-based]</span></span>
+<span><span class="co">#&gt;   fev1_pp/fvc_pp  [% predicted]</span></span>
+<span><span class="co">#&gt;   gold_grade      [GOLD severity]</span></span>
 <span><span class="co">#&gt; spirometry_markers(): results: ratio_pre 1/1, ratio_post 0/1, copd_flag_fixed 1/1, obstruction_lln 0/1, fev1_pp 0/1, fvc_pp 0/1, fev1_z 0/1, fvc_z 0/1, ratio_z 0/1, gold_grade 0/1, bdr_fev1 0/1, bdr_fvc 0/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 12</span></span></span>
 <span><span class="co">#&gt;   ratio_pre ratio_post copd_flag_fixed obstruction_lln fev1_pp fvc_pp fev1_z</span></span>
@@ -334,6 +313,16 @@ result summaries during QC:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: fvc_z &lt;dbl&gt;, ratio_z &lt;dbl&gt;, gold_grade &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   bdr_fev1 &lt;dbl&gt;, bdr_fvc &lt;dbl&gt;</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>

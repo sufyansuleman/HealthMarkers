@@ -14,11 +14,8 @@ allostatic_load(
   thresholds,
   col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  extreme_action = c("cap", "NA", "error"),
-  sds_limit = 6,
   return_summary = FALSE,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -41,19 +38,6 @@ allostatic_load(
 
   one of c("keep","omit","error") ("keep" treats NA as zero
   contribution).
-
-- check_extreme:
-
-  logical; scan columns with name containing "sds" for \|value\| \>
-  sds_limit.
-
-- extreme_action:
-
-  one of c("cap","NA","error") for SDS-like extremes.
-
-- sds_limit:
-
-  positive numeric cutoff for SDS-like scan (default 6).
 
 - return_summary:
 
@@ -124,6 +108,12 @@ allostatic_load(df, thresholds = thr, na_action = "keep", verbose = FALSE)
 
 # Single biomarker uses inclusive >= rule
 allostatic_load(df, thresholds = list(CRP = 3))
+#> allostatic_load(): reading input 'df' — 3 rows × 3 variables
+#> allostatic_load(): col_map (1 column — 1 inferred from data)
+#>   CRP               ->  'CRP'    (inferred)
+#> allostatic_load(): computing markers:
+#>   AllostaticLoad [CRP]
+#> allostatic_load(): results: AllostaticLoad 3/3
 #> # A tibble: 3 × 1
 #>   AllostaticLoad
 #>            <int>

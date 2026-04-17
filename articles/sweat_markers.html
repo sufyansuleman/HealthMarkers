@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,21 +117,6 @@ weight_after, duration, body_surface_area</td>
 <td>Default 0.2 (shown in debug/verbose)</td>
 </tr>
 <tr class="odd">
-<td>check_extreme</td>
-<td>Scan inputs against bounds</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="even">
-<td>extreme_action</td>
-<td>Handling for extremes</td>
-<td>“warn” (default), “cap”, “error”, “ignore”</td>
-</tr>
-<tr class="odd">
-<td>extreme_rules</td>
-<td>Optional bounds list c(min, max) per input</td>
-<td>Defaults are broad, see below</td>
-</tr>
-<tr class="even">
 <td>verbose</td>
 <td>Emit progress and completion summaries</td>
 <td>Default FALSE</td>
@@ -156,10 +141,6 @@ drops rows with any required NA; <code>error</code> aborts if required
 inputs contain NA.</li>
 <li>High-missing diagnostics: controlled by <code>na_warn_prop</code>;
 shown when <code>verbose</code> (or debug) is enabled.</li>
-<li>Extreme screening (optional): checks all inputs; defaults are broad
-(chloride/Na 0–200, K 0–40, lactate 0–50, weights 10–400, duration
-0.05–48, BSA 0.3–3.0); <code>extreme_action</code> controls
-warn/cap/error/ignore.</li>
 <li>Safe division: all ratios use a helper that sets NA for zero/invalid
 denominators and emits a consolidated warning.</li>
 <li>Sweat rate:
@@ -222,19 +203,23 @@ dropped rows under <code>omit</code>.</li>
 inputs are missing or denominators are zero (e.g., sweat_K = 0).</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-cap-extremes-drop-incomplete">Worked example 2: Cap extremes, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-cap-extremes-drop-incomplete"></a>
+<h2 id="worked-example-2-pre-filter-extremes-drop-incomplete">Worked example 2: Pre-filter extremes, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-pre-filter-extremes-drop-incomplete"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  cl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">250</span><span class="op">)</span>,       <span class="co"># extreme chloride</span></span>
+<span>  cl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">250</span><span class="op">)</span>,       <span class="co"># extreme chloride; pre-filter</span></span>
 <span>  na <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">10</span><span class="op">)</span>,</span>
 <span>  k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
-<span>  lac <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">60</span><span class="op">)</span>,         <span class="co"># extreme lactate</span></span>
+<span>  lac <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">60</span><span class="op">)</span>,         <span class="co"># extreme lactate; pre-filter</span></span>
 <span>  w_before <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">75</span>, <span class="fl">90</span><span class="op">)</span>,</span>
 <span>  w_after <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">74.2</span>, <span class="fl">89.0</span><span class="op">)</span>,</span>
 <span>  dur <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span>,</span>
 <span>  bsa <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.0</span>, <span class="fl">1.8</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pre-filter implausible values before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">cl</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">cl</span> <span class="op">&gt;</span> <span class="fl">200</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">lac</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">lac</span> <span class="op">&gt;</span> <span class="fl">50</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/sweat_markers.html">sweat_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
@@ -248,34 +233,26 @@ inputs are missing or denominators are zero (e.g., sweat_K = 0).</p>
 <span>    duration <span class="op">=</span> <span class="st">"dur"</span>,</span>
 <span>    body_surface_area <span class="op">=</span> <span class="st">"bsa"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
 <span><span class="co">#&gt;   sweat_chloride Na_K_ratio sweat_lactate sweat_rate</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>            180         15             6      0.400</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>            200         20            50      2.78</span></span></code></pre></div>
-<p><em>Interpretation:</em> Extremes are capped before computing
-ratios/rates; incomplete rows are dropped.</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>            180         15             6      0.400</span></span></code></pre></div>
+<p><em>Interpretation:</em> Implausible values are set to NA before
+calling; incomplete rows are then dropped.</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header: keep YAML at the top; stray text before it breaks
-knitting.</li>
 <li>Units: all values must be in the expected units; convert upstream if
 needed.</li>
 <li>Missing columns: ensure every required <code>col_map</code> key is
 mapped to an existing column.</li>
 <li>Zero/invalid denominators: produce NA outputs and a warning; check
 for sweat_K = 0, duration = 0, or BSA = 0.</li>
-<li>Outliers: enable <code>check_extreme</code> with
-<code>extreme_action = "cap"</code> or <code>"NA"</code> to constrain
-implausible values.</li>
 <li>All NA outputs: usually due to missing/invalid inputs, zero
 denominators, or aggressive <code>na_action = "omit"</code>.</li>
 </ul>
@@ -308,8 +285,21 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; sweat_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; sweat_markers(): column map: sweat_chloride -&gt; 'sweat_chloride', sweat_Na -&gt; 'sweat_Na', sweat_K -&gt; 'sweat_K', sweat_lactate -&gt; 'sweat_lactate', weight_before -&gt; 'weight_before', weight_after -&gt; 'weight_after', duration -&gt; 'duration', body_surface_area -&gt; 'body_surface_area'</span></span>
+<span><span class="co">#&gt; sweat_markers(): reading input 'data' — 1 rows × 8 variables</span></span>
+<span><span class="co">#&gt; sweat_markers(): col_map (8 columns — 8 specified)</span></span>
+<span><span class="co">#&gt;   sweat_chloride    -&gt;  'sweat_chloride'</span></span>
+<span><span class="co">#&gt;   sweat_Na          -&gt;  'sweat_Na'</span></span>
+<span><span class="co">#&gt;   sweat_K           -&gt;  'sweat_K'</span></span>
+<span><span class="co">#&gt;   sweat_lactate     -&gt;  'sweat_lactate'</span></span>
+<span><span class="co">#&gt;   weight_before     -&gt;  'weight_before'</span></span>
+<span><span class="co">#&gt;   weight_after      -&gt;  'weight_after'</span></span>
+<span><span class="co">#&gt;   duration          -&gt;  'duration'</span></span>
+<span><span class="co">#&gt;   body_surface_area -&gt;  'body_surface_area'</span></span>
+<span><span class="co">#&gt; sweat_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   sweat_chloride [sweat_chloride]</span></span>
+<span><span class="co">#&gt;   Na_K_ratio [sweat_Na, sweat_K]</span></span>
+<span><span class="co">#&gt;   sweat_lactate [sweat_lactate]</span></span>
+<span><span class="co">#&gt;   sweat_rate [weight_before, weight_after, duration, body_surface_area]</span></span>
 <span><span class="co">#&gt; sweat_markers(): results: sweat_chloride 1/1, Na_K_ratio 1/1, sweat_lactate 1/1, sweat_rate 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
 <span><span class="co">#&gt;   sweat_chloride Na_K_ratio sweat_lactate sweat_rate</span></span>
@@ -318,17 +308,24 @@ denominators, or aggressive <code>na_action = "omit"</code>.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>
 </h2>
 <ul>
-<li>Use <code>check_extreme = TRUE</code> with
-<code>extreme_action = "cap"</code> to hard-limit inputs to plausible
-ranges.</li>
 <li>Choose <code>na_action = "omit"</code> for modeling datasets that
 require complete cases; use <code>keep</code> for exploratory
 review.</li>
-<li>Review warnings for zero denominators or capped values; these often
-indicate data entry or assay issues.</li>
+<li>Review warnings for zero denominators; these often indicate data
+entry or assay issues.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -339,9 +336,6 @@ indicate data entry or assay issues.</li>
 weight_after) / duration / body_surface_area (1 kg ≈ 1 L).</li>
 <li>All divisions are safe: zero/invalid denominators yield NA and a
 warning.</li>
-<li>Default bounds: chloride/Na 0–200, K 0–40, lactate 0–50, weights
-10–400, duration 0.05–48, BSA 0.3–3.0 (applied only if
-<code>check_extreme = TRUE</code>).</li>
 </ul>
 </div>
 <div class="section level2">

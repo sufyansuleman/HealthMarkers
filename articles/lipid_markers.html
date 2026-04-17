@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,23 +105,55 @@ and non-finite set to <code>NA</code> before policies.</li>
 <span>    ApoB <span class="op">=</span> <span class="st">"ApoB"</span>, ApoA1 <span class="op">=</span> <span class="st">"ApoA1"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span>, glucose <span class="op">=</span> <span class="st">"glucose"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">lm_out</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 11</span></span></span>
 <span><span class="co">#&gt;   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      2.81    -<span style="color: #BB0000;">0.171</span>         2.83        0.693          1.94      0.473   0.689</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      4.41     1.81          3.95        1.49           1.74      0.637   2.08 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      3.31     0.960         3.70        0.952          1.92      0.392   1.28 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      3.72    -<span style="color: #BB0000;">0.198</span>         4.92        2.04           4.12      0.804   2.67 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      4.03     0.789         4.09        1.42           2.48      0.516   2.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      5.14     1.43          4.95        2.42           2.85      0.690   3.04 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      4.58     0.33          4.75        0.590          3.48      0.412   0.783</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      5.7      0.49          5.52        0.849          4.13      0.992   0.991</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      2.97     0.420         3.02        0.626          1.73      1.08    0.815</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      3.12     0.75          2.96        1.03           1.49      0.674   1.10 </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;, LAP_Women &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   TyG_BMI &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="missing-data-extremes">Missing data &amp; extremes<a class="anchor" aria-label="anchor" href="#missing-data-extremes"></a>
+<h2 id="non-standard-column-names">Non-standard column names<a class="anchor" aria-label="anchor" href="#non-standard-column-names"></a>
+</h2>
+<p>When your data frame uses different column names, supply a
+<code>col_map</code> to redirect any key that differs. Keys you omit are
+auto-inferred from common synonym patterns
+(e.g. <code>total_chol</code>, <code>total_cholesterol</code>,
+<code>tc</code> all resolve to <code>TC</code>).</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Columns use non-standard names for weight and height</span></span>
+<span><span class="va">df_mapped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  TC <span class="op">=</span> <span class="fl">5.0</span>, HDL_c <span class="op">=</span> <span class="fl">1.3</span>, TG <span class="op">=</span> <span class="fl">1.5</span>, LDL_c <span class="op">=</span> <span class="fl">3.0</span>,</span>
+<span>  body_weight <span class="op">=</span> <span class="fl">80</span>,    <span class="co"># kg</span></span>
+<span>  body_height <span class="op">=</span> <span class="fl">175</span>,   <span class="co"># cm</span></span>
+<span>  waist <span class="op">=</span> <span class="fl">92</span>,</span>
+<span>  glucose <span class="op">=</span> <span class="fl">5.8</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">lm_mapped</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lipid_markers.html">lipid_markers</a></span><span class="op">(</span></span>
+<span>  <span class="va">df_mapped</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>weight <span class="op">=</span> <span class="st">"body_weight"</span>, height <span class="op">=</span> <span class="st">"body_height"</span><span class="op">)</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># BMI was derived from body_weight / body_height; VAI and TyG-BMI are now available</span></span>
+<span><span class="va">lm_mapped</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VAI_Men"</span>, <span class="st">"TyG_BMI"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
+<span><span class="co">#&gt;   VAI_Men TyG_BMI</span></span>
+<span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>    1.52    231.</span></span></code></pre></div>
+<p>Only <code>weight</code> and <code>height</code> had to be
+overridden; <code>TC</code>, <code>HDL_c</code>, <code>TG</code>,
+<code>LDL_c</code>, <code>waist</code>, and <code>glucose</code> were
+matched by the built-in synonym dictionary.</p>
+</div>
+<div class="section level2">
+<h2 id="missing-data">Missing data<a class="anchor" aria-label="anchor" href="#missing-data"></a>
 </h2>
 <ul>
 <li>
@@ -130,13 +162,6 @@ missing inputs (derived outputs become <code>NA</code>);
 <code>omit</code> drops them; <code>error</code> aborts;
 <code>warn</code> retains with warnings. <code>na_warn_prop</code> flags
 high missingness when warning.</li>
-<li>
-<code>check_extreme</code> with <code>extreme_action</code>
-(<code>warn</code>, <code>cap</code>, <code>NA</code>,
-<code>error</code>, <code>ignore</code>) scans broad defaults
-(TC/HDL/TG/LDL 0-50 mmol/L; ApoB/ApoA1 0-10; waist 30-250 cm; BMI 10-80
-kg/m^2; glucose 0-50 mmol/L). Override via
-<code>extreme_rules</code>.</li>
 <li>If <code>LDL_c</code> is absent, LDL is estimated via Friedewald (TC
 - HDL - TG/5) when TG is available.</li>
 </ul>
@@ -161,8 +186,6 @@ internally.</li>
 <ul>
 <li>Provide waist and BMI to enable VAI/LAP; supply glucose and BMI to
 enable TyG-BMI.</li>
-<li>Use <code>check_extreme = TRUE</code> with <code>cap</code> to bound
-implausible lipid or anthropometric values.</li>
 <li>Set <code>na_action = "omit"</code> when you need complete-case
 derived lipid indices.</li>
 </ul>
@@ -170,7 +193,7 @@ derived lipid indices.</li>
 <div class="section level2">
 <h2 id="missing-data-policy">Missing-data policy<a class="anchor" aria-label="anchor" href="#missing-data-policy"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">missing</span> <span class="op">&lt;-</span> <span class="va">lipids</span></span>
 <span><span class="va">missing</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
@@ -179,47 +202,49 @@ derived lipid indices.</li>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TC <span class="op">=</span> <span class="st">"TC"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TG <span class="op">=</span> <span class="st">"TG"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 29 × 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 29 × 11</span></span></span>
 <span><span class="co">#&gt;    non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      2.81   -<span style="color: #BB0000;">0.171</span>          2.83        0.693          1.94         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      4.41    1.81           3.95        1.49           1.74         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      3.31    0.960          3.70        0.952          1.92         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      4.03    0.789          4.09        1.42           2.48         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      3.88    0.668          3.97        0.678          2.46         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      3.34    0.034<span style="text-decoration: underline;">9</span>         3.09        1.51           2.07         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      4.80    1.20           5.23        1.58           3.17         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      4.03    0.623          3.95        1.66           2.49         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      2.83   -<span style="color: #BB0000;">0.521</span>          2.82        1.08           2.15         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      5.17    3.06           4.97        0.962          1.62         <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      5.14     1.43          4.95        2.42           2.85      0.690</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      4.58     0.33          4.75        0.590          3.48      0.412</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      5.7      0.49          5.52        0.849          4.13      0.992</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      3.12     0.75          2.96        1.03           1.49      0.674</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      4        0.58          3.38        0.762          2.04      0.451</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      4.27     2.13          3.70        2.96           1.35      0.383</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      4.79     0.730         5.44        1.48           3.76      1.16 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      2.83     1.32          2.97        2.02           1.05      1.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      5.2      1.05          4.82        1.70           3.05      0.986</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      4.47     0.99          4.89        1.90           3.03      0.876</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 19 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: TyG_BMI &lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: VAI_Men &lt;dbl&gt;, VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   LAP_Women &lt;dbl&gt;, TyG_BMI &lt;dbl&gt;</span></span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/lipid_markers.html">lipid_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">missing</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TC <span class="op">=</span> <span class="st">"TC"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TG <span class="op">=</span> <span class="st">"TG"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 30 × 7</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 30 × 11</span></span></span>
 <span><span class="co">#&gt;    non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span></span>
 <span><span class="co">#&gt;        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      2.81   -<span style="color: #BB0000;">0.171</span>          2.83        0.693          1.94         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      4.41    1.81           3.95        1.49           1.74         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      3.31    0.960          3.70        0.952          1.92         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      3.72   -<span style="color: #BB0000;">0.198</span>          4.92       <span style="color: #BB0000;">NA</span>              4.12         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      4.03    0.789          4.09        1.42           2.48         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      3.88    0.668          3.97        0.678          2.46         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      3.34    0.034<span style="text-decoration: underline;">9</span>         3.09        1.51           2.07         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      4.80    1.20           5.23        1.58           3.17         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      4.03    0.623          3.95        1.66           2.49         <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      2.83   -<span style="color: #BB0000;">0.521</span>          2.82        1.08           2.15         <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>      5.14     1.43          4.95        2.42           2.85      0.690</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>      4.58     0.33          4.75        0.590          3.48      0.412</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>      5.7      0.49          5.52        0.849          4.13      0.992</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>      2.97     0.420         3.02       <span style="color: #BB0000;">NA</span>              1.73      1.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>      3.12     0.75          2.96        1.03           1.49      0.674</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>      4        0.58          3.38        0.762          2.04      0.451</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>      4.27     2.13          3.70        2.96           1.35      0.383</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>      4.79     0.730         5.44        1.48           3.76      1.16 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>      2.83     1.32          2.97        2.02           1.05      1.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>      5.2      1.05          4.82        1.70           3.05      0.986</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 20 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: TyG_BMI &lt;dbl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: VAI_Men &lt;dbl&gt;, VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   LAP_Women &lt;dbl&gt;, TyG_BMI &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/lipid_markers.html">lipid_markers</a></span><span class="op">(</span></span>
 <span>  data    <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span><span class="va">lipids</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
@@ -228,17 +253,40 @@ derived lipid indices.</li>
 <span>                 waist <span class="op">=</span> <span class="st">"waist"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; lipid_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; lipid_markers(): column map: TC -&gt; 'TC', HDL_c -&gt; 'HDL_c', TG -&gt; 'TG'</span></span>
+<span><span class="co">#&gt; lipid_markers(): reading input 'data' — 5 rows × 9 variables</span></span>
+<span><span class="co">#&gt; lipid_markers(): col_map (9 columns — 8 specified, 1 inferred from data)</span></span>
+<span><span class="co">#&gt;   TC                -&gt;  'TC'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   LDL_c             -&gt;  'LDL_c'</span></span>
+<span><span class="co">#&gt;   ApoB              -&gt;  'ApoB'</span></span>
+<span><span class="co">#&gt;   ApoA1             -&gt;  'ApoA1'</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   glucose           -&gt;  'glucose'    (inferred)</span></span>
+<span><span class="co">#&gt; lipid_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  ApoB, ApoA1, waist, BMI, glucose</span></span>
+<span><span class="co">#&gt; lipid_markers(): range note (informational, values not altered):</span></span>
+<span><span class="co">#&gt;   TG: 5 value(s) outside plausible range</span></span>
+<span><span class="co">#&gt; lipid_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   non_HDL_c     [TC, HDL_c]</span></span>
+<span><span class="co">#&gt;   remnant_c     [TC, HDL_c, LDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_TC_HDL  [TC, HDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_TG_HDL  [TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   ratio_LDL_HDL [LDL_c, HDL_c]</span></span>
+<span><span class="co">#&gt;   ApoB_ApoA1    [ApoB, ApoA1]</span></span>
+<span><span class="co">#&gt;   VAI_Men/Women [waist, BMI, TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   LAP_Men/Women [waist, TG]</span></span>
+<span><span class="co">#&gt;   TyG_BMI       [TG, glucose, BMI]</span></span>
 <span><span class="co">#&gt; lipid_markers(): results: non_HDL_c 5/5, remnant_c 5/5, ratio_TC_HDL 5/5, ratio_TG_HDL 5/5, ratio_LDL_HDL 5/5, ApoB_ApoA1 5/5, VAI_Men 5/5, VAI_Women 5/5, LAP_Men 5/5, LAP_Women 5/5, TyG_BMI 5/5</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 11</span></span></span>
 <span><span class="co">#&gt;   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      2.81    -<span style="color: #BB0000;">0.171</span>         2.83        0.693          1.94      0.473   0.689</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      4.41     1.81          3.95        1.49           1.74      0.637   2.08 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      3.31     0.960         3.70        0.952          1.92      0.392   1.28 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      3.72    -<span style="color: #BB0000;">0.198</span>         4.92        2.04           4.12      0.804   2.67 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      4.03     0.789         4.09        1.42           2.48      0.516   2.08 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      5.14     1.43          4.95        2.42           2.85      0.690   3.04 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      4.58     0.33          4.75        0.590          3.48      0.412   0.783</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      5.7      0.49          5.52        0.849          4.13      0.992   0.991</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>      2.97     0.420         3.02        0.626          1.73      1.08    0.815</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>      3.12     0.75          2.96        1.03           1.49      0.674   1.10 </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;, LAP_Women &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   TyG_BMI &lt;dbl&gt;</span></span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>

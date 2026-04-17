@@ -9,13 +9,9 @@ worse prognosis in COPD.
 ``` r
 bode_index(
   data,
-  col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI",
-    fev1 = NULL, fev1_pred = NULL, fev1_pp = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -38,23 +34,9 @@ bode_index(
 
   one of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
-
-  logical; if TRUE scan for extreme values.
-
-- extreme_action:
-
-  one of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  named list of bounds (c(lo,hi)) for fev1_pct,sixmwd,mmrc,bmi.
-  Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi
-  c(10,60).
-
 - verbose:
 
-  logical; TRUE emits messages.
+  logical; TRUE (default) emits messages.
 
 ## Value
 
@@ -80,7 +62,18 @@ Pulmonary Disease.” *The New England Journal of Medicine*, **350**,
 ``` r
 df <- data.frame(FEV1pct = c(68, 45, 30), Walk_m = c(400, 280, 140),
                  mMRC = c(1, 2, 3), BMI = c(24, 19, 18))
-bode_index(df)
+bode_index(df, col_map = list(fev1_pct = "FEV1pct", sixmwd = "Walk_m",
+                              mmrc = "mMRC", bmi = "BMI"))
+#> bode_index(): reading input 'df' — 3 rows × 4 variables
+#> bode_index(): col_map (5 columns — 4 specified, 1 inferred from data)
+#>   fev1_pct          ->  'FEV1pct'
+#>   sixmwd            ->  'Walk_m'
+#>   mmrc              ->  'mMRC'
+#>   bmi               ->  'BMI'
+#>   fev1_pp           ->  'FEV1pct'    (inferred)
+#> bode_index(): computing markers:
+#>   bode_index  [0-10 COPD severity score]
+#> bode_index(): results: bode_index 3/3, fev1_pct 3/3, fev1_score 3/3, walk_score 3/3, mmrc_score 3/3, bmi_score 3/3
 #> # A tibble: 3 × 6
 #>   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score
 #>        <int>    <dbl>      <int>      <int>      <int>     <int>

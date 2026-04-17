@@ -5,6 +5,11 @@
 - [Getting Started with
   HealthMarkers](https://sufyansuleman.github.io/HealthMarkers/articles/getting-started.md):
 
+### Multi-biobank compatibility
+
+- [Multi-Biobank Compatibility: Automatic Column
+  Recognition](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md):
+
 ### Insulin sensitivity
 
 - [Fasting insulin sensitivity
@@ -68,8 +73,8 @@
 
 - [Inflammatory
   markers](https://sufyansuleman.github.io/HealthMarkers/articles/inflammatory_markers.md):
-- [UNKNOWN
-  TITLE](https://sufyansuleman.github.io/HealthMarkers/articles/inflammatory_age.md):
+- [Inflammatory age (iAge
+  proxy)](https://sufyansuleman.github.io/HealthMarkers/articles/inflammatory_age.md):
 - [Oxidative
   Markers](https://sufyansuleman.github.io/HealthMarkers/articles/oxidative_markers.md):
 - [Kynurenine/Tryptophan
@@ -77,8 +82,8 @@
 
 ### Hormonal
 
-- [UNKNOWN
-  TITLE](https://sufyansuleman.github.io/HealthMarkers/articles/hormone_markers.md):
+- [Hormone marker
+  ratios](https://sufyansuleman.github.io/HealthMarkers/articles/hormone_markers.md):
 
 ### Body composition
 

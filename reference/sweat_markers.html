@@ -19,7 +19,7 @@ sweat_rate     (L/m^2/h) from body mass loss per hour per m^2
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,16 +57,10 @@ sweat_rate     (L/m^2/h) from body mass loss per hour per m^2
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sweat_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sweat_chloride <span class="op">=</span> <span class="st">"sweat_chloride"</span>, sweat_Na <span class="op">=</span> <span class="st">"sweat_Na"</span>, sweat_K <span class="op">=</span></span>
-<span>    <span class="st">"sweat_K"</span>, sweat_lactate <span class="op">=</span> <span class="st">"sweat_lactate"</span>, weight_before <span class="op">=</span> <span class="st">"weight_before"</span>,</span>
-<span>    weight_after <span class="op">=</span> <span class="st">"weight_after"</span>, duration <span class="op">=</span> <span class="st">"duration"</span>, body_surface_area <span class="op">=</span></span>
-<span>    <span class="st">"body_surface_area"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -94,18 +88,6 @@ weight_before, weight_after, duration, body_surface_area</p></li>
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
 <dd><p>Proportion \([0,1]\) to trigger high-missingness diagnostics for required inputs (debug level). Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for extreme values. Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of <code>c("warn","cap","error","ignore")</code> when extremes detected. Default "warn".</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min,max) bounds for inputs. If NULL, broad defaults are used.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -146,6 +128,22 @@ Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact
 <span class="r-in"><span>  body_surface_area <span class="op">=</span> <span class="fl">1.9</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">sweat_markers</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> sweat_markers(): reading input 'df' — 1 rows × 8 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> sweat_markers(): col_map (8 columns — 8 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_chloride    -&gt;  'sweat_chloride'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_Na          -&gt;  'sweat_Na'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_K           -&gt;  'sweat_K'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_lactate     -&gt;  'sweat_lactate'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   weight_before     -&gt;  'weight_before'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   weight_after      -&gt;  'weight_after'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   duration          -&gt;  'duration'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   body_surface_area -&gt;  'body_surface_area'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> sweat_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_chloride [sweat_chloride]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Na_K_ratio [sweat_Na, sweat_K]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_lactate [sweat_lactate]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sweat_rate [weight_before, weight_after, duration, body_surface_area]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> sweat_markers(): results: sweat_chloride 1/1, Na_K_ratio 1/1, sweat_lactate 1/1, sweat_rate 1/1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   sweat_chloride Na_K_ratio sweat_lactate sweat_rate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

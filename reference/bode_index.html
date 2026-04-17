@@ -9,7 +9,7 @@ mMRC dyspnea scale, and BMI. Higher scores indicate worse prognosis in COPD."></
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,13 +45,9 @@ mMRC dyspnea scale, and BMI. Higher scores indicate worse prognosis in COPD.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bode_index</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1_pct <span class="op">=</span> <span class="st">"FEV1pct"</span>, sixmwd <span class="op">=</span> <span class="st">"Walk_m"</span>, mmrc <span class="op">=</span> <span class="st">"mMRC"</span>, bmi <span class="op">=</span> <span class="st">"BMI"</span>,</span>
-<span>    fev1 <span class="op">=</span> <span class="cn">NULL</span>, fev1_pred <span class="op">=</span> <span class="cn">NULL</span>, fev1_pp <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -75,21 +71,8 @@ Example from spirometry_markers: list(fev1_pp="fev1_pp", sixmwd="Walk_m", mmrc="
 <dd><p>one of c("keep","omit","error","ignore","warn").</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>logical; if TRUE scan for extreme values.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>one of c("warn","cap","error","ignore","NA").</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>named list of bounds (c(lo,hi)) for fev1_pct,sixmwd,mmrc,bmi.
-Defaults: fev1_pct c(10,140), sixmwd c(50,800), mmrc c(0,4), bmi c(10,60).</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>logical; TRUE emits messages.</p></dd>
+<dd><p>logical; TRUE (default) emits messages.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,7 +100,18 @@ BMI: &gt;21 = 0; &lt;=21 = 1</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>FEV1pct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">68</span>, <span class="fl">45</span>, <span class="fl">30</span><span class="op">)</span>, Walk_m <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">280</span>, <span class="fl">140</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                 mMRC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, BMI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">19</span>, <span class="fl">18</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">bode_index</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">bode_index</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fev1_pct <span class="op">=</span> <span class="st">"FEV1pct"</span>, sixmwd <span class="op">=</span> <span class="st">"Walk_m"</span>,</span></span>
+<span class="r-in"><span>                              mmrc <span class="op">=</span> <span class="st">"mMRC"</span>, bmi <span class="op">=</span> <span class="st">"BMI"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bode_index(): reading input 'df' — 3 rows × 4 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bode_index(): col_map (5 columns — 4 specified, 1 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fev1_pct          -&gt;  'FEV1pct'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sixmwd            -&gt;  'Walk_m'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   mmrc              -&gt;  'mMRC'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   bmi               -&gt;  'BMI'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   fev1_pp           -&gt;  'FEV1pct'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bode_index(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   bode_index  [0-10 COPD severity score]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bode_index(): results: bode_index 3/3, fev1_pct 3/3, fev1_score 3/3, walk_score 3/3, mmrc_score 3/3, bmi_score 3/3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   bode_index fev1_pct fev1_score walk_score mmrc_score bmi_score</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>

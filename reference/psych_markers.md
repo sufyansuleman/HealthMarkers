@@ -16,7 +16,7 @@ psych_markers(
   bis_key = NULL,
   spq_key = NULL,
   cognitive_method = c("z_mean", "pca1"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -63,7 +63,8 @@ psych_markers(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 
@@ -80,6 +81,9 @@ df <- data.frame(
   gad7_06 = 1, gad7_07 = 2
 )
 psych_markers(df, which = c("phq9", "gad7"))
+#> psych_markers(): preparing inputs
+#> phq9_score(): preparing inputs
+#> psych_markers(): results: 1 rows, 4 new columns
 #> # A tibble: 1 × 4
 #>   PHQ9_total PHQ9_severity GAD7_total GAD7_severity
 #>        <dbl> <fct>              <dbl> <fct>        

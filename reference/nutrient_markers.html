@@ -15,7 +15,7 @@ amino-acid patterns."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,10 +57,7 @@ amino-acid patterns.</p>
 <span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -90,23 +87,6 @@ across the columns referenced by <code>col_map</code>.</p><ul><li><p>"keep" (def
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
 <dd><p>Numeric in \([0,1]\); per-variable threshold for high-missingness
 diagnostics on used input columns. Default 0.2.</p></dd>
-
-
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan used input columns for out-of-range
-values (see <code>extreme_rules</code>). Default FALSE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") used when extremes are
-detected (only when <code>check_extreme = TRUE</code>). Default "warn".</p><ul><li><p>"warn": only warn, "cap": truncate to range and warn, "error": abort,</p></li>
-<li><p>"ignore": no-op, "NA": set flagged inputs to NA.</p></li>
-</ul></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list from input keys to c(min,max) ranges. If NULL,
-broad defaults are used (see Details).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -207,8 +187,40 @@ Waikar SS, Bonventre JV (2009).
 <span class="r-in"><span>  Phe              <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">55</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">nutrient_markers</span><span class="op">(</span><span class="va">df</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): preparing inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): column map: ferritin -&gt; 'ferritin', transferrin_sat -&gt; 'transferrin_sat', albumin -&gt; 'albumin', total_protein -&gt; 'total_protein', EPA -&gt; 'EPA', DHA -&gt; 'DHA', Mg -&gt; 'Mg', creatinine -&gt; 'creatinine', glycated_albumin -&gt; 'glycated_albumin', uric_acid -&gt; 'uric_acid', BUN -&gt; 'BUN', phosphate -&gt; 'phosphate', calcium -&gt; 'calcium', Na -&gt; 'Na', K -&gt; 'K', Cl -&gt; 'Cl', HCO3 -&gt; 'HCO3', Tyr -&gt; 'Tyr', Phe -&gt; 'Phe'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): reading input 'df' — 2 rows × 19 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): col_map (19 columns — 19 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ferritin          -&gt;  'ferritin'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   transferrin_sat   -&gt;  'transferrin_sat'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   albumin           -&gt;  'albumin'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   total_protein     -&gt;  'total_protein'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   EPA               -&gt;  'EPA'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   DHA               -&gt;  'DHA'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Mg                -&gt;  'Mg'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   creatinine        -&gt;  'creatinine'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   glycated_albumin  -&gt;  'glycated_albumin'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   uric_acid         -&gt;  'uric_acid'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BUN               -&gt;  'BUN'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   phosphate         -&gt;  'phosphate'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   calcium           -&gt;  'calcium'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Na                -&gt;  'Na'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   K                 -&gt;  'K'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Cl                -&gt;  'Cl'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HCO3              -&gt;  'HCO3'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tyr               -&gt;  'Tyr'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Phe               -&gt;  'Phe'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): optional inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  ferritin, transferrin_sat, albumin, total_protein, EPA, DHA, Mg, creatinine, glycated_albumin, uric_acid, BUN, phosphate, calcium, Na, K, Cl, HCO3, Tyr, Phe</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FerritinTS           [ferritin, transferrin_sat]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   AGR                  [albumin, total_protein]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Omega3Index          [EPA, DHA]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Mg_Cr_Ratio          [Mg, creatinine]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   GlycatedAlbuminPct   [glycated_albumin, albumin]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   UA_Cr_Ratio          [uric_acid, creatinine]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BUN_Cr_Ratio         [BUN, creatinine]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ca_x_Phosphate       [calcium, phosphate]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   AnionGap             [Na, K, Cl, HCO3]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tyr_Phe_Ratio        [Tyr, Phe]</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> nutrient_markers(): results: FerritinTS 2/2, AGR 2/2, Omega3Index 2/2, Mg_Cr_Ratio 2/2, GlycatedAlbuminPct 2/2, UA_Cr_Ratio 2/2, BUN_Cr_Ratio 2/2, Ca_x_Phosphate 2/2, AnionGap 2/2, Tyr_Phe_Ratio 2/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   FerritinTS   AGR Omega3Index Mg_Cr_Ratio GlycatedAlbuminPct UA_Cr_Ratio</span>

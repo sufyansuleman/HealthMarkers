@@ -8,13 +8,10 @@ accounting for hypoalbuminemia, using the Payne formula.
 ``` r
 corrected_calcium(
   data,
-  col_map = list(calcium = "Ca", albumin = "Alb"),
+  col_map = NULL,
   units = c("auto", "conventional", "si"),
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -36,23 +33,9 @@ corrected_calcium(
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for plausible ranges (applied on working
-  units).
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides for defaults in working units: list(ca_mgdl = c(4,
-  15), alb_gdl = c(2, 5)).
-
 - verbose:
 
-  Logical; if TRUE, emits progress via hm_inform().
+  Logical; if TRUE (default), emits progress via hm_inform().
 
 ## Value
 
@@ -79,7 +62,14 @@ Medical Journal*, **4**(5893), 643–646.
 ``` r
 df <- data.frame(Ca = c(2.3, 2.5, 2.1), Alb = c(38, 42, 30))
 corrected_calcium(df)
+#> corrected_calcium(): reading input 'df' — 3 rows × 2 variables
+#> corrected_calcium(): col_map (2 columns — 2 inferred from data)
+#>   calcium           ->  'Ca'    (inferred)
+#>   albumin           ->  'Alb'    (inferred)
+#> corrected_calcium(): computing markers:
+#>   corrected_calcium  [Payne formula: Ca + 0.8 * (4.0 - Alb)]
 #> Warning: corrected_calcium(): auto-detected SI units Ca=mmol/L, Alb=g/L; output standardized to mmol/L.
+#> corrected_calcium(): results: corrected_calcium 3/3
 #> # A tibble: 3 × 1
 #>   corrected_calcium
 #>               <dbl>

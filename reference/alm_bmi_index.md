@@ -9,12 +9,9 @@ cut-points.
 ``` r
 alm_bmi_index(
   data,
-  col_map = list(alm = "ALM_kg", bmi = "BMI", sex = "Sex"),
-  verbose = FALSE,
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 )
 ```
 
@@ -34,26 +31,13 @@ alm_bmi_index(
 
   - sex: sex column name ("Male"/"Female" or m/f; case-insensitive)
 
-- verbose:
-
-  Logical; if TRUE, emits progress messages.
-
 - na_action:
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
+- verbose:
 
-  Logical; if TRUE, scan inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional list with bounds for `alm` and `bmi` (defaults: alm = c(5,
-  40), bmi = c(10, 60)).
+  Logical; if TRUE (default), emits progress messages.
 
 ## Value
 
@@ -93,6 +77,15 @@ Medical Sciences*, **69**(5), 564–570.
 df <- data.frame(ALM_kg = c(7.2, 5.8, 6.5), BMI = c(24, 28, 22),
                  Sex = c("male", "female", "male"))
 alm_bmi_index(df)
+#> alm_bmi_index(): reading input 'df' — 3 rows × 3 variables
+#> alm_bmi_index(): col_map (3 columns — 3 inferred from data)
+#>   alm               ->  'ALM_kg'    (inferred)
+#>   bmi               ->  'BMI'    (inferred)
+#>   sex               ->  'Sex'    (inferred)
+#> alm_bmi_index(): computing markers:
+#>   alm_bmi_ratio    [ALM / BMI]
+#>   low_muscle_mass  [ratio < sex-specific FNIH cut-point]
+#> alm_bmi_index(): results: alm_bmi_ratio 3/3, low_muscle_mass 3/3
 #> # A tibble: 3 × 2
 #>   alm_bmi_ratio low_muscle_mass
 #>           <dbl> <lgl>          

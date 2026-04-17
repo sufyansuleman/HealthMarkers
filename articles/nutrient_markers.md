@@ -29,14 +29,6 @@ safe divisions; no unit conversion.
   in used inputs; `error` aborts when used inputs contain NA.
 - `na_warn_prop`: threshold for high-missingness diagnostics (default
   0.2; shown in verbose/debug).
-- `check_extreme`: set TRUE to scan inputs; `extreme_action`
-  (`warn`/`cap`/`error`/`ignore`/`NA`) controls handling. Defaults are
-  broad (e.g., ferritin 0–2000 ng/mL; transferrin_sat 0–100%; albumin
-  10–60 g/L; total_protein 40–100 g/L; EPA/DHA 0–20%; Mg 0.2–3 mmol/L;
-  creatinine 20–2000 umol/L; glycated_albumin 0–60 g/L; uric_acid
-  50–1000 umol/L; BUN 1–150 mg/dL; phosphate 0.1–5 mmol/L; calcium 0.5–4
-  mmol/L; Na 100–200 mmol/L; K 2–8 mmol/L; Cl 70–130 mmol/L; HCO3 5–45
-  mmol/L; Tyr 10–300 umol/L; Phe 20–300 umol/L).
 - `verbose`: optional progress and summary logging.
 
 ## Quick start
@@ -60,7 +52,6 @@ nutrient_markers(
   data = df,
   col_map = NULL,
   na_action = "keep",
-  check_extreme = FALSE,
   verbose = FALSE
 )
 #> # A tibble: 2 × 10
@@ -72,15 +63,20 @@ nutrient_markers(
 #> #   Tyr_Phe_Ratio <dbl>
 ```
 
-## Extreme scan and cap
+## Extreme values
+
+Extreme inputs will produce extreme derived markers. Pre-filter
+implausible values before calling.
 
 ``` r
+# Pre-filter extreme ferritin
+df_clean <- df
+df_clean$ferritin[df_clean$ferritin > 2000] <- NA
+
 nutrient_markers(
-  data = df,
+  data = df_clean,
   col_map = NULL,
   na_action = "omit",
-  check_extreme = TRUE,
-  extreme_action = "cap",
   verbose = TRUE
 )
 #> # A tibble: 2 × 10
@@ -130,8 +126,40 @@ nutrient_markers(
   col_map = NULL,
   verbose = TRUE
 )
-#> nutrient_markers(): preparing inputs
-#> nutrient_markers(): column map: ferritin -> 'ferritin', transferrin_sat -> 'transferrin_sat', albumin -> 'albumin', total_protein -> 'total_protein', EPA -> 'EPA', DHA -> 'DHA', Mg -> 'Mg', creatinine -> 'creatinine', glycated_albumin -> 'glycated_albumin', uric_acid -> 'uric_acid', BUN -> 'BUN', phosphate -> 'phosphate', calcium -> 'calcium', Na -> 'Na', K -> 'K', Cl -> 'Cl', HCO3 -> 'HCO3', Tyr -> 'Tyr', Phe -> 'Phe'
+#> nutrient_markers(): reading input 'df' — 2 rows × 19 variables
+#> nutrient_markers(): col_map (19 columns — 19 inferred from data)
+#>   ferritin          ->  'ferritin'    (inferred)
+#>   transferrin_sat   ->  'transferrin_sat'    (inferred)
+#>   albumin           ->  'albumin'    (inferred)
+#>   total_protein     ->  'total_protein'    (inferred)
+#>   EPA               ->  'EPA'    (inferred)
+#>   DHA               ->  'DHA'    (inferred)
+#>   Mg                ->  'Mg'    (inferred)
+#>   creatinine        ->  'creatinine'    (inferred)
+#>   glycated_albumin  ->  'glycated_albumin'    (inferred)
+#>   uric_acid         ->  'uric_acid'    (inferred)
+#>   BUN               ->  'BUN'    (inferred)
+#>   phosphate         ->  'phosphate'    (inferred)
+#>   calcium           ->  'calcium'    (inferred)
+#>   Na                ->  'Na'    (inferred)
+#>   K                 ->  'K'    (inferred)
+#>   Cl                ->  'Cl'    (inferred)
+#>   HCO3              ->  'HCO3'    (inferred)
+#>   Tyr               ->  'Tyr'    (inferred)
+#>   Phe               ->  'Phe'    (inferred)
+#> nutrient_markers(): optional inputs
+#>   present:  ferritin, transferrin_sat, albumin, total_protein, EPA, DHA, Mg, creatinine, glycated_albumin, uric_acid, BUN, phosphate, calcium, Na, K, Cl, HCO3, Tyr, Phe
+#> nutrient_markers(): computing markers:
+#>   FerritinTS           [ferritin, transferrin_sat]
+#>   AGR                  [albumin, total_protein]
+#>   Omega3Index          [EPA, DHA]
+#>   Mg_Cr_Ratio          [Mg, creatinine]
+#>   GlycatedAlbuminPct   [glycated_albumin, albumin]
+#>   UA_Cr_Ratio          [uric_acid, creatinine]
+#>   BUN_Cr_Ratio         [BUN, creatinine]
+#>   Ca_x_Phosphate       [calcium, phosphate]
+#>   AnionGap             [Na, K, Cl, HCO3]
+#>   Tyr_Phe_Ratio        [Tyr, Phe]
 #> nutrient_markers(): results: FerritinTS 2/2, AGR 2/2, Omega3Index 2/2, Mg_Cr_Ratio 2/2, GlycatedAlbuminPct 2/2, UA_Cr_Ratio 2/2, BUN_Cr_Ratio 2/2, Ca_x_Phosphate 2/2, AnionGap 2/2, Tyr_Phe_Ratio 2/2
 #> # A tibble: 2 × 10
 #>   FerritinTS   AGR Omega3Index Mg_Cr_Ratio GlycatedAlbuminPct UA_Cr_Ratio
@@ -143,13 +171,22 @@ nutrient_markers(
 options(old_opt)
 ```
 
+## Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
+```
+
 ## Tips
 
 - Provide only the inputs you have; missing inputs yield NA for
   dependent markers.
 - Omega3Index expects EPA/DHA as percentages; AGR uses globulin =
   total_protein - albumin.
-- Tighten `extreme_rules` to your lab ranges before using
-  `extreme_action = "cap"` or `"error"`.
 - Use `na_action = "omit"` when you prefer row-complete outputs; use
   `keep` during QA to inspect missingness.

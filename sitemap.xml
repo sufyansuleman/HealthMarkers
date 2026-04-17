@@ -32,6 +32,7 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/liver_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/metabolic_risk_features.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/metss.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/nfl_marker.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/nutrient_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/obesity_indices.html</loc></url>
@@ -75,8 +76,12 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_qrisk3.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_scorescvd.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/cvd_risk_stroke.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_build_col_map.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_default_col_patterns_exact.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_detect_id_col.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_global_precompute.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_normalize_na_action.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_precompute_from_deps.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/fasting_is.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/frailty_index.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/frax_score.html</loc></url>
@@ -87,6 +92,7 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/healthmarkers-rdpack-import.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_bind_cols_quiet.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_fmt_col_map.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_result_summary.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_validate_inputs.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hormone_markers.html</loc></url>

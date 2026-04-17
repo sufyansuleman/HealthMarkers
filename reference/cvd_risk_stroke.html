@@ -9,7 +9,7 @@ fallback to NA if the backend errors."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,7 @@ fallback to NA if the backend errors.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cvd_risk_stroke</span><span class="op">(</span><span class="va">data</span>, na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cvd_risk_stroke</span><span class="op">(</span><span class="va">data</span>, col_map <span class="op">=</span> <span class="cn">NULL</span>, na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -51,8 +51,16 @@ fallback to NA if the backend errors.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>Data frame with: <code>age</code>, <code>sex</code>, <code>race</code>, <code>smoker</code>,
-<code>total_chol</code>, <code>HDL_c</code>, <code>sbp</code>, <code>bp_treated</code>, <code>diabetes</code>, <code>bmi</code>.</p></dd>
+<dd><p>A data frame with the required cardiovascular risk columns.</p></dd>
+
+
+<dt id="arg-col-map">col_map<a class="anchor" aria-label="anchor" href="#arg-col-map"></a></dt>
+<dd><p>Optional named list mapping internal keys (<code>age</code>, <code>sex</code>,
+<code>race</code>, <code>smoker</code>, <code>total_chol</code>, <code>HDL_c</code>, <code>sbp</code>,
+<code>bp_treated</code>, <code>diabetes</code>, <code>bmi</code>) to actual column names in
+<code>data</code>. If <code>NULL</code> (default), column names are auto-inferred then fall
+back to the key names themselves. <code>sex</code> accepts <code>1</code>/<code>0</code>,
+<code>"m"</code>/<code>"f"</code>, or <code>"male"</code>/<code>"female"</code> (case-insensitive).</p></dd>
 
 
 <dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
@@ -89,6 +97,8 @@ Only used when <code>verbose = TRUE</code>.</p></dd>
 <span class="r-in"><span>    diabetes <span class="op">=</span> <span class="cn">FALSE</span>, bmi <span class="op">=</span> <span class="fl">27</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu">cvd_risk_stroke</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_risk_stroke(): preparing inputs; non-finite=1, high-NA=1, all-NA=1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> cvd_risk_stroke(): results: 1 row(s)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   model   year   risk</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

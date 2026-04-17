@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -142,23 +142,23 @@ runs for optional calculators.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   model   value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP   -<span style="color: #BB0000;">0.159</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP    0.175 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.021</span><span style="color: #BB0000; text-decoration: underline;">4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP    0.310 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.152 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AIP   -<span style="color: #BB0000;">0.169</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> AIP    0.384 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> AIP   -<span style="color: #BB0000;">0.229</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> AIP   -<span style="color: #BB0000;">0.071</span><span style="color: #BB0000; text-decoration: underline;">0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> AIP   -<span style="color: #BB0000;">0.204</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> AIP    0.013<span style="text-decoration: underline;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> AIP   -<span style="color: #BB0000;">0.118</span> </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $ldlpn_head</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   model  value</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> LDL_PN 0.696</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> LDL_PN 0.687</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> LDL_PN 0.690</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> LDL_PN 0.909</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> LDL_PN 0.896</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> LDL_PN 0.970</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> LDL_PN  0.89</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> LDL_PN  0.75</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> LDL_PN  1.32</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> LDL_PN  1.31</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> LDL_PN  0.97</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> LDL_PN  0.69</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="optional-risk-calculators">Optional risk calculators<a class="anchor" aria-label="anchor" href="#optional-risk-calculators"></a>
@@ -183,23 +183,10 @@ runs for optional calculators.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rs_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cvd_risk.html">cvd_risk</a></span><span class="op">(</span><span class="va">sim_small</span>, model <span class="op">=</span> <span class="st">"RiskScorescvd"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">rs_out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 296</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># Rowwise: </span></span></span>
-<span><span class="co">#&gt;      id   age sex   patid gender race  ethnicity smoker bp_treated diabetes</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1  73.1 F         1      1 white black          0          1        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2  57.4 F         2      1 white white          1          0        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3  52.5 F         3      1 white black          0          1        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4  46.1 M         4      0 white black          0          0        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5  40.0 F         5      1 white white          0          0        0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     6  52.5 F         6      1 black white          1          0        0</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 286 more variables: atrial_fibrillation &lt;int&gt;, atypical_antipsy &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   regular_steroid_tablets &lt;int&gt;, erectile_disfunction &lt;int&gt;, migraine &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   rheumatoid_arthritis &lt;int&gt;, chronic_kidney_disease &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   severe_mental_illness &lt;int&gt;, systemic_lupus_erythematosis &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   blood_pressure_treatment &lt;int&gt;, diabetes1 &lt;int&gt;, diabetes2 &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   heart_attack_relative &lt;int&gt;, std_systolic_blood_pressure &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   smoke &lt;int&gt;, townsend &lt;dbl&gt;, height_m &lt;dbl&gt;, height &lt;dbl&gt;, weight &lt;dbl&gt;, …</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt;   model          year  risk value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> RiskScorescvd    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="outputs">Outputs<a class="anchor" aria-label="anchor" href="#outputs"></a>
@@ -249,13 +236,21 @@ active:</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; cvd_risk: dispatching model 'AIP'</span></span>
-<span><span class="co">#&gt; cvd_marker_aip(): preparing inputs</span></span>
-<span><span class="co">#&gt; cvd_marker_aip(): column map: TG -&gt; 'TG', HDL_c -&gt; 'HDL_c'</span></span>
+<span><span class="co">#&gt; cvd_marker_aip(): col_map (user-provided): TG -&gt; 'TG', HDL_c -&gt; 'HDL_c'</span></span>
+<span><span class="co">#&gt; cvd_marker_aip(): computing markers:</span></span>
+<span><span class="co">#&gt;   AIP [TG, HDL_c]</span></span>
 <span><span class="co">#&gt; cvd_marker_aip(): results: AIP 30/30</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
-<code>"none"</code>.</p>
+<code>"none"</code>. ## Column recognition</p>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="articles/multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms across major
+biobanks.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>

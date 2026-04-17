@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,56 @@
       <small>Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="healthmarkers-012">HealthMarkers 0.1.2<a class="anchor" aria-label="anchor" href="#healthmarkers-012"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-1-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-2"></a></h3>
+<ul><li>
+<p><strong>Multi-biobank column inference (major).</strong> The internal synonym dictionary (<code><a href="../reference/dot-hm_default_col_patterns_exact.html">.hm_default_col_patterns_exact()</a></code>) now recognises column-naming conventions from 15+ major cohort studies and biobanks for all primary analytes:</p>
+<ul><li>
+<strong>UK Biobank</strong> — <code>_0_0</code> / <code>_1_0</code> field naming (e.g. <code>glucose_0_0</code>, <code>creatinine_0_0</code>, <code>vitamin_d_0_0</code>); <code>standing_height</code>, <code>25OHD</code>.</li>
+<li>
+<strong>NHANES</strong> — LBXS, LBDS, BPX, URX prefix variables (e.g. <code>LBXGLU</code>, <code>LBXSCH</code>, <code>BPXSY1</code>, <code>URXUMA</code>).</li>
+<li>
+<strong>Danish national registers / EHR (LABKA/OPEN)</strong> — NPU codes (<code>NPU01994</code> for creatinine, <code>NPU01567</code> for cholesterol, <code>NPU03609</code> for haemoglobin, etc.) and Danish clinical labels (<code>kreatinin</code>, <code>kolesterol</code>, <code>blodsukker</code>, <code>leukocytter</code>, <code>trombocytter</code>, <code>d_vitamin</code>).</li>
+<li>
+<strong>HUNT Study and Tromsø Study (Norway)</strong> — Norwegian-language terms (<code>blodsukkerfasting</code>, <code>systolisk_blodtrykk</code>, <code>triglyserider</code>, <code>karbamid</code>, <code>kjonn</code>, <code>midjeomkrets</code>).</li>
+<li>
+<strong>SCAPIS / TwinGene (Sweden)</strong> — Swedish-language terms (<code>glukos</code>, <code>urinsyra</code>, <code>leukocyter</code>, <code>trombocyter</code>, <code>kön</code>, <code>längd</code>, <code>vikt</code>).</li>
+<li>
+<strong>FinnGen / THL Biobank (Finland)</strong> — Finnish-language terms (<code>glukoosi</code>, <code>kolesteroli</code>, <code>kreatiniini</code>, <code>hemoglobiini</code>, <code>sukupuoli</code>, <code>virtsahappo</code>, <code>leukosyytit</code>, <code>ferritiini</code>, <code>D_vitamiini</code>).</li>
+<li>
+<strong>Estonian Biobank (EstBB)</strong> — Estonian terms (<code>glukoos</code>, <code>kolesterool</code>, <code>kreatiniin</code>, <code>hemoglobiin</code>, <code>naatrium</code>, <code>kaalium</code>, <code>vanus</code>, <code>sugu</code>).</li>
+<li>
+<strong>LifeLines Cohort / Rotterdam Study (Netherlands)</strong> — Dutch terms (<code>nuchtere_glucose</code>, <code>totaal_cholesterol</code>, <code>urinezuur</code>, <code>ureum</code>, <code>leukocyten</code>, <code>hemoglobine</code>, <code>vitamine_D</code>, <code>tailleomtrek</code>).</li>
+<li>
+<strong>Generation Scotland (GS:SFHS)</strong> — <code>SBP_mean</code>, <code>DBP_mean</code>, <code>genetic_sex</code>, <code>ethnic_group</code>.</li>
+<li>
+<strong>All of Us / OMOP CDM</strong> — LOINC codes in <code>LOINC_XXXX_X</code> format for all major analytes (e.g. <code>LOINC_2345_7</code> for fasting glucose, <code>LOINC_2160_0</code> for creatinine, <code>LOINC_718_7</code> for haemoglobin).</li>
+<li>
+<strong>NAKO / KORA (Germany)</strong> — German-language terms (<code>Cholesterin</code>, <code>Triglyzeride</code>, <code>Harnsäure</code>, <code>Harnstoff</code>, <code>Leukozyten</code>, <code>Thrombozyten</code>).</li>
+</ul></li>
+<li><p>Added <code><a href="../reference/hm_col_report.html">hm_col_report()</a></code> — an interactive column-mapping diagnostic. Call <code>hm_col_report(your_data)</code> <strong>before</strong> running any computation to see a formatted table of which internal keys were matched to columns in your data and how (exact synonym, case-insensitive, substring, or fuzzy), plus a ready-to-paste <code>col_map</code> template for any unmatched keys.<br>
+The function uses a five-layer matching pipeline and returns the matched mappings invisibly so the result can be passed directly as <code>col_map</code> to any HealthMarkers function.</p></li>
+<li><p><strong>Auto-derivation of computed inputs.</strong> <code><a href="../reference/dot-hm_global_precompute.html">.hm_global_precompute()</a></code> now automatically derives 18+ secondary columns before marker computation begins, so functions that require (e.g.) <code>eGFR</code>, <code>UACR</code>, <code>WHR</code>, <code>LDL_c</code>, or <code>waist</code> no longer fail silently when only the raw inputs are present. Affected keys include <code>eGFR</code> (from creatinine/age/sex via CKD-EPI), <code>WHR</code> (from <code>waist</code> and <code>hip</code>), <code>UACR</code> (from <code>u_albumin</code> / <code>u_creatinine</code>), <code>LDL_c</code> (Friedewald from TC/HDL_c/TG), <code>MAP</code>, <code>PP</code>, <code>BMI</code> (from height/weight), and more.</p></li>
+<li>
+<p>Expanded the internal synonym dictionary (<code>R/utils_infer-cols.R</code>) for all variable groups, additionally incorporating:</p>
+<ul><li>Inter99 / ADDITION real phenotype dataset labels</li>
+<li>Common literature spellings (<code>TryG</code>, <code>TAG</code>, <code>TRIG</code>, <code>triacylglycerol</code>; <code>SGPT</code>/<code>GPT</code>/<code>ALAT</code>; <code>hsCRP</code>/<code>hs_CRP</code>)</li>
+<li>Longitudinal follow-up suffixes (<code>_0</code>, <code>_1</code>, <code>_3</code>, <code>_5</code>)</li>
+<li>NMR metabolomics (urine) panel, ECG markers, lifestyle covariates, and cytokine multiplex proteins.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-2">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-2"></a></h3>
+<ul><li>
+<code><a href="../reference/adiposity_sds.html">adiposity_sds()</a></code>: fixed <code>fn_name</code> lookup bug that caused incorrect error messages when validation failed on non-standard column names.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-0-1-2">Internal<a class="anchor" aria-label="anchor" href="#internal-0-1-2"></a></h3>
+<ul><li>Renamed the internal verbose-message helper from <code><a href="../reference/hm_col_report.html">hm_col_report()</a></code> to <code><a href="../reference/hm_fmt_col_map.html">hm_fmt_col_map()</a></code> to avoid a name collision with the new exported function.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="healthmarkers-011">HealthMarkers 0.1.1<a class="anchor" aria-label="anchor" href="#healthmarkers-011"></a></h2>
 <div class="section level3">

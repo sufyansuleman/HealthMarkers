@@ -21,7 +21,7 @@ and (if in col_map + data) passes through: TBS, HSA, PINP, CTX, BSAP, Osteocalci
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,12 +60,9 @@ and (if in <code>col_map</code> + data) passes through: TBS, HSA, PINP, CTX, BSA
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">bone_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  sds_limit <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cap"</span>, <span class="st">"NA"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,21 +85,8 @@ Optional (passed-through if present and found in data): <code>TBS</code>, <code>
 missing/non-finite input values are treated.</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, scan mapped columns whose key
-names contain "sds" (case-insensitive) for absolute values &gt; <code>sds_limit</code>.</p></dd>
-
-
-<dt id="arg-sds-limit">sds_limit<a class="anchor" aria-label="anchor" href="#arg-sds-limit"></a></dt>
-<dd><p>Positive numeric; SDS magnitude limit used when <code>check_extreme</code> is TRUE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of "cap", "NA", or "error" for handling extreme SDS-like values.</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, emits progress messages via <code>hm_inform()</code>.</p></dd>
+<dd><p>Logical; if TRUE (default), emits progress messages via <code>hm_inform()</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -147,6 +131,22 @@ No DOI for this WHO report; see URL, <a href="https://iris.who.int/handle/10665/
 <span class="r-in"><span>  BMD_ref_mean <span class="op">=</span> <span class="st">"BMD_ref_mean"</span>, BMD_ref_sd <span class="op">=</span> <span class="st">"BMD_ref_sd"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">bone_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">col_map</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bone_markers(): reading input 'df' — 2 rows × 8 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bone_markers(): col_map (8 columns — 8 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   age               -&gt;  'age'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   weight            -&gt;  'weight'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   height            -&gt;  'height'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ALM               -&gt;  'ALM'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FM                -&gt;  'FM'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMD               -&gt;  'BMD'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMD_ref_mean      -&gt;  'BMD_ref_mean'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMD_ref_sd        -&gt;  'BMD_ref_sd'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bone_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   OSTA       [(weight - age) * 0.2]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ALMI       [ALM / height^2]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FMI        [FM / height^2]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMD_Tscore [(BMD - ref_mean) / ref_sd]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> bone_markers(): results: OSTA 2/2, ALMI 2/2, FMI 2/2, BMD_Tscore 2/2, TBS 0/2, HSA 0/2, PINP 0/2, CTX 0/2, BSAP 0/2, Osteocalcin 0/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    OSTA  ALMI   FMI BMD_Tscore   TBS   HSA  PINP   CTX  BSAP Osteocalcin</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

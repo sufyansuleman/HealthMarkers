@@ -36,14 +36,11 @@ computes:
 ``` r
 ogtt_is(
   data,
-  col_map,
+  col_map = NULL,
   normalize = "none",
-  verbose = FALSE,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error"),
-  na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_limit = 1000,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA")
+  na_warn_prop = 0.2
 )
 ```
 
@@ -77,7 +74,8 @@ ogtt_is(
 
 - verbose:
 
-  Logical; if TRUE, prints progress messages via hm_inform().
+  Logical; if `TRUE` (default), prints column mapping, the list of
+  indices being computed, and a per-column results summary.
 
 - na_action:
 
@@ -89,23 +87,11 @@ ogtt_is(
   Proportion (0-1) for high-missingness diagnostics (debug). Default
   0.2.
 
-- check_extreme:
-
-  Logical; if TRUE, scan outputs for \|value\| \> extreme_limit. Default
-  FALSE.
-
-- extreme_limit:
-
-  Positive numeric magnitude threshold for extremes. Default 1e3.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") when extremes detected.
-  Default "warn".
-
 ## Value
 
-A tibble with the OGTT-based index columns listed above.
+A tibble with the OGTT-based index columns listed above. If an ID column
+is detected in `data` (e.g. `id`, `IID`, `participant_id`), it is
+prepended as the first output column.
 
 ## Details
 
@@ -191,8 +177,33 @@ ogtt_is(
   normalize = "none",
   verbose = TRUE
 )
-#> ogtt_is(): preparing inputs
-#> ogtt_is(): column map: G0 -> 'G0', I0 -> 'I0', G30 -> 'G30', I30 -> 'I30', G120 -> 'G120', I120 -> 'I120', weight -> 'weight', bmi -> 'bmi', age -> 'age', sex -> 'sex'
+#> ogtt_is(): reading input 'df' — 1 rows × 10 variables
+#> ogtt_is(): col_map (10 columns — 10 specified)
+#>   G0                ->  'G0'
+#>   I0                ->  'I0'
+#>   G30               ->  'G30'
+#>   I30               ->  'I30'
+#>   G120              ->  'G120'
+#>   I120              ->  'I120'
+#>   weight            ->  'weight'
+#>   bmi               ->  'bmi'
+#>   age               ->  'age'
+#>   sex               ->  'sex'
+#> ogtt_is(): computing markers:
+#>   Isi_120                [G120, I120]
+#>   Cederholm_index        [G0, G120, I0, I120, weight]
+#>   Gutt_index             [G0, G120, I0, I120, weight]
+#>   Avignon_Si0            [G0, I0, weight]
+#>   Avignon_Si120          [G120, I120, weight]
+#>   Avignon_Sim            [Si0, Si120]
+#>   Modified_stumvoll      [I0, I120, G120]
+#>   Stumvoll_Demog.        [bmi, I120, age]
+#>   Matsuda_AUC            [G0, I0, G_AUC, I_AUC]
+#>   Matsuda_ISI            [G0, I0, G_mean, I_mean]
+#>   BigttSi                [I0, I30, I120, G0, G30, G120, sex, bmi]
+#>   Ifc_inv                [I0, I120]
+#>   HIRI_inv               [G0, G30, I0, I30]
+#>   Belfiore_isi_gly       [I_AUC, G_AUC]
 #> ogtt_is(): results: Isi_120 1/1, Cederholm_index 1/1, Gutt_index 1/1, Avignon_Si0 1/1, Avignon_Si120 1/1, Avignon_Sim 1/1, Modified_stumvoll 1/1, Stumvoll_Demographics 1/1, Matsuda_AUC 1/1, Matsuda_ISI 1/1, BigttSi 1/1, Ifc_inv 1/1, HIRI_inv 1/1, Belfiore_isi_gly 1/1
 #> # A tibble: 1 × 14
 #>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim

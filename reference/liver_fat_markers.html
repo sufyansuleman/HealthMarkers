@@ -15,7 +15,7 @@ NAFLD-LFS = -2.89 + 1.18MetS + 0.45Type2DM + 0.15Insulin_u + 0.04AST - 0.94*(AST
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,16 +51,10 @@ NAFLD-LFS = -2.89 + 1.18MetS + 0.45Type2DM + 0.15Insulin_u + 0.04AST - 0.94*(AST
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">liver_fat_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ALT <span class="op">=</span> <span class="st">"ALT"</span>, AST <span class="op">=</span> <span class="st">"AST"</span>, BMI <span class="op">=</span> <span class="st">"BMI"</span>, sex <span class="op">=</span> <span class="st">"sex"</span>, diabetes <span class="op">=</span></span>
-<span>    <span class="st">"diabetes"</span>, MetS <span class="op">=</span> <span class="st">"MetS"</span>, insulin <span class="op">=</span> <span class="st">"insulin"</span>, I0 <span class="op">=</span> <span class="st">"I0"</span>, waist <span class="op">=</span> <span class="st">"waist"</span>, TG <span class="op">=</span></span>
-<span>    <span class="st">"TG"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, sbp <span class="op">=</span> <span class="st">"sbp"</span>, bp_sys <span class="op">=</span> <span class="st">"bp_sys"</span>, bp_treated <span class="op">=</span> <span class="st">"bp_treated"</span>,</span>
-<span>    glucose <span class="op">=</span> <span class="st">"glucose"</span>, G0 <span class="op">=</span> <span class="st">"G0"</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
 <span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -87,20 +81,8 @@ NAFLD-LFS = -2.89 + 1.18MetS + 0.45Type2DM + 0.15Insulin_u + 0.04AST - 0.94*(AST
 <dd><p>Proportion in \([0,1]\) for high-missingness warnings when na_action = "warn". Default 0.2.</p></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan selected inputs for plausible ranges.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") controlling how extremes are handled.</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min,max) to override defaults.</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, prints progress.</p></dd>
+<dd><p>Logical; if TRUE, prints column mapping and computing messages.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -136,6 +118,19 @@ Kotronen A, Peltonen M, Hakkarainen A, Sevastianova K, Bergholm R, Johansson LM,
 <span class="r-in"><span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ALT<span class="op">=</span><span class="st">"ALT"</span>, AST<span class="op">=</span><span class="st">"AST"</span>, BMI<span class="op">=</span><span class="st">"BMI"</span>,</span></span>
 <span class="r-in"><span>                 sex<span class="op">=</span><span class="st">"sex"</span>, diabetes<span class="op">=</span><span class="st">"diabetes"</span>, I0<span class="op">=</span><span class="st">"I0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> liver_fat_markers(): reading input 'df' — 1 rows × 6 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> liver_fat_markers(): col_map (7 columns — 6 specified, 1 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ALT               -&gt;  'ALT'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   AST               -&gt;  'AST'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI               -&gt;  'BMI'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   sex               -&gt;  'sex'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   diabetes          -&gt;  'diabetes'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I0                -&gt;  'I0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   insulin           -&gt;  'I0'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> liver_fat_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HSI        [8*(ALT/AST) + BMI + sex + diabetes]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   NAFLD_LFS  [MetS/insulin/diabetes required; NA if unavailable]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> liver_fat_markers(): results: HSI 1/1, NAFLD_LFS 0/1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     HSI NAFLD_LFS</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

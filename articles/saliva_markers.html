@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -119,27 +119,11 @@ flexible sampling times for AUC.</li>
 <td>Default 0.2 (shown in debug/verbose)</td>
 </tr>
 <tr class="odd">
-<td>check_extreme</td>
-<td>Scan inputs against bounds</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="even">
-<td>extreme_action</td>
-<td>Handling if extremes detected</td>
-<td>“warn” (default), “cap”, “error”, “ignore”</td>
-</tr>
-<tr class="odd">
-<td>extreme_rules</td>
-<td>Optional bounds list c(min, max)</td>
-<td>Keys may be mapped column names or
-cort1/cort2/cort3/amylase/glucose</td>
-</tr>
-<tr class="even">
 <td>times</td>
 <td>Sampling times (minutes) for CAR AUC</td>
 <td>Numeric length 3, non-decreasing; default c(0, 30, 60)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>verbose</td>
 <td>Emit progress and completion summaries</td>
 <td>Default FALSE</td>
@@ -164,9 +148,6 @@ drops rows with any required NA; <code>error</code> aborts if required
 inputs contain NA.</li>
 <li>High-missing diagnostics: controlled by <code>na_warn_prop</code>;
 shown when <code>verbose</code> (or debug) is enabled.</li>
-<li>Extreme screening (optional): checks inputs, not outputs. Uses
-defaults unless <code>extreme_rules</code> provided;
-<code>extreme_action</code> controls warn/cap/error/ignore.</li>
 <li>Safe logs: cortisol and amylase are log-transformed after setting
 non-positive to NA.</li>
 <li>CAR AUC: trapezoidal over the three cortisol values using
@@ -182,12 +163,6 @@ calling.</li>
 <h2 id="defaults-and-validation-details">Defaults and validation details<a class="anchor" aria-label="anchor" href="#defaults-and-validation-details"></a>
 </h2>
 <ul>
-<li>Default extreme bounds (when <code>check_extreme = TRUE</code> and
-no overrides): cortisol (each) 0–2000, amylase 0–50000, glucose 0–1000
-(keyed by mapped column names).</li>
-<li>Extreme rules can be keyed by input names
-(cort1/2/3/amylase/glucose) or actual column names; they are remapped
-internally.</li>
 <li>NA diagnostics appear only with verbose/debug logging; set
 <code>verbose = TRUE</code> during QC.</li>
 <li>Empty result: if <code>na_action = "omit"</code> drops all rows,
@@ -243,48 +218,44 @@ where inputs are present and positive; the third row yields NA for
 log_cortisol_wake and CAR_AUC due to missing cort1.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-custom-times-cap-extremes-drop-incomplete">Worked example 2: Custom times, cap extremes, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-custom-times-cap-extremes-drop-incomplete"></a>
+<h2 id="worked-example-2-custom-times-drop-incomplete">Worked example 2: Custom times, drop incomplete<a class="anchor" aria-label="anchor" href="#worked-example-2-custom-times-drop-incomplete"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  c1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>, <span class="fl">0</span>, <span class="fl">2200</span><span class="op">)</span>,    <span class="co"># zero and extreme cortisol</span></span>
+<span>  c1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>, <span class="fl">0</span>, <span class="fl">2200</span><span class="op">)</span>,    <span class="co"># zero and extreme cortisol; pre-filter</span></span>
 <span>  c2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">19</span>, <span class="fl">12</span>, <span class="fl">2100</span><span class="op">)</span>,</span>
 <span>  c3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">11</span>, <span class="fl">2050</span><span class="op">)</span>,</span>
-<span>  amy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">70</span>, <span class="fl">60000</span><span class="op">)</span>,  <span class="co"># extreme amylase</span></span>
+<span>  amy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">70</span>, <span class="fl">60000</span><span class="op">)</span>,  <span class="co"># extreme amylase; pre-filter</span></span>
 <span>  glu <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.5</span>, <span class="fl">5.1</span>, <span class="fl">7.0</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Pre-filter implausible values before calling</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">c1</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">c1</span> <span class="op">&gt;</span> <span class="fl">2000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">df2</span><span class="op">$</span><span class="va">amy</span><span class="op">[</span><span class="va">df2</span><span class="op">$</span><span class="va">amy</span> <span class="op">&gt;</span> <span class="fl">50000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/saliva_markers.html">saliva_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cort1 <span class="op">=</span> <span class="st">"c1"</span>, cort2 <span class="op">=</span> <span class="st">"c2"</span>, cort3 <span class="op">=</span> <span class="st">"c3"</span>, amylase <span class="op">=</span> <span class="st">"amy"</span>, glucose <span class="op">=</span> <span class="st">"glu"</span><span class="op">)</span>,</span>
 <span>  times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, <span class="fl">50</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
 <span><span class="co">#&gt;   log_cortisol_wake CAR_AUC log_amylase saliva_glucose</span></span>
 <span><span class="co">#&gt;               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              2.64     870        4.50            4.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>             <span style="color: #BB0000;">NA</span>        465        4.25            5.1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              7.60  <span style="text-decoration: underline;">100</span>000       10.8             7</span></span></code></pre></div>
-<p><em>Interpretation:</em> Rows with required NAs are dropped; extremes
-are capped before logs/AUC; CAR_AUC uses the custom times (0,20,50).</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>             <span style="color: #BB0000;">NA</span>        465        4.25            5.1</span></span></code></pre></div>
+<p><em>Interpretation:</em> Rows with required NAs are dropped; CAR_AUC
+uses the custom times (0,20,50).</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header placement: keep this YAML at the top; stray text before
-it breaks knitting.</li>
 <li>Missing columns: ensure every required <code>col_map</code> key is
 mapped to an existing column.</li>
 <li>Non-positive cortisol/amylase: become NA before logging; expect NA
 outputs if values are 0 or negative.</li>
-<li>Extreme handling: only runs when <code>check_extreme = TRUE</code>;
-defaults are broad—override with <code>extreme_rules</code> if
-needed.</li>
 <li>Times validation: must be numeric length 3 and non-decreasing;
 otherwise the function aborts.</li>
 <li>All NA outputs: typically due to missing cortisol triplets,
@@ -306,8 +277,20 @@ result summaries during QC:</p>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; saliva_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; saliva_markers(): column map: cort1 -&gt; 'saliva_cort1', cort2 -&gt; 'saliva_cort2', cort3 -&gt; 'saliva_cort3', amylase -&gt; 'saliva_amylase', glucose -&gt; 'saliva_glucose'</span></span>
+<span><span class="co">#&gt; saliva_markers(): reading input 'data' — 1 rows × 5 variables</span></span>
+<span><span class="co">#&gt; saliva_markers(): col_map (5 columns — 5 inferred from data)</span></span>
+<span><span class="co">#&gt;   cort1             -&gt;  'saliva_cort1'    (inferred)</span></span>
+<span><span class="co">#&gt;   cort2             -&gt;  'saliva_cort2'    (inferred)</span></span>
+<span><span class="co">#&gt;   cort3             -&gt;  'saliva_cort3'    (inferred)</span></span>
+<span><span class="co">#&gt;   amylase           -&gt;  'saliva_amylase'    (inferred)</span></span>
+<span><span class="co">#&gt;   glucose           -&gt;  'saliva_glucose'    (inferred)</span></span>
+<span><span class="co">#&gt; saliva_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  cort1, cort2, cort3, amylase, glucose</span></span>
+<span><span class="co">#&gt; saliva_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   log_cortisol_wake    [cort1]</span></span>
+<span><span class="co">#&gt;   CAR_AUC              [cort1, cort2, cort3]</span></span>
+<span><span class="co">#&gt;   log_amylase          [amylase]</span></span>
+<span><span class="co">#&gt;   saliva_glucose       [glucose]</span></span>
 <span><span class="co">#&gt; saliva_markers(): results: log_cortisol_wake 1/1, CAR_AUC 1/1, log_amylase 1/1, saliva_glucose 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
 <span><span class="co">#&gt;   log_cortisol_wake CAR_AUC log_amylase saliva_glucose</span></span>
@@ -316,13 +299,20 @@ result summaries during QC:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>
 </h2>
 <ul>
 <li>Confirm assay units upfront; no conversions are applied.</li>
-<li>Use <code>check_extreme = TRUE</code> with
-<code>extreme_action = "warn"</code> first to see how many inputs are
-implausible; switch to <code>cap</code> to truncate.</li>
 <li>Set <code>na_action = "omit"</code> for modeling datasets;
 <code>keep</code> is better for exploratory review.</li>
 <li>Provide accurate sampling times in minutes for CAR AUC if your
@@ -341,8 +331,6 @@ using the three cortisol values and the <code>times</code> gaps.</li>
 is only taken when
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>&gt;</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x &gt; 0</annotation></semantics></math>
 and finite; otherwise NA.</li>
-<li>Extreme capping (when enabled) happens on inputs before log/AUC
-computation.</li>
 </ul>
 </div>
 <div class="section level2">

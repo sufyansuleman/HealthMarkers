@@ -12,7 +12,7 @@ cognitive_score(
   missing_prop_max = 0.2,
   method = c("z_mean", "pca1"),
   prefix = "cog",
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -47,7 +47,8 @@ cognitive_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

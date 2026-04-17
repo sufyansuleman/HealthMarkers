@@ -8,13 +8,9 @@ sarcopenia risk.
 ``` r
 sarc_f_score(
   data,
-  col_map = list(strength = "Strength", walking = "Walking", chair = "Chair", stairs =
-    "Stairs", falls = "Falls"),
-  verbose = FALSE,
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 )
 ```
 
@@ -29,25 +25,13 @@ sarc_f_score(
   Named list mapping the five SARC-F components to columns: strength,
   walking, chair, stairs, falls.
 
-- verbose:
-
-  Logical; if TRUE, emits progress messages.
-
 - na_action:
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
+- verbose:
 
-  Logical; if TRUE, scan inputs for plausible ranges (0-2).
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides; default caps each item to c(0,2).
+  Logical; if TRUE (default), emits progress messages.
 
 ## Value
 
@@ -82,6 +66,17 @@ poor functional outcomes.” *Journal of Cachexia, Sarcopenia and Muscle*,
 df <- data.frame(Strength = c(1, 2, 0), Walking = c(0, 1, 2),
                  Chair = c(1, 1, 2), Stairs = c(0, 2, 2), Falls = c(0, 1, 1))
 sarc_f_score(df)
+#> sarc_f_score(): reading input 'df' — 3 rows × 5 variables
+#> sarc_f_score(): col_map (5 columns — 5 inferred from data)
+#>   strength          ->  'Strength'    (inferred)
+#>   walking           ->  'Walking'    (inferred)
+#>   chair             ->  'Chair'    (inferred)
+#>   stairs            ->  'Stairs'    (inferred)
+#>   falls             ->  'Falls'    (inferred)
+#> sarc_f_score(): computing markers:
+#>   sarc_f_score      [0-10 sum]
+#>   sarc_f_high_risk  [score >= 4]
+#> sarc_f_score(): results: sarc_f_score 3/3, sarc_f_high_risk 3/3
 #> # A tibble: 3 × 2
 #>   sarc_f_score sarc_f_high_risk
 #>          <dbl> <lgl>           

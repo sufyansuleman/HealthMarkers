@@ -49,12 +49,10 @@ metss(
     = 1.29, sd = 0.35, coef = -0.657), 
      glucose = c(mean = 5.53, sd = 0.87, coef =
     0.644), MAP = c(mean = 91, sd = 11, coef = 0.512))),
-  verbose = FALSE,
+  col_map = NULL,
+  verbose = TRUE,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   diagnostics = TRUE
 )
 ```
@@ -71,9 +69,15 @@ metss(
   list(intercept, waist, TG, HDL, glucose, MAP) where each component
   (except intercept) is a named numeric vector c(mean=, sd=, coef=).
 
+- col_map:
+
+  Optional named list mapping canonical keys (`waist`, `TG`, `HDL`,
+  `glucose`, `MAP`) to actual column names in `data`. If `NULL`, column
+  names are inferred automatically.
+
 - verbose:
 
-  Logical; print progress.
+  Logical; if TRUE, prints column mapping and computing messages.
 
 - na_action:
 
@@ -85,25 +89,10 @@ metss(
   Proportion (0-1) above which high-missingness warning fires when
   na_action='warn'. Default 0.2.
 
-- check_extreme:
-
-  Logical; scan for extreme values if TRUE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") when extremes detected.
-  Default "warn".
-
-- extreme_rules:
-
-  Optional named list of c(min,max) for inputs (waist, bp_sys, bp_dia,
-  TG, HDL_c, glucose).
-
 - diagnostics:
 
   Logical; if TRUE (default) emit value/range diagnostic warnings
-  (negative, out-of-range checks). Set FALSE to suppress these (e.g., in
-  tests when also using check_extreme).
+  (negative, out-of-range checks).
 
 ## Value
 
@@ -143,6 +132,19 @@ df <- data.frame(
   glucose = 5.5, sex = 1, race = "NHW", age = 45
 )
 metss(df)
+#> metss(): reading input 'df' — 1 rows × 9 variables
+#> metss(): col_map (8 columns — 8 inferred from data)
+#>   waist             ->  'waist'    (inferred)
+#>   bp_sys            ->  'bp_sys'    (inferred)
+#>   bp_dia            ->  'bp_dia'    (inferred)
+#>   TG                ->  'TG'    (inferred)
+#>   HDL_c             ->  'HDL_c'    (inferred)
+#>   glucose           ->  'glucose'    (inferred)
+#>   sex               ->  'sex'    (inferred)
+#>   race              ->  'race'    (inferred)
+#> metss(): computing markers:
+#>   MetSSS  [factor-loading z-score, sex/race-specific params]
+#> metss(): results: MetSSS 1/1
 #> # A tibble: 1 × 1
 #>   MetSSS
 #>    <dbl>

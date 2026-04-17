@@ -13,7 +13,7 @@ k6_score(
   impute = c("none", "mean"),
   prefix = "K6",
   cutoff = 13,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -52,7 +52,8 @@ k6_score(
 
 - verbose:
 
-  Logical flag for verbose messaging (reserved).
+  Logical; if `TRUE`, emits informational messages about column
+  resolution and scoring progress via `hm_inform()`.
 
 ## Value
 

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -256,10 +256,31 @@ heights, or failed mapping.</li>
 <span>  <span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co">#&gt; pulmo_markers(): reading input 'df' — 3 rows × 6 variables</span></span>
 <span><span class="co">#&gt; pulmo_markers(): preparing inputs [GLI]</span></span>
-<span><span class="co">#&gt; pulmo_markers(): column map: age -&gt; 'age', sex -&gt; 'sex', height -&gt; 'height', ethnicity -&gt; 'ethnicity', fev1 -&gt; 'fev1', fvc -&gt; 'fvc'</span></span>
+<span><span class="co">#&gt; pulmo_markers(): col_map (6 columns — 6 inferred from data)</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'    (inferred)</span></span>
+<span><span class="co">#&gt;   sex               -&gt;  'sex'    (inferred)</span></span>
+<span><span class="co">#&gt;   height            -&gt;  'height'    (inferred)</span></span>
+<span><span class="co">#&gt;   ethnicity         -&gt;  'ethnicity'    (inferred)</span></span>
+<span><span class="co">#&gt;   fev1              -&gt;  'fev1'    (inferred)</span></span>
+<span><span class="co">#&gt;   fvc               -&gt;  'fvc'    (inferred)</span></span>
+<span><span class="co">#&gt; pulmo_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   fev1_pred, fev1_z, fev1_pctpred, fev1_LLN [age, height, sex, ethnicity, fev1]</span></span>
+<span><span class="co">#&gt;   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]</span></span>
+<span><span class="co">#&gt;   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]</span></span>
 <span><span class="co">#&gt; pulmo_markers(): converting height from cm to m</span></span>
 <span><span class="co">#&gt; pulmo_markers(): results: fev1_pred 3/3, fev1_z 3/3, fev1_pctpred 3/3, fev1_LLN 3/3, fvc_pred 3/3, fvc_z 3/3, fvc_pctpred 3/3, fvc_LLN 3/3, fev1_fvc_ratio 3/3, fev1_fvc_pred 3/3, fev1_fvc_z 3/3, fev1_fvc_pctpred 3/3, fev1_fvc_LLN 0/3</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>

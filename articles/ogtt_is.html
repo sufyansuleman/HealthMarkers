@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,9 +66,8 @@
 <p>Compute OGTT-based insulin sensitivity indices (Matsuda, Cederholm,
 Gutt, Stumvoll variants, BIGTT, HIRI_inv, Belfiore, etc.) from
 glucose/insulin at 0/30/120 minutes plus weight, BMI, age, and sex.
-Includes validation, missingness policies, optional extreme-value
-screening on outputs, and optional normalization of the returned
-indices.</p>
+Includes validation, missingness policies, and optional normalization of
+the returned indices.</p>
 </div>
 <div class="section level2">
 <h2 id="when-to-use-this">When to use this<a class="anchor" aria-label="anchor" href="#when-to-use-this"></a>
@@ -77,8 +76,8 @@ indices.</p>
 <li>You have OGTT glucose (mmol/L) and insulin (pmol/L) at 0, 30, 120
 minutes, plus weight, BMI, age, and sex, and need multiple published
 insulin sensitivity indices.</li>
-<li>You want consistent NA handling, optional extreme screening on
-outputs, and optional normalization for modeling pipelines.</li>
+<li>You want consistent NA handling and optional normalization for
+modeling pipelines.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -125,22 +124,6 @@ coerced)</td>
 <td>Default 0.2 (emitted in debug/verbose)</td>
 </tr>
 <tr class="even">
-<td>check_extreme</td>
-<td>Scan outputs for magnitude &gt; <code>extreme_limit</code>
-</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="odd">
-<td>extreme_limit</td>
-<td>Absolute threshold for output extremes</td>
-<td>Default 1e3</td>
-</tr>
-<tr class="even">
-<td>extreme_action</td>
-<td>Handling for flagged outputs</td>
-<td>“warn” (default), “cap”, “error”, “ignore”, “NA”</td>
-</tr>
-<tr class="odd">
 <td>verbose</td>
 <td>Emit progress and completion summaries</td>
 <td>Default FALSE</td>
@@ -167,13 +150,8 @@ debug/verbose messages on missingness; enable
 <li>Unit handling: inputs are expected in mmol/L (glucose) and pmol/L
 (insulin); internally converted to mg/dL (*18) and muU/mL (/6) where
 formulas need them.</li>
-<li>Extreme screening (optional): applied <strong>after</strong>
-computing indices; flags |value| &gt; <code>extreme_limit</code>;
-handling via <code>extreme_action</code>
-(warn/cap/error/ignore/NA).</li>
-<li>Normalization (optional): applied after extreme handling via
-<code><a href="../reference/normalize_vec.html">normalize_vec()</a></code>; use “none” for raw interpretable
-values.</li>
+<li>Normalization (optional): applied via <code><a href="../reference/normalize_vec.html">normalize_vec()</a></code>;
+use “none” for raw interpretable values.</li>
 <li>Sex coding: expects 1 = male, 2 = female; 0 is treated as female
 after coercion; other strings become NA.</li>
 </ul>
@@ -187,17 +165,15 @@ Avignon_Si0, Avignon_Si120, Avignon_Sim, Modified_stumvoll,
 Stumvoll_Demographics, Matsuda_AUC, Matsuda_ISI, BigttSi, Ifc_inv,
 HIRI_inv, Belfiore_isi_gly.</li>
 <li>NA indicates missing/invalid inputs, zero/negative arguments to
-logs, or values blanked by extreme handling.</li>
+logs, or values blanked by normalization after NA inputs.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="defaults-and-validation-details">Defaults and validation details<a class="anchor" aria-label="anchor" href="#defaults-and-validation-details"></a>
 </h2>
 <ul>
-<li>Default <code>extreme_limit</code>: 1e3; used only when
-<code>check_extreme = TRUE</code>.</li>
-<li>Output screening happens before normalization; capped/NA outputs are
-then normalized if <code>normalize != "none"</code>.</li>
+<li>Output screening happens before normalization; outputs are then
+normalized if <code>normalize != "none"</code>.</li>
 <li>High-missingness diagnostics are only printed when verbose/debug
 logging is on.</li>
 <li>Zero/negative inputs to log-based terms become NA by design (safe
@@ -228,8 +204,7 @@ log guard).</li>
 <span>    age <span class="op">=</span> <span class="st">"age"</span>, sex <span class="op">=</span> <span class="st">"sex"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 14</span></span></span>
 <span><span class="co">#&gt;   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim</span></span>
@@ -242,7 +217,7 @@ log guard).</li>
 inputs are missing or non-finite.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-extreme-scan-capping-and-z-normalization">Worked example 2: Extreme scan, capping, and z-normalization<a class="anchor" aria-label="anchor" href="#worked-example-2-extreme-scan-capping-and-z-normalization"></a>
+<h2 id="worked-example-2-normalization">Worked example 2: Normalization<a class="anchor" aria-label="anchor" href="#worked-example-2-normalization"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ogtt_is.html">ogtt_is</a></span><span class="op">(</span></span>
@@ -256,9 +231,6 @@ inputs are missing or non-finite.</p>
 <span>  <span class="op">)</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"z"</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_limit <span class="op">=</span> <span class="fl">1e3</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 14</span></span></span>
@@ -268,8 +240,8 @@ inputs are missing or non-finite.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: Modified_stumvoll &lt;dbl&gt;, Stumvoll_Demographics &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   Matsuda_AUC &lt;dbl&gt;, Matsuda_ISI &lt;dbl&gt;, BigttSi &lt;dbl&gt;, Ifc_inv &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   HIRI_inv &lt;dbl&gt;, Belfiore_isi_gly &lt;dbl&gt;</span></span></span></code></pre></div>
-<p><em>Interpretation:</em> Outputs are capped at +/- 1000 before
-z-scaling; verbose logs summarize extreme counts.</p>
+<p><em>Interpretation:</em> Outputs are z-scaled; verbose logs summarize
+column-map resolution and result counts.</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
@@ -283,9 +255,6 @@ in <code>data</code> and be mapped.</li>
 internal conversions are applied for formulas.</li>
 <li>Sex coding: expects 1/2; 0/1 are coerced; other strings become NA
 and propagate.</li>
-<li>Extreme handling: only applied when
-<code>check_extreme = TRUE</code>, and only after computing
-indices.</li>
 <li>All NA outputs: usually missing required inputs, zero/negative
 values passed to logs, or NA produced by normalization after NA
 inputs.</li>
@@ -308,8 +277,33 @@ inputs.</li>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; ogtt_is(): preparing inputs</span></span>
-<span><span class="co">#&gt; ogtt_is(): column map: G0 -&gt; 'G0', I0 -&gt; 'I0', G30 -&gt; 'G30', I30 -&gt; 'I30', G120 -&gt; 'G120', I120 -&gt; 'I120', weight -&gt; 'weight', bmi -&gt; 'bmi', age -&gt; 'age', sex -&gt; 'sex'</span></span>
+<span><span class="co">#&gt; ogtt_is(): reading input 'df' — 1 rows × 10 variables</span></span>
+<span><span class="co">#&gt; ogtt_is(): col_map (10 columns — 10 specified)</span></span>
+<span><span class="co">#&gt;   G0                -&gt;  'G0'</span></span>
+<span><span class="co">#&gt;   I0                -&gt;  'I0'</span></span>
+<span><span class="co">#&gt;   G30               -&gt;  'G30'</span></span>
+<span><span class="co">#&gt;   I30               -&gt;  'I30'</span></span>
+<span><span class="co">#&gt;   G120              -&gt;  'G120'</span></span>
+<span><span class="co">#&gt;   I120              -&gt;  'I120'</span></span>
+<span><span class="co">#&gt;   weight            -&gt;  'weight'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'bmi'</span></span>
+<span><span class="co">#&gt;   age               -&gt;  'age'</span></span>
+<span><span class="co">#&gt;   sex               -&gt;  'sex'</span></span>
+<span><span class="co">#&gt; ogtt_is(): computing markers:</span></span>
+<span><span class="co">#&gt;   Isi_120                [G120, I120]</span></span>
+<span><span class="co">#&gt;   Cederholm_index        [G0, G120, I0, I120, weight]</span></span>
+<span><span class="co">#&gt;   Gutt_index             [G0, G120, I0, I120, weight]</span></span>
+<span><span class="co">#&gt;   Avignon_Si0            [G0, I0, weight]</span></span>
+<span><span class="co">#&gt;   Avignon_Si120          [G120, I120, weight]</span></span>
+<span><span class="co">#&gt;   Avignon_Sim            [Si0, Si120]</span></span>
+<span><span class="co">#&gt;   Modified_stumvoll      [I0, I120, G120]</span></span>
+<span><span class="co">#&gt;   Stumvoll_Demog.        [bmi, I120, age]</span></span>
+<span><span class="co">#&gt;   Matsuda_AUC            [G0, I0, G_AUC, I_AUC]</span></span>
+<span><span class="co">#&gt;   Matsuda_ISI            [G0, I0, G_mean, I_mean]</span></span>
+<span><span class="co">#&gt;   BigttSi                [I0, I30, I120, G0, G30, G120, sex, bmi]</span></span>
+<span><span class="co">#&gt;   Ifc_inv                [I0, I120]</span></span>
+<span><span class="co">#&gt;   HIRI_inv               [G0, G30, I0, I30]</span></span>
+<span><span class="co">#&gt;   Belfiore_isi_gly       [I_AUC, G_AUC]</span></span>
 <span><span class="co">#&gt; ogtt_is(): results: Isi_120 1/1, Cederholm_index 1/1, Gutt_index 1/1, Avignon_Si0 1/1, Avignon_Si120 1/1, Avignon_Sim 1/1, Modified_stumvoll 1/1, Stumvoll_Demographics 1/1, Matsuda_AUC 1/1, Matsuda_ISI 1/1, BigttSi 1/1, Ifc_inv 1/1, HIRI_inv 1/1, Belfiore_isi_gly 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 14</span></span></span>
 <span><span class="co">#&gt;   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim</span></span>
@@ -328,9 +322,6 @@ inputs.</li>
 use “z” or “robust” only when scaling is needed for modeling.</li>
 <li>Use <code>na_action = "omit"</code> for modeling-ready datasets;
 <code>keep</code> for exploratory review.</li>
-<li>Start with <code>check_extreme = TRUE</code>,
-<code>extreme_action = "warn"</code> to gauge outliers; tighten to
-<code>cap</code> or <code>error</code> if needed.</li>
 <li>Inspect distributions of glucose and insulin values to catch unit
 errors before running.</li>
 </ul>
@@ -342,8 +333,8 @@ errors before running.</li>
 <li>Glucose values are multiplied by 18 and insulin divided by 6 inside
 formulas that require mg/dL or muU/mL.</li>
 <li>Logs are safe: nonpositive arguments become NA.</li>
-<li>Extreme handling and normalization occur after computing raw
-indices; disable both to mirror published formulas.</li>
+<li>Normalization occurs after computing raw indices; disable to mirror
+published formulas.</li>
 </ul>
 </div>
 <div class="section level2">

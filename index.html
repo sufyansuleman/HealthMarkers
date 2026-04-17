@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Toolkit for Clinical, Metabolic, and Cardiovascular Biomarker Calculations">
-<meta name="description" content="Computes over 50 specialist health marker functions covering insulin sensitivity and resistance indices (fasting, oral glucose tolerance test, adipose-tissue, tracer, and DXA-based), glycaemic and lipid markers, atherogenic and metabolic syndrome scores, liver steatosis and fibrosis scores, and cardiovascular risk algorithms (Framingham, ASCVD, QRISK3, SCORE2/SCORE2-OP). Also implements renal function (eGFR, KFRE, CKD staging), pulmonary function (spirometry z-scores, BODE index), inflammatory markers and aging clocks (iAge), hormonal panels, body composition and anthropometric z-scores, bone turnover markers and fracture risk (FRAX), frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating scales, and biomarker panels from alternative biofluids (urine, saliva, sweat). Missing value imputation helpers and a unified all_health_markers() dispatcher that returns all requested marker groups as a single wide tibble are included.">
-<meta property="og:description" content="Computes over 50 specialist health marker functions covering insulin sensitivity and resistance indices (fasting, oral glucose tolerance test, adipose-tissue, tracer, and DXA-based), glycaemic and lipid markers, atherogenic and metabolic syndrome scores, liver steatosis and fibrosis scores, and cardiovascular risk algorithms (Framingham, ASCVD, QRISK3, SCORE2/SCORE2-OP). Also implements renal function (eGFR, KFRE, CKD staging), pulmonary function (spirometry z-scores, BODE index), inflammatory markers and aging clocks (iAge), hormonal panels, body composition and anthropometric z-scores, bone turnover markers and fracture risk (FRAX), frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating scales, and biomarker panels from alternative biofluids (urine, saliva, sweat). Missing value imputation helpers and a unified all_health_markers() dispatcher that returns all requested marker groups as a single wide tibble are included.">
+<meta name="description" content="Computes over 50 specialist health marker functions covering insulin sensitivity and resistance indices (fasting, oral glucose tolerance test, adipose-tissue, tracer, and dual-energy X-ray absorptiometry (DXA)-based), glycaemic and lipid markers, atherogenic and metabolic syndrome scores, liver steatosis and fibrosis scores, and cardiovascular risk algorithms (Framingham Heart Study equations, atherosclerotic cardiovascular disease (ASCVD) Pooled Cohort Equations, the QRISK3 cardiac risk score, and Systematic Coronary Risk Evaluation 2 (SCORE2) including the Older Persons variant (SCORE2-OP)). Also implements renal function (estimated glomerular filtration rate (eGFR), Kidney Failure Risk Equation (KFRE), chronic kidney disease (CKD) staging), pulmonary function (spirometry z-scores, Body-mass index, airflow Obstruction, Dyspnea, and Exercise capacity index (BODE)), inflammatory markers and the inflammatory age clock (iAge), hormonal panels, body composition and anthropometric z-scores, bone turnover markers and fracture risk (Fracture Risk Assessment Tool (FRAX)), frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating scales, and biomarker panels from alternative biofluids (urine, saliva, sweat). Missing value imputation helpers, pre or post computation normalization and a unified all_health_markers() dispatcher that returns all requested marker groups as a single wide tibble are included.">
+<meta property="og:description" content="Computes over 50 specialist health marker functions covering insulin sensitivity and resistance indices (fasting, oral glucose tolerance test, adipose-tissue, tracer, and dual-energy X-ray absorptiometry (DXA)-based), glycaemic and lipid markers, atherogenic and metabolic syndrome scores, liver steatosis and fibrosis scores, and cardiovascular risk algorithms (Framingham Heart Study equations, atherosclerotic cardiovascular disease (ASCVD) Pooled Cohort Equations, the QRISK3 cardiac risk score, and Systematic Coronary Risk Evaluation 2 (SCORE2) including the Older Persons variant (SCORE2-OP)). Also implements renal function (estimated glomerular filtration rate (eGFR), Kidney Failure Risk Equation (KFRE), chronic kidney disease (CKD) staging), pulmonary function (spirometry z-scores, Body-mass index, airflow Obstruction, Dyspnea, and Exercise capacity index (BODE)), inflammatory markers and the inflammatory age clock (iAge), hormonal panels, body composition and anthropometric z-scores, bone turnover markers and fracture risk (Fracture Risk Assessment Tool (FRAX)), frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating scales, and biomarker panels from alternative biofluids (urine, saliva, sweat). Missing value imputation helpers, pre or post computation normalization and a unified all_health_markers() dispatcher that returns all requested marker groups as a single wide tibble are included.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@
 <li><a href="#package-overview">Package overview</a></li>
 <li><a href="#how-to-use-healthmarkers">How to use HealthMarkers</a></li>
 <li><a href="#function-by-function-guide">Function-by-function guide</a></li>
-<li><a href="#column-mapping">Column mapping</a></li>
+<li><a href="#column-mapping-and-multi-biobank-support">Column mapping and multi-biobank support</a></li>
 <li><a href="#handle-missing-data-before-computing">Handle missing data before computing</a></li>
 <li><a href="#verbose-diagnostics">Verbose diagnostics</a></li>
 <li><a href="#further-information">Further information</a></li>
@@ -83,6 +83,8 @@
 <ul>
 <li>
 <strong>One interface, many markers.</strong> A single <code><a href="reference/all_health_markers.html">all_health_markers()</a></code> call returns glycaemic, lipid, liver, renal, pulmonary, inflammatory, hormonal, bone, psychiatric, and nutritional markers as one wide tibble.</li>
+<li>
+<strong>Multi-biobank ready.</strong> The built-in synonym dictionary covers naming conventions from 15+ cohorts and biobanks — UK Biobank, NHANES, HUNT, Tromsø, FinnGen, Estonian Biobank, LifeLines (Netherlands), Generation Scotland, All of Us (LOINC codes), Danish registers (NPU codes), and more. Column names from any of these systems are recognised automatically without any manual mapping.</li>
 <li>
 <strong>Safe by default.</strong> NA handling, input validation, column-name inference, and range-capping are built in. Failed marker groups are skipped with a warning, never crashing your pipeline.</li>
 <li>
@@ -250,7 +252,7 @@
 <div class="section level3">
 <h3 id="all_health_markers-the-dispatcher">all_health_markers()`: the dispatcher<a class="anchor" aria-label="anchor" href="#all_health_markers-the-dispatcher"></a>
 </h3>
-<p><strong>Use this when</strong> you want to compute many marker groups in one call and receive everything back as a single wide tibble appended to your original data.</p>
+<p><strong>Use this when</strong> you want to compute many marker groups in one call and receive everything back as a single wide tibble.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sufyansuleman.github.io/HealthMarkers/">HealthMarkers</a></span><span class="op">)</span></span>
 <span></span>
@@ -499,30 +501,331 @@
 </div>
 </div>
 <div class="section level2">
-<h2 id="column-mapping">Column mapping<a class="anchor" aria-label="anchor" href="#column-mapping"></a>
+<h2 id="column-mapping-and-multi-biobank-support">Column mapping and multi-biobank support<a class="anchor" aria-label="anchor" href="#column-mapping-and-multi-biobank-support"></a>
 </h2>
-<p>Every function accepts a <code>col_map</code> argument a named list mapping internal keys (what the function expects) to your actual column names (what you have).</p>
+<p>Every function accepts a <code>col_map</code> argument — a named list mapping internal keys (what the function expects) to your actual column names (what you have).</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Internal key = "G0", your column is called "fasting_glucose_mmol"</span></span>
 <span><span class="fu"><a href="reference/fasting_is.html">fasting_is</a></span><span class="op">(</span></span>
 <span>  data    <span class="op">=</span> <span class="va">my_data</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"fasting_glucose_mmol"</span>, I0 <span class="op">=</span> <span class="st">"insulin_uU_mL"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>For multi-domain calls, use <code><a href="reference/infer_cols.html">infer_cols()</a></code> to let the package auto-map by pattern matching:</p>
+<div class="section level3">
+<h3 id="multi-biobank-automatic-variable-name--column-name-recognition">Multi-biobank automatic variable name / column name recognition<a class="anchor" aria-label="anchor" href="#multi-biobank-automatic-variable-name--column-name-recognition"></a>
+</h3>
+<p>The synonym dictionary recognises column names from 15+ major cohorts and biobanks out of the box. The table below shows how the same analyte is named across systems:</p>
+<table class="table">
+<colgroup>
+<col width="12%">
+<col width="12%">
+<col width="12%">
+<col width="12%">
+<col width="12%">
+<col width="12%">
+<col width="12%">
+<col width="12%">
+</colgroup>
+<thead><tr class="header">
+<th>Internal key</th>
+<th>UK Biobank</th>
+<th>NHANES</th>
+<th>HUNT/Tromsø</th>
+<th>FinnGen</th>
+<th>Estonian BB</th>
+<th>LifeLines (NL)</th>
+<th>LOINC</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>fasting_glucose</code></td>
+<td><code>glucose_0_0</code></td>
+<td><code>LBXGLU</code></td>
+<td><code>fastende_blodsukker</code></td>
+<td><code>paastoglukoosi</code></td>
+<td><code>p_glukoos</code></td>
+<td><code>nuchtere_glucose</code></td>
+<td><code>LOINC_2345_7</code></td>
+</tr>
+<tr class="even">
+<td><code>total_cholesterol</code></td>
+<td><code>cholesterol_0_0</code></td>
+<td><code>LBXSCH</code></td>
+<td><code>total_kolesterol</code></td>
+<td><code>kokonaiskolesteroli</code></td>
+<td><code>kogukolesterool</code></td>
+<td><code>totaal_cholesterol</code></td>
+<td><code>LOINC_2093_3</code></td>
+</tr>
+<tr class="odd">
+<td><code>creatinine</code></td>
+<td><code>creatinine_0_0</code></td>
+<td><code>LBXSCR</code></td>
+<td><code>kreatinin</code></td>
+<td><code>kreatiniini</code></td>
+<td><code>kreatiniin</code></td>
+<td><code>creatinine</code></td>
+<td><code>LOINC_2160_0</code></td>
+</tr>
+<tr class="even">
+<td><code>HbA1c</code></td>
+<td><code>glycated_haemoglobin_hba1c_0_0</code></td>
+<td><code>LBXGH</code></td>
+<td><code>HbA1c</code></td>
+<td><code>hemoglobiini_a1c</code></td>
+<td><code>HbA1c</code></td>
+<td><code>geglycosyleerd_hemoglobine</code></td>
+<td><code>LOINC_4548_4</code></td>
+</tr>
+<tr class="odd">
+<td><code>SBP</code></td>
+<td><code>systolic_blood_pressure_0_0</code></td>
+<td><code>BPXSY1</code></td>
+<td><code>systolisk_blodtrykk</code></td>
+<td><code>SBP</code></td>
+<td><code>sbp</code></td>
+<td><code>systolische_bloeddruk</code></td>
+<td><code>LOINC_8480_6</code></td>
+</tr>
+<tr class="even">
+<td><code>vitaminD</code></td>
+<td><code>vitamin_d_0_0</code></td>
+<td><code>LBXVD2</code></td>
+<td><code>d_vitamin</code></td>
+<td><code>D_vitamiini</code></td>
+<td><code>D_vitamiin</code></td>
+<td><code>vitamine_D</code></td>
+<td><code>LOINC_62292_8</code></td>
+</tr>
+<tr class="odd">
+<td><code>ALT</code></td>
+<td><code>alanine_aminotransferase_0_0</code></td>
+<td><code>LBXSATSI</code></td>
+<td><code>ALAT</code></td>
+<td><code>alaniiniaminotransferaasi</code></td>
+<td><code>ALAT</code></td>
+<td><code>alanineaminotransferase</code></td>
+<td><code>LOINC_1742_6</code></td>
+</tr>
+</tbody>
+</table>
+<p>For <strong>OMOP CDM / All of Us</strong> data, concept codes in <code>LOINC_XXXX_X</code> format are recognised for all major analytes. For <strong>Nordic EHR / register data</strong>, Danish and Norwegian NPU codes (<code>NPU01994</code>, <code>NPU01567</code>, etc.) are matched directly.</p>
+<p>Generation Scotland-specific names (<code>SBP_mean</code>, <code>DBP_mean</code>, <code>genetic_sex</code>, <code>ethnic_group</code>) and HUNT/Tromsø Norwegian-language terms are also included.</p>
+</div>
+<div class="section level3">
+<h3 id="recommended-workflow-for-real-datasets">Recommended workflow for real datasets<a class="anchor" aria-label="anchor" href="#recommended-workflow-for-real-datasets"></a>
+</h3>
+<p><strong>Step 1 — call <code><a href="reference/hm_col_report.html">hm_col_report()</a></code> first</strong> to see which columns are auto-detected and which need a manual mapping:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># See what gets mapped and what's missing</span></span>
-<span><span class="va">inferred</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/infer_cols.html">infer_cols</a></span><span class="op">(</span><span class="va">my_data</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">inferred</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sufyansuleman.github.io/HealthMarkers/">HealthMarkers</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">my_data</span><span class="op">)</span></span></code></pre></div>
+<p>This prints a report like:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>── HealthMarkers column report ────────────────────────────────────────────</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a> Data<span class="sc">:</span> <span class="dv">40314</span> rows × <span class="dv">299</span> columns   <span class="sc">|</span>   Keys <span class="cf">in</span> dictionary<span class="sc">:</span> <span class="dv">258</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a> key                  data_column        how matched</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a> <span class="sc">--------------------</span> <span class="sc">------------------</span> <span class="sc">------------------</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a> fasting_glucose      pglu0              exact  ✔</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a> TG                   trig               exact  ✔</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a> ALT                  alat               exact  ✔</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a> albumin              alb                exact  ✔</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a> vitaminD             vitd25             exact  ✔</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a> eGFR                 ─                  NOT FOUND ✘</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a> ✔ <span class="dv">187</span> keys matched   ✘ <span class="dv">71</span> keys not found</span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>── col_map template <span class="cf">for</span> missing keys ──────────────────────────────────────</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a> col_map <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>   <span class="at">eGFR  =</span> <span class="st">"from_your_data"</span>,   <span class="co"># fill in your column name</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a> )</span></code></pre></div>
+<p><strong>Step 2 — copy the printed <code>col_map</code> template</strong> and fill in your column names for any unmatched keys:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_col_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  eGFR <span class="op">=</span> <span class="st">"GFR_ckdepi"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Or capture the auto-detected mappings directly and merge:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Returns a named list of all matched key → column pairs</span></span>
+<span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">my_data</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Pass directly the dispatcher will use it</span></span>
-<span><span class="fu"><a href="reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">my_data</span>, col_map <span class="op">=</span> <span class="va">inferred</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Add manual overrides for anything not matched</span></span>
+<span><span class="va">cm</span><span class="op">$</span><span class="va">eGFR</span> <span class="op">&lt;-</span> <span class="st">"GFR_ckdepi"</span></span></code></pre></div>
+<p><strong>Step 3 — pass <code>col_map</code> to any function:</strong></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span></span>
+<span>  data    <span class="op">=</span> <span class="va">my_data</span>,</span>
+<span>  which   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"insulin_fasting"</span>, <span class="st">"glycemic"</span>, <span class="st">"lipid"</span>, <span class="st">"liver"</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="va">cm</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/hm_col_report.html">hm_col_report()</a></code> accepts two optional flags:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">my_data</span>, show_unmatched <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># list every unmatched key</span></span>
+<span><span class="fu"><a href="reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">my_data</span>, fuzzy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>           <span class="co"># add fuzzy matching as last resort</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="internal-key-reference">Internal key reference<a class="anchor" aria-label="anchor" href="#internal-key-reference"></a>
+</h3>
+<p>The most commonly needed internal keys are:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Internal key</th>
+<th>Meaning</th>
+<th>Example column names</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>G0</code></td>
+<td>Fasting glucose (mmol/L)</td>
+<td>
+<code>pglu0</code>, <code>fasting_glucose</code>, <code>gluc0</code>, <code>LBXGLU</code>, <code>paastoglukoosi</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>I0</code></td>
+<td>Fasting insulin (mU/L or pmol/L)</td>
+<td>
+<code>insu0</code>, <code>insulin0</code>, <code>ins_fast</code>
+</td>
+</tr>
+<tr class="odd">
+<td>
+<code>G30</code>, <code>G120</code>
+</td>
+<td>30-/120-min OGTT glucose</td>
+<td>
+<code>pglu30</code>, <code>pglu120</code>
+</td>
+</tr>
+<tr class="even">
+<td>
+<code>I30</code>, <code>I120</code>
+</td>
+<td>30-/120-min OGTT insulin</td>
+<td>
+<code>insu30</code>, <code>insu120</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>TG</code></td>
+<td>Triglycerides (mmol/L)</td>
+<td>
+<code>trig</code>, <code>TryG</code>, <code>TAG</code>, <code>triglyserider</code>, <code>triglyseridit</code>, <code>LOINC_2571_8</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>HDL_c</code></td>
+<td>HDL cholesterol</td>
+<td>
+<code>hdlc</code>, <code>HDL</code>, <code>hdl_chol</code>, <code>hdl_kolesteroli</code>, <code>LOINC_2085_9</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>LDL_c</code></td>
+<td>LDL cholesterol</td>
+<td>
+<code>ldl</code>, <code>LDL</code>, <code>ldl_chol</code>, <code>ldl_kolesteroli</code>, <code>LOINC_13457_7</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>TC</code></td>
+<td>Total cholesterol</td>
+<td>
+<code>chol</code>, <code>total_chol</code>, <code>kokonaiskolesteroli</code>, <code>LOINC_2093_3</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>ALT</code></td>
+<td>Alanine aminotransferase</td>
+<td>
+<code>alat</code>, <code>SGPT</code>, <code>GPT</code>, <code>LBXSATSI</code>, <code>NPU03429</code>, <code>LOINC_1742_6</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>albumin</code></td>
+<td>Serum albumin</td>
+<td>
+<code>alb</code>, <code>Albumin</code>, <code>NPU04998</code>, <code>albumiini</code>, <code>LOINC_1751_7</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>creatinine</code></td>
+<td>Serum creatinine</td>
+<td>
+<code>crea</code>, <code>kreatinin</code>, <code>kreatiniini</code>, <code>NPU01994</code>, <code>LOINC_2160_0</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>UACR</code></td>
+<td>Urine albumin/creatinine ratio</td>
+<td>
+<code>ualbcrea</code>, <code>ACR</code>
+</td>
+</tr>
+<tr class="odd">
+<td>
+<code>SBP</code> / <code>DBP</code>
+</td>
+<td>Systolic/diastolic BP</td>
+<td>
+<code>sysbp</code>, <code>diabp</code>, <code>systolisk_blodtrykk</code>, <code>LOINC_8480_6</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>BMI</code></td>
+<td>Body mass index</td>
+<td>
+<code>bmi</code>, <code>BMI_kgm2</code>, <code>painoindeksi</code>, <code>LOINC_39156_5</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>waist</code></td>
+<td>Waist circumference (cm)</td>
+<td>
+<code>waist_cm</code>, <code>WC</code>, <code>midjeomkrets</code>, <code>tailleomtrek</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>vitaminD</code></td>
+<td>25-OH vitamin D</td>
+<td>
+<code>vitd25</code>, <code>d_vitamin</code>, <code>D_vitamiini</code>, <code>NPU10501</code>, <code>LOINC_62292_8</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>HbA1c</code></td>
+<td>Glycated haemoglobin</td>
+<td>
+<code>hba1c</code>, <code>HbA1c</code>, <code>hemoglobiini_a1c</code>, <code>NPU27300</code>, <code>LOINC_4548_4</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>WBC</code></td>
+<td>White blood cells</td>
+<td>
+<code>leukocytes</code>, <code>leukocytter</code>, <code>leukocyter</code>, <code>LOINC_6690_2</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>Hgb</code></td>
+<td>Haemoglobin</td>
+<td>
+<code>hb</code>, <code>haemoglobin</code>, <code>hemoglobiini</code>, <code>NPU03609</code>, <code>LOINC_718_7</code>
+</td>
+</tr>
+</tbody>
+</table>
 <hr>
+</div>
 </div>
 <div class="section level2">
 <h2 id="handle-missing-data-before-computing">Handle missing data before computing<a class="anchor" aria-label="anchor" href="#handle-missing-data-before-computing"></a>
 </h2>
 <p>Impute missing values before passing data to any marker function:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Multiple imputation (mice) recommended for inference</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_mice.html">impute_mice</a></span><span class="op">(</span><span class="va">my_data</span>, m <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
 <span></span>
@@ -537,7 +840,7 @@
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
 <p>Set <code>verbose = TRUE</code> on any function to see progress, NA counts, and elapsed time:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/all_health_markers.html">all_health_markers</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">labs</span>, which <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lipid"</span>,<span class="st">"liver"</span><span class="op">)</span>,</span>
 <span>                               verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Column mapping summary: TC-&gt;TC (user), HDL_c-&gt;HDL_c (user) ...</span></span>
@@ -545,7 +848,7 @@
 <span><span class="co">#&gt; -&gt; liver</span></span>
 <span><span class="co">#&gt; all_health_markers(): summary - computed: lipid, liver | skipped/failed: none</span></span></code></pre></div>
 <p>Enable globally for an entire session:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># levels: "none" (default), "inform" (progress only), "debug" (all internal steps)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span></code></pre></div>
 <hr>
@@ -570,9 +873,9 @@
 <div class="section level2">
 <h2 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a>
 </h2>
-<p>There are <strong>46 vignettes</strong> covering every marker domain. The 12 core vignettes below are bundled with the package; the remaining 34 are available exclusively on the package website (they are not built by CRAN to keep installation fast).</p>
+<p>There are <strong>47 vignettes</strong> covering every marker domain. The 12 core vignettes below are bundled with the package; the remaining 35 are available exclusively on the package website (they are not built by CRAN to keep installation fast).</p>
 <p><strong>Bundled with the package</strong> accessible via <code><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes()</a></code> or <code><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette()</a></code>:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"HealthMarkers"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"getting-started"</span>,     package <span class="op">=</span> <span class="st">"HealthMarkers"</span><span class="op">)</span></span>
@@ -587,7 +890,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"obesity_indices"</span>,     package <span class="op">=</span> <span class="st">"HealthMarkers"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"impute_missing"</span>,      package <span class="op">=</span> <span class="st">"HealthMarkers"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/vignette.html" class="external-link">vignette</a></span><span class="op">(</span><span class="st">"health_markers"</span>,      package <span class="op">=</span> <span class="st">"HealthMarkers"</span><span class="op">)</span></span></code></pre></div>
-<p><strong>All 46 vignettes</strong> (including adipo_is, tracer_dxa_is, allostatic_load, bone_markers, psych_markers, and 29 more) are rendered and searchable on the package website:</p>
+<p><strong>All 47 vignettes</strong> (including adipo_is, tracer_dxa_is, allostatic_load, bone_markers, psych_markers, the new multi-biobank guide, and 30 more) are rendered and searchable on the package website:</p>
 <blockquote>
 <p><a href="https://sufyansuleman.github.io/HealthMarkers/articles/" class="uri">https://sufyansuleman.github.io/HealthMarkers/articles/</a></p>
 </blockquote>
@@ -622,7 +925,7 @@
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"HealthMarkers"</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>

@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title> • HealthMarkers</title>
+<title>Hormone marker ratios • HealthMarkers</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Hormone marker ratios">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1></h1>
+      <h1>Hormone marker ratios</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/vignettes/articles/hormone_markers.Rmd" class="external-link"><code>vignettes/articles/hormone_markers.Rmd</code></a></small>
@@ -60,7 +60,6 @@
 
     
     
-<p>title: “Hormone marker ratios” output: rmarkdown::html_vignette —</p>
 <div class="section level2">
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
@@ -99,9 +98,6 @@ nmol/L; aldosterone/renin in matching units).</li>
 <code>na_action</code>: <code>keep</code>/<code>ignore</code> retain
 rows with NA outputs; <code>omit</code> drops rows with missing required
 inputs; <code>error</code> aborts.</li>
-<li>
-<code>check_extreme</code>: optional; <code>extreme_action</code> =
-<code>warn</code>/<code>cap</code>/<code>NA</code>/<code>error</code>/<code>ignore</code>.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -198,7 +194,6 @@ to <code>NA</code>; rows are retained when
 <span>  data <span class="op">=</span> <span class="va">horm_demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -223,15 +218,13 @@ to <code>NA</code>; rows are retained when
 <span><span class="va">keep_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hormone_markers.html">hormone_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">horm_demo_na</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">omit_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hormone_markers.html">hormone_markers</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">horm_demo_na</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  na_action <span class="op">=</span> <span class="st">"omit"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">keep_res</span><span class="op">)</span>, omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">omit_res</span><span class="op">)</span><span class="op">)</span></span>
@@ -242,31 +235,23 @@ to <code>NA</code>; rows are retained when
 <span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-screening">Extreme screening<a class="anchor" aria-label="anchor" href="#extreme-screening"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p>Enable range scanning and cap out-of-range inputs into allowed
-bounds.</p>
+<p>Extreme labs will produce extreme ratios. Pre-filter implausible
+values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">horm_demo_ext</span> <span class="op">&lt;-</span> <span class="va">horm_demo</span></span>
 <span><span class="va">horm_demo_ext</span><span class="op">$</span><span class="va">aldo</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2000</span>  <span class="co"># intentionally extreme</span></span>
-<span></span>
-<span><span class="va">cap_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hormone_markers.html">hormone_markers</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">horm_demo_ext</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cap_res</span><span class="op">[</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARR"</span>, <span class="st">"FAI"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
+<span><span class="co"># Pre-filter or cap before calling</span></span>
+<span><span class="va">horm_demo_ext</span><span class="op">$</span><span class="va">aldo</span><span class="op">[</span><span class="va">horm_demo_ext</span><span class="op">$</span><span class="va">aldo</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/hormone_markers.html">hormone_markers</a></span><span class="op">(</span><span class="va">horm_demo_ext</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ARR"</span>, <span class="st">"FAI"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
 <span><span class="co">#&gt;     ARR   FAI</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  83.3  16.7</span></span></code></pre></div>
-<p><code>extreme_action = "cap"</code> trims inputs into the allowed
-ranges; <code>warn</code> or <code>error</code> emit warnings or abort
-instead.</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  83.3  16.7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  12    17.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  12.7  16.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  14.4  17.7</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="expectations">Expectations<a class="anchor" aria-label="anchor" href="#expectations"></a>
@@ -279,8 +264,6 @@ mappings/columns abort.</li>
 retains rows with <code>NA</code> outputs; <code>omit</code> drops rows
 with missing required inputs; <code>error</code> stops on
 missingness.</li>
-<li>Extreme screening is optional; when enabled, choose how to handle
-flagged values with <code>extreme_action</code>.</li>
 <li>Outputs are numeric ratios; divisions by zero/non-finite are
 converted to <code>NA</code>.</li>
 </ul>
@@ -304,15 +287,57 @@ a results summary.</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_v</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df_v</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; hormone_markers(): reading input 'df_v' — 1 rows × 17 variables</span></span>
 <span><span class="co">#&gt; hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4</span></span>
-<span><span class="co">#&gt; hormone_markers(): preparing inputs</span></span>
-<span><span class="co">#&gt; hormone_markers(): column map: total_testosterone -&gt; 'total_testosterone', SHBG -&gt; 'SHBG', LH -&gt; 'LH', FSH -&gt; 'FSH', estradiol -&gt; 'estradiol', progesterone -&gt; 'progesterone', free_T3 -&gt; 'free_T3', free_T4 -&gt; 'free_T4', aldosterone -&gt; 'aldosterone', renin -&gt; 'renin', insulin -&gt; 'insulin', glucagon -&gt; 'glucagon', GH -&gt; 'GH', IGF1 -&gt; 'IGF1', prolactin -&gt; 'prolactin', cortisol_0 -&gt; 'cortisol_0', cortisol_30 -&gt; 'cortisol_30'</span></span>
+<span><span class="co">#&gt; hormone_markers(): col_map (15 columns — 15 specified)</span></span>
+<span><span class="co">#&gt;   total_testosterone-&gt;  'total_testosterone'</span></span>
+<span><span class="co">#&gt;   SHBG              -&gt;  'SHBG'</span></span>
+<span><span class="co">#&gt;   LH                -&gt;  'LH'</span></span>
+<span><span class="co">#&gt;   FSH               -&gt;  'FSH'</span></span>
+<span><span class="co">#&gt;   estradiol         -&gt;  'estradiol'</span></span>
+<span><span class="co">#&gt;   progesterone      -&gt;  'progesterone'</span></span>
+<span><span class="co">#&gt;   free_T3           -&gt;  'free_T3'</span></span>
+<span><span class="co">#&gt;   free_T4           -&gt;  'free_T4'</span></span>
+<span><span class="co">#&gt;   aldosterone       -&gt;  'aldosterone'</span></span>
+<span><span class="co">#&gt;   renin             -&gt;  'renin'</span></span>
+<span><span class="co">#&gt;   insulin           -&gt;  'insulin'</span></span>
+<span><span class="co">#&gt;   IGF1              -&gt;  'IGF1'</span></span>
+<span><span class="co">#&gt;   prolactin         -&gt;  'prolactin'</span></span>
+<span><span class="co">#&gt;   cortisol_0        -&gt;  'cortisol_0'</span></span>
+<span><span class="co">#&gt;   cortisol_30       -&gt;  'cortisol_30'</span></span>
+<span><span class="co">#&gt; hormone_markers(): optional inputs</span></span>
+<span><span class="co">#&gt;   present:  total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4, aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30</span></span>
+<span><span class="co">#&gt;   missing:  TSH</span></span>
+<span><span class="co">#&gt;   ratios skipped (missing inputs): TSH_fT4</span></span>
+<span><span class="co">#&gt; hormone_markers(): computing markers:</span></span>
+<span><span class="co">#&gt;   FAI          [total_testosterone, SHBG]</span></span>
+<span><span class="co">#&gt;   LH_FSH       [LH, FSH]</span></span>
+<span><span class="co">#&gt;   E2_P         [estradiol, progesterone]</span></span>
+<span><span class="co">#&gt;   E2_T         [estradiol, total_testosterone]</span></span>
+<span><span class="co">#&gt;   T3_T4        [free_T3, free_T4]</span></span>
+<span><span class="co">#&gt;   TSH_fT4      NA [missing: TSH]</span></span>
+<span><span class="co">#&gt;   ARR          [aldosterone, renin]</span></span>
+<span><span class="co">#&gt;   Ins_Glu      [insulin, glucagon]</span></span>
+<span><span class="co">#&gt;   GH_IGF1      [GH, IGF1]</span></span>
+<span><span class="co">#&gt;   PRL_T        [prolactin, total_testosterone]</span></span>
+<span><span class="co">#&gt;   CAR_slope    [cortisol_0, cortisol_30]</span></span>
 <span><span class="co">#&gt; hormone_markers(): results: FAI 1/1, LH_FSH 1/1, E2_P 1/1, E2_T 1/1, T3_T4 1/1, ARR 1/1, Ins_Glu 1/1, GH_IGF1 1/1, PRL_T 1/1, CAR_slope 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 10</span></span></span>
 <span><span class="co">#&gt;     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   500      2     2    10   0.5     5       2     0.5   1.2         2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which hormone
+assay columns are auto-detected before building your
+<code>col_map</code>. See the <a href="multi_biobank.html">Multi-Biobank
+Compatibility</a> article for recognised synonyms across major
+biobanks.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
@@ -322,10 +347,8 @@ a results summary.</p>
 aldosterone/renin in matching units) to make ratios meaningful.</li>
 <li>Use <code>na_action = "omit"</code> when you prefer complete-case
 ratios; keep/ignore if you want row counts preserved.</li>
-<li>Tighten <code>extreme_rules</code> if your lab reference ranges are
-narrower than the broad defaults.</li>
 <li>Turn on <code>verbose = TRUE</code> to see coercion, missingness
-scan, and extreme handling summaries.</li>
+scan, and handling summaries.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

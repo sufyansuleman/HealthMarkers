@@ -16,12 +16,9 @@ Given DXA, anthropometry, and optional bone-turnover markers, computes:
 ``` r
 bone_markers(
   data,
-  col_map,
+  col_map = NULL,
   na_action = c("keep", "omit", "error"),
-  check_extreme = FALSE,
-  sds_limit = 6,
-  extreme_action = c("cap", "NA", "error"),
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -44,23 +41,9 @@ bone_markers(
   One of "keep", "omit", or "error" controlling how missing/non-finite
   input values are treated.
 
-- check_extreme:
-
-  Logical; if `TRUE`, scan mapped columns whose key names contain "sds"
-  (case-insensitive) for absolute values \> `sds_limit`.
-
-- sds_limit:
-
-  Positive numeric; SDS magnitude limit used when `check_extreme` is
-  TRUE.
-
-- extreme_action:
-
-  One of "cap", "NA", or "error" for handling extreme SDS-like values.
-
 - verbose:
 
-  Logical; if TRUE, emits progress messages via `hm_inform()`.
+  Logical; if TRUE (default), emits progress messages via `hm_inform()`.
 
 ## Value
 
@@ -108,6 +91,22 @@ col_map <- list(
   BMD_ref_mean = "BMD_ref_mean", BMD_ref_sd = "BMD_ref_sd"
 )
 bone_markers(df, col_map)
+#> bone_markers(): reading input 'df' — 2 rows × 8 variables
+#> bone_markers(): col_map (8 columns — 8 specified)
+#>   age               ->  'age'
+#>   weight            ->  'weight'
+#>   height            ->  'height'
+#>   ALM               ->  'ALM'
+#>   FM                ->  'FM'
+#>   BMD               ->  'BMD'
+#>   BMD_ref_mean      ->  'BMD_ref_mean'
+#>   BMD_ref_sd        ->  'BMD_ref_sd'
+#> bone_markers(): computing markers:
+#>   OSTA       [(weight - age) * 0.2]
+#>   ALMI       [ALM / height^2]
+#>   FMI        [FM / height^2]
+#>   BMD_Tscore [(BMD - ref_mean) / ref_sd]
+#> bone_markers(): results: OSTA 2/2, ALMI 2/2, FMI 2/2, BMD_Tscore 2/2, TBS 0/2, HSA 0/2, PINP 0/2, CTX 0/2, BSAP 0/2, Osteocalcin 0/2
 #> # A tibble: 2 × 10
 #>    OSTA  ALMI   FMI BMD_Tscore   TBS   HSA  PINP   CTX  BSAP Osteocalcin
 #>   <dbl> <dbl> <dbl>      <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>       <dbl>

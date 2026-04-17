@@ -67,23 +67,23 @@ list(
 #> # A tibble: 6 × 2
 #>   model   value
 #>   <chr>   <dbl>
-#> 1 AIP   -0.159 
-#> 2 AIP    0.175 
-#> 3 AIP   -0.0214
-#> 4 AIP    0.310 
-#> 5 AIP    0.152 
-#> 6 AIP   -0.169 
+#> 1 AIP    0.384 
+#> 2 AIP   -0.229 
+#> 3 AIP   -0.0710
+#> 4 AIP   -0.204 
+#> 5 AIP    0.0134
+#> 6 AIP   -0.118 
 #> 
 #> $ldlpn_head
 #> # A tibble: 6 × 2
 #>   model  value
 #>   <chr>  <dbl>
-#> 1 LDL_PN 0.696
-#> 2 LDL_PN 0.687
-#> 3 LDL_PN 0.690
-#> 4 LDL_PN 0.909
-#> 5 LDL_PN 0.896
-#> 6 LDL_PN 0.970
+#> 1 LDL_PN  0.89
+#> 2 LDL_PN  0.75
+#> 3 LDL_PN  1.32
+#> 4 LDL_PN  1.31
+#> 5 LDL_PN  0.97
+#> 6 LDL_PN  0.69
 ```
 
 ## Optional risk calculators
@@ -113,23 +113,10 @@ head(qrisk10)
 ``` r
 rs_out <- cvd_risk(sim_small, model = "RiskScorescvd")
 head(rs_out)
-#> # A tibble: 6 × 296
-#> # Rowwise: 
-#>      id   age sex   patid gender race  ethnicity smoker bp_treated diabetes
-#>   <int> <dbl> <chr> <int>  <int> <fct> <chr>      <int>      <int>    <int>
-#> 1     1  73.1 F         1      1 white black          0          1        0
-#> 2     2  57.4 F         2      1 white white          1          0        0
-#> 3     3  52.5 F         3      1 white black          0          1        0
-#> 4     4  46.1 M         4      0 white black          0          0        0
-#> 5     5  40.0 F         5      1 white white          0          0        0
-#> 6     6  52.5 F         6      1 black white          1          0        0
-#> # ℹ 286 more variables: atrial_fibrillation <int>, atypical_antipsy <int>,
-#> #   regular_steroid_tablets <int>, erectile_disfunction <int>, migraine <int>,
-#> #   rheumatoid_arthritis <int>, chronic_kidney_disease <int>,
-#> #   severe_mental_illness <int>, systemic_lupus_erythematosis <int>,
-#> #   blood_pressure_treatment <int>, diabetes1 <int>, diabetes2 <int>,
-#> #   heart_attack_relative <int>, std_systolic_blood_pressure <dbl>,
-#> #   smoke <int>, townsend <dbl>, height_m <dbl>, height <dbl>, weight <dbl>, …
+#> # A tibble: 1 × 4
+#>   model          year  risk value
+#>   <chr>         <int> <dbl> <dbl>
+#> 1 RiskScorescvd    NA    NA    NA
 ```
 
 ## Outputs
@@ -172,14 +159,25 @@ invisible(cvd_risk(
   verbose = TRUE
 ))
 #> cvd_risk: dispatching model 'AIP'
-#> cvd_marker_aip(): preparing inputs
-#> cvd_marker_aip(): column map: TG -> 'TG', HDL_c -> 'HDL_c'
+#> cvd_marker_aip(): col_map (user-provided): TG -> 'TG', HDL_c -> 'HDL_c'
+#> cvd_marker_aip(): computing markers:
+#>   AIP [TG, HDL_c]
 #> cvd_marker_aip(): results: AIP 30/30
 
 options(old_opt)
 ```
 
-Reset with `options(healthmarkers.verbose = NULL)` or `"none"`.
+Reset with `options(healthmarkers.verbose = NULL)` or `"none"`. \##
+Column recognition
+
+Run `hm_col_report(your_data)` to check which analyte columns are
+auto-detected before building your `col_map`. See the [Multi-Biobank
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/articles/multi_biobank.md)
+article for recognised synonyms across major biobanks.
+
+``` r
+hm_col_report(your_data)
+```
 
 ## Tips
 

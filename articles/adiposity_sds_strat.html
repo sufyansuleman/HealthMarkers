@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,8 +64,8 @@
 <h2 id="scope">Scope<a class="anchor" aria-label="anchor" href="#scope"></a>
 </h2>
 <p>Sex-stratified SDS (z-scores) for anthropometric measures using
-separate male/female references, with NA policies, optional extreme
-screening, and flexible variable mapping.</p>
+separate male/female references, with NA policies and flexible variable
+mapping.</p>
 </div>
 <div class="section level2">
 <h2 id="when-to-use-this">When to use this<a class="anchor" aria-label="anchor" href="#when-to-use-this"></a>
@@ -110,11 +110,11 @@ variables instead of erroring.</li>
 <span><span class="co"># Normalize sex labels to M/F and ensure both sexes appear in the demo slice</span></span>
 <span><span class="va">sim_small</span> <span class="op">&lt;-</span> <span class="va">sim</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>sex <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M"</span>, <span class="st">"F"</span><span class="op">)</span> <span class="op">~</span> <span class="va">sex</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M"</span>, <span class="st">"F"</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span>,</span>
 <span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"male"</span>, <span class="st">"Male"</span>, <span class="st">"m"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"M"</span>,</span>
 <span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"Female"</span>, <span class="st">"f"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"F"</span>,</span>
-<span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="st">"1"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"M"</span>,</span>
-<span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="st">"2"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"F"</span>,</span>
+<span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="st">"1"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"M"</span>,</span>
+<span>    <span class="va">sex</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="st">"2"</span><span class="op">)</span> <span class="op">~</span> <span class="st">"F"</span>,</span>
 <span>    <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
 <span>  <span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -202,8 +202,6 @@ data. Use <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  allow_partial <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -218,22 +216,18 @@ against sex-specific mean/SD; values near 0 are average for that sex,
 positive above, negative below.</p>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
 </h2>
-<p>Compare row handling and capping.</p>
+<p>Compare row handling with NA policy.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sex"</span>, <span class="st">"BMI"</span>, <span class="st">"waist"</span>, <span class="st">"height"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">BMI</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>         <span class="co"># missing</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">waist</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">300</span>      <span class="co"># extreme high waist</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">height</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">20</span>      <span class="co"># extreme low height</span></span>
 <span></span>
 <span><span class="va">demo_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adiposity_sds_strat.html">adiposity_sds_strat</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  allow_partial <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">""</span></span>
 <span><span class="op">)</span></span>
@@ -243,8 +237,6 @@ positive above, negative below.</p>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  ref <span class="op">=</span> <span class="va">ref</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  allow_partial <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">""</span></span>
 <span><span class="op">)</span></span>
@@ -252,7 +244,7 @@ positive above, negative below.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">demo_keep</span><span class="op">)</span>,</span>
 <span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">demo_omit</span><span class="op">)</span>,</span>
-<span>  capped_preview <span class="op">=</span> <span class="va">demo_keep</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">ends_with</a></span><span class="op">(</span><span class="st">"_SDS"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>  keep_preview <span class="op">=</span> <span class="va">demo_keep</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">ends_with</a></span><span class="op">(</span><span class="st">"_SDS"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -293,8 +285,12 @@ active:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/adiposity_sds_strat.html">adiposity_sds_strat</a></span><span class="op">(</span><span class="va">df_demo</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, ref <span class="op">=</span> <span class="va">ref</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; adiposity_sds_strat(): preparing inputs (2 vars, 4 rows)</span></span>
-<span><span class="co">#&gt; adiposity_sds_strat(): column map: BMI -&gt; 'BMI', waist -&gt; 'waist'</span></span>
+<span><span class="co">#&gt; adiposity_sds_strat(): reading input 'df_demo' — 4 rows × 3 variables</span></span>
+<span><span class="co">#&gt; adiposity_sds_strat(): col_map (2 columns — 2 specified)</span></span>
+<span><span class="co">#&gt;   BMI               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'</span></span>
+<span><span class="co">#&gt; adiposity_sds_strat(): computing markers:</span></span>
+<span><span class="co">#&gt;   BMI_SDS, waist_SDS</span></span>
 <span><span class="co">#&gt; adiposity_sds_strat(): results: BMI_SDS 4/4, waist_SDS 4/4</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or
@@ -316,9 +312,6 @@ skipped with an info message.</li>
 <li>
 <code>na_action</code> controls whether rows with missing inputs are
 kept, dropped, or error; missing values propagate to SDS when kept.</li>
-<li>
-<code>check_extreme</code> + <code>extreme_action</code> screen raw
-inputs before standardizing; SDS outputs themselves are not capped.</li>
 <li>Numeric coercion happens with warnings if NAs are introduced; align
 your data units with the reference units.</li>
 </ul>
@@ -345,9 +338,6 @@ absent will error; enable it to compute what’s available.</li>
 references match the data population.</li>
 <li>Spot-check a variable: <code>(value - sex_mean)/sex_sd</code> should
 match the corresponding <code>&lt;var&gt;_SDS</code>.</li>
-<li>Use <code>check_extreme = TRUE</code> with tailored
-<code>extreme_rules</code> to catch implausible anthropometrics before
-standardizing.</li>
 </ul>
 </div>
 <div class="section level2">

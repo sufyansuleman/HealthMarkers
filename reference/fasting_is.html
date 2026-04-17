@@ -13,7 +13,7 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,13 +51,10 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">fasting_is</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  <span class="va">col_map</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"z"</span>, <span class="st">"inverse"</span>, <span class="st">"range"</span>, <span class="st">"robust"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_limit <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cap"</span>, <span class="st">"NA"</span>, <span class="st">"error"</span><span class="op">)</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -87,25 +84,16 @@ G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).</p>
 </ul></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan computed indices for large magnitudes.</p></dd>
-
-
-<dt id="arg-extreme-limit">extreme_limit<a class="anchor" aria-label="anchor" href="#arg-extreme-limit"></a></dt>
-<dd><p>Positive numeric threshold used when check_extreme = TRUE.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of: "cap","NA","error".</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if TRUE, emit progress/completion messages.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints column mapping, the list
+of indices being computed, and a per-column results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Tibble with 10 columns (indices listed above).</p>
+    <p>Tibble with 10 columns (indices listed above). If an ID column is
+detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>), it is prepended
+as the first output column.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -168,6 +156,22 @@ Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T,
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Minimal example (units: G0 in mmol/L, I0 in pmol/L)</span></span></span>
 <span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.2</span>, <span class="fl">6.1</span>, <span class="fl">4.8</span><span class="op">)</span>, I0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">120</span>, <span class="fl">80</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">fasting_is</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"G0"</span>, I0 <span class="op">=</span> <span class="st">"I0"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): reading input 'df' — 3 rows × 2 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): col_map (2 columns — 2 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   G0                -&gt;  'G0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I0                -&gt;  'I0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Fasting_inv          [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Raynaud              [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HOMA_IR_inv          [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FIRI                 [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   QUICKI               [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Belfiore_basal       [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ig_ratio_basal       [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Isi_basal            [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Bennett              [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HOMA_IR_rev_inv      [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): results: Fasting_inv 3/3, Raynaud 3/3, HOMA_IR_inv 3/3, FIRI 3/3, QUICKI 3/3, Belfiore_basal 3/3, Ig_ratio_basal 3/3, Isi_basal 3/3, Bennett 3/3, HOMA_IR_rev_inv 3/3</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span>
@@ -177,10 +181,25 @@ Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>       -<span style="color: #BB0000;">13.3</span>       3       -<span style="color: #BB0000;">51.2</span>  46.1  0.142       0.001<span style="text-decoration: underline;">73</span>          -<span style="color: #BB0000;">0.154</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: Isi_basal &lt;dbl&gt;, Bennett &lt;dbl&gt;, HOMA_IR_rev_inv &lt;dbl&gt;</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># With NA handling and extreme checking</span></span></span>
+<span class="r-in"><span><span class="co"># With NA handling</span></span></span>
 <span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.0</span>, <span class="cn">NA</span><span class="op">)</span>, I0 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">90</span>, <span class="fl">150</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">fasting_is</span><span class="op">(</span><span class="va">df2</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"G0"</span>, I0 <span class="op">=</span> <span class="st">"I0"</span><span class="op">)</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>,</span></span>
-<span class="r-in"><span>           check_extreme <span class="op">=</span> <span class="cn">TRUE</span>, extreme_limit <span class="op">=</span> <span class="fl">1e3</span>, extreme_action <span class="op">=</span> <span class="st">"cap"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">fasting_is</span><span class="op">(</span><span class="va">df2</span>, col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>G0 <span class="op">=</span> <span class="st">"G0"</span>, I0 <span class="op">=</span> <span class="st">"I0"</span><span class="op">)</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): reading input 'df2' — 2 rows × 2 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): col_map (2 columns — 2 specified)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   G0                -&gt;  'G0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   I0                -&gt;  'I0'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Fasting_inv          [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Raynaud              [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HOMA_IR_inv          [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   FIRI                 [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   QUICKI               [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Belfiore_basal       [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ig_ratio_basal       [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Isi_basal            [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Bennett              [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HOMA_IR_rev_inv      [G0, I0]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> fasting_is(): results: Fasting_inv 2/2, Raynaud 2/2, HOMA_IR_inv 1/2, FIRI 1/2, QUICKI 1/2, Belfiore_basal 1/2, Ig_ratio_basal 1/2, Isi_basal 1/2, Bennett 1/2, HOMA_IR_rev_inv 1/2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

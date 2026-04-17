@@ -13,10 +13,7 @@ kidney_failure_risk(
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
   na_action = c("keep", "error", "omit", "warn"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -56,32 +53,6 @@ kidney_failure_risk(
 
   Numeric in \\\[0,1\]\\; per-variable threshold for high-missingness
   warnings. Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan for out-of-range values (see `extreme_rules`).
-  Default FALSE.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") used when
-  `check_extreme = TRUE`.
-
-  - "warn": only warn about out-of-range values (default).
-
-  - "cap": truncate to range and warn.
-
-  - "error": abort if any out-of-range is detected.
-
-  - "ignore": do nothing.
-
-  - "NA": set out-of-range input values to NA before computation.
-
-- extreme_rules:
-
-  Optional named list of numeric c(min,max) ranges for c(age, eGFR,
-  UACR). If NULL, broad defaults are used: age (18, 120), eGFR (1, 200),
-  UACR (0.1, 10000) (mg/g).
 
 - verbose:
 
@@ -168,21 +139,30 @@ kidney_failure_risk(
   data = df,
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
 )
+#> kidney_failure_risk(): reading input 'df' — 2 rows × 4 variables
+#> kidney_failure_risk(): col_map: age -> 'age', sex -> 'sex', eGFR -> 'eGFR', UACR -> 'UACR'
+#> kidney_failure_risk(): computing markers:
+#>   KFRE_2yr  [age, sex, eGFR, UACR -- 2-year kidney failure risk]
+#>   KFRE_5yr  [age, sex, eGFR, UACR -- 5-year kidney failure risk]
+#> kidney_failure_risk(): results: KFRE_2yr 2/2, KFRE_5yr 2/2
 #> # A tibble: 2 × 2
 #>   KFRE_2yr KFRE_5yr
 #>      <dbl>    <dbl>
 #> 1    0.329    0.523
 #> 2    0.536    0.759
 
-# With diagnostics and capping
+# With verbose output
 # \donttest{
 kidney_failure_risk(
   data = df,
   col_map = list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR"),
-  check_extreme = TRUE, extreme_action = "cap", verbose = TRUE
+  verbose = TRUE
 )
-#> kidney_failure_risk(): preparing inputs
-#> kidney_failure_risk(): column map: age -> 'age', sex -> 'sex', eGFR -> 'eGFR', UACR -> 'UACR'
+#> kidney_failure_risk(): reading input 'df' — 2 rows × 4 variables
+#> kidney_failure_risk(): col_map: age -> 'age', sex -> 'sex', eGFR -> 'eGFR', UACR -> 'UACR'
+#> kidney_failure_risk(): computing markers:
+#>   KFRE_2yr  [age, sex, eGFR, UACR -- 2-year kidney failure risk]
+#>   KFRE_5yr  [age, sex, eGFR, UACR -- 5-year kidney failure risk]
 #> kidney_failure_risk(): results: KFRE_2yr 2/2, KFRE_5yr 2/2
 #> # A tibble: 2 × 2
 #>   KFRE_2yr KFRE_5yr

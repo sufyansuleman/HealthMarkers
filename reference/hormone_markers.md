@@ -25,13 +25,10 @@ Ratios computed:
 ``` r
 hormone_markers(
   data,
-  col_map,
-  na_action = c("ignore", "warn", "error", "keep", "omit"),
+  col_map = NULL,
+  na_action = c("keep", "omit", "error", "warn", "ignore"),
   na_warn_prop = 0.2,
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -50,35 +47,27 @@ hormone_markers(
 
 - na_action:
 
-  One of "ignore","warn","error","keep","omit". HM-CS: keep == ignore;
-  omit drops rows with any NA in used inputs.
+  One of `c("keep","omit","error","warn","ignore")`. `"keep"`/`"ignore"`
+  leave NAs; `"omit"` drops rows with any NA in used inputs; `"error"`
+  aborts; `"warn"` also warns about high missingness.
 
 - na_warn_prop:
 
   Proportion in \\\[0,1\]\\ for high-missingness warnings when
-  na_action="warn". Default 0.2.
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for out-of-range values (see
-  extreme_rules). Default FALSE.
-
-- extreme_action:
-
-  One of "warn","cap","error","ignore","NA" when check_extreme=TRUE.
-  "cap" truncates to range; "NA" sets out-of-range to NA.
-
-- extreme_rules:
-
-  Optional list of c(min,max) per key to override defaults.
+  `na_action = "warn"`. Default 0.2.
 
 - verbose:
 
-  Logical; print progress and completion summary.
+  Logical; if `TRUE` (default), prints column mapping, input
+  availability, inference notes, physiological range information
+  (informational only, values not altered), computing markers, and a
+  per-column results summary.
 
 ## Value
 
-Tibble with the nine ratio markers.
+Tibble with one column per computable ratio. If an ID column is detected
+in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended as the
+first output column.
 
 ## Examples
 
@@ -99,6 +88,41 @@ col_map <- list(
   prolactin = "Prl", cortisol_0 = "Cort0", cortisol_30 = "Cort30"
 )
 hormone_markers(df, col_map = col_map)
+#> hormone_markers(): reading input 'df' — 2 rows × 17 variables
+#> hormone_markers(): skipping 1 ratio(s) with unmapped inputs: TSH_fT4
+#> hormone_markers(): col_map (15 columns — 15 specified)
+#>   total_testosterone->  'TT'
+#>   SHBG              ->  'SHBG'
+#>   LH                ->  'LH'
+#>   FSH               ->  'FSH'
+#>   estradiol         ->  'E2'
+#>   progesterone      ->  'Prog'
+#>   free_T3           ->  'fT3'
+#>   free_T4           ->  'fT4'
+#>   aldosterone       ->  'Aldo'
+#>   renin             ->  'Renin'
+#>   insulin           ->  'Ins'
+#>   IGF1              ->  'IGF1'
+#>   prolactin         ->  'Prl'
+#>   cortisol_0        ->  'Cort0'
+#>   cortisol_30       ->  'Cort30'
+#> hormone_markers(): optional inputs
+#>   present:  total_testosterone, SHBG, LH, FSH, estradiol, progesterone, free_T3, free_T4, aldosterone, renin, insulin, glucagon, GH, IGF1, prolactin, cortisol_0, cortisol_30
+#>   missing:  TSH
+#>   ratios skipped (missing inputs): TSH_fT4
+#> hormone_markers(): computing markers:
+#>   FAI          [total_testosterone, SHBG]
+#>   LH_FSH       [LH, FSH]
+#>   E2_P         [estradiol, progesterone]
+#>   E2_T         [estradiol, total_testosterone]
+#>   T3_T4        [free_T3, free_T4]
+#>   TSH_fT4      NA [missing: TSH]
+#>   ARR          [aldosterone, renin]
+#>   Ins_Glu      [insulin, glucagon]
+#>   GH_IGF1      [GH, IGF1]
+#>   PRL_T        [prolactin, total_testosterone]
+#>   CAR_slope    [cortisol_0, cortisol_30]
+#> hormone_markers(): results: FAI 2/2, LH_FSH 2/2, E2_P 2/2, E2_T 2/2, T3_T4 2/2, ARR 2/2, Ins_Glu 2/2, GH_IGF1 2/2, PRL_T 2/2, CAR_slope 2/2
 #> # A tibble: 2 × 10
 #>     FAI LH_FSH  E2_P  E2_T T3_T4   ARR Ins_Glu GH_IGF1 PRL_T CAR_slope
 #>   <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl>   <dbl>   <dbl> <dbl>     <dbl>

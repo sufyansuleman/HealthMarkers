@@ -10,13 +10,10 @@ the proprietary FRAX algorithm.
 ``` r
 frax_score(
   data,
-  col_map = list(age = "Age", sex = "Sex", bmd_t = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
   country = NULL,
-  verbose = FALSE
+  verbose = TRUE
 )
 ```
 
@@ -41,18 +38,6 @@ frax_score(
 - na_action:
 
   One of c("keep","omit","error","ignore","warn").
-
-- check_extreme:
-
-  Logical; if TRUE, scan inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides for defaults (age, bmd).
 
 - country:
 
@@ -84,6 +69,14 @@ International*, **21**(S2), 407–413.
 ``` r
 df <- data.frame(Age = c(65, 72, 58), Sex = c("female", "female", "male"))
 frax_score(df)
+#> frax_score(): reading input 'df' — 3 rows × 2 variables
+#> frax_score(): col_map (2 columns — 2 inferred from data)
+#>   age               ->  'Age'    (inferred)
+#>   sex               ->  'Sex'    (inferred)
+#> frax_score(): computing markers:
+#>   frax_major_percent [age, sex, risk factors, bmd]
+#>   frax_hip_percent [age, sex, risk factors, bmd]
+#> frax_score(): results: frax_major_percent 3/3, frax_hip_percent 3/3, frax_sex_norm 3/3, frax_age_used 3/3, frax_bmd_tscore 0/3
 #> # A tibble: 3 × 5
 #>   frax_major_percent frax_hip_percent frax_sex_norm frax_age_used
 #>                <dbl>            <dbl> <chr>                 <dbl>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,9 +73,7 @@ policies.</p>
 <ul>
 <li>You have binary comorbidity indicators and need the canonical
 Charlson score (no age points here).</li>
-<li>You want explicit row-retention rules for missing indicators and
-optional bounds checks on 0/1 flags.</li>
-<li>You may need to cap or error on out-of-bounds inputs.</li>
+<li>You want explicit row-retention rules for missing indicators.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -88,8 +86,6 @@ optional bounds checks on 0/1 flags.</li>
 abort.</li>
 <li>Row policy: na_action = keep (default), omit, error; warn/ignore act
 like keep but warn.</li>
-<li>Optional bounds screening: check_extreme + extreme_action
-(warn/cap/error/ignore/NA); defaults use 0-1.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -152,21 +148,19 @@ them.</p>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cci_out</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 1</span></span></span>
-<span><span class="co">#&gt;   charlson_index</span></span>
-<span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>              0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>              0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>              1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>              1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
+<span><span class="co">#&gt;   id    charlson_index</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P001               4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> P002               1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> P003               0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> P004               0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> P005               1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> P006               1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -175,9 +169,6 @@ them.</p>
 <li>col_map: all 19 keys required; missing or empty entries abort.</li>
 <li>na_action: keep (default), omit (drop rows with missing indicators),
 error (abort on missing); warn/ignore behave like keep but warn.</li>
-<li>check_extreme: FALSE by default; TRUE enforces bounds.</li>
-<li>extreme_action: warn (default), cap, error, ignore, NA; default
-bounds 0-1 per indicator unless overridden via extreme_rules.</li>
 <li>verbose: emit step messages.</li>
 </ul>
 </div>
@@ -189,8 +180,8 @@ bounds 0-1 per indicator unless overridden via extreme_rules.</li>
 become NA.</li>
 <li>Missing indicators yield NA scores unless na_action = “omit” or
 “error”.</li>
-<li>Out-of-range (non 0/1) values warn; enable check_extreme to
-cap/error/NA.</li>
+<li>Out-of-range (non 0/1) values warn; recode non-binary values to 0/1
+before passing.</li>
 </ul>
 <div class="section level3">
 <h3 id="compare-row-policies">Compare row policies<a class="anchor" aria-label="anchor" href="#compare-row-policies"></a>
@@ -199,8 +190,8 @@ cap/error/NA.</li>
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">col_map</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">renal</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
-<span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span>, check_extreme <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">a_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
+<span><span class="va">a_omit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">demo</span>, <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"omit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">a_keep</span><span class="op">)</span>,</span>
@@ -218,24 +209,16 @@ cap/error/NA.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="bounds-screening-optional">Bounds screening (optional)<a class="anchor" aria-label="anchor" href="#bounds-screening-optional"></a>
+<h2 id="out-of-bounds-indicators">Out-of-bounds indicators<a class="anchor" aria-label="anchor" href="#out-of-bounds-indicators"></a>
 </h2>
-<p>Cap or error on inputs outside chosen ranges.</p>
+<p>Indicators outside 0-1 will warn. Pre-filter or recode non-binary
+values before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo2</span> <span class="op">&lt;-</span> <span class="va">demo</span></span>
-<span><span class="va">demo2</span><span class="op">$</span><span class="va">mi</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span>  <span class="co"># out of bounds</span></span>
-<span></span>
-<span><span class="va">a_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">demo2</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">a_cap</span><span class="op">$</span><span class="va">charlson_index</span><span class="op">)</span></span>
+<span><span class="va">demo2</span><span class="op">$</span><span class="va">mi</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">2</span>  <span class="co"># out of bounds — will warn</span></span>
+<span><span class="co"># Recode to valid binary before passing if needed</span></span>
+<span><span class="va">demo2</span><span class="op">$</span><span class="va">mi</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">demo2</span><span class="op">$</span><span class="va">mi</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">demo2</span>, col_map <span class="op">=</span> <span class="va">col_map</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span><span class="op">$</span><span class="va">charlson_index</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  4  1 NA  0  1  1</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -245,18 +228,16 @@ cap/error/NA.</li>
 <li>charlson_index integer total</li>
 <li>Rows drop only with na_action = “omit”; na_action = “error” aborts
 on missing.</li>
-<li>Optional bounds handling via check_extreme/extreme_action.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="pitfalls-and-tips">Pitfalls and tips<a class="anchor" aria-label="anchor" href="#pitfalls-and-tips"></a>
 </h2>
 <ul>
-<li>Indicators must be truly binary; non-binary values warn and can be
-capped if screening is on.</li>
+<li>Indicators must be truly binary; non-binary values warn; recode
+before passing.</li>
 <li>Provide all 19 mappings; missing keys error.</li>
 <li>Age points are not included here; add separately if needed.</li>
-<li>Use extreme_rules to adjust bounds if your inputs differ.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -301,8 +282,10 @@ active:</p>
 <span><span class="op">)</span></span>
 <span><span class="va">cm_v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">patient</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">patient</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/charlson_index.html">charlson_index</a></span><span class="op">(</span><span class="va">patient</span>, col_map <span class="op">=</span> <span class="va">cm_v</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; charlson_index(): preparing inputs</span></span>
-<span><span class="co">#&gt; charlson_index(): column map: mi -&gt; 'mi', chf -&gt; 'chf', pvd -&gt; 'pvd', stroke -&gt; 'stroke', dementia -&gt; 'dementia', copd -&gt; 'copd', rheum -&gt; 'rheum', ulcer -&gt; 'ulcer', mild_liver -&gt; 'mild_liver', diabetes -&gt; 'diabetes', diab_comp -&gt; 'diab_comp', hemiplegia -&gt; 'hemiplegia', renal -&gt; 'renal', cancer -&gt; 'cancer', leukemia -&gt; 'leukemia', lymphoma -&gt; 'lymphoma', sev_liver -&gt; 'sev_liver', metastatic_cancer -&gt; 'metastatic_cancer', hiv -&gt; 'hiv'</span></span>
+<span><span class="co">#&gt; charlson_index(): reading input 'patient' — 1 rows × 19 variables</span></span>
+<span><span class="co">#&gt; charlson_index(): col_map: mi -&gt; 'mi', chf -&gt; 'chf', pvd -&gt; 'pvd', stroke -&gt; 'stroke', dementia -&gt; 'dementia', copd -&gt; 'copd', rheum -&gt; 'rheum', ulcer -&gt; 'ulcer', mild_liver -&gt; 'mild_liver', diabetes -&gt; 'diabetes', diab_comp -&gt; 'diab_comp', hemiplegia -&gt; 'hemiplegia', renal -&gt; 'renal', cancer -&gt; 'cancer', leukemia -&gt; 'leukemia', lymphoma -&gt; 'lymphoma', sev_liver -&gt; 'sev_liver', metastatic_cancer -&gt; 'metastatic_cancer', hiv -&gt; 'hiv'</span></span>
+<span><span class="co">#&gt; charlson_index(): computing markers:</span></span>
+<span><span class="co">#&gt;   charlson_index [mi, chf, pvd, stroke, dementia, copd, rheum, ulcer, mild_liver, diabetes, diab_comp, hemiplegia, renal, cancer, leukemia, lymphoma, sev_liver, metastatic_cancer, hiv]</span></span>
 <span><span class="co">#&gt; charlson_index(): results: charlson_index 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 1</span></span></span>
 <span><span class="co">#&gt;   charlson_index</span></span>

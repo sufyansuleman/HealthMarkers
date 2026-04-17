@@ -9,12 +9,9 @@ returns provided values with input checks.
 ``` r
 nfl_marker(
   data,
-  col_map = list(nfl = "NfL"),
-  verbose = FALSE,
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL
+  verbose = TRUE
 )
 ```
 
@@ -28,25 +25,13 @@ nfl_marker(
 
   Named list with `nfl` indicating the NfL column name.
 
-- verbose:
-
-  Logical; if TRUE, emits progress messages.
-
 - na_action:
 
   One of c("keep","omit","error","ignore","warn").
 
-- check_extreme:
+- verbose:
 
-  Logical; if TRUE, scan inputs for plausible ranges.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA").
-
-- extreme_rules:
-
-  Optional overrides; default: list(nfl = c(0, 1e6)) in input units.
+  Logical; if TRUE (default), emits progress messages.
 
 ## Value
 
@@ -77,6 +62,12 @@ Neurology*, **88**(9), 857–870.
 ``` r
 df <- data.frame(NfL = c(8.5, 14.2, 22.1))
 nfl_marker(df)
+#> nfl_marker(): reading input 'df' — 3 rows × 1 variables
+#> nfl_marker(): col_map (1 column — 1 inferred from data)
+#>   nfl               ->  'NfL'    (inferred)
+#> nfl_marker(): computing markers:
+#>   nfl_value  [passthrough of NfL input]
+#> nfl_marker(): results: nfl_value 3/3
 #> # A tibble: 3 × 1
 #>   nfl_value
 #>       <dbl>

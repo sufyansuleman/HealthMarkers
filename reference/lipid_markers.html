@@ -25,7 +25,7 @@ TyG_BMI
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,13 +66,10 @@ waist, BMI, glucose), computes:</p><ul><li><p><code>non_HDL_c</code>, <code>remn
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">lipid_markers</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TC <span class="op">=</span> <span class="st">"TC"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TG <span class="op">=</span> <span class="st">"TG"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span>, ApoB <span class="op">=</span> <span class="st">"ApoB"</span>,</span>
-<span>    ApoA1 <span class="op">=</span> <span class="st">"ApoA1"</span>, waist <span class="op">=</span> <span class="cn">NULL</span>, BMI <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  col_map <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"keep"</span>, <span class="st">"omit"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"warn"</span><span class="op">)</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"warn"</span>, <span class="st">"cap"</span>, <span class="st">"error"</span>, <span class="st">"ignore"</span>, <span class="st">"NA"</span><span class="op">)</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  na_warn_prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -89,46 +86,57 @@ waist, BMI, glucose), computes:</p><ul><li><p><code>non_HDL_c</code>, <code>remn
 <dd><p>Named list mapping:</p><ul><li><p><code>TC</code>    -&gt; total cholesterol</p></li>
 <li><p><code>HDL_c</code> -&gt; HDL-C</p></li>
 <li><p><code>TG</code>    -&gt; triglycerides</p></li>
-<li><p><code>LDL_c</code> -&gt; (optional) LDL-C; if missing, estimated via Friedewald</p></li>
+<li><p><code>LDL_c</code> -&gt; (optional) LDL-C; if absent, estimated via Friedewald</p></li>
 <li><p><code>ApoB</code>, <code>ApoA1</code> -&gt; (optional) apolipoproteins</p></li>
 <li><p><code>waist</code> -&gt; (optional) waist circumference (cm)</p></li>
 <li><p><code>BMI</code>   -&gt; (optional) body mass index (kg/m^2)</p></li>
+<li><p><code>glucose</code> -&gt; (optional) fasting glucose (mmol/L); used for TyG_BMI</p></li>
 </ul></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
-<dd><p>One of c("keep","omit","error","ignore","warn").</p><ul><li><p>keep/ignore: compute and propagate NA in outputs</p></li>
+<dd><p>One of <code>c("keep","omit","error","ignore","warn")</code>.</p><ul><li><p>keep/ignore: compute and propagate NA in outputs</p></li>
 <li><p>omit: drop rows with NA in required inputs (TC, HDL_c, TG)</p></li>
 <li><p>error: abort if any required input contains NA</p></li>
 <li><p>warn: like keep, but emit missingness warnings</p></li>
 </ul></dd>
 
 
-<dt id="arg-check-extreme">check_extreme<a class="anchor" aria-label="anchor" href="#arg-check-extreme"></a></dt>
-<dd><p>Logical; if TRUE, scan inputs for out-of-range values.</p></dd>
-
-
-<dt id="arg-extreme-action">extreme_action<a class="anchor" aria-label="anchor" href="#arg-extreme-action"></a></dt>
-<dd><p>One of c("warn","cap","error","ignore","NA") controlling
-how extremes are handled when check_extreme=TRUE. "cap" truncates to range; "NA" sets flagged values to NA.</p></dd>
-
-
-<dt id="arg-extreme-rules">extreme_rules<a class="anchor" aria-label="anchor" href="#arg-extreme-rules"></a></dt>
-<dd><p>Optional named list of c(min,max) per key to override defaults.</p></dd>
+<dt id="arg-na-warn-prop">na_warn_prop<a class="anchor" aria-label="anchor" href="#arg-na-warn-prop"></a></dt>
+<dd><p>Proportion (0-1) threshold for high-missingness
+warnings when <code>na_action = "warn"</code>. Default 0.2.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, prints messages about computing markers.</p></dd>
+<dd><p>Logical; if <code>TRUE</code> (default), prints step-by-step progress
+including column mapping, optional input availability, pre-computation
+notes, physiological range information (informational only, values are
+not altered), the list of markers being computed with their inputs, and a
+per-column results summary.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with:</p><ul><li><p><code>non_HDL_c</code>, <code>remnant_c</code></p></li>
-<li><p><code>ratio_TC_HDL</code>, <code>ratio_TG_HDL</code>, <code>ratio_LDL_HDL</code></p></li>
-<li><p><code>ApoB_ApoA1</code></p></li>
-<li><p><code>VAI_Men</code>, <code>VAI_Women</code></p></li>
-<li><p><code>LAP_Men</code>, <code>LAP_Women</code></p></li>
-<li><p><code>TyG_BMI</code></p></li>
+    <p>A tibble with computed lipid markers.
+Required outputs (always present):
+<code>non_HDL_c</code>, <code>remnant_c</code>, <code>ratio_TC_HDL</code>, <code>ratio_TG_HDL</code>,
+<code>ratio_LDL_HDL</code>, <code>ApoB_ApoA1</code>.
+Optional outputs (present when inputs available):
+<code>VAI_Men</code>, <code>VAI_Women</code> (waist + BMI required);
+<code>LAP_Men</code>, <code>LAP_Women</code> (waist required);
+<code>TyG_BMI</code> (BMI + glucose required).
+If an ID column is detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>,
+<code>participant_id</code>), it is prepended as the first output column.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Pre-computation (one level deep):</p><ul><li><p>If <code>BMI</code> is absent but <code>weight</code> (kg) and <code>height</code> (m or cm) are
+present, BMI is computed automatically.</p></li>
+<li><p>If <code>glucose</code> is absent but <code>G0</code> is present (or vice versa), the alias
+is derived automatically.</p></li>
+<li><p>If <code>LDL_c</code> is absent, it is always estimated via Friedewald
+(TC - HDL - TG/5). An informational message is emitted when
+<code>verbose = TRUE</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -166,14 +174,60 @@ Khamseh ME, Malek M, Abbasi R, Taheri E, others (2021).
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>TC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.2</span>, <span class="fl">6.1</span><span class="op">)</span>, HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.3</span>, <span class="fl">1.1</span><span class="op">)</span>, TG <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.8</span>, <span class="fl">2.3</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                 LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4.1</span><span class="op">)</span>, WC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">88</span>, <span class="fl">95</span><span class="op">)</span>, BMI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">26</span>, <span class="fl">29</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                 Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="st">"male"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                 LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4.1</span><span class="op">)</span>, waist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">88</span>, <span class="fl">95</span><span class="op">)</span>, BMI <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">26</span>, <span class="fl">29</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Full verbose output (default)</span></span></span>
 <span class="r-in"><span><span class="fu">lipid_markers</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 6</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): reading input 'df' — 2 rows × 6 variables</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): col_map (6 columns — 6 inferred from data)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TC                -&gt;  'TC'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   HDL_c             -&gt;  'HDL_c'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TG                -&gt;  'TG'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   LDL_c             -&gt;  'LDL_c'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   waist             -&gt;  'waist'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   BMI               -&gt;  'BMI'    (inferred)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): pre-computation: glucose cannot be derived -- provide: G0</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): optional inputs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  waist, BMI</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   missing:  ApoB, ApoA1, glucose</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   indices -&gt; NA:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ApoB_ApoA1 -&gt; NA  [missing: ApoB, ApoA1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TyG_BMI -&gt; NA  [missing: glucose]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   derivable:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   glucose: provide G0 to enable</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): range note (informational, values not altered):</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TG: 2 value(s) outside plausible range</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): computing markers:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   non_HDL_c     [TC, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   remnant_c     [TC, HDL_c, LDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ratio_TC_HDL  [TC, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ratio_TG_HDL  [TG, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ratio_LDL_HDL [LDL_c, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   ApoB_ApoA1    NA [ApoB/ApoA1 missing]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   VAI_Men/Women [waist, BMI, TG, HDL_c]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   LAP_Men/Women [waist, TG]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   TyG_BMI       NA [BMI/glucose missing]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> lipid_markers(): results: non_HDL_c 2/2, remnant_c 2/2, ratio_TC_HDL 2/2, ratio_TG_HDL 2/2, ratio_LDL_HDL 2/2, ApoB_ApoA1 0/2, VAI_Men 2/2, VAI_Women 2/2, LAP_Men 2/2, LAP_Women 2/2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9       0.7         4            1.38          2.46         <span style="color: #BB0000;">NA</span>    1.75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       5         0.9         5.55         2.09          3.73         <span style="color: #BB0000;">NA</span>    2.68</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;, LAP_Women &lt;dbl&gt;</span></span>
+<span class="r-in"><span><span class="co"># Suppress messaging for batch use</span></span></span>
+<span class="r-in"><span><span class="fu">lipid_markers</span><span class="op">(</span><span class="va">df</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9       0.7         4            1.38          2.46         <span style="color: #BB0000;">NA</span>    1.75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       5         0.9         5.55         2.09          3.73         <span style="color: #BB0000;">NA</span>    2.68</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: VAI_Women &lt;dbl&gt;, LAP_Men &lt;dbl&gt;, LAP_Women &lt;dbl&gt;</span></span>
+<span class="r-in"><span><span class="co"># Pre-compute BMI from weight and height</span></span></span>
+<span class="r-in"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>TC <span class="op">=</span> <span class="fl">5.2</span>, HDL_c <span class="op">=</span> <span class="fl">1.3</span>, TG <span class="op">=</span> <span class="fl">1.8</span>, weight <span class="op">=</span> <span class="fl">70</span>, height <span class="op">=</span> <span class="fl">175</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">lipid_markers</span><span class="op">(</span><span class="va">df2</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9       0.7         4            1.38          2.46         <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>       5         0.9         5.55         2.09          3.73         <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9     0.360            4         1.38          2.72         <span style="color: #BB0000;">NA</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

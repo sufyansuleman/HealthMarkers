@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,14 +135,14 @@ cells.</p>
 <span><span class="va">new_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sds_tbl</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sim_small</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">sds_tbl</span>, <span class="va">id</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">new_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;      id BMI_sds sbp_sds</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1  0.294   -<span style="color: #BB0000;">0.565</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2 -<span style="color: #BB0000;">0.597</span>    1.49 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3 -<span style="color: #BB0000;">0.077</span><span style="color: #BB0000; text-decoration: underline;">7</span>   0.625</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4  1.48    -<span style="color: #BB0000;">1.10</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5 -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">8</span>  -<span style="color: #BB0000;">0.427</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>     6  1.26    -<span style="color: #BB0000;">0.642</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   id    BMI_sds sbp_sds</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> P001    0.696  -<span style="color: #BB0000;">1.66</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> P002    0.279   0.482</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> P003   -<span style="color: #BB0000;">0.209</span>  -<span style="color: #BB0000;">1.06</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> P004   -<span style="color: #BB0000;">0.354</span>  -<span style="color: #BB0000;">0.765</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> P005   -<span style="color: #BB0000;">0.734</span>   0.732</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> P006    1.53   -<span style="color: #BB0000;">0.915</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="arguments-that-matter">Arguments that matter<a class="anchor" aria-label="anchor" href="#arguments-that-matter"></a>
@@ -194,12 +194,12 @@ become NA.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   BMI_sds sbp_sds</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.294   -<span style="color: #BB0000;">0.565</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.597</span>    1.49 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span>        0.625</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  1.48    -<span style="color: #BB0000;">1.10</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">8</span>  -<span style="color: #BB0000;">0.427</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.26    -<span style="color: #BB0000;">0.642</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.696  -<span style="color: #BB0000;">1.66</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.279   0.482</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  <span style="color: #BB0000;">NA</span>      -<span style="color: #BB0000;">1.06</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  -<span style="color: #BB0000;">0.354</span>  -<span style="color: #BB0000;">0.765</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  -<span style="color: #BB0000;">0.734</span>   0.732</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>   1.53   -<span style="color: #BB0000;">0.915</span></span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -224,12 +224,12 @@ become NA.</li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
 <span><span class="co">#&gt;   BMI_sds sbp_sds</span></span>
 <span><span class="co">#&gt;     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  0.294   -<span style="color: #BB0000;">0.565</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.597</span>    1.49 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> <span style="color: #BB0000;">NA</span>        0.625</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  1.48    -<span style="color: #BB0000;">1.10</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> -<span style="color: #BB0000;">0.096</span><span style="color: #BB0000; text-decoration: underline;">8</span>   4    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  1.26    -<span style="color: #BB0000;">0.642</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>   0.696  -<span style="color: #BB0000;">1.66</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>   0.279   0.482</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  <span style="color: #BB0000;">NA</span>      -<span style="color: #BB0000;">1.06</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  -<span style="color: #BB0000;">0.354</span>  -<span style="color: #BB0000;">0.765</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  -<span style="color: #BB0000;">0.734</span>   4    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>   1.53   -<span style="color: #BB0000;">0.915</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="list-output-for-diagnostics">List output for diagnostics<a class="anchor" aria-label="anchor" href="#list-output-for-diagnostics"></a>
@@ -333,7 +333,7 @@ active:</p>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; calc_sds: starting on 3 row(s), 2 variable(s) (id: id)</span></span>
-<span><span class="co">#&gt; calc_sds(): column map: BMI -&gt; 'BMI', sbp -&gt; 'sbp'</span></span>
+<span><span class="co">#&gt; calc_sds(): col_map: BMI -&gt; 'BMI', sbp -&gt; 'sbp'</span></span>
 <span><span class="co">#&gt; Computing SDS for 2 variable(s)...</span></span>
 <span><span class="co">#&gt; calc_sds: completed</span></span>
 <span><span class="co">#&gt; calc_sds(): results: BMI_sds 3/3, sbp_sds 3/3</span></span>

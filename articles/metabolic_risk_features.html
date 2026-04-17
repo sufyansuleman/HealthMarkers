@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,34 +101,61 @@ z-scored HOMA-IR.</li>
 aborts; <code>ignore</code> acts like keep; <code>warn</code> acts like
 keep plus high-missingness warnings via <code>na_warn_prop</code>
 (default 0.2).</li>
-<li>
-<code>check_extreme</code>: set TRUE to scan using
-<code>extreme_action</code>
-(<code>warn</code>/<code>cap</code>/<code>error</code>/<code>ignore</code>/<code>NA</code>)
-with default bounds unless overridden by <code>extreme_rules</code>
-(defaults: chol_total 0.5–20; chol_ldl 0.1–15; chol_hdl 0.1–5;
-triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
-15–200; bp_sys_z/bp_dia_z -5–5).</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="preparing-derived-inputs">Preparing derived inputs<a class="anchor" aria-label="anchor" href="#preparing-derived-inputs"></a>
+</h2>
+<p>Two required inputs are <strong>derived</strong>, not raw lab
+values:</p>
+<div class="section level3">
+<h3 id="z_homa-standardised-homa-ir">z_HOMA (standardised HOMA-IR)<a class="anchor" aria-label="anchor" href="#z_homa-standardised-homa-ir"></a>
+</h3>
+<p>Compute HOMA-IR from fasting glucose (mmol/L) and fasting insulin
+(µIU/mL), then standardise to a z-score relative to a healthy reference
+population:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Step 1: compute HOMA-IR</span></span>
+<span><span class="va">data</span><span class="op">$</span><span class="va">HOMA_IR</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">fasting_glucose_mmol</span> <span class="op">*</span> <span class="va">data</span><span class="op">$</span><span class="va">fasting_insulin_uIU</span><span class="op">)</span> <span class="op">/</span> <span class="fl">22.5</span></span>
+<span></span>
+<span><span class="co"># Step 2: standardise within cohort (or use external reference parameters)</span></span>
+<span><span class="va">data</span><span class="op">$</span><span class="va">z_HOMA</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/normalize_vec.html">normalize_vec</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">HOMA_IR</span>, method <span class="op">=</span> <span class="st">"z"</span><span class="op">)</span></span></code></pre></div>
+<p>Published paediatric reference values: Keskin <em>et al.</em> (2005,
+<em>Pediatr Diabetes</em>); for adults, a 90th-percentile cutpoint (z ≈
+1.28) is commonly applied.</p>
+</div>
+<div class="section level3">
+<h3 id="bp-z-scores-bp_sys_z-bp_dia_z">BP z-scores (bp_sys_z / bp_dia_z)<a class="anchor" aria-label="anchor" href="#bp-z-scores-bp_sys_z-bp_dia_z"></a>
+</h3>
+<p>BP z-scores must be derived using sex- and age-specific normative
+tables (AAP 2017 Fourth Report or WHO paediatric reference). The
+<code><a href="../reference/calc_sds.html">calc_sds()</a></code> function can apply stratified reference
+parameters if you have them; alternatively the <code>childsds</code>
+package (CRAN) provides ready-to-use paediatric normative tables.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Manual z-score: (observed − reference_mean) / reference_sd</span></span>
+<span><span class="va">data</span><span class="op">$</span><span class="va">bp_sys_z</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">sbp</span> <span class="op">-</span> <span class="va">ref_sbp_mean</span><span class="op">)</span> <span class="op">/</span> <span class="va">ref_sbp_sd</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sufyansuleman.github.io/HealthMarkers/">HealthMarkers</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Six children/adolescents spanning multiple metabolic risk combinations</span></span>
 <span><span class="va">peds</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  chol_total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.4</span>, <span class="fl">4.8</span><span class="op">)</span>,</span>
-<span>  chol_ldl   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.6</span>, <span class="fl">2.9</span><span class="op">)</span>,</span>
-<span>  chol_hdl   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">1.2</span><span class="op">)</span>,</span>
-<span>  triglycerides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.6</span>, <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  age_year   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">9</span><span class="op">)</span>,</span>
-<span>  z_HOMA     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">0.8</span><span class="op">)</span>,</span>
-<span>  glucose    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.8</span>, <span class="fl">5.1</span><span class="op">)</span>,</span>
-<span>  HbA1c      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">40</span>, <span class="fl">35</span><span class="op">)</span>,</span>
-<span>  bp_sys_z   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">1.8</span><span class="op">)</span>,</span>
-<span>  bp_dia_z   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.7</span><span class="op">)</span></span>
+<span>  chol_total    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.4</span>, <span class="fl">4.8</span>, <span class="fl">3.9</span>, <span class="fl">6.2</span>, <span class="fl">5.1</span>, <span class="fl">4.5</span><span class="op">)</span>,</span>
+<span>  chol_ldl      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.6</span>, <span class="fl">2.9</span>, <span class="fl">2.4</span>, <span class="fl">4.1</span>, <span class="fl">3.2</span>, <span class="fl">2.8</span><span class="op">)</span>,</span>
+<span>  chol_hdl      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">1.2</span>, <span class="fl">1.4</span>, <span class="fl">0.8</span>, <span class="fl">1.0</span>, <span class="fl">1.3</span><span class="op">)</span>,</span>
+<span>  triglycerides <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.6</span>, <span class="fl">1.0</span>, <span class="fl">0.8</span>, <span class="fl">2.0</span>, <span class="fl">1.3</span>, <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>  age_year      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>,  <span class="fl">9</span>,  <span class="fl">12</span>,  <span class="fl">17</span>,  <span class="fl">11</span>,   <span class="fl">8</span> <span class="op">)</span>,</span>
+<span>  z_HOMA        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">0.8</span>, <span class="fl">0.2</span>, <span class="fl">2.1</span>, <span class="fl">1.0</span>, <span class="op">-</span><span class="fl">0.3</span><span class="op">)</span>,</span>
+<span>  glucose       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.8</span>, <span class="fl">5.1</span>, <span class="fl">4.9</span>, <span class="fl">6.5</span>, <span class="fl">5.4</span>, <span class="fl">4.8</span><span class="op">)</span>,</span>
+<span>  HbA1c         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">40</span>,  <span class="fl">35</span>,  <span class="fl">32</span>,  <span class="fl">46</span>,  <span class="fl">38</span>,  <span class="fl">30</span> <span class="op">)</span>,</span>
+<span>  bp_sys_z      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="fl">1.8</span>, <span class="fl">0.3</span>, <span class="fl">2.1</span>, <span class="fl">0.8</span>, <span class="op">-</span><span class="fl">0.2</span><span class="op">)</span>,</span>
+<span>  bp_dia_z      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.7</span>, <span class="fl">0.2</span>, <span class="fl">1.9</span>, <span class="fl">0.6</span>,  <span class="fl">0.1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/metabolic_risk_features.html">metabolic_risk_features</a></span><span class="op">(</span></span>
@@ -140,19 +167,27 @@ triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
 <span>  <span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0            0                  0             0</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="scan-cap-and-warn">Scan, cap, and warn<a class="anchor" aria-label="anchor" href="#scan-cap-and-warn"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<p>Extreme inputs will produce extreme or incorrect flags. Pre-filter
+implausible values before calling.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">extreme</span> <span class="op">&lt;-</span> <span class="va">peds</span></span>
-<span><span class="va">extreme</span><span class="op">$</span><span class="va">triglycerides</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">40</span>  <span class="co"># high</span></span>
-<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys_z</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">9</span>        <span class="co"># out of range</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">triglycerides</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">40</span>  <span class="co"># extreme; pre-filter</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys_z</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">9</span>        <span class="co"># out of expected range; pre-filter</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">triglycerides</span><span class="op">[</span><span class="va">extreme</span><span class="op">$</span><span class="va">triglycerides</span> <span class="op">&gt;</span> <span class="fl">30</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys_z</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">extreme</span><span class="op">$</span><span class="va">bp_sys_z</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/metabolic_risk_features.html">metabolic_risk_features</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">extreme</span>,</span>
@@ -162,20 +197,22 @@ triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
 <span>    bp_sys_z <span class="op">=</span> <span class="st">"bp_sys_z"</span>, bp_dia_z <span class="op">=</span> <span class="st">"bp_dia_z"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0            0                  0             0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-policy">Missing data policy<a class="anchor" aria-label="anchor" href="#missing-data-policy"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">missing</span> <span class="op">&lt;-</span> <span class="va">peds</span></span>
 <span><span class="va">missing</span><span class="op">$</span><span class="va">glucose</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
 <span></span>
@@ -186,10 +223,14 @@ triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
 <span>                 bp_sys_z <span class="op">=</span> <span class="st">"bp_sys_z"</span>, bp_dia_z <span class="op">=</span> <span class="st">"bp_dia_z"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/metabolic_risk_features.html">metabolic_risk_features</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">missing</span>,</span>
@@ -198,16 +239,20 @@ triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
 <span>                 bp_sys_z <span class="op">=</span> <span class="st">"bp_sys_z"</span>, bp_dia_z <span class="op">=</span> <span class="st">"bp_dia_z"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"warn"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  <span style="color: #BB0000;">NA</span>            1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  <span style="color: #BB0000;">NA</span>            1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0            0                  0             0</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="expanded-example-cap-extremes-drop-incomplete-rows">Expanded example: cap extremes, drop incomplete rows<a class="anchor" aria-label="anchor" href="#expanded-example-cap-extremes-drop-incomplete-rows"></a>
+<h2 id="expanded-example-drop-incomplete-rows">Expanded example: drop incomplete rows<a class="anchor" aria-label="anchor" href="#expanded-example-drop-incomplete-rows"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ext_cap</span> <span class="op">&lt;-</span> <span class="va">peds</span></span>
 <span><span class="va">ext_cap</span><span class="op">$</span><span class="va">triglycerides</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">40</span>   <span class="co"># extreme high</span></span>
 <span><span class="va">ext_cap</span><span class="op">$</span><span class="va">bp_sys_z</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">9</span>         <span class="co"># extreme high</span></span>
@@ -221,20 +266,22 @@ triglycerides 0.1–30; age_year 0–120; z_HOMA -5–5; glucose 2–40; HbA1c
 <span>    bp_sys_z <span class="op">=</span> <span class="st">"bp_sys_z"</span>, bp_dia_z <span class="op">=</span> <span class="st">"bp_dia_z"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>rows_returned <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">out_cap</span><span class="op">)</span>, flags <span class="op">=</span> <span class="va">out_cap</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $rows_returned</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
+<span><span class="co">#&gt; [1] 5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $flags</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="threshold-quick-reference">Threshold quick-reference<a class="anchor" aria-label="anchor" href="#threshold-quick-reference"></a>
@@ -277,9 +324,6 @@ OR TG &gt; 1.5 (age 10–19)</td>
 <code>omit</code> drops rows with missing required inputs;
 <code>warn</code> logs high-missingness; <code>error</code> aborts on
 missing required inputs.</li>
-<li>Extreme values: with <code>check_extreme = TRUE</code>, scan against
-defaults or <code>extreme_rules</code>; choose
-<code>extreme_action</code> to warn, cap, NA, ignore, or error.</li>
 <li>Outputs: tibble with factor columns <code>dyslipidemia</code>,
 <code>insulin_resistance</code>, <code>hyperglycemia</code>,
 <code>hypertension</code> (levels <code>0</code>/<code>1</code>).
@@ -292,7 +336,7 @@ hyperglycemia.</li>
 <div class="section level2">
 <h2 id="verbose-diagnostics">Verbose diagnostics<a class="anchor" aria-label="anchor" href="#verbose-diagnostics"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/metabolic_risk_features.html">metabolic_risk_features</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">peds</span>,</span>
@@ -303,14 +347,33 @@ hyperglycemia.</li>
 <span>  <span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; metabolic_risk_features(): preparing inputs</span></span>
-<span><span class="co">#&gt; metabolic_risk_features(): column map: chol_total -&gt; 'chol_total', chol_ldl -&gt; 'chol_ldl', chol_hdl -&gt; 'chol_hdl', triglycerides -&gt; 'triglycerides', age_year -&gt; 'age_year', z_HOMA -&gt; 'z_HOMA', glucose -&gt; 'glucose', HbA1c -&gt; 'HbA1c', bp_sys_z -&gt; 'bp_sys_z', bp_dia_z -&gt; 'bp_dia_z'</span></span>
-<span><span class="co">#&gt; metabolic_risk_features(): results: dyslipidemia 2/2, insulin_resistance 2/2, hyperglycemia 2/2, hypertension 2/2</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 4</span></span></span>
+<span><span class="co">#&gt; metabolic_risk_features(): reading input 'peds' — 6 rows × 10 variables</span></span>
+<span><span class="co">#&gt; metabolic_risk_features(): col_map (10 columns — 10 specified)</span></span>
+<span><span class="co">#&gt;   chol_total        -&gt;  'chol_total'</span></span>
+<span><span class="co">#&gt;   chol_ldl          -&gt;  'chol_ldl'</span></span>
+<span><span class="co">#&gt;   chol_hdl          -&gt;  'chol_hdl'</span></span>
+<span><span class="co">#&gt;   triglycerides     -&gt;  'triglycerides'</span></span>
+<span><span class="co">#&gt;   age_year          -&gt;  'age_year'</span></span>
+<span><span class="co">#&gt;   z_HOMA            -&gt;  'z_HOMA'</span></span>
+<span><span class="co">#&gt;   glucose           -&gt;  'glucose'</span></span>
+<span><span class="co">#&gt;   HbA1c             -&gt;  'HbA1c'</span></span>
+<span><span class="co">#&gt;   bp_sys_z          -&gt;  'bp_sys_z'</span></span>
+<span><span class="co">#&gt;   bp_dia_z          -&gt;  'bp_dia_z'</span></span>
+<span><span class="co">#&gt; metabolic_risk_features(): computing markers:</span></span>
+<span><span class="co">#&gt;   dyslipidemia       [chol_total, chol_ldl, chol_hdl, triglycerides, age_year]</span></span>
+<span><span class="co">#&gt;   insulin_resistance [z_HOMA]</span></span>
+<span><span class="co">#&gt;   hyperglycemia      [glucose, HbA1c]</span></span>
+<span><span class="co">#&gt;   hypertension       [bp_sys_z, bp_dia_z]</span></span>
+<span><span class="co">#&gt; metabolic_risk_features(): results: dyslipidemia 6/6, insulin_resistance 6/6, hyperglycemia 6/6, hypertension 6/6</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   dyslipidemia insulin_resistance hyperglycemia hypertension</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1            1                  1             0           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0            0                  0             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1            1                  1             1           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0            0                  0             0           </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0            0                  0             0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -319,8 +382,6 @@ hyperglycemia.</li>
 <ul>
 <li>Keep lipids/glucose in mmol/L and HbA1c in mmol/mol; BP inputs must
 already be z-scores.</li>
-<li>Tighten <code>extreme_rules</code> to your cohort before using
-<code>extreme_action = "cap"</code> or <code>"error"</code>.</li>
 <li>Use <code>na_action = "omit"</code> for analysis-ready flags;
 keep/warn during QA to inspect missingness.</li>
 <li>Watch for HbA1c reported in % (values &lt;=14 suggest percent) and

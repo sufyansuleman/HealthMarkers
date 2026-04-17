@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,22 +114,6 @@ summaries.</li>
 <td>“keep” (default), “omit”, “error”, “ignore”, “warn”</td>
 </tr>
 <tr class="even">
-<td>check_extreme</td>
-<td>Enable range checks (0–2 expected)</td>
-<td>Default FALSE</td>
-</tr>
-<tr class="odd">
-<td>extreme_action</td>
-<td>Handling for out-of-range values</td>
-<td>“warn” (default), “cap”, “error”, “ignore”, “NA”</td>
-</tr>
-<tr class="even">
-<td>extreme_rules</td>
-<td>Optional per-item bounds <code>c(min, max)</code>
-</td>
-<td>Defaults to 0–2 per item</td>
-</tr>
-<tr class="odd">
 <td>verbose</td>
 <td>Emit progress messages</td>
 <td>Default FALSE</td>
@@ -151,12 +135,8 @@ non-finite values become NA.</li>
 <li>Missingness: <code>keep</code>/<code>ignore</code>/<code>warn</code>
 propagate NA to the total; <code>omit</code> drops rows with any
 required NA; <code>error</code> aborts if missing.</li>
-<li>Out-of-range check: even without <code>check_extreme</code>, a
-warning is issued if values fall outside 0–2. With
-<code>check_extreme = TRUE</code>, <code>extreme_action</code> decides
-warn/cap/error/ignore/NA.</li>
-<li>Extreme rules: defaults cap each item to 0–2; can be overridden per
-item via <code>extreme_rules</code>.</li>
+<li>Out-of-range check: a warning is issued if values fall outside
+0–2.</li>
 <li>Scoring: <code>sarc_f_score</code> sums the five items;
 <code>sarc_f_high_risk</code> is TRUE when score ≥ 4, FALSE otherwise,
 NA if score is NA.</li>
@@ -213,7 +193,7 @@ row with an NA item yields <code>sarc_f_score = NA</code> and
 <code>sarc_f_high_risk = NA</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="worked-example-2-detect-and-cap-miscoded-values">Worked example 2: Detect and cap miscoded values<a class="anchor" aria-label="anchor" href="#worked-example-2-detect-and-cap-miscoded-values"></a>
+<h2 id="worked-example-2-detect-miscoded-values">Worked example 2: Detect miscoded values<a class="anchor" aria-label="anchor" href="#worked-example-2-detect-miscoded-values"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
@@ -224,41 +204,35 @@ row with an NA item yields <code>sarc_f_score = NA</code> and
 <span>  falls <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Pre-recode out-of-range values before calling</span></span>
+<span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="va">df2</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">.</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">.</span> <span class="op">&gt;</span> <span class="fl">2</span>, <span class="cn">NA_real_</span>, <span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/sarc_f_score.html">sarc_f_score</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">df2</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>strength <span class="op">=</span> <span class="st">"str"</span>, walking <span class="op">=</span> <span class="st">"walk"</span>, chair <span class="op">=</span> <span class="st">"chair"</span>, stairs <span class="op">=</span> <span class="st">"stairs"</span>, falls <span class="op">=</span> <span class="st">"falls"</span><span class="op">)</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
 <span><span class="co">#&gt;   sarc_f_score sarc_f_high_risk</span></span>
 <span><span class="co">#&gt;          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>            1 FALSE           </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>            8 TRUE            </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>            5 TRUE</span></span></code></pre></div>
-<p><em>Interpretation:</em> Values outside 0–2 are capped into range
-before summing; warnings note the corrections. Scores and risk flags are
-returned for all rows.</p>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span>              </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>           <span style="color: #BB0000;">NA</span> <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
+<p><em>Interpretation:</em> Out-of-range values are set to NA before
+summing; scores with NA items return NA.</p>
 </div>
 <div class="section level2">
 <h2 id="troubleshooting-common-pitfalls">Troubleshooting &amp; common pitfalls<a class="anchor" aria-label="anchor" href="#troubleshooting-common-pitfalls"></a>
 </h2>
 <ul>
-<li>YAML/header: keep the YAML at the top; any text before it breaks
-knitting.</li>
 <li>Missing columns: ensure every required <code>col_map</code> key is
 mapped to an existing column.</li>
 <li>Non-numeric inputs: coerced with warnings; resulting NAs propagate
 unless <code>omit</code> is used.</li>
-<li>Out-of-range values: a warning is emitted even without
-<code>check_extreme</code>; set <code>check_extreme = TRUE</code> +
-<code>extreme_action = "cap"</code> or <code>"NA"</code> to enforce
-bounds.</li>
-<li>All NA scores: usually due to missing items, coercion to NA, or NA
-introduced by extreme handling with
-<code>extreme_action = "NA"</code>.</li>
+<li>Out-of-range values: a warning is emitted; recode out-of-range items
+to NA before calling.</li>
+<li>All NA scores: usually due to missing items or coercion to NA.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -273,8 +247,16 @@ result summaries during QC:</p>
 <span>  col_map <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>strength<span class="op">=</span><span class="st">"Strength"</span>, walking<span class="op">=</span><span class="st">"Walking"</span>, chair<span class="op">=</span><span class="st">"Chair"</span>, stairs<span class="op">=</span><span class="st">"Stairs"</span>, falls<span class="op">=</span><span class="st">"Falls"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; sarc_f_score(): preparing inputs</span></span>
-<span><span class="co">#&gt; sarc_f_score(): column map: strength -&gt; 'Strength', walking -&gt; 'Walking', chair -&gt; 'Chair', stairs -&gt; 'Stairs', falls -&gt; 'Falls'</span></span>
+<span><span class="co">#&gt; sarc_f_score(): reading input 'data' — 1 rows × 5 variables</span></span>
+<span><span class="co">#&gt; sarc_f_score(): col_map (5 columns — 5 specified)</span></span>
+<span><span class="co">#&gt;   strength          -&gt;  'Strength'</span></span>
+<span><span class="co">#&gt;   walking           -&gt;  'Walking'</span></span>
+<span><span class="co">#&gt;   chair             -&gt;  'Chair'</span></span>
+<span><span class="co">#&gt;   stairs            -&gt;  'Stairs'</span></span>
+<span><span class="co">#&gt;   falls             -&gt;  'Falls'</span></span>
+<span><span class="co">#&gt; sarc_f_score(): computing markers:</span></span>
+<span><span class="co">#&gt;   sarc_f_score      [0-10 sum]</span></span>
+<span><span class="co">#&gt;   sarc_f_high_risk  [score &gt;= 4]</span></span>
 <span><span class="co">#&gt; sarc_f_score(): results: sarc_f_score 1/1, sarc_f_high_risk 1/1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   sarc_f_score sarc_f_high_risk</span></span>
@@ -286,9 +268,8 @@ result summaries during QC:</p>
 <h2 id="tips-for-best-results">Tips for best results<a class="anchor" aria-label="anchor" href="#tips-for-best-results"></a>
 </h2>
 <ul>
-<li>Use <code>check_extreme = TRUE</code> with
-<code>extreme_action = "cap"</code> to hard-limit inputs to 0–2 when
-data may be noisy.</li>
+<li>Recode out-of-range items to NA before calling when data may be
+noisy.</li>
 <li>Choose <code>na_action = "omit"</code> when you need complete-case
 scores for modeling; use <code>keep</code>/<code>warn</code> for
 exploratory summaries where partial data is expected.</li>
@@ -302,8 +283,6 @@ follow up with clinical assessment as appropriate.</li>
 <ul>
 <li>Score is a simple sum of the five items; risk flag is
 <code>score &gt;= 4</code> when the score is finite.</li>
-<li>Default bounds are 0–2 per item; override via
-<code>extreme_rules</code> if your instrument coding differs.</li>
 <li>No unit conversion or weighting is applied; inputs should already
 reflect the standard SARC-F coding.</li>
 </ul>

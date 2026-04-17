@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,7 +136,6 @@ rows with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -147,11 +146,11 @@ rows with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
 <span><span class="co">#&gt;   Revised_QUICKI McAuley_index Adipo_inv Belfiore_inv_FFA TyG_inv</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.342          6.50     -<span style="color: #BB0000;">8.96</span>           -<span style="color: #BB0000;">0.201</span>   -<span style="color: #BB0000;">8.39</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0.354          4.97     -<span style="color: #BB0000;">7.18</span>           -<span style="color: #BB0000;">0.245</span>   -<span style="color: #BB0000;">9.13</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.352          6.12     -<span style="color: #BB0000;">7.81</span>           -<span style="color: #BB0000;">0.227</span>   -<span style="color: #BB0000;">8.42</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.360          6.62     -<span style="color: #BB0000;">5.90</span>           -<span style="color: #BB0000;">0.290</span>   -<span style="color: #BB0000;">9.07</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.340          5.52     -<span style="color: #BB0000;">9.22</span>           -<span style="color: #BB0000;">0.196</span>   -<span style="color: #BB0000;">8.95</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.338          4.92     -<span style="color: #BB0000;">8.06</span>           -<span style="color: #BB0000;">0.221</span>   -<span style="color: #BB0000;">9.67</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>          0.444         10.2      -<span style="color: #BB0000;">1.79</span>           -<span style="color: #BB0000;">0.716</span>   -<span style="color: #BB0000;">8.07</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.348          7.18     -<span style="color: #BB0000;">7.64</span>           -<span style="color: #BB0000;">0.232</span>   -<span style="color: #BB0000;">8.43</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.369          7.84     -<span style="color: #BB0000;">5.59</span>           -<span style="color: #BB0000;">0.303</span>   -<span style="color: #BB0000;">8.23</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.394          5.62     -<span style="color: #BB0000;">5.06</span>           -<span style="color: #BB0000;">0.330</span>   -<span style="color: #BB0000;">8.51</span></span></span>
 <span></span>
 <span><span class="co"># Group 2 — sex-specific and ratio indices</span></span>
 <span><span class="va">ais</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -160,11 +159,11 @@ rows with <code><a href="https://dplyr.tidyverse.org/reference/bind_cols.html" c
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 5</span></span></span>
 <span><span class="co">#&gt;   TG_HDL_C_inv VAI_Men_inv VAI_Women_inv LAP_Men_inv LAP_Women_inv</span></span>
 <span><span class="co">#&gt;          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        -<span style="color: #BB0000;">1.59</span>      -<span style="color: #BB0000;">0.689</span>         -<span style="color: #BB0000;">1.05</span>       -<span style="color: #BB0000;">11.9</span>         -<span style="color: #BB0000;">19.3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        -<span style="color: #BB0000;">3.42</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.17</span>       -<span style="color: #BB0000;">71.3</span>         -<span style="color: #BB0000;">87.0</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        -<span style="color: #BB0000;">2.18</span>      -<span style="color: #BB0000;">1.28</span>          -<span style="color: #BB0000;">1.95</span>       -<span style="color: #BB0000;">40.1</span>         -<span style="color: #BB0000;">48.2</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        -<span style="color: #BB0000;">4.67</span>      -<span style="color: #BB0000;">2.67</span>          -<span style="color: #BB0000;">4.04</span>       -<span style="color: #BB0000;">92.4</span>        -<span style="color: #BB0000;">106.</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        -<span style="color: #BB0000;">3.25</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.16</span>       -<span style="color: #BB0000;">79.2</span>         -<span style="color: #BB0000;">92.1</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        -<span style="color: #BB0000;">5.55</span>      -<span style="color: #BB0000;">3.04</span>          -<span style="color: #BB0000;">4.61</span>     -<span style="color: #BB0000;">106.</span>          -<span style="color: #BB0000;">128.</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        -<span style="color: #BB0000;">1.35</span>      -<span style="color: #BB0000;">0.783</span>         -<span style="color: #BB0000;">1.19</span>      -<span style="color: #BB0000;">25.0</span>          -<span style="color: #BB0000;">30.0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        -<span style="color: #BB0000;">1.95</span>      -<span style="color: #BB0000;">0.991</span>         -<span style="color: #BB0000;">1.51</span>      -<span style="color: #BB0000;">19.3</span>          -<span style="color: #BB0000;">26.8</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        -<span style="color: #BB0000;">1.43</span>      -<span style="color: #BB0000;">0.815</span>         -<span style="color: #BB0000;">1.24</span>      -<span style="color: #BB0000;">24.0</span>          -<span style="color: #BB0000;">30.5</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>        -<span style="color: #BB0000;">2.36</span>      -<span style="color: #BB0000;">1.10</span>          -<span style="color: #BB0000;">1.67</span>       -<span style="color: #BB0000;">9.84</span>         -<span style="color: #BB0000;">21.3</span></span></span></code></pre></div>
 <p>Values ending in <code>_inv</code> are inverted so <strong>more
 negative = worse adipose IR</strong>. Both sex variants (VAI_Men/Women,
 LAP_Men/Women) are always returned; pick the appropriate column per
@@ -183,20 +182,17 @@ subject based on biological sex:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="missing-data-and-extremes">Missing data and extremes<a class="anchor" aria-label="anchor" href="#missing-data-and-extremes"></a>
+<h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
 </h2>
-<p>Screen a small slice, cap extremes, and compare row handling.</p>
+<p>Compare NA policies on a small slice.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">demo</span> <span class="op">&lt;-</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G0"</span>, <span class="st">"I0"</span>, <span class="st">"TG"</span>, <span class="st">"HDL_c"</span>, <span class="st">"FFA"</span>, <span class="st">"waist"</span>, <span class="st">"BMI"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">demo</span><span class="op">$</span><span class="va">G0</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span>        <span class="co"># missing glucose</span></span>
-<span><span class="va">demo</span><span class="op">$</span><span class="va">TG</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">30</span>        <span class="co"># extreme TG (mmol/L)</span></span>
 <span></span>
 <span><span class="va">ais_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adipo_is.html">adipo_is</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
@@ -205,8 +201,6 @@ subject based on biological sex:</p>
 <span>  data <span class="op">=</span> <span class="va">demo</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"omit"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
 <span>  normalize <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
@@ -214,7 +208,7 @@ subject based on biological sex:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  keep_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ais_keep</span><span class="op">)</span>,</span>
 <span>  omit_rows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ais_omit</span><span class="op">)</span>,</span>
-<span>  capped_preview <span class="op">=</span> <span class="va">ais_keep</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">ends_with</a></span><span class="op">(</span><span class="st">"_inv"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>  keep_preview <span class="op">=</span> <span class="va">ais_keep</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">ends_with</a></span><span class="op">(</span><span class="st">"_inv"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; $keep_rows</span></span>
 <span><span class="co">#&gt; [1] 6</span></span>
@@ -222,59 +216,21 @@ subject based on biological sex:</p>
 <span><span class="co">#&gt; $omit_rows</span></span>
 <span><span class="co">#&gt; [1] 5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $capped_preview</span></span>
+<span><span class="co">#&gt; $keep_preview</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 7</span></span></span>
 <span><span class="co">#&gt;   VAI_Men_inv VAI_Women_inv TG_HDL_C_inv TyG_inv LAP_Men_inv LAP_Women_inv</span></span>
 <span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">0.689</span>         -<span style="color: #BB0000;">1.05</span>        -<span style="color: #BB0000;">1.59</span>   -<span style="color: #BB0000;">8.39</span>       -<span style="color: #BB0000;">11.9</span>         -<span style="color: #BB0000;">19.3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">2.08</span>          -<span style="color: #BB0000;">3.17</span>        -<span style="color: #BB0000;">3.42</span>   <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">71.3</span>         -<span style="color: #BB0000;">87.0</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     -<span style="color: #BB0000;">22.0</span>          -<span style="color: #BB0000;">33.5</span>        -<span style="color: #BB0000;">37.4</span>   -<span style="color: #BB0000;">11.3</span>       -<span style="color: #BB0000;">688.</span>         -<span style="color: #BB0000;">828.</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>      -<span style="color: #BB0000;">3.04</span>          -<span style="color: #BB0000;">4.61</span>        -<span style="color: #BB0000;">5.55</span>   -<span style="color: #BB0000;">9.67</span>      -<span style="color: #BB0000;">106.</span>         -<span style="color: #BB0000;">128.</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">0.783</span>         -<span style="color: #BB0000;">1.19</span>        -<span style="color: #BB0000;">1.35</span>   <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">25.0</span>         -<span style="color: #BB0000;">30.0</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      -<span style="color: #BB0000;">0.991</span>         -<span style="color: #BB0000;">1.51</span>        -<span style="color: #BB0000;">1.95</span>   -<span style="color: #BB0000;">8.43</span>       -<span style="color: #BB0000;">19.3</span>         -<span style="color: #BB0000;">26.8</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: Adipo_inv &lt;dbl&gt;</span></span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="custom-extreme-rules">Custom extreme rules<a class="anchor" aria-label="anchor" href="#custom-extreme-rules"></a>
-</h2>
-<p>Override the built-in plausibility bounds with
-<code>extreme_rules</code> (values in original units before any
-conversion):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">custom_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  G0    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">25</span><span class="op">)</span>,    <span class="co"># mmol/L — tighter glucose cap</span></span>
-<span>  TG    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">15</span><span class="op">)</span>,  <span class="co"># mmol/L — tighter TG cap</span></span>
-<span>  I0    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1500</span><span class="op">)</span>,  <span class="co"># pmol/L</span></span>
-<span>  FFA   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">2</span><span class="op">)</span>,  <span class="co"># mmol/L</span></span>
-<span>  waist <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">200</span><span class="op">)</span>   <span class="co"># cm</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">ais_custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adipo_is.html">adipo_is</a></span><span class="op">(</span></span>
-<span>  data           <span class="op">=</span> <span class="va">demo</span>,</span>
-<span>  col_map        <span class="op">=</span> <span class="va">col_map</span>,</span>
-<span>  na_action      <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme  <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules  <span class="op">=</span> <span class="va">custom_rules</span>,</span>
-<span>  normalize      <span class="op">=</span> <span class="st">"none"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">ais_custom</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Revised_QUICKI</span>, <span class="va">TyG_inv</span>, <span class="va">TG_HDL_C_inv</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_head</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;   Revised_QUICKI TyG_inv TG_HDL_C_inv</span></span>
-<span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          0.342   -<span style="color: #BB0000;">8.39</span>        -<span style="color: #BB0000;">1.59</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>           -<span style="color: #BB0000;">3.42</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>          0.352  -<span style="color: #BB0000;">11.0</span>        -<span style="color: #BB0000;">28.1</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>          0.360   -<span style="color: #BB0000;">9.07</span>        -<span style="color: #BB0000;">4.67</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>          0.340   -<span style="color: #BB0000;">8.95</span>        -<span style="color: #BB0000;">3.25</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>          0.321   -<span style="color: #BB0000;">8.37</span>        -<span style="color: #BB0000;">1.55</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="normalise-outputs">Normalise outputs<a class="anchor" aria-label="anchor" href="#normalise-outputs"></a>
 </h2>
 <p>Use <code>normalize</code> to put all indices on a common scale
 before modelling or dimension reduction:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ais_z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/adipo_is.html">adipo_is</a></span><span class="op">(</span></span>
 <span>  data      <span class="op">=</span> <span class="va">sim_small</span>,</span>
 <span>  col_map   <span class="op">=</span> <span class="va">col_map</span>,</span>
@@ -288,11 +244,11 @@ before modelling or dimension reduction:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
 <span><span class="co">#&gt;   Revised_QUICKI McAuley_index TyG_inv Adipo_inv</span></span>
 <span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       -<span style="color: #BB0000;">0.342</span>           0.711  1.53     -<span style="color: #BB0000;">0.285</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>        0.003<span style="text-decoration: underline;">67</span>        -<span style="color: #BB0000;">1.01</span>  -<span style="color: #BB0000;">0.583</span>     0.191 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>       -<span style="color: #BB0000;">0.040</span><span style="color: #BB0000; text-decoration: underline;">7</span>          0.284  1.44      0.021<span style="text-decoration: underline;">9</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>        0.186           0.843 -<span style="color: #BB0000;">0.412</span>     0.530 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>       -<span style="color: #BB0000;">0.389</span>          -<span style="color: #BB0000;">0.392</span> -<span style="color: #BB0000;">0.053</span><span style="color: #BB0000; text-decoration: underline;">7</span>   -<span style="color: #BB0000;">0.354</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        -<span style="color: #BB0000;">0.442</span>         -<span style="color: #BB0000;">0.721</span>  -<span style="color: #BB0000;">1.37</span>     0.070<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>         1.38           2.34    1.49     1.06  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>        -<span style="color: #BB0000;">0.260</span>          0.575   0.835    0.137 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>         0.091<span style="text-decoration: underline;">5</span>         0.954   1.20     0.459 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>         0.519         -<span style="color: #BB0000;">0.318</span>   0.692    0.543</span></span></code></pre></div>
 <p>Available options: <code>"none"</code> (default — raw scale),
 <code>"z"</code> (mean 0 / SD 1), <code>"range"</code> (0–1 min–max),
 <code>"robust"</code> (median / IQR), <code>"inverse"</code> (1/x).</p>
@@ -320,20 +276,37 @@ successfully (non-NA) per output column. Example:
 you also need <code>options(healthmarkers.verbose = "inform")</code> (or
 <code>"debug"</code>) active in the session for the messages to
 print:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="fu"><a href="../reference/adipo_is.html">adipo_is</a></span><span class="op">(</span></span>
 <span>  data          <span class="op">=</span> <span class="va">sim_small</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="op">]</span>,</span>
 <span>  col_map       <span class="op">=</span> <span class="va">col_map</span>,</span>
 <span>  na_action     <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  normalize     <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  verbose       <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; adipo_is(): preparing inputs</span></span>
-<span><span class="co">#&gt; adipo_is(): column map: G0 -&gt; 'G0', I0 -&gt; 'I0', TG -&gt; 'TG', HDL_c -&gt; 'HDL_c', FFA -&gt; 'FFA', waist -&gt; 'waist', bmi -&gt; 'BMI'</span></span>
-<span><span class="co">#&gt; adipo_is(): results: Revised_QUICKI 5/5, VAI_Men_inv 5/5, VAI_Women_inv 5/5, TG_HDL_C_inv 5/5, TyG_inv 5/5, LAP_Men_inv 5/5, LAP_Women_inv 5/5, McAuley_index 5/5, Adipo_inv 5/5, Belfiore_inv_FFA 5/5</span></span>
+<span><span class="co">#&gt; adipo_is(): reading input 'data' — 5 rows × 519 variables</span></span>
+<span><span class="co">#&gt; adipo_is(): col_map (7 columns — 7 specified)</span></span>
+<span><span class="co">#&gt;   G0                -&gt;  'G0'</span></span>
+<span><span class="co">#&gt;   I0                -&gt;  'I0'</span></span>
+<span><span class="co">#&gt;   TG                -&gt;  'TG'</span></span>
+<span><span class="co">#&gt;   HDL_c             -&gt;  'HDL_c'</span></span>
+<span><span class="co">#&gt;   FFA               -&gt;  'FFA'</span></span>
+<span><span class="co">#&gt;   waist             -&gt;  'waist'</span></span>
+<span><span class="co">#&gt;   bmi               -&gt;  'BMI'</span></span>
+<span><span class="co">#&gt; adipo_is(): computing markers:</span></span>
+<span><span class="co">#&gt;   Revised_QUICKI       [G0, I0, FFA]</span></span>
+<span><span class="co">#&gt;   VAI_Men_inv          [waist, bmi, TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   VAI_Women_inv        [waist, bmi, TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   TG_HDL_C_inv         [TG, HDL_c]</span></span>
+<span><span class="co">#&gt;   TyG_inv              [TG, G0]</span></span>
+<span><span class="co">#&gt;   LAP_Men_inv          [waist, TG]</span></span>
+<span><span class="co">#&gt;   LAP_Women_inv        [waist, TG]</span></span>
+<span><span class="co">#&gt;   McAuley_index        [I0, TG]</span></span>
+<span><span class="co">#&gt;   Adipo_inv            [FFA, I0]</span></span>
+<span><span class="co">#&gt;   Belfiore_inv_FFA     [I0, FFA]</span></span>
+<span><span class="co">#&gt; adipo_is(): results: id 5/5, Revised_QUICKI 5/5, VAI_Men_inv 5/5, VAI_Women_inv 5/5, TG_HDL_C_inv 5/5, TyG_inv 5/5, LAP_Men_inv 5/5, LAP_Women_inv 5/5, McAuley_index 5/5, Adipo_inv 5/5, Belfiore_inv_FFA 5/5</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span>  <span class="co"># restore</span></span></code></pre></div>
 <p>Enable globally for an entire session:
@@ -351,9 +324,6 @@ columns abort.</li>
 <code>na_action</code> controls row handling: <code>keep</code>
 propagates NA outputs; <code>omit</code> drops rows with missing
 required inputs; <code>error</code> aborts.</li>
-<li>
-<code>check_extreme</code> screens raw inputs before conversion;
-<code>extreme_action</code> can warn, cap, NA, or error.</li>
 <li>Built-in conversions: glucose <em>18 (mg/dL), insulin /6 (muU/mL),
 TG </em>88.57 (mg/dL), HDL *38.67 (mg/dL); FFA/waist/BMI unchanged.</li>
 </ul>
@@ -370,13 +340,7 @@ VAI/LAP applies per subject; interpret accordingly.</li>
 <li>For modelling, use <code>normalize = "z"</code> (z-score),
 <code>"range"</code> (0–1), or <code>"robust"</code> (median/IQR);
 default <code>"none"</code> keeps raw index scales. See the
-<em>Normalise outputs</em> section above.</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="validation-notes">Validation notes<a class="anchor" aria-label="anchor" href="#validation-notes"></a>
-</h2>
-<ul>
+<em>Normalise outputs</em> section above. ## Validation notes</li>
 <li>
 <strong>Revised_QUICKI</strong>: typical adults ~0.3–0.6; lower is
 worse IR. Computed from log10(I0 [mU/L]) + log10(G0 [mg/dL]) + log10(FFA
@@ -399,8 +363,6 @@ mmol/L with the Amato 2010 reference constants (1.03, 1.31, 0.81, 1.52).
 Typical range −1 to −5; more negative = worse.</li>
 <li>Spot-check <code>TG_HDL_C_inv</code>: should equal
 <code>−(TG_mg/dL / HDL_mg/dL)</code>.</li>
-<li>Use <code>check_extreme = TRUE</code> with lab-appropriate
-<code>extreme_rules</code> before capping or erroring.</li>
 </ul>
 </div>
 <div class="section level2">

@@ -20,13 +20,10 @@ BMI, glucose), computes:
 ``` r
 lipid_markers(
   data,
-  col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", ApoB = "ApoB",
-    ApoA1 = "ApoA1", waist = NULL, BMI = NULL),
+  col_map = NULL,
   na_action = c("keep", "omit", "error", "ignore", "warn"),
-  check_extreme = FALSE,
-  extreme_action = c("warn", "cap", "error", "ignore", "NA"),
-  extreme_rules = NULL,
-  verbose = FALSE
+  na_warn_prop = 0.2,
+  verbose = TRUE
 )
 ```
 
@@ -47,7 +44,7 @@ lipid_markers(
 
   - `TG` -\> triglycerides
 
-  - `LDL_c` -\> (optional) LDL-C; if missing, estimated via Friedewald
+  - `LDL_c` -\> (optional) LDL-C; if absent, estimated via Friedewald
 
   - `ApoB`, `ApoA1` -\> (optional) apolipoproteins
 
@@ -55,9 +52,11 @@ lipid_markers(
 
   - `BMI` -\> (optional) body mass index (kg/m^2)
 
+  - `glucose` -\> (optional) fasting glucose (mmol/L); used for TyG_BMI
+
 - na_action:
 
-  One of c("keep","omit","error","ignore","warn").
+  One of `c("keep","omit","error","ignore","warn")`.
 
   - keep/ignore: compute and propagate NA in outputs
 
@@ -67,39 +66,42 @@ lipid_markers(
 
   - warn: like keep, but emit missingness warnings
 
-- check_extreme:
+- na_warn_prop:
 
-  Logical; if TRUE, scan inputs for out-of-range values.
-
-- extreme_action:
-
-  One of c("warn","cap","error","ignore","NA") controlling how extremes
-  are handled when check_extreme=TRUE. "cap" truncates to range; "NA"
-  sets flagged values to NA.
-
-- extreme_rules:
-
-  Optional named list of c(min,max) per key to override defaults.
+  Proportion (0-1) threshold for high-missingness warnings when
+  `na_action = "warn"`. Default 0.2.
 
 - verbose:
 
-  Logical; if `TRUE`, prints messages about computing markers.
+  Logical; if `TRUE` (default), prints step-by-step progress including
+  column mapping, optional input availability, pre-computation notes,
+  physiological range information (informational only, values are not
+  altered), the list of markers being computed with their inputs, and a
+  per-column results summary.
 
 ## Value
 
-A tibble with:
+A tibble with computed lipid markers. Required outputs (always present):
+`non_HDL_c`, `remnant_c`, `ratio_TC_HDL`, `ratio_TG_HDL`,
+`ratio_LDL_HDL`, `ApoB_ApoA1`. Optional outputs (present when inputs
+available): `VAI_Men`, `VAI_Women` (waist + BMI required); `LAP_Men`,
+`LAP_Women` (waist required); `TyG_BMI` (BMI + glucose required). If an
+ID column is detected in `data` (e.g. `id`, `IID`, `participant_id`), it
+is prepended as the first output column.
 
-- `non_HDL_c`, `remnant_c`
+## Details
 
-- `ratio_TC_HDL`, `ratio_TG_HDL`, `ratio_LDL_HDL`
+Pre-computation (one level deep):
 
-- `ApoB_ApoA1`
+- If `BMI` is absent but `weight` (kg) and `height` (m or cm) are
+  present, BMI is computed automatically.
 
-- `VAI_Men`, `VAI_Women`
+- If `glucose` is absent but `G0` is present (or vice versa), the alias
+  is derived automatically.
 
-- `LAP_Men`, `LAP_Women`
-
-- `TyG_BMI`
+- If `LDL_c` is absent, it is always estimated via Friedewald (TC -
+  HDL - TG/5). An informational message is emitted when
+  `verbose = TRUE`.
 
 ## References
 
@@ -133,12 +135,58 @@ Overweight/Obesity.” *Metabolic Syndrome and Related Disorders*,
 
 ``` r
 df <- data.frame(TC = c(5.2, 6.1), HDL_c = c(1.3, 1.1), TG = c(1.8, 2.3),
-                 LDL_c = c(3.2, 4.1), WC = c(88, 95), BMI = c(26, 29),
-                 Sex = c("female", "male"))
+                 LDL_c = c(3.2, 4.1), waist = c(88, 95), BMI = c(26, 29))
+# Full verbose output (default)
 lipid_markers(df)
-#> # A tibble: 2 × 6
+#> lipid_markers(): reading input 'df' — 2 rows × 6 variables
+#> lipid_markers(): col_map (6 columns — 6 inferred from data)
+#>   TC                ->  'TC'    (inferred)
+#>   HDL_c             ->  'HDL_c'    (inferred)
+#>   TG                ->  'TG'    (inferred)
+#>   LDL_c             ->  'LDL_c'    (inferred)
+#>   waist             ->  'waist'    (inferred)
+#>   BMI               ->  'BMI'    (inferred)
+#> lipid_markers(): pre-computation: glucose cannot be derived -- provide: G0
+#> lipid_markers(): optional inputs
+#>   present:  waist, BMI
+#>   missing:  ApoB, ApoA1, glucose
+#>   indices -> NA:
+#>   ApoB_ApoA1 -> NA  [missing: ApoB, ApoA1]
+#>   TyG_BMI -> NA  [missing: glucose]
+#>   derivable:
+#>   glucose: provide G0 to enable
+#> lipid_markers(): range note (informational, values not altered):
+#>   TG: 2 value(s) outside plausible range
+#> lipid_markers(): computing markers:
+#>   non_HDL_c     [TC, HDL_c]
+#>   remnant_c     [TC, HDL_c, LDL_c]
+#>   ratio_TC_HDL  [TC, HDL_c]
+#>   ratio_TG_HDL  [TG, HDL_c]
+#>   ratio_LDL_HDL [LDL_c, HDL_c]
+#>   ApoB_ApoA1    NA [ApoB/ApoA1 missing]
+#>   VAI_Men/Women [waist, BMI, TG, HDL_c]
+#>   LAP_Men/Women [waist, TG]
+#>   TyG_BMI       NA [BMI/glucose missing]
+#> lipid_markers(): results: non_HDL_c 2/2, remnant_c 2/2, ratio_TC_HDL 2/2, ratio_TG_HDL 2/2, ratio_LDL_HDL 2/2, ApoB_ApoA1 0/2, VAI_Men 2/2, VAI_Women 2/2, LAP_Men 2/2, LAP_Women 2/2
+#> # A tibble: 2 × 10
+#>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men
+#>       <dbl>     <dbl>        <dbl>        <dbl>         <dbl>      <dbl>   <dbl>
+#> 1       3.9       0.7         4            1.38          2.46         NA    1.75
+#> 2       5         0.9         5.55         2.09          3.73         NA    2.68
+#> # ℹ 3 more variables: VAI_Women <dbl>, LAP_Men <dbl>, LAP_Women <dbl>
+# Suppress messaging for batch use
+lipid_markers(df, verbose = FALSE)
+#> # A tibble: 2 × 10
+#>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1 VAI_Men
+#>       <dbl>     <dbl>        <dbl>        <dbl>         <dbl>      <dbl>   <dbl>
+#> 1       3.9       0.7         4            1.38          2.46         NA    1.75
+#> 2       5         0.9         5.55         2.09          3.73         NA    2.68
+#> # ℹ 3 more variables: VAI_Women <dbl>, LAP_Men <dbl>, LAP_Women <dbl>
+# Pre-compute BMI from weight and height
+df2 <- data.frame(TC = 5.2, HDL_c = 1.3, TG = 1.8, weight = 70, height = 175)
+lipid_markers(df2, verbose = FALSE)
+#> # A tibble: 1 × 6
 #>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
 #>       <dbl>     <dbl>        <dbl>        <dbl>         <dbl>      <dbl>
-#> 1       3.9       0.7         4            1.38          2.46         NA
-#> 2       5         0.9         5.55         2.09          3.73         NA
+#> 1       3.9     0.360            4         1.38          2.72         NA
 ```

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,8 +68,8 @@ measurement into the analysis pipeline. NfL is a biomarker of
 neuroaxonal injury; elevated plasma or CSF levels indicate
 neurodegeneration and typically increase with age and neurological
 disease. This function validates and passes through the input values
-(assumed plasma pg/mL) with optional NA handling and extreme-value
-scanning, returning a tidy tibble ready for downstream analysis.</p>
+(assumed plasma pg/mL) with optional NA handling, returning a tidy
+tibble ready for downstream analysis.</p>
 </div>
 <div class="section level2">
 <h2 id="load-packages-and-demo-data">Load packages and demo data<a class="anchor" aria-label="anchor" href="#load-packages-and-demo-data"></a>
@@ -97,7 +97,6 @@ scanning, returning a tidy tibble ready for downstream analysis.</p>
 <span>  data <span class="op">=</span> <span class="va">df</span>,</span>
 <span>  col_map <span class="op">=</span> <span class="va">cm</span>,</span>
 <span>  na_action <span class="op">=</span> <span class="st">"keep"</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -132,44 +131,20 @@ outputs; <code>omit</code> drops rows with missing required inputs;
 <span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="extreme-value-handling">Extreme-value handling<a class="anchor" aria-label="anchor" href="#extreme-value-handling"></a>
+<h2 id="extreme-values">Extreme values<a class="anchor" aria-label="anchor" href="#extreme-values"></a>
 </h2>
-<p><code>check_extreme = TRUE</code> scans values against a broad
-default range of [0, 1e6] pg/mL.<br><code>extreme_action</code> controls the response: <code>"warn"</code>
-emits a warning without altering values, <code>"cap"</code> clips to the
-range boundary, <code>"NA"</code> blanks flagged values,
-<code>"error"</code> aborts.</p>
+<p>Negative or implausibly high NfL values will be passed through as-is.
+Pre-filter before calling.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df_ext</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>NfL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">22.1</span><span class="op">)</span><span class="op">)</span>  <span class="co"># negative value is out of range</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/nfl_marker.html">nfl_marker</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">df_ext</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">cm</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"warn"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: nfl_marker(): negative NfL values detected; check input data.</span></span>
-<span><span class="co">#&gt; Warning: nfl_marker(): detected 1 extreme input values (not altered).</span></span>
+<code class="sourceCode R"><span><span class="va">df_ext</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>NfL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.5</span>, <span class="op">-</span><span class="fl">5</span>, <span class="fl">22.1</span><span class="op">)</span><span class="op">)</span>  <span class="co"># negative value is implausible; pre-filter</span></span>
+<span><span class="co"># Pre-filter:</span></span>
+<span><span class="va">df_ext</span><span class="op">$</span><span class="va">NfL</span><span class="op">[</span><span class="va">df_ext</span><span class="op">$</span><span class="va">NfL</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="fu"><a href="../reference/nfl_marker.html">nfl_marker</a></span><span class="op">(</span><span class="va">df_ext</span>, col_map <span class="op">=</span> <span class="va">cm</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
 <span><span class="co">#&gt;   nfl_value</span></span>
 <span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       8.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      -<span style="color: #BB0000;">5</span>  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      22.1</span></span></code></pre></div>
-<p>Custom range override:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/nfl_marker.html">nfl_marker</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>NfL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.5</span>, <span class="fl">5000</span>, <span class="fl">22.1</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  col_map <span class="op">=</span> <span class="va">cm</span>,</span>
-<span>  check_extreme <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  extreme_action <span class="op">=</span> <span class="st">"cap"</span>,</span>
-<span>  extreme_rules <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nfl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
-<span><span class="co">#&gt;   nfl_value</span></span>
-<span><span class="co">#&gt;       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>       8.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>    <span style="text-decoration: underline;">1</span>000  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      <span style="color: #BB0000;">NA</span>  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      22.1</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -179,11 +154,14 @@ range boundary, <code>"NA"</code> blanks flagged values,
 <code>healthmarkers.verbose = "inform"</code>) to surface three
 structured messages on each call: preparing inputs, the column map, and
 a results summary.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/nfl_marker.html">nfl_marker</a></span><span class="op">(</span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>NfL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.5</span>, <span class="fl">14.2</span>, <span class="fl">22.1</span><span class="op">)</span><span class="op">)</span>, <span class="va">cm</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; nfl_marker(): preparing inputs</span></span>
-<span><span class="co">#&gt; nfl_marker(): column map: nfl -&gt; 'NfL'</span></span>
+<span><span class="co">#&gt; nfl_marker(): reading input 'data' — 3 rows × 1 variables</span></span>
+<span><span class="co">#&gt; nfl_marker(): col_map (1 column — 1 specified)</span></span>
+<span><span class="co">#&gt;   nfl               -&gt;  'NfL'</span></span>
+<span><span class="co">#&gt; nfl_marker(): computing markers:</span></span>
+<span><span class="co">#&gt;   nfl_value  [passthrough of NfL input]</span></span>
 <span><span class="co">#&gt; nfl_marker(): results: nfl_value 3/3</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 1</span></span></span>
 <span><span class="co">#&gt;   nfl_value</span></span>
@@ -192,6 +170,16 @@ a results summary.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>      14.2</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>      22.1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>
+</h2>
+<p>Run <code>hm_col_report(your_data)</code> to check which analyte
+columns are auto-detected before building your <code>col_map</code>. See
+the <a href="multi_biobank.html">Multi-Biobank Compatibility</a> article
+for recognised synonyms across major biobanks.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/hm_col_report.html">hm_col_report</a></span><span class="op">(</span><span class="va">your_data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="tips">Tips<a class="anchor" aria-label="anchor" href="#tips"></a>
