@@ -163,7 +163,7 @@ The `which` argument accepts any of the following group keys:
 Pass `which = "all"` to run every group (groups requiring unavailable
 optional packages will be silently skipped).
 
-### Individual functions: targeted computation
+### Individual functions:
 
 **Use this when** you need fine-grained control, are working with
 specialist data (e.g. OGTT time-series, DXA outputs, spirometry), or
@@ -304,7 +304,7 @@ gad7_score(data)
 k10_score(data)
 ```
 
-### Body composition and anthropometric SDS
+### Body composition, anthropometric and SDS
 
 **When to use:** paediatric cohorts (SDS); obesity epidemiology;
 sarcopenia assessment.
@@ -493,18 +493,32 @@ The most commonly needed internal keys are:
 
 ## Handle missing data before computing
 
-Impute missing values before passing data to any marker function:
+Missing values should generally be resolved before passing data to any
+marker function. The package provides three main helpers:
+
+- `impute_mice()`: multiple imputation using the `mice` package,
+  suitable for inference and analyses where preserving uncertainty is
+  important.
+- `impute_missforest()`: random-forest imputation via `missForest`,
+  useful when prediction quality is the priority.
+- `impute_missing()`: fast deterministic column-wise imputation for
+  numeric variables, good for quick exploratory work and simple
+  pipelines. Use `mean` when missing values are roughly symmetric, or
+  `median` when the data are skewed or contain outliers.
 
 ``` r
-# Multiple imputation (mice) recommended for inference
+# Multiple imputation (mice) recommended when you want to preserve inference uncertainty
 completed <- impute_mice(my_data, m = 5, seed = 42)
 
-# Random-forest imputation (missForest) recommended for prediction
+# Random-forest imputation (missForest) recommended for predictive filling of missing values
 completed <- impute_missforest(my_data)
 
-# Simple mean / median / mode quick exploratory use
+# Simple deterministic imputation for fast exploratory analysis
 completed <- impute_missing(my_data, method = "median")
 ```
+
+`impute_missing()` supports several methods beyond `median`, including
+`mean`, `zero`, and `constant`.
 
 ------------------------------------------------------------------------
 
