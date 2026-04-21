@@ -172,20 +172,20 @@ articles:
 
   - title: "Multi-biobank compatibility"
     contents:
-      - multi_biobank
+      - articles/multi_biobank
 
   - title: "Insulin sensitivity"
     contents:
       - fasting_is
       - ogtt_is
-      - adipo_is
-      - tracer_dxa_is
+      - articles/adipo_is
+      - articles/tracer_dxa_is
 
   - title: "Glycaemic & lipid"
     contents:
       - glycemic_markers
       - lipid_markers
-      - atherogenic_indices
+      - articles/atherogenic_indices
 
   - title: "Cardiovascular risk"
     contents:
@@ -194,76 +194,76 @@ articles:
   - title: "Liver function"
     contents:
       - liver_markers
-      - liver_fat_markers
+      - articles/liver_fat_markers
 
   - title: "Metabolic syndrome"
     contents:
-      - metss
-      - metabolic_risk_features
-      - allostatic_load
+      - articles/metss
+      - articles/metabolic_risk_features
+      - articles/allostatic_load
 
   - title: "Renal / CKD"
     contents:
-      - kidney_kfre
-      - renal_markers
-      - ckd_stage
-      - urine_markers
+      - articles/kidney_kfre
+      - articles/renal_markers
+      - articles/ckd_stage
+      - articles/urine_markers
 
   - title: "Pulmonary"
     contents:
-      - pulmo_markers
-      - spirometry_markers
-      - bode_index
+      - articles/pulmo_markers
+      - articles/spirometry_markers
+      - articles/bode_index
 
   - title: "Inflammatory & aging"
     contents:
       - inflammatory_markers
-      - inflammatory_age
-      - oxidative_markers
-      - kyn_trp_ratio
+      - articles/inflammatory_age
+      - articles/oxidative_markers
+      - articles/kyn_trp_ratio
 
   - title: "Hormonal"
     contents:
-      - hormone_markers
+      - articles/hormone_markers
 
   - title: "Body composition"
     contents:
       - obesity_indices
-      - adiposity_sds
-      - adiposity_sds_strat
-      - alm_bmi_index
-      - calc_sds
+      - articles/adiposity_sds
+      - articles/adiposity_sds_strat
+      - articles/alm_bmi_index
+      - articles/calc_sds
 
   - title: "Bone & fracture"
     contents:
-      - bone_markers
-      - frax_score
+      - articles/bone_markers
+      - articles/frax_score
 
   - title: "Frailty & comorbidity"
     contents:
       - frailty_index
-      - charlson_index
-      - sarc_f_score
+      - articles/charlson_index
+      - articles/sarc_f_score
 
   - title: "Vitamins & nutrients"
     contents:
-      - vitamin_markers
-      - vitamin_d_status
-      - nutrient_markers
+      - articles/vitamin_markers
+      - articles/vitamin_d_status
+      - articles/nutrient_markers
 
   - title: "Alternate biofluids"
     contents:
-      - saliva_markers
-      - sweat_markers
+      - articles/saliva_markers
+      - articles/sweat_markers
 
   - title: "Neurological"
     contents:
-      - corrected_calcium
-      - nfl_marker
+      - articles/corrected_calcium
+      - articles/nfl_marker
 
   - title: "Psychiatric"
     contents:
-      - psych_markers
+      - articles/psych_markers
 
   - title: "Data utilities"
     contents:
