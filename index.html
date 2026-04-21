@@ -291,7 +291,7 @@
 <p>Pass <code>which = "all"</code> to run every group (groups requiring unavailable optional packages will be silently skipped).</p>
 </div>
 <div class="section level3">
-<h3 id="individual-functions-targeted-computation">Individual functions: targeted computation<a class="anchor" aria-label="anchor" href="#individual-functions-targeted-computation"></a>
+<h3 id="individual-functions">Individual functions:<a class="anchor" aria-label="anchor" href="#individual-functions"></a>
 </h3>
 <p><strong>Use this when</strong> you need fine-grained control, are working with specialist data (e.g. OGTT time-series, DXA outputs, spirometry), or want to inspect one marker family in detail.</p>
 <hr>
@@ -422,7 +422,7 @@
 <span><span class="fu"><a href="reference/k10_score.html">k10_score</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="body-composition-and-anthropometric-sds">Body composition and anthropometric SDS<a class="anchor" aria-label="anchor" href="#body-composition-and-anthropometric-sds"></a>
+<h3 id="body-composition-anthropometric-and-sds">Body composition, anthropometric and SDS<a class="anchor" aria-label="anchor" href="#body-composition-anthropometric-and-sds"></a>
 </h3>
 <p><strong>When to use:</strong> paediatric cohorts (SDS); obesity epidemiology; sarcopenia assessment.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -792,16 +792,25 @@
 <div class="section level2">
 <h2 id="handle-missing-data-before-computing">Handle missing data before computing<a class="anchor" aria-label="anchor" href="#handle-missing-data-before-computing"></a>
 </h2>
-<p>Impute missing values before passing data to any marker function:</p>
+<p>Missing values should generally be resolved before passing data to any marker function. The package provides three main helpers:</p>
+<ul>
+<li>
+<code><a href="reference/impute_mice.html">impute_mice()</a></code>: multiple imputation using the <code>mice</code> package, suitable for inference and analyses where preserving uncertainty is important.</li>
+<li>
+<code><a href="reference/impute_missforest.html">impute_missforest()</a></code>: random-forest imputation via <code>missForest</code>, useful when prediction quality is the priority.</li>
+<li>
+<code><a href="reference/impute_missing.html">impute_missing()</a></code>: fast deterministic column-wise imputation for numeric variables, good for quick exploratory work and simple pipelines. Use <code>mean</code> when missing values are roughly symmetric, or <code>median</code> when the data are skewed or contain outliers.</li>
+</ul>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Multiple imputation (mice) recommended for inference</span></span>
+<code class="sourceCode R"><span><span class="co"># Multiple imputation (mice) recommended when you want to preserve inference uncertainty</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_mice.html">impute_mice</a></span><span class="op">(</span><span class="va">my_data</span>, m <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Random-forest imputation (missForest) recommended for prediction</span></span>
+<span><span class="co"># Random-forest imputation (missForest) recommended for predictive filling of missing values</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_missforest.html">impute_missforest</a></span><span class="op">(</span><span class="va">my_data</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Simple mean / median / mode quick exploratory use</span></span>
+<span><span class="co"># Simple deterministic imputation for fast exploratory analysis</span></span>
 <span><span class="va">completed</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/impute_missing.html">impute_missing</a></span><span class="op">(</span><span class="va">my_data</span>, method <span class="op">=</span> <span class="st">"median"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/impute_missing.html">impute_missing()</a></code> supports several methods beyond <code>median</code>, including <code>mean</code>, <code>zero</code>, and <code>constant</code>.</p>
 <hr>
 </div>
 <div class="section level2">
