@@ -34,7 +34,7 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 **HealthMarkers** is a comprehensive R toolkit for computing,
 standardising, and summarising clinical and research biomarkers from
 routine laboratory and phenotypic data. It provides over 50 specialist
-functions covering over 280 biomarkers, includinginsulin sensitivity
+functions covering over 290 biomarkers, includinginsulin sensitivity
 indices, cardiovascular risk scores, inflammatory aging clocks, frailty
 indices, psychiatric rating scales, alternate-biofluid panels, and much
 more. All accessible through a unified dispatcher,
