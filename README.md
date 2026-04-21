@@ -5,7 +5,7 @@ HealthMarkers
   - [Installation](#installation)
   - [Package overview](#package-overview)
   - [How to use HealthMarkers](#how-to-use-healthmarkers)
-  - [Function-by-function guide](#function-by-function-guide)
+  - [Selected Functions](#selected-functions)
   - [Column mapping and multi-biobank
     support](#column-mapping-and-multi-biobank-support)
   - [Handle missing data before
@@ -34,33 +34,35 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 **HealthMarkers** is a comprehensive R toolkit for computing,
 standardising, and summarising clinical and research biomarkers from
 routine laboratory and phenotypic data. It provides over 50 specialist
-functions covering insulin sensitivity indices, cardiovascular risk
-scores, inflammatory aging clocks, frailty indices, psychiatric rating
-scales, alternate-biofluid panels, and much more. All accessible through
-a unified dispatcher, `all_health_markers()`.
+functions covering over 280 biomarkers, includinginsulin sensitivity
+indices, cardiovascular risk scores, inflammatory aging clocks, frailty
+indices, psychiatric rating scales, alternate-biofluid panels, and much
+more. All accessible through a unified dispatcher,
+`all_health_markers()`.
 
 > **Full documentation, function reference, and vignettes** are
 > available at the package website:\
 > <https://sufyansuleman.github.io/HealthMarkers/>
 
-- **One interface, many markers.** A single `all_health_markers()` call
-  returns glycaemic, lipid, liver, renal, pulmonary, inflammatory,
+- **Covers a wide range of biomarkers.** A single `all_health_markers()`
+  call returns glycaemic, lipid, liver, renal, pulmonary, inflammatory,
   hormonal, bone, psychiatric, and nutritional markers as one wide
   tibble.
-- **Multi-biobank ready.** The built-in synonym dictionary covers naming
-  conventions from 15+ cohorts and biobanks — UK Biobank, NHANES, HUNT,
-  Tromsø, FinnGen, Estonian Biobank, LifeLines (Netherlands), Generation
-  Scotland, All of Us (LOINC codes), Danish registers (NPU codes), and
-  more. Column names from any of these systems are recognised
-  automatically without any manual mapping.
-- **Safe by default.** NA handling, input validation, column-name
+- **Variable naming flexibility.** The built-in synonym dictionary
+  covers naming conventions from 15+ cohorts and biobanks: UK Biobank,
+  NHANES, HUNT, Tromsø, FinnGen, Estonian Biobank, LifeLines
+  (Netherlands), Generation Scotland, All of Us (LOINC codes), Danish
+  registers (NPU codes), and more. Column names from any of these
+  systems are recognised automatically without any manual mapping.
+- **Safe defaults.** NA handling, input validation, column-name
   inference, and range-capping are built in. Failed marker groups are
   skipped with a warning, never crashing your pipeline.
-- **Reproducible.** Explicit `col_map` arguments map *your* column names
-  to expected internal keys, no silent renaming.
-- **Reference-backed.** Every function cites the primary paper. Full
-  bibliography in `inst/REFERENCES.bib`. 46 vignettes with worked
-  clinical examples are included.
+- **Reproducibility.** Explicit `col_map` arguments map *your* column
+  names to expected internal keys, no silent renaming.
+- **References.** Every function cites the primary paper, derived
+  methods, and validated applications or reviews of original work with
+  modifications. Full bibliography in `inst/REFERENCES.bib`. 46
+  vignettes with worked clinical examples are included.
 
 ------------------------------------------------------------------------
 
@@ -169,7 +171,7 @@ want to inspect one marker family in detail.
 
 ------------------------------------------------------------------------
 
-## Function-by-function guide
+## Selected Functions
 
 ### Insulin sensitivity
 
@@ -275,27 +277,6 @@ bode_index(data, col_map = list(fev1_pct="FEV1pct", sixmwd="Walk6m",
                                   mmrc="mMRC", bmi="BMI"))
 ```
 
-### Frailty and comorbidity
-
-**When to use:** geriatric studies; surgical risk; comorbidity
-adjustment.
-
-``` r
-# Rockwood deficit-accumulation frailty index
-# Needs: a data frame of binary deficit columns (0/1)
-# Requires: di package
-frailty_index(data, deficit_cols = c("hypertension","diabetes","mobility_loss",...))
-
-# Charlson Comorbidity Index (predicts 1-year mortality)
-# Needs: binary columns for each condition
-charlson_index(data, col_map = list(mi="MI", chf="CHF", diabetes="DM",...))
-
-# SARC-F muscle function screening (5-item questionnaire)
-# Needs: 5 SARC-F item columns (strength, assistance walking, rise from chair,
-#         climb stairs, falls)
-sarc_f_score(data, col_map = list(strength="Q1", walking="Q2",...))
-```
-
 ### Psychiatric scores
 
 **When to use:** mental health research; epidemiological surveys with
@@ -346,21 +327,6 @@ adiposity_sds_strat(data, col_map = list(sex = "sex"),
 alm_bmi_index(data, col_map = list(alm="ALM_kg", bmi="BMI", sex="Sex"))
 ```
 
-### Bone markers and FRAX
-
-**When to use:** osteoporosis research; fracture risk assessment; bone
-turnover monitoring.
-
-``` r
-# Bone turnover markers: P1NP, osteocalcin, CTX, NTX ratios
-bone_markers(data, col_map = list(P1NP="p1np", CTX="ctx_s"))
-
-# FRAX 10-year fracture probability (hip and major osteoporotic fractures)
-# Needs: age, sex, BMI; optionally BMD T-score, prior fracture, steroid use, etc.
-frax_score(data, col_map = list(age="Age", sex="Sex", bmd_t="TScore"),
-           country = "UK")
-```
-
 ### Inflammatory and aging markers
 
 **When to use:** immunology studies; biological age estimation; chronic
@@ -393,7 +359,7 @@ urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
 
 ## Column mapping and multi-biobank support
 
-Every function accepts a `col_map` argument — a named list mapping
+Every function accepts a `col_map` argument: a named list mapping
 internal keys (what the function expects) to your actual column names
 (what you have).
 
@@ -405,7 +371,7 @@ fasting_is(
 )
 ```
 
-### Multi-biobank automatic variable name / column name recognition
+### Multi-biobank automatic variable name OR column name recognition
 
 The synonym dictionary recognises column names from 15+ major cohorts
 and biobanks out of the box. The table below shows how the same analyte
@@ -432,8 +398,8 @@ are also included.
 
 ### Recommended workflow for real datasets
 
-**Step 1 — call `hm_col_report()` first** to see which columns are
-auto-detected and which need a manual mapping:
+**Call `hm_col_report()` first** to see which columns are auto-detected
+and which need a manual mapping:
 
 ``` r
 library(HealthMarkers)
@@ -461,8 +427,8 @@ This prints a report like:
        eGFR  = "from_your_data",   # fill in your column name
      )
 
-**Step 2 — copy the printed `col_map` template** and fill in your column
-names for any unmatched keys:
+**Copy the printed `col_map` template** and fill in your column names
+for any unmatched keys:
 
 ``` r
 my_col_map <- list(
@@ -480,7 +446,7 @@ cm <- hm_col_report(my_data, verbose = FALSE)
 cm$eGFR <- "GFR_ckdepi"
 ```
 
-**Step 3 — pass `col_map` to any function:**
+**Pass `col_map` to any function:**
 
 ``` r
 all_health_markers(
@@ -544,8 +510,9 @@ completed <- impute_missing(my_data, method = "median")
 
 ## Verbose diagnostics
 
-Set `verbose = TRUE` on any function to see progress, NA counts, and
-elapsed time:
+Set `verbose = TRUE` on any function to see progress messages about
+which columns were mapped, which groups were computed, and which were
+skipped (with reasons).:
 
 ``` r
 results <- all_health_markers(data = labs, which = c("lipid","liver"),
