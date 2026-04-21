@@ -302,7 +302,7 @@ glycem_out <- glycemic_markers(
 
 Run `hm_col_report(your_data)` to check which analyte columns are
 auto-detected before building your `col_map`. See the [Multi-Biobank
-Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/articles/multi_biobank.md)
 article for recognised synonyms across major biobanks.
 
 ``` r

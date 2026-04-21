@@ -588,7 +588,7 @@ options(old_opt)
 Run `hm_col_report(your_data)` to check which analyte columns are
 auto-detected across all marker categories, and get a ready-to-paste
 `col_map` template for any that are not. See the [Multi-Biobank
-Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.md)
+Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/articles/multi_biobank.md)
 article for recognised synonyms across 10 major biobanks.
 
 ``` r
