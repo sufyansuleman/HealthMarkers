@@ -1,0 +1,170 @@
+---
+title: "Multi-Biobank Compatibility: Automatic Column Recognition"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Multi-Biobank Compatibility}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Overview
+
+HealthMarkers is designed to work with data from a wide range of international
+cohort studies and biobanks **without any manual column renaming**. The internal
+synonym dictionary covers naming conventions from 15+ major studies. This article
+explains how the matching works, which biobanks are supported, and how to diagnose
+and fix cases where a column is not recognised.
+
+---
+
+## How column inference works
+
+Every HealthMarkers function looks up your column names through a five-layer
+matching pipeline before any computation:
+
+| Layer | Method | Example |
+|---|---|---|
+| 1 | Exact match in synonym dictionary | `LBXGLU` → `fasting_glucose` |
+| 2 | Case-insensitive exact match | `lbxglu` → `fasting_glucose` |
+| 3 | Data column name contains a synonym (≥ 4 chars) | `plasma_glukoosi` → `fasting_glucose` |
+| 4 | Synonym contains the data column name (≥ 4 chars) | `glukos` → `fasting_glucose` |
+| 5 | Fuzzy (Jaro–Winkler) match, only when `fuzzy = TRUE` | `glucos` → `fasting_glucose` |
+
+The first four layers are active by default. Layer 5 is opt-in and is most useful
+for catching typos in column names.
+
+---
+
+## Supported biobanks and naming systems
+
+### UK Biobank (UKB)
+
+UK Biobank fields follow the pattern `analyte_0_0` (assessment visit 0, instance 0)
+and `analyte_1_0` (reassessment). HealthMarkers recognises these for all major
+analytes:
+
+| Internal key | UKB field | UKB field code |
+|---|---|---|
+| `fasting_glucose` | `glucose_0_0` | 30740 |
+| `total_cholesterol` | `cholesterol_0_0` | 30690 |
+| `HDL_c` | `hdl_cholesterol_0_0` | 30760 |
+| `LDL_c` | `ldl_direct_0_0` | 30780 |
+| `TG` | `triglycerides_0_0` | 30870 |
+| `ALT` | `alanine_aminotransferase_0_0` | 30620 |
+| `AST` | `aspartate_aminotransferase_0_0` | 30650 |
+| `creatinine` | `creatinine_0_0` | 30700 |
+| `albumin` | `albumin_0_0` | 30600 |
+| `HbA1c` | `glycated_haemoglobin_hba1c_0_0` | 30750 |
+| `vitaminD` | `vitamin_d_0_0` | 30890 |
+| `Hgb` | `haemoglobin_concentration_0_0` | 30020 |
+| `WBC` | `white_blood_cell_leucocyte_count_0_0` | 30000 |
+| `platelets` | `platelet_count_0_0` | 30080 |
+| `SBP` | `systolic_blood_pressure_0_0` | 4080 |
+| `DBP` | `diastolic_blood_pressure_0_0` | 4079 |
+| `height` | `standing_height_0_0` | 50 |
+| `weight` | `body_weight_0_0` | 21002 |
+| `BMI` | `body_mass_index_bmi_0_0` | 21001 |
+| `waist` | `waist_circumference_0_0` | 48 |
+| `testosterone` | `testosterone_0_0` | 30850 |
+| `TSH` | `thyroid_stimulating_hormone_tsh_0_0` | 30830 |
+| `urea_serum` | `urea_0_0` | 30670 |
+| `uric_acid` | `urate_0_0` | 30880 |
+| `sodium` | `sodium_0_0` | 30530 |
+| `potassium` | `potassium_0_0` | 30520 |
+| `calcium` | `calcium_0_0` | 30680 |
+| `phosphate` | `phosphate_0_0` | 30810 |
+
+### NHANES (National Health and Nutrition Examination Survey, USA)
+
+NHANES uses uppercase prefix codes. HealthMarkers recognises both the `LBX`
+(examination) and `LBD` (derived) prefixes:
+
+| Internal key | NHANES variable | Questionnaire |
+|---|---|---|
+| `fasting_glucose` | `LBXGLU` | Biochemistry Profile |
+| `total_cholesterol` | `LBXSCH` | Biochemistry Profile |
+| `HDL_c` | `LBDHDD` | HDL-Cholesterol |
+| `LDL_c` | `LBDLDL` | Cholesterol-LDL |
+| `TG` | `LBXSTR` | Biochemistry Profile |
+| `ALT` | `LBXSATSI` | Biochemistry Profile |
+| `AST` | `LBXSASSI` | Biochemistry Profile |
+| `creatinine` | `LBXSCR` | Biochemistry Profile |
+| `albumin` | `LBXSAL` | Biochemistry Profile |
+| `HbA1c` | `LBXGH` | Glycohemoglobin |
+| `vitaminD` | `LBXVD2` | Vitamin D |
+| `Hgb` | `LBXHGB` | CBC |
+| `WBC` | `LBXWBCSI` | CBC |
+| `platelets` | `LBXPLTSI` | CBC |
+| `ferritin` | `LBXFER` | Ferritin |
+| `CRP` | `LBXHSCRP` | hs-CRP |
+| `SBP` | `BPXSY1` | Blood Pressure |
+| `DBP` | `BPXDI1` | Blood Pressure |
+| `u_albumin` | `URXUMA` | Albumin-Creatinine Urine |
+| `u_creatinine` | `URXUCR` | Albumin-Creatinine Urine |
+| `Homocysteine` | `LBXHCY` | Homocysteine |
+
+---
+
+## Diagnosing column matching with `hm_col_report()`
+
+Before running any computation on a new dataset, call `hm_col_report()` to
+see exactly which columns are matched and how:
+
+```{r, eval=FALSE}
+library(HealthMarkers)
+
+# Load your biobank extract (example: HUNT data with Norwegian column names)
+hunt_data <- read.csv("hunt_extract.csv")
+
+# Run the column report
+hm_col_report(hunt_data)
+```
+
+The output looks like:
+
+```
+── HealthMarkers column report ────────────────────────────────────────────
+ Data: 56301 rows × 187 columns   |   Keys in dictionary: 258
+
+ key                  data_column              how matched
+ -------------------- ------------------------ ------------------
+ age                  alder                    col contains synonym ✔
+ sex                  kjonn                    exact ✔
+ height               hoyde                    exact ✔
+ fasting_glucose      fastende_blodsukker      col contains synonym ✔
+ TG                   triglyserider            col contains synonym ✔
+ creatinine           kreatinin                exact ✔
+ SBP                  systolisk_blodtrykk      col contains synonym ✔
+ eGFR                 ─                        NOT FOUND ✘
+
+ ✔ 142 keys matched   ✘ 116 keys not found
+
+── col_map template for missing keys ──────────────────────────────────────
+ col_map <- list(
+   eGFR = "from_your_data",  # fill in your column name
+ )
+```
+
+For the `NOT FOUND` keys, either:
+1. Add the column to your data (or compute it from raw inputs),
+2. Provide an explicit `col_map` entry, or
+3. Ignore it — functions will produce `NA` for any marker that requires that key.
+
+```{r, eval=FALSE}
+# Capture the auto-detected map and add manual overrides
+cm <- hm_col_report(hunt_data, verbose = FALSE)
+cm$eGFR <- "ckd_epi_gfr_ml_min"   # fill in the actual column name
+
+results <- all_health_markers(hunt_data, col_map = cm,
+                              which = c("glycemic", "lipid", "renal",
+                                        "inflammatory", "liver"))
+```
+
+---
+
+## Auto-derived columns

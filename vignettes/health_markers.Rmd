@@ -199,7 +199,7 @@ options(old_opt)
 
 Run `hm_col_report(your_data)` to check which analyte columns are auto-detected
 across all marker categories, and get a ready-to-paste `col_map` template for
-any that are not. See the [Multi-Biobank Compatibility](articles/multi_biobank.html)
+any that are not. See the [Multi-Biobank Compatibility](multi_biobank.html)
 article for recognised synonyms across 10 major biobanks.
 
 ```{r, eval=FALSE}
