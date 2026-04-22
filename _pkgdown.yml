@@ -172,7 +172,7 @@ articles:
 
   - title: "Multi-biobank compatibility"
     contents:
-      - articles/multi_biobank
+      - multi_biobank
 
   - title: "Insulin sensitivity"
     contents:

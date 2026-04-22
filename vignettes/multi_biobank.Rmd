@@ -168,3 +168,123 @@ results <- all_health_markers(hunt_data, col_map = cm,
 ---
 
 ## Auto-derived columns
+
+Even when raw computed inputs are not in your data, HealthMarkers can derive
+them automatically from more basic measurements before marker computation begins.
+The following secondary variables are auto-derived:
+
+| Derived key | Derived from | Formula/method |
+|---|---|---|
+| `eGFR` | `creatinine`, `age`, `sex` | CKD-EPI 2021 |
+| `UACR` | `u_albumin`, `u_creatinine` | ratio (mg/g) |
+| `LDL_c` | `TC`, `HDL_c`, `TG` | Friedewald equation |
+| `WHR` | `waist`, `hip` | ratio |
+| `BMI` | `height`, `weight` | kg/m² |
+| `MAP` | `SBP`, `DBP` | (SBP + 2×DBP) / 3 |
+| `PP` | `SBP`, `DBP` | SBP − DBP |
+| `non_HDL_c` | `TC`, `HDL_c` | TC − HDL_c |
+| `TC_HDL_ratio` | `TC`, `HDL_c` | ratio |
+| `TG_HDL_ratio` | `TG`, `HDL_c` | log₁₀(TG/HDL_c) |
+| `creatinine_ratio` | `creatinine`, `u_creatinine` | ratio |
+
+This means, for example, that `kidney_failure_risk()` will work even if `eGFR`
+is absent from your data, as long as `creatinine`, `age`, and `sex` are present.
+
+---
+
+## Example: running on UK Biobank data
+
+```{r, eval=FALSE}
+library(HealthMarkers)
+
+# Load UKB extract (columns follow _0_0 naming)
+ukb <- readRDS("ukb_pheno.rds")
+
+# Check column matching — most UKB columns are auto-detected
+hm_col_report(ukb)
+
+# Run a broad panel — no col_map needed for UKB standard names
+results <- all_health_markers(
+  data    = ukb,
+  which   = c("glycemic", "lipid", "liver", "renal",
+              "inflammatory", "obesity_metrics", "vitamin"),
+  verbose = TRUE
+)
+```
+
+## Example: running on NHANES data
+
+```{r, eval=FALSE}
+# NHANES lab data (LBXGLU, LBXSCH, LBXWBCSI, etc.)
+nhanes_lab <- read.csv("nhanes_lab.csv")
+nhanes_bp  <- read.csv("nhanes_bp.csv")
+nhanes_dem <- read.csv("nhanes_demo.csv")
+
+nhanes <- nhanes_lab |>
+  dplyr::left_join(nhanes_bp,  by = "SEQN") |>
+  dplyr::left_join(nhanes_dem, by = "SEQN")
+
+results <- all_health_markers(nhanes, which = c("glycemic", "lipid",
+                                                 "renal", "inflammatory"),
+                               verbose = FALSE)
+```
+
+## Example: running on OMOP / All of Us data (LOINC codes)
+
+```{r, eval=FALSE}
+# Columns named LOINC_2345_7, LOINC_2160_0, LOINC_718_7, etc.
+omop_labs <- dplyr::collect(tbl(con, "measurement_wide"))
+
+# All LOINC_XXXX_X columns are recognised automatically
+hm_col_report(omop_labs)
+
+results <- all_health_markers(omop_labs,
+                              which = c("glycemic", "lipid", "renal",
+                                        "inflammatory", "vitamin"))
+```
+
+---
+
+## Adding a custom biobank
+
+If your biobank uses names not already in the dictionary, you have two options:
+
+**Option A — explicit `col_map` (immediate, no code changes):**
+
+```{r, eval=FALSE}
+my_col_map <- list(
+  fasting_glucose  = "p_glu_0",
+  total_cholesterol = "tot_kol",
+  creatinine       = "s_krea",
+  age              = "alder_bij_opname",
+  sex              = "geslacht_f"
+)
+
+results <- all_health_markers(data, col_map = my_col_map,
+                              which = c("glycemic", "lipid", "renal"))
+```
+
+**Option B — open a GitHub issue / pull request** to add permanent recognition
+of the naming system to the dictionary:
+
+> <https://github.com/sufyansuleman/HealthMarkers/issues>
+
+Please include: biobank name, the analyte/variable, and the column name(s) used.
+
+---
+
+## Summary
+
+| Biobank / system | Language | Key feature |
+|---|---|---|
+| UK Biobank | English | `_0_0` field suffix notation |
+| NHANES | English | `LBX`/`LBD`/`BPX`/`URX` prefixes |
+| Danish registers | Danish + NPU codes | `NPU01994` etc.; `kreatinin`, `kolesterol` |
+| HUNT / Tromsø | Norwegian | `triglyserider`, `karbamid`, double-k `blodtrykk` |
+| FinnGen / THL | Finnish | `-iini` endings; `glukoosi`, `kreatiniini` |
+| Estonian Biobank | Estonian | `kolesterool` (double-o), `naatrium` (≠ natrium) |
+| LifeLines / Rotterdam | Dutch | `ureum` (= urea), `urinezuur` (uric acid) |
+| Generation Scotland | English | `SBP_mean`, `genetic_sex` |
+| All of Us / OMOP | LOINC | `LOINC_XXXX_X` format |
+| NAKO / KORA | German | `Cholesterin`, `Triglyzeride`, `Harnsäure` |
+
