@@ -1,10 +1,6 @@
 ---
 title: "Multi-Biobank Compatibility: Automatic Column Recognition"
 output: rmarkdown::html_document
-vignette: >
-  %\VignetteIndexEntry{Multi-Biobank Compatibility}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}

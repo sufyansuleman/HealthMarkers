@@ -2,6 +2,7 @@
 ## Relies on HealthMarkers::: to access unexported functions.
 
 test_that(".hm_build_col_map: NULL col_map infers all resolvable keys", {
+  skip_on_cran()
   df <- tibble::tibble(hdlc = 1, trig = 1.3, bmi = 24)
   res <- HealthMarkers:::.hm_build_col_map(df, NULL, c("HDL_c", "TG", "BMI", "glucose"), fn = "test")
   # HDL_c, TG, BMI should be inferred from synonym dictionary

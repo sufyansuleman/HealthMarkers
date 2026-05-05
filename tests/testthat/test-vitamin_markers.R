@@ -22,6 +22,7 @@ make_full_df <- function(n = 1) {
 }
 
 test_that("errors if `data` is not a data.frame", {
+  skip_on_cran()
   expect_error(
     vitamin_markers("not a df", col_map = list()),
     "must be a data\\.frame or tibble"

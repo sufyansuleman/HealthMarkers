@@ -90,6 +90,11 @@ uric_acid (50, 1000), BUN (1, 150), phosphate (0.1, 5), calcium (0.5, 4),
 Na (100, 200), K (2, 8), Cl (70, 130), HCO3 (5, 45), Tyr (10, 300), Phe (20, 300).
 }
 \examples{
+# Quick smoke-test
+df <- data.frame(ferritin = 50, albumin = 45, uric_acid = 300, Na = 140)
+nutrient_markers(df, verbose = FALSE)
+
+\donttest{
 df <- tibble::tibble(
   ferritin         = c(50, 100),
   transferrin_sat  = c(30, 50),
@@ -112,6 +117,7 @@ df <- tibble::tibble(
   Phe              = c(50, 55)
 )
 nutrient_markers(df, verbose = TRUE)
+}
 
 }
 \references{

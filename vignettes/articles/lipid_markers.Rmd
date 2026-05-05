@@ -1,10 +1,6 @@
 ---
 title: "lipid_markers"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{lipid_markers}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}

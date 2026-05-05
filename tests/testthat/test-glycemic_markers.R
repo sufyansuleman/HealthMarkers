@@ -2,6 +2,7 @@ library(testthat)
 library(tibble)
 
 test_that("errors if missing any of HDL_c, TG, or BMI", {
+  skip_on_cran()
   df1 <- tibble(TG = 1, BMI = 24)
   expect_error(
     glycemic_markers(df1, verbose = FALSE),

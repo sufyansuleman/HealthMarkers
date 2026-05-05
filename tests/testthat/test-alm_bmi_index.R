@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(alm = "ALM_kg", bmi = "BMI", sex = "Sex")
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(ALM_kg = 10, BMI = 25, Sex = "Male")
 
   # non-list col_map → colmap_type error

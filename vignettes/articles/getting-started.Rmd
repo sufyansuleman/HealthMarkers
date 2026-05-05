@@ -1,11 +1,7 @@
 ---
 title: "Getting Started with HealthMarkers"
 author: "HealthMarkers Team"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Getting Started with HealthMarkers}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}

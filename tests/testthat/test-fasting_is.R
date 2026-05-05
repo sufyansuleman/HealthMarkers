@@ -1,6 +1,7 @@
 # tests/testthat/test_fasting_is.R
 
 test_that("fasting_is errors if missing required columns", {
+  skip_on_cran()
   df <- tibble::tibble(G0 = 5.5)
   expect_error(
     fasting_is(df, col_map = list(G0 = "G0", I0 = "I0"))

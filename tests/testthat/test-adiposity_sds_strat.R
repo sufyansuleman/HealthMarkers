@@ -18,6 +18,7 @@ ref_full <- list(
 cm <- list(sex = "sex", vars = list(BMI = "BMI", waist = "waist"))
 
 test_that("ref must have M and F", {
+  skip_on_cran()
   df <- tibble(sex = "M", BMI = 25)
   bad_refs <- list(
     NULL,

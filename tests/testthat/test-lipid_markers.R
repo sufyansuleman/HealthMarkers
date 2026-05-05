@@ -1,4 +1,5 @@
 test_that("lipid_markers computes core lipid markers", {
+  skip_on_cran()
   df <- tibble(
     TC    = 5,
     HDL_c = 1,

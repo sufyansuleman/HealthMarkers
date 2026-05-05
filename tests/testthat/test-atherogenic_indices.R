@@ -5,6 +5,7 @@ library(HealthMarkers)
 cm <- list(TC = "TC", LDL_c = "LDL_c", HDL_c = "HDL_c", TG = "TG")
 
 test_that("atherogenic_indices computes AIP, CRI_I, CRI_II", {
+  skip_on_cran()
   dat <- tibble(TC = c(200, 180), HDL_c = c(50, 60), TG = c(150, 100), LDL_c = c(120, 90))
   res <- atherogenic_indices(dat, col_map = cm)
   expect_s3_class(res, "tbl_df")

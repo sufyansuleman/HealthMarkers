@@ -1,6 +1,7 @@
 # HM-CS v2 compatible tests for inflammatory_markers()
 
 test_that("default na_action is 'keep' (not 'error')", {
+  skip_on_cran()
   df <- tibble::tibble(neutrophils = c(4, NA), lymphocytes = c(2, 1))
   cm <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes")
   out <- inflammatory_markers(df, cm, panel = "classic", verbose = FALSE)

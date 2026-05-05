@@ -61,6 +61,14 @@ index, consult the help pages of the source functions (e.g. ?allostatic_load,
 aggregator provides integration only and does not restate citations.
 }
 \examples{
+# Quick smoke-test (lipid group only, no insulin)
+df <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120)
+all_health_markers(df, col_map = list(), which = "lipid",
+                   include_insulin = FALSE, normalize = "none",
+                   verbose = FALSE, na_action = "keep")
+
+\donttest{
+# Lipid + liver groups
 df <- data.frame(
   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
   ALT = 30, AST = 20, BMI = 25
@@ -68,6 +76,7 @@ df <- data.frame(
 all_health_markers(df, col_map = list(), which = c("lipid","liver"),
                    include_insulin = FALSE, normalize = "none", mode = "both",
                    verbose = FALSE, na_action = "keep")
+}
 }
 \references{
 Aggregator wrapper. See underlying function help pages for full references

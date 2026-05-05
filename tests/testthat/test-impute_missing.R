@@ -5,6 +5,7 @@ library(tibble)
 
 # 1) impute_missing()
 test_that("impute_missing mean/median/zero/constant work", {
+  skip_on_cran()
   df <- tibble(x = c(1, NA, 3), y = c(NA, 2, NA), z = c("a", "b", "c"))
   # default mean
   out1 <- suppressWarnings(impute_missing(df))

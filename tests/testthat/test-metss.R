@@ -6,6 +6,7 @@ library(HealthMarkers)
 
 # ---- Missing required columns ----
 test_that("metss errors if missing required columns", {
+  skip_on_cran()
   df <- tibble(
     bp_sys  = 120,
     bp_dia  = 80,

@@ -3,6 +3,7 @@ library(tibble)
 library(HealthMarkers)
 
 test_that("computes markers for a minimal valid example", {
+  skip_on_cran()
   df <- tibble(
     BMI = 24, waist = 80, TG = 150, GGT = 30, age = 30,
     AST = 25, ALT = 20, platelets = 250, albumin = 45, diabetes = FALSE,

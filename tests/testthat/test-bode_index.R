@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(fev1_pct = "FEV1pct", sixmwd = "Walk_m", mmrc = "mMRC", bmi = "BMI")
 
 test_that("errors on non-data input", {
+  skip_on_cran()
   expect_error(bode_index("x", cm), class = "healthmarkers_bode_error_data_type")
 })
 

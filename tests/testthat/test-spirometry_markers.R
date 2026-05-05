@@ -12,6 +12,7 @@ cm <- list(
 )
 
 test_that("computes pre and post ratios and fixed COPD flag", {
+  skip_on_cran()
   df <- data.frame(
     FEV1 = c(2.1, 1.3, 2.0),
     FVC  = c(3.0, 2.5, 3.1),

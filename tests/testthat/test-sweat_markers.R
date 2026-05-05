@@ -3,6 +3,7 @@ library(testthat)
 library(tibble)
 
 test_that("sweat_markers errors if missing required columns", {
+  skip_on_cran()
   # Missing sweat_chloride
   df1 <- tibble(
     sweat_Na          = 50,

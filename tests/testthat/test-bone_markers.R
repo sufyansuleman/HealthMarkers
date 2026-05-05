@@ -29,6 +29,7 @@ df_full <- tibble(
 )
 
 test_that("bone_markers infers missing col_map entries from data (no error)", {
+  skip_on_cran()
   bad_map <- cm_full[-1]  # removes "age" key; data still has "age" column
   expect_no_error(bone_markers(df_full, col_map = bad_map))
 })

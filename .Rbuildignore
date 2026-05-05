@@ -26,3 +26,5 @@
 ^cran-comments\.md$
 ^\.Rproj\.user$
 ^CRAN-SUBMISSION$
+^vignettes/articles($|/)
+^check_output\.txt$

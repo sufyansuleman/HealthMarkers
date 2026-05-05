@@ -13,6 +13,7 @@ col_map <- list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
 
 # 1) Default na_action='keep': NAs propagate to output
 test_that("iAge default na_action='keep' propagates NA", {
+  skip_on_cran()
   out <- iAge(df, col_map = col_map)
   # Row 2: IL6 is NA -> iAge should be NA
   expect_true(is.na(out$iAge[2]))

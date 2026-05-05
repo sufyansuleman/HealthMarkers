@@ -37,6 +37,7 @@ bis_key_small <- list(
 )
 
 test_that("phq9_score computes totals and severity", {
+  skip_on_cran()
   out <- phq9_score(sample_psych_df, col_map = list(items = setNames(names(sample_psych_df)[1:9], sprintf("phq9_%02d", 1:9))))
   expect_equal(out$PHQ9_total, sum(c(1,2,1,0,1,2,1,2,1)))
   expect_s3_class(out$PHQ9_severity, "factor")

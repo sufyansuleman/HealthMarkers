@@ -4,6 +4,7 @@ library(testthat)
 library(tibble)
 
 test_that("saliva_markers errors if missing required columns", {
+  skip_on_cran()
   df1 <- tibble(
     saliva_cort2    = 15,
     saliva_cort3    = 12,

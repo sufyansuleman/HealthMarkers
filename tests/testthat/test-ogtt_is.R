@@ -33,6 +33,7 @@ base_df <- tibble(
 )
 
 test_that("returns all expected indices for single row", {
+  skip_on_cran()
   out <- run_ogtt(base_df, normalize = "none")
   expected_cols <- c(
     "Isi_120", "Cederholm_index", "Gutt_index",

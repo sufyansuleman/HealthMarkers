@@ -8,6 +8,7 @@ cm <- list(
 )
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(Age = 65, Sex = "Female")
   # partial col_map is supplemented by inference (sex inferred from 'Sex' column)
   expect_no_error(frax_score(df, list(age="Age")))

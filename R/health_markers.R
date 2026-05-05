@@ -390,6 +390,13 @@
 #' \insertRef{suleman2024is}{HealthMarkers}
 #' @export
 #' @examples
+#' # Quick smoke-test (fasting indices only)
+#' df <- data.frame(G0 = 5.2, I0 = 60)
+#' all_insulin_indices(df, normalize = "none", mode = "IS",
+#'                     verbose = FALSE, na_action = "keep")
+#'
+#' \donttest{
+#' # Full panel with all supported inputs
 #' df <- data.frame(
 #'   G0 = 5.2, I0 = 60, G30 = 7.5, I30 = 90, G120 = 6.2, I120 = 80,
 #'   TG = 1.5, HDL_c = 1.3, FFA = 0.3, waist = 85, weight = 70, bmi = 24,
@@ -401,6 +408,7 @@
 #'   bmi="bmi", age="age", sex="sex", rate_palmitate="rate_palmitate",
 #'   rate_glycerol="rate_glycerol", fat_mass="fat_mass"
 #' ), normalize = "none", mode = "IS", verbose = FALSE, na_action = "keep")
+#' }
 all_insulin_indices <- function(
   data,
   col_map = NULL,
@@ -590,6 +598,14 @@ metabolic_markers <- function(
 #' across categories included by `which`.
 #' @export
 #' @examples
+#' # Quick smoke-test (lipid group only, no insulin)
+#' df <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120)
+#' all_health_markers(df, col_map = list(), which = "lipid",
+#'                    include_insulin = FALSE, normalize = "none",
+#'                    verbose = FALSE, na_action = "keep")
+#'
+#' \donttest{
+#' # Lipid + liver groups
 #' df <- data.frame(
 #'   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
 #'   ALT = 30, AST = 20, BMI = 25
@@ -597,6 +613,7 @@ metabolic_markers <- function(
 #' all_health_markers(df, col_map = list(), which = c("lipid","liver"),
 #'                    include_insulin = FALSE, normalize = "none", mode = "both",
 #'                    verbose = FALSE, na_action = "keep")
+#' }
 all_health_markers <- function(
   data,
   col_map,

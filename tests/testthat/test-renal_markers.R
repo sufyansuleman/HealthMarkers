@@ -15,6 +15,7 @@ make_df_req <- function(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14) {
 }
 
 test_that("verbose emits col_map, optional inputs, computing markers, and results messages", {
+  skip_on_cran()
   df <- make_df_req()
   msgs <- testthat::capture_messages(renal_markers(df, cm_req, verbose = TRUE))
   expect_true(any(grepl("col_map", msgs)))

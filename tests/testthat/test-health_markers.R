@@ -6,6 +6,7 @@
 # eGFR pipeline: creatinine + age + sex -> eGFR (Tier 0) -> ckd_stage (Tier 2)
 # ---------------------------------------------------------------------------
 test_that("all_health_markers: global precompute derives eGFR and feeds ckd_stage", {
+  skip_on_cran()
   df <- data.frame(
     creatinine = c(0.9, 1.5),
     age        = c(45,  70),

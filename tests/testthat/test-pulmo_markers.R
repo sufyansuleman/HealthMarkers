@@ -15,6 +15,7 @@ skip_if_no_rspiro_2 <- function() {
 }
 
 test_that("pulmo_markers computes expected pulmonary metrics across equations", {
+  skip_on_cran()
   available_eqs <- skip_if_no_rspiro_2()
 
   df <- tibble(

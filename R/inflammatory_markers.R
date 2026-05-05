@@ -30,6 +30,12 @@
 #'   detected (e.g. `id`, `IID`, `participant_id`).
 #'
 #' @examples
+#' # Quick smoke-test
+#' df <- data.frame(neutrophils = 4, lymphocytes = 2, monocytes = 0.5,
+#'                  platelets = 200, WBC = 7, CRP = 2.5)
+#' inflammatory_markers(df, panel = "classic", na_action = "keep", verbose = FALSE)
+#'
+#' \donttest{
 #' df <- data.frame(
 #'   neutrophils = c(4, 2),
 #'   lymphocytes = c(2, 0),
@@ -46,11 +52,10 @@
 #'   platelets = "platelets", WBC = "WBC", CRP = "CRP", albumin = "albumin",
 #'   eosinophils = "eosinophils", ESR = "ESR"
 #' )
-#' # Classic panel (no eosinophils key)
 #' classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
 #' inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
-#' # Eosinophil panel
 #' inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
+#' }
 #'
 #' @references \insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 #' @export

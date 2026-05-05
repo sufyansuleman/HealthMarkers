@@ -78,23 +78,29 @@ Formulas
 }
 }
 \examples{
+# Quick smoke-test
+df <- data.frame(ALT = 25, AST = 20, BMI = 24, platelets = 250)
+liver_markers(df, verbose = FALSE)
+
+\donttest{
 library(tibble)
 df <- tibble(
   BMI           = 24,
   waist         = 80,
-  TG = 150, # mg/dL
+  TG = 150,
   GGT           = 30,
   age           = 45,
   AST           = 25,
   ALT           = 20,
-  platelets     = 250, # 10^9/L
-  albumin       = 42,  # g/L
+  platelets     = 250,
+  albumin       = 42,
   diabetes      = FALSE,
-  bilirubin     = 1.0, # mg/dL
-  creatinine    = 0.9  # mg/dL
+  bilirubin     = 1.0,
+  creatinine    = 0.9
 )
 liver_markers(df)
 liver_markers(df, verbose = FALSE)
+}
 
 }
 \references{

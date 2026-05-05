@@ -1,4 +1,5 @@
 test_that("liver_fat_markers computes HSI and NAFLD_LFS", {
+  skip_on_cran()
   df <- data.frame(
     ALT = c(30, 40), AST = c(20, 35), BMI = c(25, 32),
     sex = c(1, 2), diabetes = c(0, 1), MetS = c(1, 0), insulin = c(15, 20)

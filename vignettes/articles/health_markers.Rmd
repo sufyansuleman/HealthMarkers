@@ -1,10 +1,6 @@
 ---
 title: "Health marker aggregators"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Health marker aggregators}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}

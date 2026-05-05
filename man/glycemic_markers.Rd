@@ -101,6 +101,12 @@ HOMA implementations exist (e.g., HOMA2-CP).
 }
 }
 \examples{
+# Quick smoke-test
+df <- data.frame(glucose = 5.6, HbA1c = 44, G0 = 5.5, I0 = 60,
+                 HDL_c = 1.2, TG = 1.5, BMI = 24)
+glycemic_markers(df, verbose = FALSE)
+
+\donttest{
 df <- tibble::tibble(
   HDL_c       = c(1.0, 1.3),
   TG          = c(1.3, 2.0),
@@ -113,12 +119,10 @@ df <- tibble::tibble(
   leptin      = c(10, 20),
   adiponectin = c(8, 5)
 )
-# Full verbose output (default — shows mapping, missing notes, results)
 glycemic_markers(df)
-# Suppress messaging for batch use
 glycemic_markers(df, verbose = FALSE)
-# Drop rows with any missing input
 glycemic_markers(df, na_action = "omit", verbose = FALSE)
+}
 }
 \references{
 \insertRef{paulmichl2016spise}{HealthMarkers};

@@ -39,6 +39,13 @@ consult the individual function help pages (e.g. ?fasting_is, ?ogtt_is,
 ?adipo_is, ?tracer_dxa_is). Citations are intentionally not duplicated here.
 }
 \examples{
+# Quick smoke-test (fasting indices only)
+df <- data.frame(G0 = 5.2, I0 = 60)
+all_insulin_indices(df, normalize = "none", mode = "IS",
+                    verbose = FALSE, na_action = "keep")
+
+\donttest{
+# Full panel with all supported inputs
 df <- data.frame(
   G0 = 5.2, I0 = 60, G30 = 7.5, I30 = 90, G120 = 6.2, I120 = 80,
   TG = 1.5, HDL_c = 1.3, FFA = 0.3, waist = 85, weight = 70, bmi = 24,
@@ -50,6 +57,7 @@ all_insulin_indices(df, col_map = list(
   bmi="bmi", age="age", sex="sex", rate_palmitate="rate_palmitate",
   rate_glycerol="rate_glycerol", fat_mass="fat_mass"
 ), normalize = "none", mode = "IS", verbose = FALSE, na_action = "keep")
+}
 }
 \references{
 Aggregator wrapper. See underlying function help pages for full references:

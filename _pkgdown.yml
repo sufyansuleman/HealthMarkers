@@ -168,32 +168,30 @@ reference:
 articles:
   - title: "Getting started"
     contents:
-      - getting-started
+      - articles/getting-started
 
   - title: "Multi-biobank compatibility"
     contents:
-      - multi_biobank
+      - articles/multi_biobank
 
   - title: "Insulin sensitivity"
     contents:
-      - fasting_is
-      - ogtt_is
+      - articles/fasting_is
+      - articles/ogtt_is
       - articles/adipo_is
       - articles/tracer_dxa_is
 
   - title: "Glycaemic & lipid"
     contents:
-      - glycemic_markers
-      - lipid_markers
+      - articles/glycemic_markers
+      - articles/lipid_markers
       - articles/atherogenic_indices
 
   - title: "Cardiovascular risk"
     contents:
-      - cvd_risk
-
-  - title: "Liver function"
+      - articles/cvd_risk
     contents:
-      - liver_markers
+      - articles/liver_markers
       - articles/liver_fat_markers
 
   - title: "Metabolic syndrome"
@@ -217,7 +215,7 @@ articles:
 
   - title: "Inflammatory & aging"
     contents:
-      - inflammatory_markers
+      - articles/inflammatory_markers
       - articles/inflammatory_age
       - articles/oxidative_markers
       - articles/kyn_trp_ratio
@@ -228,7 +226,7 @@ articles:
 
   - title: "Body composition"
     contents:
-      - obesity_indices
+      - articles/obesity_indices
       - articles/adiposity_sds
       - articles/adiposity_sds_strat
       - articles/alm_bmi_index
@@ -241,7 +239,7 @@ articles:
 
   - title: "Frailty & comorbidity"
     contents:
-      - frailty_index
+      - articles/frailty_index
       - articles/charlson_index
       - articles/sarc_f_score
 
@@ -267,8 +265,8 @@ articles:
 
   - title: "Data utilities"
     contents:
-      - impute_missing
+      - articles/impute_missing
 
   - title: "Overview"
     contents:
-      - health_markers
+      - articles/health_markers

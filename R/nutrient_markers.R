@@ -70,6 +70,11 @@
 #' \insertRef{block1998calcp}{HealthMarkers}
 #' \insertRef{waikar2009creak}{HealthMarkers}
 #' @examples
+#' # Quick smoke-test
+#' df <- data.frame(ferritin = 50, albumin = 45, uric_acid = 300, Na = 140)
+#' nutrient_markers(df, verbose = FALSE)
+#'
+#' \donttest{
 #' df <- tibble::tibble(
 #'   ferritin         = c(50, 100),
 #'   transferrin_sat  = c(30, 50),
@@ -92,6 +97,7 @@
 #'   Phe              = c(50, 55)
 #' )
 #' nutrient_markers(df, verbose = TRUE)
+#' }
 #'
 #' @importFrom rlang abort warn inform
 #' @importFrom tibble tibble

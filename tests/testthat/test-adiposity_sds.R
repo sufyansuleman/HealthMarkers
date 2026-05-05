@@ -10,6 +10,7 @@ ref <- list(
 )
 
 test_that("errors if data missing required columns", {
+  skip_on_cran()
   df <- tibble(BMI = 23)
   expect_error(
     adiposity_sds(df, ref = ref),

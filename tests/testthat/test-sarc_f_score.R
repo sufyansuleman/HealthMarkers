@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(strength="Strength", walking="Walking", chair="Chair", stairs="Stairs", falls="Falls")
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(Strength=0, Walking=0, Chair=0, Stairs=0, Falls=0)
   # empty list with all columns in data – succeeds via inference
   expect_no_error(sarc_f_score(df, list()))

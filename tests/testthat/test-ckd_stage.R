@@ -1,4 +1,5 @@
 test_that("ckd_stage classifies G and A stages", {
+  skip_on_cran()
   df <- data.frame(eGFR = c(95, 70, 50, 35, 10), UACR = c(10, 50, 200, 600, 100))
   res <- ckd_stage(df, col_map = list(eGFR = "eGFR", UACR = "UACR"))
   expect_s3_class(res, "tbl_df")

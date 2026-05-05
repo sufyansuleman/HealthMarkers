@@ -3,6 +3,7 @@ library(testthat)
 library(tibble)
 
 test_that("errors if any required column is missing", {
+  skip_on_cran()
   # Missing urine_albumin
   df1 <- tibble(
     urine_creatinine = 1

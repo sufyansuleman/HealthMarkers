@@ -1,4 +1,5 @@
 test_that("oxidative_markers computes GSH/GSSG ratio", {
+  skip_on_cran()
   df <- data.frame(GSH = c(1000, 1500), GSSG = c(10, 15))
   res <- oxidative_markers(df, col_map = list(GSH = "GSH", GSSG = "GSSG"))
   expect_s3_class(res, "tbl_df")

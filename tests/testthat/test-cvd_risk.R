@@ -19,6 +19,7 @@ dummy_df <- tibble::tibble(
 )
 
 test_that("dummy_df is a tibble", {
+  skip_on_cran()
   expect_s3_class(dummy_df, "tbl_df")
 })
 

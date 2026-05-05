@@ -3,6 +3,7 @@ library(tibble)
 library(HealthMarkers)
 
 test_that("errors when no ratio can be computed from supplied col_map", {
+  skip_on_cran()
   df <- tibble(x = 1)
   # Only one key provided; no ratio has both its inputs mapped
   expect_error(

@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM")
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(Kyn_nM = 2000, Trp_uM = 60)
 
   # empty list with inferrable cols – succeeds via inference

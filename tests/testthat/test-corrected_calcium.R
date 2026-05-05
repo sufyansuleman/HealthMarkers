@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(calcium = "Ca", albumin = "Alb")
 
 test_that("validation errors: data type, col_map type, missing map, empty mapping, missing columns", {
+  skip_on_cran()
   df_ok <- data.frame(Ca = 9, Alb = 3.5)
 
   expect_error(

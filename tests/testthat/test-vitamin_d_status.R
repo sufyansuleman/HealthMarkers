@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(vitamin_d = "VitD")
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(VitD = c(10, 20))
   # empty list with inferrable data – succeeds via inference
   expect_no_error(vitamin_d_status(df, list()))

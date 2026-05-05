@@ -1,10 +1,6 @@
 ---
 title: "Fasting insulin sensitivity indices"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Fasting insulin sensitivity indices}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: rmarkdown::html_document
 ---
 
 ```{r, include=FALSE}

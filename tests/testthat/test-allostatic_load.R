@@ -4,6 +4,7 @@ library(testthat)
 library(tibble)
 
 test_that("basic multi-biomarker scoring uses strict >", {
+  skip_on_cran()
   df <- tibble(
     A = c(1, 5, 10, NA),
     B = c(0, 2, 3, 4),

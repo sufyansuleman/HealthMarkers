@@ -4,6 +4,7 @@ library(tibble)
 library(dplyr)
 
 test_that("adipose-only mode returns three indices with correct values", {
+  skip_on_cran()
   df <- tibble(
     I0              = 60,    # pmol/L
     rate_palmitate  = 1.5,   # µmol/min

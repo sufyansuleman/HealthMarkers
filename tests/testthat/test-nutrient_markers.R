@@ -7,6 +7,7 @@ library(HealthMarkers)
 cm_id <- function(df) { m <- as.list(names(df)); names(m) <- names(df); m }
 
 test_that("nutrient_markers computes all indices correctly", {
+  skip_on_cran()
   df <- tibble(
     ferritin         = 100,
     transferrin_sat  = 50,

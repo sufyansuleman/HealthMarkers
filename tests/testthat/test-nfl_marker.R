@@ -3,6 +3,7 @@ library(testthat)
 cm <- list(nfl = "NfL")
 
 test_that("mapping validation and missing columns error", {
+  skip_on_cran()
   df <- data.frame(NfL = c(10, 20))
 
   # empty list with inferrable data – succeeds via case-insensitive inference

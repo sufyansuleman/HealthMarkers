@@ -63,21 +63,19 @@ HM-CS v2:
 }
 }
 \examples{
-df <- tibble::tibble(
+\donttest{
+# All 25 required columns must be supplied
+df <- data.frame(
   VitD = 50, VitD_ref_mean = 40, VitD_ref_sd = 5,
-  B12 = 300, Folate = 15,
-  Ferritin = 100, TSat = 0.25,
-  Cortisol = 200, DHEAS = 100,
-  Testosterone = 12, Estradiol = 120,
-  TSH = 2, free_T4 = 14,
-  Retinol = 0.8, Retinol_ref_mean = 0.9, Retinol_ref_sd = 0.2,
-  Tocopherol = 30, Total_lipids = 3,
+  B12 = 300, Folate = 15, Ferritin = 80, TSat = 0.25,
+  Cortisol = 200, DHEAS = 100, Testosterone = 12, Estradiol = 120,
+  TSH = 2, free_T4 = 14, Retinol = 0.8, Retinol_ref_mean = 0.9,
+  Retinol_ref_sd = 0.2, Tocopherol = 30, Total_lipids = 3,
   PIVKA_II = 5, VitC = 60, Homocysteine = 10, MMA = 0.3,
   Magnesium = 0.8, Zinc = 15, Copper = 15
 )
-cm <- as.list(names(df)); names(cm) <- names(df)
-vitamin_markers(df, cm)
-
+vitamin_markers(df, verbose = FALSE)
+}
 }
 \references{
 Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266-281. \doi{10.1056/NEJMra070553}

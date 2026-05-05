@@ -33,6 +33,7 @@ base_df <- tibble(
 )
 
 test_that("partial col_map is supplemented by dictionary inference", {
+  skip_on_cran()
   expect_no_error(
     adipo_is(base_df, col_map = list(G0 = "G0"))
   )
