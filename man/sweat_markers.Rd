@@ -56,7 +56,7 @@ Expected units:
 \note{
 \code{sweat_chloride} and \code{sweat_lactate} are \strong{pass-through} columns; no formula
 is applied. \code{Na_K_ratio} is a simple Na/K division. \code{sweat_rate} uses the
-mass-loss method: (weight\_before - weight\_after) / duration / body\_surface\_area
+mass-loss method: (weight_before - weight_after) / duration / body_surface_area
 (units: L/m\ifelse{html}{\out{&sup2;}}{^2}/h; assumes 1 kg \eqn{\approx} 1 L).
 Dill & Costill 1974 describes haematocrit-based blood-volume change, not sweat
 rate directly; cited here as background context only.
