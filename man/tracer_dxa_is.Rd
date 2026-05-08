@@ -65,8 +65,8 @@ Expected units:
 \note{
 \code{tracer_palmitate_SI} and \code{tracer_glycerol_SI} are simple rate/fat_mass
 ratios; the Steele (1959) non-steady-state tracer equation is \strong{not}
-implemented here. The LIRI formula coefficients (−0.091, 0.4, 0.346,
-−0.408, 0.435) are attributed to Gastaldelli et al. but the paper cited
+implemented here. The LIRI formula coefficients (-0.091, 0.4, 0.346,
+-0.408, 0.435) are attributed to Gastaldelli et al. but the paper cited
 (\code{gastaldelli2004betacell}) covers beta-cell dysfunction, not LIRI
 derivation; the primary LIRI source should be verified. In adipose-only
 mode (I30 absent) the mean-insulin term uses I0 twice as a fallback.
