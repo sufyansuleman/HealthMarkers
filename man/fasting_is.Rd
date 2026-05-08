@@ -56,12 +56,12 @@ df2 <- data.frame(G0 = c(5.0, NA), I0 = c(90, 150))
 fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep")
 }
 \references{
-\insertRef{matthews1985homa}{HealthMarkers};
-\insertRef{katz2000quicki}{HealthMarkers};
-\insertRef{raynaud1999fasting}{HealthMarkers};
-\insertRef{avignon1999ogtt}{HealthMarkers};
-\insertRef{belfiore1998insulin}{HealthMarkers};
-\insertRef{sluiter1976gtolerance}{HealthMarkers};
-\insertRef{hanson2000evaluation}{HealthMarkers};
+\insertRef{matthews1985homa}{HealthMarkers}
+\insertRef{katz2000quicki}{HealthMarkers}
+\insertRef{raynaud1999fasting}{HealthMarkers}
+\insertRef{avignon1999ogtt}{HealthMarkers}
+\insertRef{belfiore1998insulin}{HealthMarkers}
+\insertRef{sluiter1976gtolerance}{HealthMarkers}
+\insertRef{hanson2000evaluation}{HealthMarkers}
 \insertRef{anderson1995exploration}{HealthMarkers}
 }

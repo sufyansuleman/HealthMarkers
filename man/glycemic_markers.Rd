@@ -129,10 +129,10 @@ glycemic_markers(df, na_action = "omit", verbose = FALSE)
 }
 }
 \references{
-\insertRef{paulmichl2016spise}{HealthMarkers};
-\insertRef{bellogaytan2018metsir}{HealthMarkers};
-\insertRef{fruhbeck2018adiponectinleptin}{HealthMarkers};
-\insertRef{matthews1985homa}{HealthMarkers};
-\insertRef{simentalmendia2008tyg}{HealthMarkers};
+\insertRef{paulmichl2016spise}{HealthMarkers}
+\insertRef{bellogaytan2018metsir}{HealthMarkers}
+\insertRef{fruhbeck2018adiponectinleptin}{HealthMarkers}
+\insertRef{matthews1985homa}{HealthMarkers}
+\insertRef{simentalmendia2008tyg}{HealthMarkers}
 \insertRef{yang2006adiponectininsulin}{HealthMarkers}
 }

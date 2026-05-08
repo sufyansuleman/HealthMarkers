@@ -93,5 +93,9 @@ inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 
 }
 \references{
-\insertRef{zahorec2001}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
+\insertRef{zahorec2001}{HealthMarkers}
+\insertRef{hu2014sii}{HealthMarkers}
+\insertRef{qi2016siri}{HealthMarkers}
+\insertRef{proctor2011mgps}{HealthMarkers}
+\insertRef{pearson2003markers}{HealthMarkers}
 }

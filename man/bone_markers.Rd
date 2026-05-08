@@ -64,5 +64,6 @@ bone_markers(df, col_map)
 
 }
 \references{
-\insertRef{woo2002osta}{HealthMarkers}; \insertRef{who1994osteoporosis}{HealthMarkers}
+\insertRef{woo2002osta}{HealthMarkers}
+\insertRef{who1994osteoporosis}{HealthMarkers}
 }

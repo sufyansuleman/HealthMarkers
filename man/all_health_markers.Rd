@@ -59,6 +59,9 @@ For academic / clinical references tied to each derived marker or
 index, consult the help pages of the source functions (e.g. ?allostatic_load,
 ?bone_markers, ?vitamin_markers, ?inflammatory_markers, etc.). This
 aggregator provides integration only and does not restate citations.
+
+Aggregator wrapper. See underlying function help pages for full references
+across categories included by \code{which}.
 }
 \examples{
 # Quick smoke-test (lipid group only, no insulin)
@@ -77,8 +80,4 @@ all_health_markers(df, col_map = list(), which = c("lipid","liver"),
                    include_insulin = FALSE, normalize = "none", mode = "both",
                    verbose = FALSE, na_action = "keep")
 }
-}
-\references{
-Aggregator wrapper. See underlying function help pages for full references
-across categories included by \code{which}.
 }

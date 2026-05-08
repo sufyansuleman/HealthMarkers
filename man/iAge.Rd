@@ -105,10 +105,9 @@ iAge(
 
 }
 \references{
-\insertRef{sayed2021iage}{HealthMarkers} (conceptual background for iAge,
-not method-identical to this simplified implementation);
-\insertRef{harris1999il6crp}{HealthMarkers};
-\insertRef{bruunsgaard2003death}{HealthMarkers}.
+\insertRef{sayed2021iage}{HealthMarkers} (conceptual background; not method-identical to this implementation)
+\insertRef{harris1999il6crp}{HealthMarkers}
+\insertRef{bruunsgaard2003death}{HealthMarkers}
 }
 \seealso{
 \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=glycemic_markers]{glycemic_markers()}}

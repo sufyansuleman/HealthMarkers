@@ -79,7 +79,7 @@ col_map <- list(
 hormone_markers(df, col_map = col_map)
 }
 \references{
-\insertRef{sowers2009fai}{HealthMarkers};
-\insertRef{funder2016primaryaldosteronism}{HealthMarkers};
+\insertRef{sowers2009fai}{HealthMarkers}
+\insertRef{funder2016primaryaldosteronism}{HealthMarkers}
 \insertRef{clow2004car}{HealthMarkers}
 }

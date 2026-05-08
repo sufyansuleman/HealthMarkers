@@ -37,6 +37,9 @@ For scholarly references to specific indices (e.g., HOMA-IR, QUICKI,
 Raynaud, Belfiore, tracer-derived indices, adiposity-related IS metrics),
 consult the individual function help pages (e.g. ?fasting_is, ?ogtt_is,
 ?adipo_is, ?tracer_dxa_is). Citations are intentionally not duplicated here.
+
+Aggregator wrapper. See underlying function help pages for full references:
+fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
 }
 \examples{
 # Quick smoke-test (fasting indices only)
@@ -60,7 +63,5 @@ all_insulin_indices(df, col_map = list(
 }
 }
 \references{
-Aggregator wrapper. See underlying function help pages for full references:
-fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
 \insertRef{suleman2024is}{HealthMarkers}
 }

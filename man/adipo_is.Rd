@@ -76,11 +76,11 @@ cm <- as.list(names(df)); names(cm) <- names(df)
 out <- adipo_is(df, cm, verbose = FALSE, na_action = "keep")
 }
 \references{
-\insertRef{katz2000quicki}{HealthMarkers};
-\insertRef{amato2010vai}{HealthMarkers};
-\insertRef{kahn2005lap}{HealthMarkers};
-\insertRef{guerreroromero2018tyg}{HealthMarkers};
-\insertRef{dobiasova2001atherogenic}{HealthMarkers};
-\insertRef{belfiore1998insulin}{HealthMarkers};
+\insertRef{katz2000quicki}{HealthMarkers}
+\insertRef{amato2010vai}{HealthMarkers}
+\insertRef{kahn2005lap}{HealthMarkers}
+\insertRef{guerreroromero2018tyg}{HealthMarkers}
+\insertRef{dobiasova2001atherogenic}{HealthMarkers}
+\insertRef{belfiore1998insulin}{HealthMarkers}
 \insertRef{raynaud1999fasting}{HealthMarkers}
 }

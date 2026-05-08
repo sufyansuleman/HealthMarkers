@@ -97,7 +97,8 @@ kidney_failure_risk(
 
 }
 \references{
-\insertRef{tangri2011kfre}{HealthMarkers}; \insertRef{tangri2016meta}{HealthMarkers}
+\insertRef{tangri2011kfre}{HealthMarkers}
+\insertRef{tangri2016meta}{HealthMarkers}
 }
 \seealso{
 \code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=iAge]{iAge()}}, \code{\link[=impute_missing]{impute_missing()}}

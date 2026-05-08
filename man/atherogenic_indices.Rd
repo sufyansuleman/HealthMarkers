@@ -59,6 +59,6 @@ atherogenic_indices(df, col_map = cm)
 
 }
 \references{
-\insertRef{dobiasova2004aip}{HealthMarkers};
+\insertRef{dobiasova2004aip}{HealthMarkers}
 \insertRef{castelli1977framingham}{HealthMarkers}
 }

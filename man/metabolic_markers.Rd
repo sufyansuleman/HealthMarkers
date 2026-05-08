@@ -40,6 +40,9 @@ For references supporting liver, lipid, glycemic, MetS, adiposity and
 other domain-specific indices, see each underlying function's documentation
 (e.g. ?liver_markers, ?lipid_markers, ?glycemic_markers, ?metss, ?adiposity_sds).
 This wrapper omits repeated reference listings to avoid redundancy.
+
+Aggregator wrapper. See underlying function help pages for full references:
+all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
 }
 \examples{
 df <- data.frame(
@@ -48,8 +51,4 @@ df <- data.frame(
 )
 metabolic_markers(df, col_map = list(), which = c("lipid","liver"),
                   normalize = "none", mode = "both", verbose = FALSE, na_action = "keep")
-}
-\references{
-Aggregator wrapper. See underlying function help pages for full references:
-all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
 }

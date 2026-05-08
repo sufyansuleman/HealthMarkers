@@ -44,5 +44,6 @@ if (requireNamespace("mice", quietly = TRUE)) {
 
 }
 \references{
-\insertRef{rubin1987mi}{HealthMarkers}; \insertRef{vanbuuren2011mice}{HealthMarkers}
+\insertRef{rubin1987mi}{HealthMarkers}
+\insertRef{vanbuuren2011mice}{HealthMarkers}
 }
