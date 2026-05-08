@@ -52,14 +52,24 @@
 #' cm <- list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN")
 #' renal_markers(df, cm)
 #'
+#' @note
+#' `eGFR_cr` uses the 2009 CKD-EPI creatinine equation (Levey et al. 2009) with the
+#' Black-race multiplier (\eqn{\times 1.159}) retained. The 2021 race-free CKD-EPI
+#' equations (Inker et al., NEJM 2021) are not yet implemented; the `race` input
+#' is accepted for forward compatibility and used only for the 2009 race factor.
+#' `eGFR_cys` and `eGFR_combined` use Inker et al. (2012); note that
+#' `eGFR_combined` applies its own sex (\eqn{\times 1.008} female) and race
+#' (\eqn{\times 1.145} Black) multipliers, which differ from those of `eGFR_cr`.
+#' `NGAL`, `KIM1`, `NAG`, `Beta2Micro`, `IL18`, and `L_FABP` are
+#' **pass-through** columns — values are returned as-is with no formula applied.
+#'
 #' @references
 #' \insertRef{levey2009ckdepi}{HealthMarkers}
 #' \insertRef{inker2012cys}{HealthMarkers}
-#' \insertRef{inker2021racefree}{HealthMarkers}
-#' \insertRef{waikar2009feu}{HealthMarkers}
-#' \insertRef{parikh2011ngal}{HealthMarkers}
-#' \insertRef{vaidya2010kim1}{HealthMarkers}
-#' \insertRef{portilla2008lfabp}{HealthMarkers}
+#' \insertRef{waikar2009feu}{HealthMarkers} (FE_Urea formula source; bib content: Kaplan and Kohn 1992)
+#' \insertRef{parikh2011ngal}{HealthMarkers} (clinical context; NGAL is a pass-through biomarker)
+#' \insertRef{vaidya2010kim1}{HealthMarkers} (KIM-1 biomarker qualification; pass-through)
+#' \insertRef{portilla2008lfabp}{HealthMarkers} (L-FABP as AKI biomarker; pass-through)
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
@@ -240,10 +250,10 @@ renal_markers <- function(data,
   alpha <- ifelse(sexi == 1, -0.411, -0.329)
   min_ratio <- pmin(Cr / kappa, 1)
   max_ratio <- pmax(Cr / kappa, 1)
-  factor_race <- ifelse(race == "black", 1.159, 1)
-  factor_sex  <- 1 # male=1, female factor folded in alpha
+  factor_race   <- ifelse(race == "black", 1.159, 1)   # Levey 2009: Black race multiplier
+  factor_sex_cr <- ifelse(sexi == 1, 1, 1.018)          # Levey 2009: female multiplier
   eGFR_cr <- 141 * (min_ratio^alpha) * (max_ratio^-1.209) *
-    (0.993^age) * factor_race * factor_sex
+    (0.993^age) * factor_race * factor_sex_cr
 
   # 8) eGFR via cystatin C & combined equations
   if (!is.null(Cys)) {
@@ -252,11 +262,13 @@ renal_markers <- function(data,
     cys_sex <- ifelse(sexi == 1, 1, 0.932)
     eGFR_cys <- 133 * (min_cys^-0.499) * (max_cys^-1.328) *
       (0.996^age) * cys_sex
-    # combined creatinine + cystatin
+    # combined creatinine + cystatin (Inker 2012; sex/race factors differ from eGFR_cr)
+    factor_sex_comb  <- ifelse(sexi == 1, 1, 1.008)   # Inker 2012: female multiplier
+    factor_race_comb <- ifelse(race == "black", 1.145, 1)  # Inker 2012: race multiplier
     eGFR_combined <- 135 *
       (min_ratio^alpha) * (max_ratio^-0.601) *
       (min_cys^-0.375) * (max_cys^-0.711) *
-      (0.995^age) * factor_race * factor_sex
+      (0.995^age) * factor_race_comb * factor_sex_comb
   } else {
     eGFR_cys <- NA_real_
     eGFR_combined <- NA_real_

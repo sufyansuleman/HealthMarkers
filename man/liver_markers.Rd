@@ -69,10 +69,11 @@ Units (no automatic conversion):
 Formulas
 \itemize{
 \item FLI      = logistic(0.953\emph{ln(TG) + 0.139}BMI + 0.718\emph{ln(GGT) + 0.053}waist - 15.745) * 100
-\item NFS      = -1.675 + 0.037\emph{age + 0.094}BMI + 1.13\emph{diabetes + 0.99}(AST/ALT) - 0.013\emph{platelets - 0.66}albumin
+\item NFS      = -1.675 + 0.037\emph{age + 0.094}BMI + 1.13\emph{diabetes + 0.99}(AST/ALT) - 0.013\emph{platelets - 0.066}albumin
+(albumin in g/L; Angulo 2007 published coefficient -0.66 was for g/dL, divided by 10 here)
 \item APRI     = (AST / 40) / platelets * 100; assumes AST upper limit of normal = 40 U/L
 \item FIB-4    = (age * AST) / (platelets * sqrt(ALT))
-\item BARD     = 1 if BMI>=28, +1 if AST/ALT>=0.8, +1 if diabetes present; sum in 0,1,2,3
+\item BARD     = +1 if BMI>=28, +2 if AST/ALT>=0.8, +1 if diabetes present; sum in 0-4
 \item ALBI     = 0.66\emph{log10(bilirubin (mumol/L)) - 0.0852}albumin (g/L)
 \item MELD-XI  = 5.11\emph{ln(bilirubin (mg/dL)) + 11.76}ln(creatinine (mg/dL)) + 9.44
 }

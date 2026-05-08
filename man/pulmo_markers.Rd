@@ -44,7 +44,8 @@ A tibble with columns:
 \itemize{
 \item \code{fev1_pred}, \code{fev1_z},   \code{fev1_pctpred}, \code{fev1_LLN}
 \item \code{fvc_pred},  \code{fvc_z},    \code{fvc_pctpred},  \code{fvc_LLN}
-\item \code{fev1_fvc_ratio}, \code{fev1_fvc_pred}, \code{fev1_fvc_z}, \code{fev1_fvc_pctpred}, \code{fev1_fvc_LLN}
+\item \code{fev1_fvc_ratio}, \code{fev1_fvc_pred}, \code{fev1_fvc_z}, \code{fev1_fvc_pctpred},
+\code{fev1_fvc_LLN} (\code{NA} if the equation lacks native FEV1/FVC support in rspiro)
 }
 }
 \description{
@@ -56,6 +57,14 @@ and the FEV1/FVC ratio.
 Inputs are validated, missingness is handled via \code{na_action}, and heights are
 auto-detected as cm when any height > 3; otherwise interpreted as metres (no
 automatic unit conversion beyond that heuristic, preserving prior behavior).
+}
+\note{
+\code{fev1_fvc_z}, \code{fev1_fvc_pred}, and \code{fev1_fvc_LLN} are computed via
+rspiro's native FEV1/FVC parameter (equivalent to \code{param = "FEV1FVC"}).
+If that parameter is not supported by the installed rspiro version or
+equation, these columns fall back gracefully: \code{fev1_fvc_z} and
+\code{fev1_fvc_LLN} become \code{NA}; \code{fev1_fvc_pred} falls back to
+\code{fev1_pred / fvc_pred}.
 }
 \examples{
 if (requireNamespace("rspiro", quietly = TRUE)) {
@@ -70,7 +79,7 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 \references{
 \insertRef{quanjer2012}{HealthMarkers}
 \insertRef{hankinson1999spirometry}{HealthMarkers}
-\insertRef{bowerman2023gli}{HealthMarkers}
+\insertRef{bowerman2023gli}{HealthMarkers} (race-neutral GLI global equations and interpretation framework; used by rspiro's \code{GLIgl} equation)
 }
 \seealso{
 rspiro

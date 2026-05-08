@@ -58,7 +58,7 @@ allostatic_load(df, thresholds = list(CRP = 3))
 
 }
 \references{
-\insertRef{mcewen1993allostatic}{HealthMarkers}; \insertRef{seeman1997price}{HealthMarkers}; \insertRef{juster2010allostatic}{HealthMarkers}; \insertRef{wiley2021modeling}{HealthMarkers}
+\insertRef{seeman1997price}{HealthMarkers}
 }
 \seealso{
 \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}

@@ -11,6 +11,9 @@ knitr::opts_knit$set(purl = FALSE)
 ## Scope
 Compute a simplified, non-validated approximation of FRAX 10-year fracture risk (major osteoporotic and hip). Normalizes sex labels, applies HM-CS missing/extreme policies, and returns placeholder risks; it is **not** the proprietary FRAX algorithm.
 
+## Important note
+This function is an educational placeholder and must **not** be used for clinical decision-making, patient counseling, or guideline-based treatment selection.
+
 ## When to use
 - You need a placeholder fracture-risk proxy for demos or pipelines while acknowledging it is not clinical FRAX.
 - You want explicit NA and extreme-value handling (age/BMD bounds) with column mapping flexibility.

@@ -49,8 +49,8 @@ test_that("computes UACR, UPCR, Na/K ratio, and normalized tubular markers; name
       "Beta2Micro_per_gCr", "A1Micro_per_gCr", "IL18_per_gCr", "L_FABP_per_gCr")
   )
 
-  # UACR = (30/2)*1000 = 15000 mg/g
-  expect_equal(out$UACR, 15000)
+  # UACR = albumin(mg/L) * 100 / creatinine(mg/dL) = 30 * 100 / 2 = 1500 mg/g
+  expect_equal(out$UACR, 1500)
 
   # UPCR = urine_protein / (urine_creatinine*0.01) = 150/0.02 = 7500
   expect_equal(out$UPCR, 150 / (2 * 0.01))
@@ -71,10 +71,13 @@ test_that("computes UACR, UPCR, Na/K ratio, and normalized tubular markers; name
 
 test_that("albuminuria_stage and microalbuminuria factors have correct levels and values", {
   skip_on_cran()
+  # UACR = albumin * 100 / creatinine (mg/L and mg/dL respectively)
+  # Row1: 100*1/100  =  1 mg/g -> A1 (< 30)
+  # Row2: 100*30/100 = 30 mg/g -> A2 (30-300), micro
+  # Row3: 100*400/1  = 40000 mg/g -> A3 (> 300)
   df <- tibble(
-    # A1: UACR < 30 -> set 10
     urine_albumin    = c(1, 30, 400),
-    urine_creatinine = c(100, 1000, 1),
+    urine_creatinine = c(100, 100, 1),
     # optional fields omitted
   )
   out <- urine_markers(df)
@@ -85,7 +88,7 @@ test_that("albuminuria_stage and microalbuminuria factors have correct levels an
 
   expect_true(is.factor(out$microalbuminuria))
   expect_equal(levels(out$microalbuminuria), c("normal","micro"))
-  # UACR: 1/100*1000=10 -> normal; 30/1000*1000=30 -> micro; 400/1*1000=400000 -> normal
+  # UACR=1 -> normal; UACR=30 -> micro; UACR=40000 -> normal (> 300, macroalbuminuria not flagged as micro)
   expect_equal(as.character(out$microalbuminuria), c("normal","micro","normal"))
 })
 

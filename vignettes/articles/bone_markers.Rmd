@@ -22,6 +22,14 @@ Compute OSTA, ALMI, FMI, and BMD_Tscore from DXA and anthropometry, and optional
 - Optional pass-through: TBS, HSA, PINP, CTX, BSAP, Osteocalcin (coerced to numeric if mapped and present).
 - Row policy via na_action: keep (default), omit, or error on missing/non-finite required inputs.
 
+## Important: BMD reference values are user-supplied
+- `bone_markers()` does not estimate internal BMD reference norms.
+- You must provide `BMD_ref_mean` and `BMD_ref_sd` for the reference population you want to use.
+- Recommended sources:
+  - your own study/biobank reference distribution (preferred when available), or
+  - external norms such as NHANES-derived reference values.
+- This choice directly affects `BMD_Tscore = (BMD - BMD_ref_mean) / BMD_ref_sd`, so report your reference source in analysis notes.
+
 ## Load packages and example data
 The simulated data lack DXA values; we create simple placeholders for illustration only; replace with your measurements.
 
@@ -43,6 +51,11 @@ sim_small$BMD_ref_sd   <- 0.12
 
 ## Map columns
 Required keys plus optional markers (commented out below).
+
+`BMD_ref_mean` and `BMD_ref_sd` are required usage inputs and must be populated by you
+before calling `bone_markers()`. They are not computed inside the function.
+Use study-specific reference values when available; NHANES-based references are an
+acceptable external alternative.
 
 ```{r}
 col_map <- list(

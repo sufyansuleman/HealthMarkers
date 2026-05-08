@@ -3,15 +3,22 @@
 #' Computes GSH_GSSG_Ratio = reduced glutathione (GSH) / oxidized glutathione (GSSG).
 #'
 #' @param data Data frame with columns for GSH and GSSG (per col_map).
-#' @param col_map Named list with required keys GSH and GSSG. Defaults assume same names.
+#' @param col_map Named list with required keys `GSH` and `GSSG`. Defaults assume
+#'   column names match keys. Both columns must be in the same units (e.g., µmol/L).
 #' @param na_action One of c("keep","omit","error").
 #' @param verbose Logical; if `TRUE` (default), prints column mapping and a
 #'   per-column results summary.
 #' @return A tibble with column GSH_GSSG_Ratio. If an ID column is detected,
 #'   it is prepended.
 #'
+#' @note
+#' `GSH_GSSG_Ratio` is dimensionless only when `GSH` and `GSSG` are supplied in
+#' the same units (typically µmol/L). The formula `GSH / GSSG` is a standard
+#' biochemical redox ratio; no unit conversion is applied.
+#'
 #' @references
-#' \insertRef{glutathione_redox_review}{HealthMarkers}
+#' \insertRef{glutathione_redox_review}{HealthMarkers} (background review;
+#'   GSH/GSSG is a standard biochemical redox ratio, not a formula from this paper)
 #'
 #' @examples
 #' df <- data.frame(GSH = c(5, 3), GSSG = c(1, 0.5))

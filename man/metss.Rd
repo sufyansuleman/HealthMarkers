@@ -41,7 +41,10 @@ metss(
 
 \item{params}{Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
 list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
-is a named numeric vector c(mean=, sd=, coef=).}
+is a named numeric vector c(mean=, sd=, coef=). Default parameters are provided
+for NHW, NHB, and HW (male and female); no default HA parameters are included
+because Gurka et al. (2014) did not publish HA-specific coefficients. Passing
+\code{race = "HA"} with default params will raise an error; supply custom params if needed.}
 
 \item{col_map}{Optional named list mapping canonical keys (\code{waist}, \code{TG}, \code{HDL},
 \code{glucose}, \code{MAP}) to actual column names in \code{data}. If \code{NULL}, column names
@@ -74,7 +77,8 @@ Required columns (no unit conversion performed):
 \item waist (cm), bp_sys (mmHg), bp_dia (mmHg)
 \item TG, HDL_c, glucose (mmol/L)
 \item sex (1=male, 2=female)
-\item race (one of "NHW","NHB","HW","HA" or accepted synonyms)
+\item race (one of "NHW","NHB","HW", or accepted synonyms; "HA" is recognised
+by the normaliser but has no default params — see \code{params} argument)
 }
 }
 \details{
@@ -90,7 +94,7 @@ metss(df)
 }
 \references{
 \insertRef{gurka2014metsss}{HealthMarkers}
-\insertRef{deboer2015metss}{HealthMarkers}
-\insertRef{gurka2017metss}{HealthMarkers}
-\insertRef{deboer2018metss}{HealthMarkers}
+\insertRef{deboer2015metss}{HealthMarkers} (clinical application)
+\insertRef{gurka2017metss}{HealthMarkers} (clinical application)
+\insertRef{deboer2018metss}{HealthMarkers} (clinical application)
 }

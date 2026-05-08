@@ -2,14 +2,14 @@
 #' Compute a simplified Inflammatory Age Index (iAge) with QA and verbose summaries
 #'
 #' Implements a linear proxy for immunosenescence based on key inflammatory biomarkers,
-#' following the approach introduced by Sayed et al. for the inflammatory aging clock (iAge).
+#' conceptually inspired by the inflammatory aging clock (iAge) literature.
 #' This simplified iAge is computed as a weighted sum of C-reactive protein (CRP),
 #' interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa).
 #'
-#' By default, missing inputs are omitted in the sum (consistent with prior behavior).
-#' Optional diagnostics can warn on high missingness and scan for extreme values, with
-#' the ability to cap, warn, or error on extremes. Verbose mode prints step-by-step
-#' progress and a final summary.
+#' By default, rows with any missing required marker return NA in the index
+#' (consistent with the default behavior of other package functions).
+#' Optional diagnostics can warn on high missingness and implausible negative values.
+#' Verbose mode prints step-by-step progress and a final summary.
 #'
 #' Assumed units (no automatic unit conversion):
 #' - CRP: mg/L
@@ -21,6 +21,9 @@
 #'   machine learning model. This function provides a simple, linear proxy using
 #'   three canonical inflammatory biomarkers. It is not identical to the original
 #'   published iAge but is inspired by its rationale.
+#' - This proxy is intended for exploratory feature engineering and cohort-level
+#'   analyses. It must not be treated as a validated replacement for the published
+#'   iAge model or used as a standalone clinical decision metric.
 #'
 #' @param data A data.frame or tibble containing the biomarker columns mapped by `col_map`.
 #' @param col_map Named list mapping:
@@ -42,6 +45,10 @@
 #' @return A tibble with one column:
 #'   - iAge (numeric): the computed inflammatory age index.
 #'
+#' @references
+#' \insertRef{sayed2021iage}{HealthMarkers} (conceptual background; not method-identical to this implementation)
+#' \insertRef{harris1999il6crp}{HealthMarkers}
+#' \insertRef{bruunsgaard2003death}{HealthMarkers}
 #'
 #' @seealso [impute_missing()], [glycemic_markers()]
 #'
@@ -52,7 +59,7 @@
 #'   IL6  = c(2.0, 4.1, 1.5), # pg/mL
 #'   TNFa = c(1.0, 1.8, 0.9)  # pg/mL
 #' )
-#' # Default behavior (omit NAs in row-wise sum)
+#' # Default behavior (rows with any missing marker return NA)
 #' iAge(
 #'   df,
 #'   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
@@ -71,8 +78,6 @@
 #'   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"),
 #'   verbose = TRUE
 #' )
-#'
-#' @references \insertRef{sayed2021iage}{HealthMarkers}
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
@@ -109,7 +114,6 @@ iAge <- function(data,
   if (length(missing_cols)) {
     rlang::abort(sprintf("iAge(): column '%s' not found in data.", missing_cols[1]))
   }
-  used_cols_named <- stats::setNames(unname(used_cols), markers)
   # Validate weights
   if (is.null(weights)) rlang::abort("iAge(): `weights` must be a numeric vector.")
   if (!is.numeric(weights)) rlang::abort("iAge(): `weights` must be numeric.")

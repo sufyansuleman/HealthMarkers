@@ -50,6 +50,16 @@ Ratios computed:
 \item CAR_slope = (cortisol_30 - cortisol_0) / 30
 }
 }
+\details{
+Some inputs may be inferred when missing (for example, \code{free_T3} from
+\code{TSH} + \code{free_T4}, or \code{GH} from \code{IGF1}) using internal heuristics. These
+inferred values are intended for exploratory feature engineering only and
+must not be treated as clinical substitutes for directly measured assays.
+Ratios such as FAI, ARR, and CAR_slope have established literature usage;
+several other outputs are simple arithmetic composites included for
+feature-engineering convenience and may not have a single canonical
+derivation paper.
+}
 \examples{
 df <- data.frame(
   TT = c(15, 12), SHBG = c(40, 35), LH = c(5, 6), FSH = c(4, 5),
@@ -67,4 +77,9 @@ col_map <- list(
   prolactin = "Prl", cortisol_0 = "Cort0", cortisol_30 = "Cort30"
 )
 hormone_markers(df, col_map = col_map)
+}
+\references{
+\insertRef{sowers2009fai}{HealthMarkers};
+\insertRef{funder2016primaryaldosteronism}{HealthMarkers};
+\insertRef{clow2004car}{HealthMarkers}
 }

@@ -12,7 +12,7 @@ asrs_score(
   impute = c("none", "mean"),
   prefix = "ASRS",
   partA_items = sprintf("asrs_\%02d", 1:6),
-  partA_thresholds = rep(2, 6),
+  partA_thresholds = c(3, 3, 3, 4, 4, 4),
   partA_cutoff = 4,
   verbose = TRUE
 )
@@ -44,11 +44,18 @@ A tibble of score columns only: \code{ASRS_total}, \code{ASRS_partA_count}, \cod
 \description{
 Adult ADHD Self-Report Scale scoring
 }
+\note{
+Items are expected on a 0--4 scale (Never=0, Rarely=1, Sometimes=2,
+Often=3, Very Often=4). The default \code{partA_thresholds} follow the
+official WHO ASRS v1.1 guide: items 1--3 are positive at \eqn{\geq 3}
+(Often or Very Often) and items 4--6 at \eqn{\geq 4} (Very Often only).
+}
 \examples{
 df <- data.frame(matrix(2, nrow = 1, ncol = 18))
 names(df) <- sprintf("asrs_\%02d", 1:18)
 asrs_score(df)
 }
 \references{
-\insertRef{adler2006asrs}{HealthMarkers}; \insertRef{kessler2007asrs}{HealthMarkers}
+\insertRef{adler2006asrs}{HealthMarkers}
+\insertRef{kessler2007asrs}{HealthMarkers} (prevalence study; ASRS used as instrument)
 }

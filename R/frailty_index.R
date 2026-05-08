@@ -73,8 +73,6 @@
 #' \insertRef{mitnitski2001deficit}{HealthMarkers}
 #' \insertRef{rockwood2007frailty}{HealthMarkers}
 #' \insertRef{searle2008frailtyindex}{HealthMarkers}
-#' \insertRef{rockwood2020cfs}{HealthMarkers}
-#' \insertRef{cesari2014frailtyphenotype}{HealthMarkers}
 #'
 #' @export
 frailty_index <- function(data,

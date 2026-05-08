@@ -27,7 +27,6 @@
 #' @return A tibble with one SDS column per retained variable: \code{varname_SDS}, where \code{varname} is the original variable name (optionally prefixed by \code{prefix}).
 #'
 #' @references
-#' \insertRef{cole1992lms}{HealthMarkers};
 #' \insertRef{who1995anthro}{HealthMarkers}
 #'
 #' @examples

@@ -14,10 +14,13 @@
 #' Units and criteria (no automatic unit conversion):
 #' - Lipids (mmol/L): total cholesterol > 5.2 OR LDL-C > 3.4 OR HDL-C < 1.0 OR
 #'   triglycerides > 1.1 (age 0-9) OR > 1.5 (age 10-19) => dyslipidemia = 1.
+#'   Note: no TG cutoff is applied for adults aged >= 20 years.
 #' - Insulin resistance: z_HOMA > 1.28 (~=90th percentile) => insulin_resistance = 1.
-#'   z_HOMA is a within-sample or external z-score of HOMA-IR.
+#'   z_HOMA is a within-sample or external z-score of HOMA-IR (see Matthews et al. 1985).
 #' - Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in (39, 47) mmol/mol
-#'   => hyperglycemia = 1.
+#'   => hyperglycemia = 1. Boundaries are EXCLUSIVE (open intervals); boundary values
+#'   (exactly 5.6 or 6.9 mmol/L; exactly 39 or 47 mmol/mol) are not flagged.
+#'   ADA criteria use inclusive lower bound (>= 5.6 mmol/L, >= 39 mmol/mol).
 #' - Hypertension: either BP z-score > 1.64 (~=95th percentile) for systolic or diastolic
 #'   => hypertension = 1.
 #'
@@ -45,7 +48,21 @@
 #' - hyperglycemia
 #' - hypertension
 #'
+#' @note These flags are heuristic screening rules derived from published clinical
+#'   guidelines. They are not validated diagnostic criteria and should not replace
+#'   clinical judgment. The dyslipidemia and hypertension thresholds are designed
+#'   for pediatric populations (ages 0-19); for adults >= 20, only TC, LDL-C, and
+#'   HDL-C criteria contribute to the dyslipidemia flag.
+#'
 #' @seealso [liver_markers()], [lipid_markers()], [kidney_failure_risk()], [inflammatory_markers()]
+#'
+#' @references
+#' \insertRef{nhlbi2011lipids}{HealthMarkers}
+#' \insertRef{ada2024standards}{HealthMarkers}
+#' \insertRef{flynn2017bp}{HealthMarkers}
+#' \insertRef{matthews1985homa}{HealthMarkers}
+#'
+#' @importFrom Rdpack reprompt
 #' @importFrom rlang abort warn inform
 #' @importFrom dplyr transmute if_else
 #' @importFrom tibble as_tibble

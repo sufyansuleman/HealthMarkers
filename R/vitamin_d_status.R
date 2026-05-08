@@ -26,7 +26,9 @@
 #' df <- data.frame(VitD = c(18, 45, 72))
 #' vitamin_d_status(df)
 #'
-#' @references \insertRef{iomm2011calciumvitd}{HealthMarkers}; \insertRef{holick2011vitd}{HealthMarkers}
+#' @references
+#' \insertRef{iomm2011calciumvitd}{HealthMarkers}
+#' \insertRef{holick2011vitd}{HealthMarkers}
 #'
 #' @export
 vitamin_d_status <- function(

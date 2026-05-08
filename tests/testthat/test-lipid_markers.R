@@ -36,8 +36,8 @@ test_that("lipid_markers estimates LDL via Friedewald when LDL_c absent, no warn
   expect_no_warning(
     out2 <- lipid_markers(df2, col_map = list(TC = "TC", HDL_c = "HDL_c", TG = "TG"), verbose = FALSE)
   )
-  # LDL = 5 - 1 - (1.5/5) = 3.7
-  expect_equal(out2$ratio_LDL_HDL, 3.7 / 1)
+  # LDL (mmol/L Friedewald) = 5 - 1 - (1.5/2.2)
+  expect_equal(out2$ratio_LDL_HDL, (5 - 1 - (1.5 / 2.2)) / 1)
 })
 
 test_that("lipid_markers emits informational message for Friedewald LDL", {

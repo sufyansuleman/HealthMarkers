@@ -42,10 +42,11 @@
 #' @details
 #' Formulas 
 #' - FLI      = logistic(0.953*ln(TG) + 0.139*BMI + 0.718*ln(GGT) + 0.053*waist - 15.745) * 100
-#' - NFS      = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes + 0.99*(AST/ALT) - 0.013*platelets - 0.66*albumin
+#' - NFS      = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes + 0.99*(AST/ALT) - 0.013*platelets - 0.066*albumin
+#'   (albumin in g/L; Angulo 2007 published coefficient -0.66 was for g/dL, divided by 10 here)
 #' - APRI     = (AST / 40) / platelets * 100; assumes AST upper limit of normal = 40 U/L
 #' - FIB-4    = (age * AST) / (platelets * sqrt(ALT))
-#' - BARD     = 1 if BMI>=28, +1 if AST/ALT>=0.8, +1 if diabetes present; sum in 0,1,2,3
+#' - BARD     = +1 if BMI>=28, +2 if AST/ALT>=0.8, +1 if diabetes present; sum in 0-4
 #' - ALBI     = 0.66*log10(bilirubin (mumol/L)) - 0.0852*albumin (g/L)
 #' - MELD-XI  = 5.11*ln(bilirubin (mg/dL)) + 11.76*ln(creatinine (mg/dL)) + 9.44
 #'
@@ -307,14 +308,14 @@ liver_markers <- function(data,
   L <- 0.953 * log(TG) + 0.139 * BMI + 0.718 * log(GGT) + 0.053 * waist - 15.745
   FLI <- exp(L) / (1 + exp(L)) * 100
 
-  # NFS
+  # NFS (albumin in g/L; published coefficient -0.66 was for g/dL, divided by 10)
   NFS <- -1.675 +
     0.037 * age +
     0.094 * BMI +
     1.13 * diabetes +
     0.99 * (AST / ALT) -
     0.013 * platelets -
-    0.66 * albumin
+    0.066 * albumin
 
   # APRI
   APRI <- (AST / 40) / platelets * 100
@@ -322,8 +323,8 @@ liver_markers <- function(data,
   # FIB-4
   FIB4 <- (age * AST) / (platelets * sqrt(ALT))
 
-  # BARD
-  BARD <- as.integer((BMI >= 28) + (AST / ALT >= 0.8) + (diabetes == 1))
+  # BARD (AST/ALT >= 0.8 scores 2 points per Harrison 2008; range 0-4)
+  BARD <- as.integer((BMI >= 28) + 2L * (AST / ALT >= 0.8) + (diabetes == 1))
 
   # ALBI
   bili_umol <- bilirubin * 17.1

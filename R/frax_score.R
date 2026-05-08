@@ -4,6 +4,10 @@
 #' using a simplified, non-validated approximation based on FRAX risk factors.
 #' This is for development/demo only and does not implement the proprietary FRAX algorithm.
 #'
+#' @details
+#' Important: this function is an educational placeholder and must not be used for
+#' clinical decision-making, patient counseling, or guideline-based treatment selection.
+#'
 #' @param data A data frame or tibble with inputs.
 #' @param col_map Named list mapping required and optional inputs:
 #'   - Required: age, sex
@@ -18,9 +22,6 @@
 #' @examples
 #' df <- data.frame(Age = c(65, 72, 58), Sex = c("female", "female", "male"))
 #' frax_score(df)
-#' @references
-#' \insertRef{kanis2008frax}{HealthMarkers};
-#' \insertRef{kanis2020fraxoverview}{HealthMarkers}
 #' @export
 frax_score <- function(
   data,

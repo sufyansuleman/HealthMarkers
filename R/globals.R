@@ -43,9 +43,9 @@
 #' normalize_vec(x, "inverse", invnorm_denominator = "blom")
 #'
 #' @references
-#' Beasley TM, Erickson S, Allison DB (2009). Rank-based inverse normal transformations are increasingly used, but are they merited? Behav Genet, 39(2):214-227.
-#' Leys C, Ley C, Klein O, Bernard P, Licata L (2013). Detecting outliers: Do not use standard deviation around the mean, use median absolute deviation around the median. Front Psychol, 4:241. \doi{10.3389/fpsyg.2013.00241}
-#' Bland JM, Altman DG (1996). Standard deviations and standard errors. BMJ, 313(7047):41-42.
+#' \insertRef{beasley2009invnorm}{HealthMarkers}
+#' \insertRef{leys2013mad}{HealthMarkers}
+#' \insertRef{bland1996sd}{HealthMarkers}
 normalize_vec <- function(
   x,
   method = c("none", "z", "inverse", "range", "robust"),

@@ -117,7 +117,15 @@ test_that("extreme values trigger domain warnings", {
     mMRC    = c(6,2,-1),
     BMI     = c(5,90,22)
   )
-  expect_warning(bode_index(df, cm), class = "healthmarkers_bode_warn_fev1pct_range")
+  expect_warning(
+    withCallingHandlers(
+      bode_index(df, cm),
+      warning = function(w) {
+        if (inherits(w, c("healthmarkers_bode_warn_mmrc_range", "healthmarkers_bode_warn_bmi_range"))) invokeRestart("muffleWarning")
+      }
+    ),
+    class = "healthmarkers_bode_warn_fev1pct_range"
+  )
   # Values still produce output
   out <- suppressWarnings(bode_index(df, cm))
   expect_equal(nrow(out), 3L)

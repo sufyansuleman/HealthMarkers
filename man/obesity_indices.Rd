@@ -78,6 +78,12 @@ Units assumed (no automatic conversion beyond the specified weight/height option
 \item weight: kg (or lb if weight_unit = "lb")
 \item height: m (or cm if height_unit = "cm")
 \item waist, hip: cm
+}
+
+Note: WHtR, ABSI, BRI, CI, and RFM all require waist in the same unit as
+height (metres). The function converts waist internally (waist_cm / 100)
+for these five indices; users should always supply waist in cm.
+\itemize{
 \item sex: 0 = male, 1 = female (only required if include_RFM = TRUE)
 }
 }

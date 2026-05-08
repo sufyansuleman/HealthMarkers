@@ -62,6 +62,14 @@ HM-CS v2:
 \item High-missingness diagnostics at debug level only
 }
 }
+\note{
+\code{VitD_Z} and \code{Retinol_Z} are z-scores using \strong{user-supplied} reference
+mean and SD; no population reference equations are applied. All ratio markers
+(\code{B12_Fol_Ratio}, \code{Ferr_TSat_R}, \code{Cort_DHEA_R}, \code{T_E2_Ratio}, \code{TSH_fT4_R},
+\code{Toco_Lip_R}, \code{Mg_Zn_R}, \code{Cu_Zn_R}) are simple numerator/denominator
+divisions. \code{PIVKA_II}, \code{VitC}, \code{Homocysteine}, and \code{MMA} are
+\strong{pass-through} columns; no formula is applied.
+}
 \examples{
 \donttest{
 # All 25 required columns must be supplied
@@ -76,10 +84,10 @@ df <- data.frame(
 )
 vitamin_markers(df, verbose = FALSE)
 }
+
 }
 \references{
-Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266-281. \doi{10.1056/NEJMra070553}
-O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299-316. \doi{10.3390/nu2030299}
-Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500-510. \doi{10.1038/nri3863}
-Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101-163. (endocrine ratios context)
+\insertRef{holick2007vitddeficiency}{HealthMarkers} (vitamin D deficiency review; background)
+\insertRef{oleary2010vitb12}{HealthMarkers} (vitamin B12 in health and disease; background)
+\insertRef{ganz2015iron}{HealthMarkers} (iron homeostasis and ferritin; background)
 }

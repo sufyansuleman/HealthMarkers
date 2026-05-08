@@ -25,15 +25,14 @@
 #'   detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
 #'   as the first output column.
 #' @references
-#' \insertRef{matthews1985homa}{HealthMarkers};
-#' \insertRef{katz2000quicki}{HealthMarkers};
-#' \insertRef{raynaud1999fasting}{HealthMarkers};
-#' \insertRef{avignon1999ogtt}{HealthMarkers};
-#' \insertRef{belfiore1998insulin}{HealthMarkers};
-#' \insertRef{sluiter1976gtolerance}{HealthMarkers};
-#' \insertRef{hanson2000evaluation}{HealthMarkers};
-#' \insertRef{anderson1995exploration}{HealthMarkers};
-#' \insertRef{suleman2024is}{HealthMarkers}
+#' \insertRef{matthews1985homa}{HealthMarkers}
+#' \insertRef{katz2000quicki}{HealthMarkers}
+#' \insertRef{raynaud1999fasting}{HealthMarkers}
+#' \insertRef{avignon1999ogtt}{HealthMarkers}
+#' \insertRef{belfiore1998insulin}{HealthMarkers}
+#' \insertRef{sluiter1976gtolerance}{HealthMarkers}
+#' \insertRef{hanson2000evaluation}{HealthMarkers}
+#' \insertRef{anderson1995exploration}{HealthMarkers}
 #'
 #' @examples
 #' # Minimal example (units: G0 in mmol/L, I0 in pmol/L)

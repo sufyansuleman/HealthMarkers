@@ -7,7 +7,10 @@
 #' @param na_action One of c("keep","omit","error","ignore","warn").
 #' @param verbose Logical; if TRUE (default), emits progress via rlang::inform.
 #'
-#' @references \insertRef{miller2005spirometry}{HealthMarkers}; \insertRef{quanjer2012}{HealthMarkers}; \insertRef{ats2002sixmw}{HealthMarkers}; \insertRef{gold2025copd}{HealthMarkers}
+#' @references
+#' \insertRef{miller2005spirometry}{HealthMarkers} (spirometry standardisation methodology; background)
+#' \insertRef{quanjer2012}{HealthMarkers}
+#' \insertRef{gold2025copd}{HealthMarkers}
 #' @return Tibble with ratio_pre, ratio_post, copd_flag_fixed, obstruction_lln, fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
 #'
 #' @examples

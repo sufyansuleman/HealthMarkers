@@ -20,10 +20,18 @@
 #'   is detected, it is prepended.
 #'
 #' @examples
-#' df <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
-#' kyn_trp_ratio(df)
+#' # columns named exactly as the required keys (auto-detected)
+#' df <- data.frame(kynurenine = c(2500, 3100, 2700), tryptophan = c(55, 48, 62))
+#' kyn_trp_ratio(df, verbose = FALSE)
 #'
-#' @references \insertRef{fuchs1998ktr}{HealthMarkers}; \insertRef{damerell2025kyn}{HealthMarkers}
+#' # non-standard column names require explicit col_map
+#' df2 <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
+#' kyn_trp_ratio(df2, col_map = list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM"),
+#'              verbose = FALSE)
+#'
+#' @references
+#' \insertRef{fuchs1998ktr}{HealthMarkers};
+#' \insertRef{damerell2025kyn}{HealthMarkers} (clinical application in colorectal cancer)
 #'
 #' @export
 kyn_trp_ratio <- function(

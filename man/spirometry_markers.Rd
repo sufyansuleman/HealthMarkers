@@ -32,6 +32,8 @@ df <- data.frame(FEV1 = c(3.2, 2.1, 1.5), FVC = c(4.0, 3.0, 2.5))
 spirometry_markers(df)
 }
 \references{
-\insertRef{miller2005spirometry}{HealthMarkers}; \insertRef{quanjer2012}{HealthMarkers}; \insertRef{ats2002sixmw}{HealthMarkers}; \insertRef{gold2025copd}{HealthMarkers}
+\insertRef{miller2005spirometry}{HealthMarkers} (spirometry standardisation methodology; background)
+\insertRef{quanjer2012}{HealthMarkers}
+\insertRef{gold2025copd}{HealthMarkers}
 }
 \concept{respiratory-markers}

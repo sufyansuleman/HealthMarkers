@@ -5,9 +5,15 @@
 #' - NAFLD-LFS = -2.89 + 1.18*MetS + 0.45*Type2DM + 0.15*Insulin_u + 0.04*AST - 0.94*(AST/ALT)
 #'
 #' Assumptions/units:
-#' - ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via /6).
-#' - MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
+#' - ALT, AST in U/L; BMI in kg/m^2.
+#' - `insulin` is expected in muU/mL; if unavailable and `I0` is provided,
+#'   `I0` is interpreted in pmol/L and converted to muU/mL via /6.
+#' - MetS is taken directly if provided; otherwise derived using a simplified
+#'   NCEP-ATP III style rule when sufficient inputs exist.
 #' - Type2DM is taken from `diabetes` (logical or 0/1).
+#'
+#' These scores are surrogate indices for research/feature-engineering use and
+#' are not validated as standalone clinical diagnostic tools.
 #'
 #' @param data Data frame with needed columns (see col_map).
 #' @param col_map Named list mapping:

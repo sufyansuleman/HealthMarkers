@@ -15,12 +15,16 @@
 #'  - waist (cm), bp_sys (mmHg), bp_dia (mmHg)
 #'  - TG, HDL_c, glucose (mmol/L)
 #'  - sex (1=male, 2=female)
-#'  - race (one of "NHW","NHB","HW","HA" or accepted synonyms)
+#'  - race (one of "NHW","NHB","HW", or accepted synonyms; "HA" is recognised
+#'    by the normaliser but has no default params — see `params` argument)
 #'
 #' @param data data.frame / tibble.
 #' @param params Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
 #'   list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
-#'   is a named numeric vector c(mean=, sd=, coef=).
+#'   is a named numeric vector c(mean=, sd=, coef=). Default parameters are provided
+#'   for NHW, NHB, and HW (male and female); no default HA parameters are included
+#'   because Gurka et al. (2014) did not publish HA-specific coefficients. Passing
+#'   `race = "HA"` with default params will raise an error; supply custom params if needed.
 #' @param verbose Logical; if TRUE, prints column mapping and computing messages.
 #' @param na_action One of c("keep","omit","error","ignore","warn") for required-input NAs. Default "keep".
 #' @param na_warn_prop Proportion (0-1) above which high-missingness warning fires when na_action='warn'. Default 0.2.
@@ -34,9 +38,9 @@
 #' @export 
 #' @references
 #' \insertRef{gurka2014metsss}{HealthMarkers}
-#' \insertRef{deboer2015metss}{HealthMarkers}
-#' \insertRef{gurka2017metss}{HealthMarkers}
-#' \insertRef{deboer2018metss}{HealthMarkers}
+#' \insertRef{deboer2015metss}{HealthMarkers} (clinical application)
+#' \insertRef{gurka2017metss}{HealthMarkers} (clinical application)
+#' \insertRef{deboer2018metss}{HealthMarkers} (clinical application)
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
 #' @examples

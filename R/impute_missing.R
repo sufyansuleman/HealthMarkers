@@ -172,7 +172,9 @@ impute_missing <- function(data,
 #' }
 #' }
 #'
-#' @references \insertRef{rubin1987mi}{HealthMarkers}; \insertRef{vanbuuren2011mice}{HealthMarkers}
+#' @references
+#' \insertRef{rubin1987mi}{HealthMarkers}
+#' \insertRef{vanbuuren2011mice}{HealthMarkers}
 impute_mice <- function(data,
                         m    = 5,
                         cols = NULL,

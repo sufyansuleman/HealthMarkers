@@ -25,6 +25,19 @@
 #'   availability, inference notes, physiological range information
 #'   (informational only, values not altered), computing markers, and a
 #'   per-column results summary.
+#' @details
+#' Some inputs may be inferred when missing (for example, `free_T3` from
+#' `TSH` + `free_T4`, or `GH` from `IGF1`) using internal heuristics. These
+#' inferred values are intended for exploratory feature engineering only and
+#' must not be treated as clinical substitutes for directly measured assays.
+#' Ratios such as FAI, ARR, and CAR_slope have established literature usage;
+#' several other outputs are simple arithmetic composites included for
+#' feature-engineering convenience and may not have a single canonical
+#' derivation paper.
+#' @references
+#' \insertRef{sowers2009fai}{HealthMarkers}
+#' \insertRef{funder2016primaryaldosteronism}{HealthMarkers}
+#' \insertRef{clow2004car}{HealthMarkers}
 #' @return Tibble with one column per computable ratio. If an ID column is
 #'   detected in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended
 #'   as the first output column.
@@ -88,14 +101,14 @@ hormone_markers <- function(
       target  = "free_T3",
       needs   = c("TSH", "free_T4"),
       compute = function(d, cm) {
-        # Jostel/Midgley estimate: fT3 ~ fT4 * 0.33 * TSH^(-0.20)
-        # doi:10.1530/eje-10-0825
+        # Internal heuristic estimate: fT3 ~ fT4 * 0.33 * TSH^(-0.20)
+        # Source DOI not yet verified; keep as heuristic estimate.
         fT4 <- d[[cm[["free_T4"]]]]
         tsh <- d[[cm[["TSH"]]]]
         ifelse(is.finite(tsh) & tsh > 0 & is.finite(fT4),
                fT4 * 0.33 * tsh^(-0.20), NA_real_)
       },
-      label   = "free_T3 estimated from TSH + free_T4 (Jostel/Midgley)"
+      label   = "free_T3 estimated from TSH + free_T4 (heuristic)"
     ),
     list(
       target  = "GH",

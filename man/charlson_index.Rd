@@ -68,3 +68,6 @@ charlson_index(
 )
 
 }
+\references{
+\insertRef{charlson1987cci}{HealthMarkers}
+}

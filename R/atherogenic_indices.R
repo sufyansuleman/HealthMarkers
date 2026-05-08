@@ -24,7 +24,7 @@
 #'   in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended.
 #'
 #' @references
-#' \insertRef{dobiasova2004aip}{HealthMarkers};
+#' \insertRef{dobiasova2004aip}{HealthMarkers}
 #' \insertRef{castelli1977framingham}{HealthMarkers}
 #'
 #' @examples

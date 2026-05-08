@@ -43,5 +43,6 @@ df <- data.frame(Strength = c(1, 2, 0), Walking = c(0, 1, 2),
 sarc_f_score(df)
 }
 \references{
-\insertRef{malmstrom2013sarcf}{HealthMarkers}; \insertRef{malmstrom2016sarcf}{HealthMarkers}
+\insertRef{malmstrom2013sarcf}{HealthMarkers}
+\insertRef{malmstrom2016sarcf}{HealthMarkers} (SARC-F validation and functional outcome prediction; background)
 }

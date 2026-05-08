@@ -50,8 +50,17 @@ Derived markers:
 \item SIRI = neutrophils * monocytes / lymphocytes
 \item AISI = neutrophils * monocytes * platelets / lymphocytes
 \item CRP_category: "low" (<1 mg/L), "moderate" (1-3 mg/L), "high" (>3 mg/L) when CRP available
-\item Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets\emph{neutrophils}monocytes/lymphocytes;
+\item Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets * neutrophils * monocytes / lymphocytes;
 CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR passthrough.
+}
+
+Note:
+\itemize{
+\item These outputs are deterministic algebraic indices computed from the mapped
+laboratory variables. They are intended for feature engineering and descriptive
+analyses, not as standalone diagnosis/prognosis tools.
+\item References below document commonly used index definitions or interpretation
+conventions directly used in this implementation.
 }
 }
 \examples{
@@ -84,5 +93,5 @@ inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 
 }
 \references{
-\insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
+\insertRef{zahorec2001}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
 }

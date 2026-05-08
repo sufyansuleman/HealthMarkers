@@ -90,6 +90,16 @@ Includes input validation, NA/error handling, data quality warnings, and
 verbose progress via the package logger (hm_inform), aligned with HM-CS v3.
 }
 \details{
+Derivation: for each requested variable, SDS is calculated as
+\code{(observed_value - reference_mean) / reference_sd} using user-supplied
+reference statistics in \code{ref}.
+
+Usage note: this function does not derive normative reference values internally.
+Users should provide \code{ref} from the target population (preferred), or from an
+external source matched as closely as possible on age/sex/ethnicity/context.
+Interpretability depends on the quality and relevance of those supplied
+reference means and SDs.
+
 By default, returns a tibble with added \verb{[var]_sds} columns (tidyverse-friendly).
 For backward compatibility, you can request the previous list output.
 }
@@ -114,9 +124,4 @@ out_tbl <- calc_sds(
   sds_cap = 6,
   verbose = FALSE
 )
-}
-\references{
-\insertRef{cole1992lms}{HealthMarkers};
-\insertRef{deonis2006who}{HealthMarkers};
-\insertRef{kuczmarski2000cdc}{HealthMarkers}
 }

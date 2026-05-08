@@ -11,6 +11,8 @@
 #' Notes:
 #' - Units: height in meters; ALM, FM, weight in kilograms; BMD in g/cm^2; ALMI/FMI in kg/m^2.
 #' - Non-finite values are treated as NA; division by zero is prevented by input checks.
+#' - `BMD_ref_mean` and `BMD_ref_sd` must be supplied by the user from an appropriate
+#'   reference population (for example, study-specific values or external norms such as NHANES).
 #'
 #' @param data A `data.frame` or tibble with subject-level DXA/anthropometry data.
 #' @param col_map Named list mapping keys to column names. Required keys:
@@ -37,7 +39,9 @@
 #' )
 #' bone_markers(df, col_map)
 #'
-#' @references \insertRef{woo2002osta}{HealthMarkers}; \insertRef{kelly2009nhanesdxa}{HealthMarkers}; \insertRef{who1994osteoporosis}{HealthMarkers}
+#' @references
+#' \insertRef{woo2002osta}{HealthMarkers}
+#' \insertRef{who1994osteoporosis}{HealthMarkers}
 #'
 #' @importFrom tibble tibble
 #' @export

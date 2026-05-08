@@ -64,6 +64,5 @@ adiposity_sds_strat(
 )
 }
 \references{
-\insertRef{cole1992lms}{HealthMarkers};
 \insertRef{who1995anthro}{HealthMarkers}
 }

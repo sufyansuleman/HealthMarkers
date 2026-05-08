@@ -35,8 +35,17 @@ A tibble of score columns only: \code{K10_total}. Input columns are not included
 \description{
 K10 scoring
 }
+\note{
+K10 items are summed as provided. The original scale uses 1--5 coding
+(total 10--50); some implementations subtract 1 (0--4, total 0--40).
+The function accepts either coding, as no reverse-scored items are
+involved and \code{min_val}/\code{max_val} only affect reversal.
+}
 \examples{
 df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
                  k10_06 = 1, k10_07 = 2, k10_08 = 1, k10_09 = 0, k10_10 = 1)
 k10_score(df)
+}
+\references{
+\insertRef{kessler2002k6k10}{HealthMarkers}
 }

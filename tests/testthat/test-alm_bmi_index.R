@@ -150,7 +150,15 @@ test_that("extreme ALM/BMI values trigger domain warnings", {
     BMI    = c(8, 25, 70),
     Sex    = c("Male", "Female", "Male")
   )
-  expect_warning(alm_bmi_index(df, cm), class = "healthmarkers_alm_bmi_warn_alm_range")
+  expect_warning(
+    withCallingHandlers(
+      alm_bmi_index(df, cm),
+      warning = function(w) {
+        if (inherits(w, "healthmarkers_alm_bmi_warn_bmi_range")) invokeRestart("muffleWarning")
+      }
+    ),
+    class = "healthmarkers_alm_bmi_warn_alm_range"
+  )
   out <- suppressWarnings(alm_bmi_index(df, cm))
   expect_equal(nrow(out), 3L)
   expect_true(all(is.na(out$alm_bmi_ratio) | out$alm_bmi_ratio > 0))

@@ -53,6 +53,14 @@ Expected units:
 \item body_surface_area: m^2
 }
 }
+\note{
+\code{sweat_chloride} and \code{sweat_lactate} are \strong{pass-through} columns; no formula
+is applied. \code{Na_K_ratio} is a simple Na/K division. \code{sweat_rate} uses the
+mass-loss method: (weight\_before - weight\_after) / duration / body\_surface\_area
+(units: L/m\ifelse{html}{\out{&sup2;}}{^2}/h; assumes 1 kg \eqn{\approx} 1 L).
+Dill & Costill 1974 describes haematocrit-based blood-volume change, not sweat
+rate directly; cited here as background context only.
+}
 \examples{
 df <- tibble::tibble(
   sweat_chloride    = 45,
@@ -68,8 +76,8 @@ sweat_markers(df)
 
 }
 \references{
-Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis. Pediatrics. 1959;23(3):545-549. (Sweat chloride test origin)
-Dill DB, Costill DL. Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration. J Appl Physiol. 1974;37(2):247-248. \doi{10.1152/jappl.1974.37.2.247}
-Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4-S15.e1. \doi{10.1016/j.jpeds.2016.09.064}
-Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51-S60. \doi{10.1007/s40279-015-0395-7}
+\insertRef{gibson1959sweat}{HealthMarkers} (pilocarpine sweat chloride test origin; background)
+\insertRef{dill1974dehydration}{HealthMarkers} (dehydration and fluid loss context; background)
+\insertRef{farrell2017cf}{HealthMarkers} (CF diagnostic sweat chloride cutoffs; background)
+\insertRef{sawka2015hypo}{HealthMarkers} (sweat rate and hypohydration context; background)
 }

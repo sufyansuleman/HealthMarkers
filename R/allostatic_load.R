@@ -25,7 +25,7 @@
 #' `thresholds` explicitly would be required.
 #' @seealso \code{\link{adiposity_sds}}, \code{\link{adiposity_sds_strat}}
 #'
-#' @references \insertRef{mcewen1993allostatic}{HealthMarkers}; \insertRef{seeman1997price}{HealthMarkers}; \insertRef{juster2010allostatic}{HealthMarkers}; \insertRef{wiley2021modeling}{HealthMarkers}
+#' @references \insertRef{seeman1997price}{HealthMarkers}
 #'
 #' @examples
 #' df <- tibble::tibble(

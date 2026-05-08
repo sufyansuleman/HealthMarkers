@@ -52,5 +52,5 @@ df <- data.frame(ALM_kg = c(7.2, 5.8, 6.5), BMI = c(24, 28, 22),
 alm_bmi_index(df)
 }
 \references{
-\insertRef{mclean2014fnih}{HealthMarkers}; \insertRef{studenski2014fnih}{HealthMarkers}
+\insertRef{mclean2014fnih}{HealthMarkers}
 }

@@ -30,14 +30,23 @@
 #' @return A tibble with columns:
 #'   - `fev1_pred`, `fev1_z`,   `fev1_pctpred`, `fev1_LLN`
 #'   - `fvc_pred`,  `fvc_z`,    `fvc_pctpred`,  `fvc_LLN`
-#'   - `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`, `fev1_fvc_LLN`
+#'   - `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`,
+#'     `fev1_fvc_LLN` (`NA` if the equation lacks native FEV1/FVC support in rspiro)
 #'
 #' @seealso rspiro
+#'
+#' @note
+#' `fev1_fvc_z`, `fev1_fvc_pred`, and `fev1_fvc_LLN` are computed via
+#' rspiro's native FEV1/FVC parameter (equivalent to `param = "FEV1FVC"`).
+#' If that parameter is not supported by the installed rspiro version or
+#' equation, these columns fall back gracefully: `fev1_fvc_z` and
+#' `fev1_fvc_LLN` become `NA`; `fev1_fvc_pred` falls back to
+#' `fev1_pred / fvc_pred`.
 #'
 #' @references
 #' \insertRef{quanjer2012}{HealthMarkers}
 #' \insertRef{hankinson1999spirometry}{HealthMarkers}
-#' \insertRef{bowerman2023gli}{HealthMarkers}
+#' \insertRef{bowerman2023gli}{HealthMarkers} (race-neutral GLI global equations and interpretation framework; used by rspiro's `GLIgl` equation)
 #'
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
@@ -172,42 +181,49 @@ pulmo_markers <- function(data,
 
   hm_inform("pulmo_markers(): computing markers", level = "debug")
 
-  # Compute predicted, z-scores, LLN by equation
-  if (eq == "GLIgl") {
-    fev1_pred <- pred_fun(age, height_m, sex_code, param = "FEV1")
-    fvc_pred  <- pred_fun(age, height_m, sex_code, param = "FVC")
-    fev1_z    <- zscore_fun(age, height_m, sex_code, FEV1 = fev1)
-    fvc_z     <- zscore_fun(age, height_m, sex_code, FVC = fvc)
-    fev1_LLN  <- lln_fun(age, height_m, sex_code, param = "FEV1")
-    fvc_LLN   <- lln_fun(age, height_m, sex_code, param = "FVC")
-  } else {
-    fev1_pred <- pred_fun(age, height_m, sex_code, eth_code, param = "FEV1")
-    fvc_pred  <- pred_fun(age, height_m, sex_code, eth_code, param = "FVC")
-    fev1_z    <- zscore_fun(age, height_m, sex_code, eth_code, FEV1 = fev1)
-    fvc_z     <- zscore_fun(age, height_m, sex_code, eth_code, FVC = fvc)
-    fev1_LLN  <- lln_fun(age, height_m, sex_code, eth_code, param = "FEV1")
-    fvc_LLN   <- lln_fun(age, height_m, sex_code, eth_code, param = "FVC")
-  }
-
-  # Safe division helper
+  # Safe division helper (defined before rspiro calls)
   safe_div <- function(num, den) {
     out <- num / den
     out[!is.finite(out)] <- NA_real_
     out
   }
 
+  # Observed FEV1/FVC ratio (needed for rspiro FEV1FVC z-score calls)
+  obs_ratio <- safe_div(fev1, fvc)
+
+  # Compute predicted, z-scores, LLN by equation
+  if (eq == "GLIgl") {
+    fev1_pred  <- pred_fun(age, height_m, sex_code, param = "FEV1")
+    fvc_pred   <- pred_fun(age, height_m, sex_code, param = "FVC")
+    ratio_pred <- tryCatch(pred_fun(age, height_m, sex_code, param = "FEV1FVC"),
+                           error = function(e) safe_div(fev1_pred, fvc_pred))
+    fev1_z     <- zscore_fun(age, height_m, sex_code, FEV1 = fev1)
+    fvc_z      <- zscore_fun(age, height_m, sex_code, FVC = fvc)
+    ratio_z    <- tryCatch(zscore_fun(age, height_m, sex_code, FEV1FVC = obs_ratio),
+                           error = function(e) rep(NA_real_, length(obs_ratio)))
+    fev1_LLN   <- lln_fun(age, height_m, sex_code, param = "FEV1")
+    fvc_LLN    <- lln_fun(age, height_m, sex_code, param = "FVC")
+    ratio_LLN  <- tryCatch(lln_fun(age, height_m, sex_code, param = "FEV1FVC"),
+                           error = function(e) rep(NA_real_, length(age)))
+  } else {
+    fev1_pred  <- pred_fun(age, height_m, sex_code, eth_code, param = "FEV1")
+    fvc_pred   <- pred_fun(age, height_m, sex_code, eth_code, param = "FVC")
+    ratio_pred <- tryCatch(pred_fun(age, height_m, sex_code, eth_code, param = "FEV1FVC"),
+                           error = function(e) safe_div(fev1_pred, fvc_pred))
+    fev1_z     <- zscore_fun(age, height_m, sex_code, eth_code, FEV1 = fev1)
+    fvc_z      <- zscore_fun(age, height_m, sex_code, eth_code, FVC = fvc)
+    ratio_z    <- tryCatch(zscore_fun(age, height_m, sex_code, eth_code, FEV1FVC = obs_ratio),
+                           error = function(e) rep(NA_real_, length(obs_ratio)))
+    fev1_LLN   <- lln_fun(age, height_m, sex_code, eth_code, param = "FEV1")
+    fvc_LLN    <- lln_fun(age, height_m, sex_code, eth_code, param = "FVC")
+    ratio_LLN  <- tryCatch(lln_fun(age, height_m, sex_code, eth_code, param = "FEV1FVC"),
+                           error = function(e) rep(NA_real_, length(age)))
+  }
+
   # Percent predicted
   fev1_pctpred <- 100 * safe_div(fev1, fev1_pred)
   fvc_pctpred  <- 100 * safe_div(fvc,  fvc_pred)
-
-  # Ratio outputs
-  obs_ratio  <- safe_div(fev1, fvc)
-  pred_ratio <- safe_div(fev1_pred, fvc_pred)
-  # z-score: standardized by distribution of predicted ratio (fallback to NA if sd==0)
-  pr_sd <- stats::sd(pred_ratio, na.rm = TRUE)
-  pr_mu <- base::mean(pred_ratio, na.rm = TRUE)
-  ratio_z <- if (is.finite(pr_sd) && pr_sd > 0) (obs_ratio - pr_mu) / pr_sd else rep(NA_real_, length(obs_ratio))
-  ratio_pct <- 100 * safe_div(obs_ratio, pred_ratio)
+  ratio_pct    <- 100 * safe_div(obs_ratio, ratio_pred)
 
   out <- tibble::tibble(
     fev1_pred        = as.numeric(fev1_pred),
@@ -219,10 +235,10 @@ pulmo_markers <- function(data,
     fvc_pctpred      = as.numeric(fvc_pctpred),
     fvc_LLN          = as.numeric(fvc_LLN),
     fev1_fvc_ratio   = as.numeric(obs_ratio),
-    fev1_fvc_pred    = as.numeric(pred_ratio),
+    fev1_fvc_pred    = as.numeric(ratio_pred),
     fev1_fvc_z       = as.numeric(ratio_z),
     fev1_fvc_pctpred = as.numeric(ratio_pct),
-    fev1_fvc_LLN     = NA_real_
+    fev1_fvc_LLN     = as.numeric(ratio_LLN)
   )
 
   if (!is.null(id_col)) {

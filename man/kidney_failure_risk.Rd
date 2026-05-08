@@ -33,7 +33,7 @@ kidney_failure_risk(
 
 \item{na_warn_prop}{Numeric in \eqn{[0,1]}; per-variable threshold for high-missingness warnings. Default 0.2.}
 
-\item{verbose}{Logical; if TRUE, prints stepwise messages and a completion summary. Default FALSE.}
+\item{verbose}{Logical; if TRUE, prints stepwise messages and a completion summary. Default TRUE.}
 }
 \value{
 A tibble with:
@@ -45,13 +45,13 @@ A tibble with:
 \description{
 Compute 2- and 5-year risk of end-stage kidney disease using the original
 4-variable KFRE (Tangri et al., 2011) with optional data-quality diagnostics,
-extreme-value handling, and verbose progress reporting.
+and verbose progress reporting.
 }
 \details{
 This function preserves prior behavior by default:
 \itemize{
 \item Inputs are taken as-is; NA values propagate to outputs (na_action = "keep").
-\item No capping or out-of-range checks are applied unless requested.
+\item No capping or out-of-range checks are applied.
 }
 
 Units (no automatic conversion):
@@ -68,6 +68,8 @@ where male = 1 if sex == 1, else 0.
 \item Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).
 \item Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).
 \item The 2016 JAMA study provides a large, multinational validation of the KFRE in humans.
+\item This implementation computes the original 4-variable linear predictor and does not
+apply recalibration or alternative coefficient sets.
 }
 }
 \examples{
@@ -95,7 +97,7 @@ kidney_failure_risk(
 
 }
 \references{
-\insertRef{tangri2011kfre}{HealthMarkers}; \insertRef{tangri2016meta}{HealthMarkers}; \insertRef{matsushita2015egfr}{HealthMarkers}; \insertRef{tangri2020kfre}{HealthMarkers}
+\insertRef{tangri2011kfre}{HealthMarkers}; \insertRef{tangri2016meta}{HealthMarkers}
 }
 \seealso{
 \code{\link[=inflammatory_markers]{inflammatory_markers()}}, \code{\link[=iAge]{iAge()}}, \code{\link[=impute_missing]{impute_missing()}}

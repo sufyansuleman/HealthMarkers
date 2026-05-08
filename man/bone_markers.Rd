@@ -44,6 +44,8 @@ Notes:
 \itemize{
 \item Units: height in meters; ALM, FM, weight in kilograms; BMD in g/cm^2; ALMI/FMI in kg/m^2.
 \item Non-finite values are treated as NA; division by zero is prevented by input checks.
+\item \code{BMD_ref_mean} and \code{BMD_ref_sd} must be supplied by the user from an appropriate
+reference population (for example, study-specific values or external norms such as NHANES).
 }
 }
 \examples{
@@ -62,5 +64,5 @@ bone_markers(df, col_map)
 
 }
 \references{
-\insertRef{woo2002osta}{HealthMarkers}; \insertRef{kelly2009nhanesdxa}{HealthMarkers}; \insertRef{who1994osteoporosis}{HealthMarkers}
+\insertRef{woo2002osta}{HealthMarkers}; \insertRef{who1994osteoporosis}{HealthMarkers}
 }

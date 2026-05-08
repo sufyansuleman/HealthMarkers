@@ -384,9 +384,10 @@
 #' @param verbose Logical.
 #' @param na_action One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).
 #' @return A tibble of IS (and/or IR_) columns.
-#' @references
+#' @note
 #' Aggregator wrapper. See underlying function help pages for full references:
 #' fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
+#' @references
 #' \insertRef{suleman2024is}{HealthMarkers}
 #' @export
 #' @examples
@@ -477,7 +478,7 @@ all_insulin_indices <- function(
 #' @param verbose Logical.
 #' @param na_action One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).
 #' @return Data frame with original columns plus derived markers.
-#' @references
+#' @note
 #' Aggregator wrapper. See underlying function help pages for full references:
 #' all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
 #' @export
@@ -593,7 +594,7 @@ metabolic_markers <- function(
 #' @param verbose Logical.
 #' @param na_action One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).
 #' @return Data frame with original columns plus many derived markers.
-#' @references
+#' @note
 #' Aggregator wrapper. See underlying function help pages for full references
 #' across categories included by `which`.
 #' @export

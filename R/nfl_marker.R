@@ -21,7 +21,9 @@
 #' df <- data.frame(NfL = c(8.5, 14.2, 22.1))
 #' nfl_marker(df)
 #'
-#' @references \insertRef{simren2022nfl}{HealthMarkers}; \insertRef{disanto2017nfl}{HealthMarkers}
+#' @references
+#' \insertRef{simren2022nfl}{HealthMarkers}
+#' \insertRef{disanto2017nfl}{HealthMarkers}
 #'
 #' @export
 nfl_marker <- function(

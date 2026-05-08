@@ -11,6 +11,50 @@ knitr::opts_knit$set(purl = FALSE)
 ## Scope
 Fasting adipose insulin sensitivity/resistance indices in one call: Revised_QUICKI, McAuley_index, Adipo_inv, Belfiore_inv_FFA, TyG_inv, TG_HDL_C_inv, and sex-specific VAI/LAP (inverted so more negative = worse). Inputs are fasting; common glucose/insulin/TG/HDL unit conversions are handled internally.
 
+## Important: Understanding Inverted Indices
+
+Most indices returned by `adipo_is()` are **originally described in the literature as insulin RESISTANCE markers** (higher values = worse metabolic health). To align with the package's sensitivity-centric philosophy, we have **algebraically inverted** these indices so that **more negative values indicate worse insulin resistance** (equivalently, lower insulin sensitivity).
+
+### Inversion Strategy
+
+For indices that measure insulin resistance (IR), we apply the transformation:
+
+$$\text{Index}_{\text{inv}} = -\text{Index}_{\text{IR}}$$
+
+This ensures a consistent interpretation: **more negative = worse adipose insulin sensitivity**.
+
+#### Examples of Inversions
+
+- **TG_HDL_C_inv** = −(TG / HDL)  
+  Original resistance index: TG/HDL (higher = worse IR)
+
+- **TyG_inv** = −ln(TG × G0 / 2)  
+  Original resistance index: TyG (higher = worse IR)
+
+- **LAP_inv (sex-specific)** = −(LAP values)  
+  Original: Lipid Accumulation Product (Kahn 2005)
+
+- **VAI_inv (sex-specific)** = −(VAI values)  
+  Original: Visceral Adiposity Index (Amato 2010)
+
+- **Adipo_inv** = −(FFA × I0)  
+  Original: FFA × Fasting Insulin (higher = worse sensitivity)
+
+- **Belfiore_inv_FFA** = −2 / (I0 × FFA + 1)  
+  Original: Belfiore index for insulin sensitivity using FFA
+
+#### Indices NOT Inverted
+
+- **Revised_QUICKI** and **McAuley_index** are retained in their original orientation because they are **already described as insulin SENSITIVITY indices** (higher values = better sensitivity). No inversion is applied.
+
+### Practical Interpretation
+
+In plots and models:
+- More **negative** values of `*_inv` indices → **worse** adipose insulin sensitivity
+- More **positive** values of `Revised_QUICKI` or `McAuley_index` → **better** insulin sensitivity
+
+When combining multiple indices for clustering or PCA, use `normalize = "z"` to put all indices on a comparable scale before analysis.
+
 ## When to use this
 - You need multiple adipose IR markers for metabolic phenotyping or clustering.
 - You have fasting glucose, insulin, lipids, and adiposity (waist/BMI); sex is optional but improves VAI/LAP labeling.

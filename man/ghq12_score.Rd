@@ -47,3 +47,6 @@ df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
                  ghq12_09 = 2, ghq12_10 = 1, ghq12_11 = 0, ghq12_12 = 1)
 ghq12_score(df, method = "likert")
 }
+\references{
+\insertRef{goldberg1988ghq12}{HealthMarkers}
+}

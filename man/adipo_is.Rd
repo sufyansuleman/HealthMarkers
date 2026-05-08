@@ -55,6 +55,12 @@ Reported indices (higher magnitude of negative "_inv" values implies worse adipo
 \item Adipo_inv = -(FFA * I0 (muU/mL))
 \item Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 }
+
+\strong{Inversion Note}: Most indices (VAI, LAP, TyG, TG/HDL, Adipo, Belfiore) are algebraically
+inverted from their original insulin RESISTANCE definitions so that more negative values
+consistently indicate worse adipose insulin sensitivity. Revised_QUICKI and McAuley_index
+are retained in their original orientation (already sensitivity indices; higher = better).
+See the vignette for detailed interpretation guidance.
 }
 \examples{
 df <- tibble::tibble(

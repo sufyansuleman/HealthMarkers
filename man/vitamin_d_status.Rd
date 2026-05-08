@@ -50,5 +50,6 @@ vitamin_d_status(df)
 
 }
 \references{
-\insertRef{iomm2011calciumvitd}{HealthMarkers}; \insertRef{holick2011vitd}{HealthMarkers}
+\insertRef{iomm2011calciumvitd}{HealthMarkers}
+\insertRef{holick2011vitd}{HealthMarkers}
 }

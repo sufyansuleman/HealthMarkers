@@ -3,13 +3,13 @@
 library(testthat)
 library(tibble)
 
-# Base synthetic data for testing (uses kg, m, and cm-like magnitudes for waist/hip)
+# Base synthetic data for testing (realistic units: kg, m, cm)
 base_df <- tibble(
-  wt    = c(80, 90),  # kg
-  ht    = c(2, 2),    # m
-  waist = c(1, 2),    # cm-like numeric used consistently across formulas
-  hip   = c(1, 1),    # cm-like numeric
-  sex   = c(0, 1)     # 0 = male, 1 = female
+  wt    = c(80, 90),      # kg
+  ht    = c(1.75, 1.65),  # m
+  waist = c(90, 100),     # cm
+  hip   = c(100, 110),    # cm
+  sex   = c(0, 1)         # 0 = male, 1 = female
 )
 
 # 1) Core metrics without options
@@ -28,19 +28,19 @@ test_that("core metrics compute correctly without options", {
 
   # weight_kg and height_m
   expect_equal(out$weight_kg, c(80, 90))
-  expect_equal(out$height_m, c(2, 2))
+  expect_equal(out$height_m, c(1.75, 1.65))
 
   # BMI and category
-  expect_equal(out$BMI, c(20, 22.5))
-  expect_equal(out$BMI_cat, rep("Normal weight", 2))
+  expect_equal(out$BMI, c(80 / 1.75^2, 90 / 1.65^2), tolerance = 1e-6)
+  expect_equal(out$BMI_cat, c("Overweight", "Obesity Class I"))
 
-  # WHR and waist_to_height_ratio
-  expect_equal(out$WHR, c(1, 2))
-  expect_equal(out$waist_to_height_ratio, c(0.5, 1))
+  # WHR and waist_to_height_ratio (both in cm for WHtR)
+  expect_equal(out$WHR, c(90 / 100, 100 / 110), tolerance = 1e-8)
+  expect_equal(out$waist_to_height_ratio, c(90 / 175, 100 / 165), tolerance = 1e-8)
 
   # waist_to_BMI_ratio and weight_to_height_ratio
-  expect_equal(out$waist_to_BMI_ratio, c(1 / 20, 2 / 22.5))
-  expect_equal(out$weight_to_height_ratio, c(40, 45))
+  expect_equal(out$waist_to_BMI_ratio, c(90 / (80 / 1.75^2), 100 / (90 / 1.65^2)), tolerance = 1e-6)
+  expect_equal(out$weight_to_height_ratio, c(80 / 1.75, 90 / 1.65), tolerance = 1e-8)
 
   # Advanced indices produce finite numerics
   expect_true(all(is.finite(out$AVI)))
@@ -71,12 +71,12 @@ test_that("adjust_WHR adds WHRadjBMI and include_RFM adds RFM", {
   # Residuals sum to zero (by construction for linear model residuals)
   expect_equal(sum(out2$WHRadjBMI), 0)
 
-  # RFM computation (64 - 20*(height_m/waist) + 12*sex)
+  # RFM computation: 64 - 20*(height_m / (waist_cm/100)) + 12*sex
   expected_rfm <- c(
-    64 - 20 * (2 / 1) + 12 * 0,
-    64 - 20 * (2 / 2) + 12 * 1
+    64 - 20 * (1.75 / (90 / 100)) + 12 * 0,
+    64 - 20 * (1.65 / (100 / 100)) + 12 * 1
   )
-  expect_equal(out2$RFM, expected_rfm)
+  expect_equal(out2$RFM, expected_rfm, tolerance = 1e-8)
 })
 
 # 3) Units conversion

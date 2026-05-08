@@ -30,6 +30,8 @@
 #' @return A tibble with one column: charlson_index (integer total score; NA if any
 #' required input is NA and na_action != "omit").
 #'
+#' @references \insertRef{charlson1987cci}{HealthMarkers}
+#'
 #' @examples
 #' patient <- tibble::tibble(
 #'   mi=0, chf=0, pvd=0, stroke=0, dementia=0, copd=0, rheum=0, ulcer=0,

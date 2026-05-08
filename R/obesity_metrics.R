@@ -16,6 +16,10 @@
 #' - weight: kg (or lb if weight_unit = "lb")
 #' - height: m (or cm if height_unit = "cm")
 #' - waist, hip: cm
+#'
+#' Note: WHtR, ABSI, BRI, CI, and RFM all require waist in the same unit as
+#' height (metres). The function converts waist internally (waist_cm / 100)
+#' for these five indices; users should always supply waist in cm.
 #' - sex: 0 = male, 1 = female (only required if include_RFM = TRUE)
 #'
 #' @param data A data.frame or tibble containing the input columns.
@@ -197,7 +201,7 @@ obesity_indices <- function(data,
 
   # Derived indices
   WHR <- safe_div(wst, hip, "WHR")
-  WHtR <- safe_div(wst, out$height_m, "waist_to_height_ratio")
+  WHtR <- safe_div(wst, out$height_m * 100, "waist_to_height_ratio")  # both in cm
   waist_BMI <- safe_div(wst, out$BMI, "waist_to_BMI_ratio")
   wt_ht <- safe_div(out$weight_kg, out$height_m, "weight_to_height_ratio")
 
@@ -205,15 +209,15 @@ obesity_indices <- function(data,
   BAI <- ifelse(out$height_m > 0, hip / (out$height_m^1.5) - 18, NA_real_)
 
   denom_absi <- (safe_pow(out$BMI, 2/3)) * (safe_pow(out$height_m, 1/2))
-  ABSI <- safe_div(wst, denom_absi, "ABSI")
+  ABSI <- safe_div(wst / 100, denom_absi, "ABSI")  # waist to metres (Krakauer 2012)
 
-  # BRI: guard height_m > 0
-  ratio <- ifelse(out$height_m > 0, wst / (2 * pi * out$height_m), NA_real_)
+  # BRI: waist converted to metres; ratio must be dimensionless (Thomas et al. 2013)
+  ratio <- ifelse(out$height_m > 0, (wst / 100) / (2 * pi * out$height_m), NA_real_)
   BRI <- 364.2 - 365.5 * sqrt(pmax(0, 1 - (ratio^2)))
 
-  # CI: guard divisor > 0
+  # CI: waist converted to metres per Valdez (1991)
   denom_ci <- 0.109 * sqrt(safe_div(out$weight_kg, out$height_m, "CI_internal"))
-  CI <- safe_div(wst, denom_ci, "CI")
+  CI <- safe_div(wst / 100, denom_ci, "CI")
 
   # Attach derived columns
   out$WHR <- WHR
@@ -254,7 +258,7 @@ obesity_indices <- function(data,
       )
       sex_01[invalid_sex] <- NA_real_
     }
-    denom_rfm <- wst
+    denom_rfm <- wst / 100  # convert waist from cm to metres (height_m already in m)
     RFM <- 64 - 20 * safe_div(out$height_m, denom_rfm, "RFM") + 12 * sex_01
     out$RFM <- as.numeric(RFM)
   }

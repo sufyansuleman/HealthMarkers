@@ -14,7 +14,8 @@ oxidative_markers(
 \arguments{
 \item{data}{Data frame with columns for GSH and GSSG (per col_map).}
 
-\item{col_map}{Named list with required keys GSH and GSSG. Defaults assume same names.}
+\item{col_map}{Named list with required keys \code{GSH} and \code{GSSG}. Defaults assume
+column names match keys. Both columns must be in the same units (e.g., µmol/L).}
 
 \item{na_action}{One of c("keep","omit","error").}
 
@@ -28,11 +29,17 @@ it is prepended.
 \description{
 Computes GSH_GSSG_Ratio = reduced glutathione (GSH) / oxidized glutathione (GSSG).
 }
+\note{
+\code{GSH_GSSG_Ratio} is dimensionless only when \code{GSH} and \code{GSSG} are supplied in
+the same units (typically µmol/L). The formula \code{GSH / GSSG} is a standard
+biochemical redox ratio; no unit conversion is applied.
+}
 \examples{
 df <- data.frame(GSH = c(5, 3), GSSG = c(1, 0.5))
 oxidative_markers(df, col_map = list(GSH="GSH", GSSG="GSSG"))
 
 }
 \references{
-\insertRef{glutathione_redox_review}{HealthMarkers}
+\insertRef{glutathione_redox_review}{HealthMarkers} (background review;
+GSH/GSSG is a standard biochemical redox ratio, not a formula from this paper)
 }

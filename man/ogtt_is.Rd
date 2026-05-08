@@ -72,6 +72,15 @@ Notes
 \itemize{
 \item Conversions mirror existing implementation to preserve outputs. Some
 formulas intentionally use unconverted inputs (as in prior code).
+\item Modified_stumvoll and Stumvoll_Demographics use raw pmol/L and mmol/L
+as published in Stumvoll et al. (2000). BigttSi likewise uses raw units.
+\item Matsuda_AUC is a non-standard AUC-based variant; the original Matsuda
+index (Matsuda_ISI) uses time-point means, not AUCs.
+\item Cederholm_index uses log(I0 + I120) as implemented (sum, not mean);
+Gutt_index uses log((I0 + I120)/2) (mean). This mirrors published
+implementations; the difference is a constant log(2) offset.
+\item Ifc_inv and HIRI_inv are derived composite proxies not attributed to a
+single formula publication; treat as research tools.
 \item Logs are safe: log(x) becomes NA when x <= 0 or non-finite.
 }
 }
@@ -96,14 +105,14 @@ ogtt_is(
 )
 }
 \references{
-\insertRef{matsuda1999ogtt}{HealthMarkers};
-\insertRef{gutt2000isi}{HealthMarkers};
-\insertRef{stumvoll2000ogtt}{HealthMarkers};
-\insertRef{hansen2007bigtt}{HealthMarkers};
-\insertRef{avignon1999ogtt}{HealthMarkers};
-\insertRef{belfiore1998insulin}{HealthMarkers};
-\insertRef{matthews1985homa}{HealthMarkers};
-\insertRef{suleman2024is}{HealthMarkers}
+\insertRef{matsuda1999ogtt}{HealthMarkers}
+\insertRef{gutt2000isi}{HealthMarkers}
+\insertRef{stumvoll2000ogtt}{HealthMarkers}
+\insertRef{hansen2007bigtt}{HealthMarkers}
+\insertRef{avignon1999ogtt}{HealthMarkers}
+\insertRef{belfiore1998insulin}{HealthMarkers}
+\insertRef{matthews1985homa}{HealthMarkers}
+\insertRef{suleman2024is}{HealthMarkers} (genetic epidemiology study reviewing IS indices)
 }
 \seealso{
 \code{\link[=fasting_is]{fasting_is()}}, \code{\link[=normalize_vec]{normalize_vec()}}

@@ -14,8 +14,15 @@
 #' - SIRI = neutrophils * monocytes / lymphocytes
 #' - AISI = neutrophils * monocytes * platelets / lymphocytes
 #' - CRP_category: "low" (<1 mg/L), "moderate" (1-3 mg/L), "high" (>3 mg/L) when CRP available
-#' - Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets*neutrophils*monocytes/lymphocytes;
+#' - Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets * neutrophils * monocytes / lymphocytes;
 #'   CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR passthrough.
+#'
+#' Note:
+#' - These outputs are deterministic algebraic indices computed from the mapped
+#'   laboratory variables. They are intended for feature engineering and descriptive
+#'   analyses, not as standalone diagnosis/prognosis tools.
+#' - References below document commonly used index definitions or interpretation
+#'   conventions directly used in this implementation.
 #'
 #' @param data data.frame or tibble
 #' @param col_map named list mapping keys to column names in `data`.
@@ -57,7 +64,12 @@
 #' inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 #' }
 #'
-#' @references \insertRef{zahorec2001}{HealthMarkers}; \insertRef{templeton2014nlr}{HealthMarkers}; \insertRef{hu2014sii}{HealthMarkers}; \insertRef{qi2016siri}{HealthMarkers}; \insertRef{fois2020aisi}{HealthMarkers}; \insertRef{proctor2011mgps}{HealthMarkers}; \insertRef{pearson2003markers}{HealthMarkers}
+#' @references
+#' \insertRef{zahorec2001}{HealthMarkers}
+#' \insertRef{hu2014sii}{HealthMarkers}
+#' \insertRef{qi2016siri}{HealthMarkers}
+#' \insertRef{proctor2011mgps}{HealthMarkers}
+#' \insertRef{pearson2003markers}{HealthMarkers}
 #' @export
 inflammatory_markers <- function(data, col_map = NULL,
                                  panel      = c("auto", "classic", "eos", "both"),
@@ -125,7 +137,6 @@ inflammatory_markers <- function(data, col_map = NULL,
     rlang::abort("inflammatory_markers(): missing col_map entries for: albumin",
                  class = "healthmarkers_inflammatory_markers_error_missing_map")
   }
-  avail_req <- intersect(req_keys, names(col_map))
 
   # --- Verbose: optional inputs
   if (isTRUE(verbose)) {

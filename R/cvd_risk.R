@@ -360,6 +360,7 @@ cvd_risk_scorescvd <- function(data, ...) {
 #' @examples
 #' df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
 #' cvd_marker_aip(df)
+#' @references \insertRef{dobiasova2004aip}{HealthMarkers}
 #' @export
 cvd_marker_aip <- function(data,
                            col_map = NULL,

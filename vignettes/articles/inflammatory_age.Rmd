@@ -11,6 +11,9 @@ knitr::opts_knit$set(purl = FALSE)
 ## Scope
 Compute a simplified inflammatory age proxy (`iAge`) as a weighted sum of CRP, IL6, and TNFa. Supports NA policies and high-missingness warnings. Units assumed: CRP mg/L; IL6, TNFa pg/mL (no internal conversions).
 
+## Important note
+This function is a practical proxy and not the published multi-marker iAge model. Use it for exploratory feature engineering and cohort-level analyses, not as a standalone clinical decision metric.
+
 ## Background
 
 `iAge` is a simplified implementation of the inflammatory age proxy described by

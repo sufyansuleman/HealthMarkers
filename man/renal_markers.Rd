@@ -72,6 +72,17 @@ Expected units (no automatic conversion performed):
 \item creatinine_urine: mg/dL
 }
 }
+\note{
+\code{eGFR_cr} uses the 2009 CKD-EPI creatinine equation (Levey et al. 2009) with the
+Black-race multiplier (\eqn{\times 1.159}) retained. The 2021 race-free CKD-EPI
+equations (Inker et al., NEJM 2021) are not yet implemented; the \code{race} input
+is accepted for forward compatibility and used only for the 2009 race factor.
+\code{eGFR_cys} and \code{eGFR_combined} use Inker et al. (2012); note that
+\code{eGFR_combined} applies its own sex (\eqn{\times 1.008} female) and race
+(\eqn{\times 1.145} Black) multipliers, which differ from those of \code{eGFR_cr}.
+\code{NGAL}, \code{KIM1}, \code{NAG}, \code{Beta2Micro}, \code{IL18}, and \code{L_FABP} are
+\strong{pass-through} columns — values are returned as-is with no formula applied.
+}
 \examples{
 df <- tibble::tibble(Cr = 1.0, Age = 40, Sex = 1, Race = "white", BUN = 14)
 cm <- list(creatinine = "Cr", age = "Age", sex = "Sex", race = "Race", BUN = "BUN")
@@ -81,9 +92,8 @@ renal_markers(df, cm)
 \references{
 \insertRef{levey2009ckdepi}{HealthMarkers}
 \insertRef{inker2012cys}{HealthMarkers}
-\insertRef{inker2021racefree}{HealthMarkers}
-\insertRef{waikar2009feu}{HealthMarkers}
-\insertRef{parikh2011ngal}{HealthMarkers}
-\insertRef{vaidya2010kim1}{HealthMarkers}
-\insertRef{portilla2008lfabp}{HealthMarkers}
+\insertRef{waikar2009feu}{HealthMarkers} (FE_Urea formula source; bib content: Kaplan and Kohn 1992)
+\insertRef{parikh2011ngal}{HealthMarkers} (clinical context; NGAL is a pass-through biomarker)
+\insertRef{vaidya2010kim1}{HealthMarkers} (KIM-1 biomarker qualification; pass-through)
+\insertRef{portilla2008lfabp}{HealthMarkers} (L-FABP as AKI biomarker; pass-through)
 }

@@ -70,13 +70,17 @@ Assumed units (no automatic conversion of inputs except where noted):
 \item leptin, adiponectin: ng/mL
 }
 
+These indices are intended for research and feature-engineering applications.
+The prediabetes and diabetes flags apply standard HbA1c cut-offs (WHO/IDF criteria)
+but this function is not validated as a clinical diagnostic tool.
+
 Quality controls and options:
 \itemize{
 \item Input validation ensures required variables exist and are numeric-coercible.
 \item Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).
 \item Missing or non-finite inputs are handled via \code{na_action}.
 \item Logs and divisions are computed safely (non-positive arguments yield NA).
-\item Optional detection/handling of extreme input values via \code{check_extreme} and \code{extreme_action}.
+\item Physiological range notes are printed when \code{verbose = TRUE} (values are not altered).
 \item Verbose mode prints step-by-step progress and a completion summary.
 }
 

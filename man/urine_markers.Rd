@@ -58,6 +58,14 @@ Expected units:
 \item Optional tubular markers above assumed mg/L when normalized per g creatinine
 }
 }
+\note{
+UACR formula: albumin (mg/L) / creatinine (g/L) = albumin (mg/L) \eqn{\times} 100 /
+creatinine (mg/dL). UPCR and per-gCr tubular markers use the same creatinine
+denominator: \verb{gCr_den = creatinine (mg/dL) \\times 0.01} (= g/L).
+Tubular markers (NGAL, KIM-1, NAG, Beta-2-microglobulin, alpha-1-microglobulin,
+IL-18, L-FABP) are \strong{pass-through} columns normalised per g creatinine; no
+formula other than creatinine adjustment is applied.
+}
 \examples{
 df <- tibble::tibble(
   urine_albumin    = 30,
@@ -72,26 +80,10 @@ df <- tibble::tibble(
 urine_markers(df)
 }
 \references{
-\subsection{Original derivations}{
-\itemize{
-\item Mogensen CE. Microalbuminuria predicts clinical proteinuria and early mortality in maturity-onset diabetes.
-N Engl J Med. 1984;310(6):356-360. \doi{10.1056/NEJM198402093100602} (UACR and microalbuminuria concept)
-\item Ginsberg JM, Chang BS, Matarese RA, Garella S. Use of single voided urine samples to estimate quantitative proteinuria.
-N Engl J Med. 1983;309(25):1543-1546. \doi{10.1056/NEJM198312223092503} (UPCR derivation and validation)
-\item Bokenkamp A, Domanetzki M, Zinck R, Schumann G, Byrd D, Brodehl J. Reference values for urinary albumin excretion in healthy children.
-Pediatr Nephrol. 1998;12(6):478-483. \doi{10.1007/s004670050480} (Albumin excretion normative values)
-}
-}
-
-\subsection{Validation and consensus}{
-\itemize{
-\item \insertRef{kdigo2012ckd}{HealthMarkers} (Albuminuria stages A1-A3; UACR cutoffs)
-\item de Zeeuw D, Parving HH, Henning RH. Microalbuminuria as an early marker for cardiovascular disease.
-J Am Soc Nephrol. 2006;17(8):2100-2105. \doi{10.1681/ASN.2006040388} (Prognostic validation of UACR)
-\item Ichimura T, Hung CC, Yang SA, Stevens JL, Bonventre JV. Kidney injury molecule-1: a tissue and urinary biomarker for nephrotoxicant-induced renal injury.
-Am J Physiol Renal Physiol. 2004;286(3):F552-F563. \doi{10.1152/ajprenal.00285.2002} (KIM-1 as tubular marker)
-\item Portilla D, Dent C, Sugaya T, et al. Liver fatty acid-binding protein as a biomarker of acute kidney injury after cardiac surgery.
-Kidney Int. 2008;73(4):465-472. \doi{10.1038/sj.ki.5002688} (L-FABP biomarker validation)
-}
-}
+\insertRef{mogensen1984uacr}{HealthMarkers}
+\insertRef{ginsberg1983upcr}{HealthMarkers}
+\insertRef{kdigo2012ckd}{HealthMarkers} (albuminuria staging A1–A3 UACR cutoffs)
+\insertRef{dezeeuw2006uacr}{HealthMarkers} (prognostic UACR validation; background)
+\insertRef{ichimura2004kim1}{HealthMarkers} (KIM-1 tubular biomarker; pass-through normalization, background)
+\insertRef{portilla2008lfabp}{HealthMarkers} (L-FABP tubular biomarker; pass-through normalization, background)
 }

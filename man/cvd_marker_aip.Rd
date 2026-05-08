@@ -39,3 +39,6 @@ Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
 cvd_marker_aip(df)
 }
+\references{
+\insertRef{dobiasova2004aip}{HealthMarkers}
+}

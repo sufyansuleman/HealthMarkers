@@ -41,5 +41,6 @@ df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
 gad7_score(df)
 }
 \references{
-\insertRef{spitzer2006gad7}{HealthMarkers}; \insertRef{plummer2016gad7}{HealthMarkers}
+\insertRef{spitzer2006gad7}{HealthMarkers}
+\insertRef{plummer2016gad7}{HealthMarkers} (validation meta-analysis)
 }

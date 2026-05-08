@@ -11,6 +11,12 @@
 #' - `LAP_Men`, `LAP_Women`
 #' - `TyG_BMI`
 #'
+#' Assumed units (no automatic conversion except where noted):
+#' - TC, HDL_c, TG, LDL_c: mmol/L
+#' - glucose: mmol/L (converted to mg/dL internally for TyG_BMI)
+#' - waist: cm
+#' - BMI: kg/m^2
+#'
 #' @param data A `data.frame` or `tibble` containing your lipid
 #'   (and optional anthropometry/glucose) data.
 #' @param col_map Named list mapping:
@@ -53,7 +59,7 @@
 #' - If `glucose` is absent but `G0` is present (or vice versa), the alias
 #'   is derived automatically.
 #' - If `LDL_c` is absent, it is always estimated via Friedewald
-#'   (TC - HDL - TG/5). An informational message is emitted when
+#'   (TC - HDL - TG/2.2, mmol/L form). An informational message is emitted when
 #'   `verbose = TRUE`.
 #'
 #' @references
@@ -61,7 +67,7 @@
 #' \insertRef{amato2010vai}{HealthMarkers}
 #' \insertRef{kahn2005lap}{HealthMarkers}
 #' \insertRef{lee2016tyg}{HealthMarkers}
-#' \insertRef{lee2020tygbmi}{HealthMarkers}
+#' \insertRef{lee2020tygbmi}{HealthMarkers} (clinical application)
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble
 #' @importFrom rlang abort warn inform
@@ -147,13 +153,13 @@ lipid_markers <- function(
 
   # --- Friedewald LDL if absent (always derivable: TC, HDL_c, TG required) ---
   if (!"LDL_c" %in% used_opt_keys) {
-    data[["LDL_c_fried"]] <- data[[col_map$TC]] - data[[col_map$HDL_c]] - data[[col_map$TG]] / 5
+    data[["LDL_c_fried"]] <- data[[col_map$TC]] - data[[col_map$HDL_c]] - data[[col_map$TG]] / 2.2
     col_map[["LDL_c"]]    <- "LDL_c_fried"
     used_opt_keys         <- c(used_opt_keys, "LDL_c")
     missing_opt           <- setdiff(missing_opt, "LDL_c")
     if (isTRUE(verbose))
       hm_inform(
-        sprintf("%s(): pre-computation: LDL_c estimated via Friedewald (TC - HDL - TG/5)", fn_name),
+        sprintf("%s(): pre-computation: LDL_c estimated via Friedewald (TC - HDL - TG/2.2)", fn_name),
         level = "inform"
       )
   }

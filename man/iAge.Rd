@@ -48,15 +48,15 @@ A tibble with one column:
 }
 \description{
 Implements a linear proxy for immunosenescence based on key inflammatory biomarkers,
-following the approach introduced by Sayed et al. for the inflammatory aging clock (iAge).
+conceptually inspired by the inflammatory aging clock (iAge) literature.
 This simplified iAge is computed as a weighted sum of C-reactive protein (CRP),
 interleukin-6 (IL6), and tumor necrosis factor-alpha (TNFa).
 }
 \details{
-By default, missing inputs are omitted in the sum (consistent with prior behavior).
-Optional diagnostics can warn on high missingness and scan for extreme values, with
-the ability to cap, warn, or error on extremes. Verbose mode prints step-by-step
-progress and a final summary.
+By default, rows with any missing required marker return NA in the index
+(consistent with the default behavior of other package functions).
+Optional diagnostics can warn on high missingness and implausible negative values.
+Verbose mode prints step-by-step progress and a final summary.
 
 Assumed units (no automatic unit conversion):
 \itemize{
@@ -71,6 +71,9 @@ Note:
 machine learning model. This function provides a simple, linear proxy using
 three canonical inflammatory biomarkers. It is not identical to the original
 published iAge but is inspired by its rationale.
+\item This proxy is intended for exploratory feature engineering and cohort-level
+analyses. It must not be treated as a validated replacement for the published
+iAge model or used as a standalone clinical decision metric.
 }
 }
 \examples{
@@ -80,7 +83,7 @@ df <- tibble(
   IL6  = c(2.0, 4.1, 1.5), # pg/mL
   TNFa = c(1.0, 1.8, 0.9)  # pg/mL
 )
-# Default behavior (omit NAs in row-wise sum)
+# Default behavior (rows with any missing marker return NA)
 iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
@@ -102,7 +105,10 @@ iAge(
 
 }
 \references{
-\insertRef{sayed2021iage}{HealthMarkers}
+\insertRef{sayed2021iage}{HealthMarkers} (conceptual background for iAge,
+not method-identical to this simplified implementation);
+\insertRef{harris1999il6crp}{HealthMarkers};
+\insertRef{bruunsgaard2003death}{HealthMarkers}.
 }
 \seealso{
 \code{\link[=impute_missing]{impute_missing()}}, \code{\link[=glycemic_markers]{glycemic_markers()}}

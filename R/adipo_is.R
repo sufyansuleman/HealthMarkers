@@ -19,6 +19,12 @@
 #' - Adipo_inv = -(FFA * I0 (muU/mL))
 #' - Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 #'
+#' **Inversion Note**: Most indices (VAI, LAP, TyG, TG/HDL, Adipo, Belfiore) are algebraically
+#' inverted from their original insulin RESISTANCE definitions so that more negative values
+#' consistently indicate worse adipose insulin sensitivity. Revised_QUICKI and McAuley_index
+#' are retained in their original orientation (already sensitivity indices; higher = better).
+#' See the vignette for detailed interpretation guidance.
+#'
 #' @param data Data frame or tibble with required columns mapped by `col_map`
 #' @param col_map Named list mapping keys to columns: G0, I0, TG, HDL_c, FFA, waist, bmi
 #' @param normalize One of c("none","z","inverse","range","robust"); default "none"
@@ -34,12 +40,12 @@
 #' is prepended as the first output column.
 #'
 #' @references
-#' \insertRef{katz2000quicki}{HealthMarkers};
-#' \insertRef{amato2010vai}{HealthMarkers};
-#' \insertRef{kahn2005lap}{HealthMarkers};
-#' \insertRef{guerreroromero2018tyg}{HealthMarkers};
-#' \insertRef{dobiasova2001atherogenic}{HealthMarkers};
-#' \insertRef{belfiore1998insulin}{HealthMarkers};
+#' \insertRef{katz2000quicki}{HealthMarkers}
+#' \insertRef{amato2010vai}{HealthMarkers}
+#' \insertRef{kahn2005lap}{HealthMarkers}
+#' \insertRef{guerreroromero2018tyg}{HealthMarkers}
+#' \insertRef{dobiasova2001atherogenic}{HealthMarkers}
+#' \insertRef{belfiore1998insulin}{HealthMarkers}
 #' \insertRef{raynaud1999fasting}{HealthMarkers}
 #'
 #' @examples

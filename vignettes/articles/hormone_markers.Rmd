@@ -11,6 +11,9 @@ knitr::opts_knit$set(purl = FALSE)
 ## Scope
 Compute nine hormone ratios with built-in QA: `FAI`, `LH_FSH`, `E2_P`, `T3_T4`, `ARR`, `Ins_Glu`, `GH_IGF1`, `PRL_T`, and `CAR_slope`. Inputs are coerced to numeric, non-finite become `NA`, and optional extreme screening can warn, cap, blank, or error on out-of-range labs.
 
+## Important note
+When missing inputs are inferred (for example, estimated `free_T3` or `GH`), those values are heuristic placeholders for exploratory feature engineering only and are not clinical substitutes for direct assays.
+
 ## When to use
 - You have a complete hormone panel (mapped via `col_map`) and need quick ratio features.
 - You want explicit NA handling and optional extreme-value screening to avoid crashes on bad labs.

@@ -62,6 +62,15 @@ Expected units:
 \item Fat mass, weight: kg; BMI: kg/m^2
 }
 }
+\note{
+\code{tracer_palmitate_SI} and \code{tracer_glycerol_SI} are simple rate/fat_mass
+ratios; the Steele (1959) non-steady-state tracer equation is \strong{not}
+implemented here. The LIRI formula coefficients (−0.091, 0.4, 0.346,
+−0.408, 0.435) are attributed to Gastaldelli et al. but the paper cited
+(\code{gastaldelli2004betacell}) covers beta-cell dysfunction, not LIRI
+derivation; the primary LIRI source should be verified. In adipose-only
+mode (I30 absent) the mean-insulin term uses I0 twice as a fallback.
+}
 \examples{
 df <- data.frame(
   I0 = c(60, 75), rate_glycerol = c(2.1, 2.8), rate_palmitate = c(1.8, 2.3),
@@ -75,12 +84,11 @@ tracer_dxa_is(df, col_map = col_map)
 
 }
 \references{
-\insertRef{groop1989tracer}{HealthMarkers};
-\insertRef{steele1959glucose}{HealthMarkers};
-\insertRef{boston2003minmod}{HealthMarkers};
-\insertRef{roden1996ffa}{HealthMarkers};
-\insertRef{gastaldelli2004betacell}{HealthMarkers};
-\insertRef{karpe2011ffa}{HealthMarkers};
-\insertRef{petersen2007muscleinsulin}{HealthMarkers};
-\insertRef{santomauro1999acipimox}{HealthMarkers}
+\insertRef{groop1989tracer}{HealthMarkers} (tracer lipolysis methodology; background)
+\insertRef{steele1959glucose}{HealthMarkers} (tracer dilution theory; Steele equation not directly implemented — background)
+\insertRef{roden1996ffa}{HealthMarkers} (FFA-induced insulin resistance mechanism; background)
+\insertRef{gastaldelli2004betacell}{HealthMarkers} (beta-cell dysfunction context; LIRI formula source unverified — background)
+\insertRef{karpe2011ffa}{HealthMarkers} (FFA and insulin resistance review; background)
+\insertRef{petersen2007muscleinsulin}{HealthMarkers} (muscle insulin resistance and metabolic syndrome; background)
+\insertRef{santomauro1999acipimox}{HealthMarkers} (FFA lowering and insulin sensitivity; background)
 }

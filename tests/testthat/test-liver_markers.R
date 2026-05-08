@@ -19,12 +19,12 @@ test_that("computes markers for a minimal valid example", {
   expect_equal(out$FLI, exp(L) / (1 + exp(L)) * 100, tolerance = 1e-8)
   expect_equal(
     out$NFS,
-    -1.675 + 0.037 * 30 + 0.094 * 24 + 1.13 * 0 + 0.99 * (25/20) - 0.013 * 250 - 0.66 * 45,
+    -1.675 + 0.037 * 30 + 0.094 * 24 + 1.13 * 0 + 0.99 * (25/20) - 0.013 * 250 - 0.066 * 45,
     tolerance = 1e-8
   )
   expect_equal(out$APRI, (25/40)/250*100, tolerance = 1e-8)
   expect_equal(out$FIB4, (30*25)/(250*sqrt(20)), tolerance = 1e-8)
-  expect_equal(out$BARD, as.integer((24 >= 28) + (25/20 >= 0.8) + (0 == 1)))
+  expect_equal(out$BARD, as.integer((24 >= 28) + 2L*(25/20 >= 0.8) + (0 == 1)))
   expect_equal(out$ALBI, log10(1.0*17.1)*0.66 + 45*(-0.0852), tolerance = 1e-8)
   expect_equal(out$MELD_XI, 5.11*log(1.0) + 11.76*log(0.9) + 9.44, tolerance = 1e-8)
 })
@@ -126,7 +126,12 @@ test_that("extreme values are not altered; non-positive inputs propagate NaN to 
   cm <- as.list(names(df)); names(cm) <- names(df)
 
   expect_warning(
-    out <- liver_markers(df, col_map = cm, verbose = FALSE),
+    withCallingHandlers(
+      out <- liver_markers(df, col_map = cm, verbose = FALSE),
+      warning = function(w) {
+        if (conditionMessage(w) == "NaNs produced") invokeRestart("muffleWarning")
+      }
+    ),
     "log\\(\\) undefined"
   )
   expect_true(!is.finite(out$FLI))
@@ -165,7 +170,7 @@ test_that("diabetes logical values compute BARD correctly without warnings", {
     out <- liver_markers(df, col_map = cm),
     NA
   )
-  expect_equal(out$BARD, 3L) # BMI>=28 +1, AST/ALT>=0.8 +1, diabetes TRUE +1
+  expect_equal(out$BARD, 4L) # BMI>=28 +1, AST/ALT>=0.8 +2 (Harrison 2008), diabetes TRUE +1
 })
 
 test_that("vectorized diabetes logical values contribute per-row", {
@@ -213,7 +218,7 @@ test_that("liver_markers returns all seven markers and correct values", {
   # NFS
   expect_equal(
     out$NFS,
-    -1.675 + 0.037 * 30 + 0.094 * 24 + 1.13 * 0 + 0.99 * (25 / 20) - 0.013 * 250 - 0.66 * 45,
+    -1.675 + 0.037 * 30 + 0.094 * 24 + 1.13 * 0 + 0.99 * (25 / 20) - 0.013 * 250 - 0.066 * 45,
     tolerance = 1e-8
   )
 
@@ -224,7 +229,7 @@ test_that("liver_markers returns all seven markers and correct values", {
   expect_equal(out$FIB4, (30 * 25) / (250 * sqrt(20)), tolerance = 1e-8)
 
   # BARD
-  expected_bard <- as.integer((24 >= 28) + (25 / 20 >= 0.8) + (0 == 1))
+  expected_bard <- as.integer((24 >= 28) + 2L*(25 / 20 >= 0.8) + (0 == 1))
   expect_equal(out$BARD, expected_bard)
 
   # ALBI
@@ -460,7 +465,7 @@ test_that("denominator and transform warnings fire (isolated tests)", {
   )
 })
 
-test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
+test_that("diabetes='1' as character does not warn and BARD is computed as 4", {
   skip_on_cran()
   df <- tibble(
     BMI = 30, waist = 90, TG = 150, GGT = 30, age = 50,
@@ -473,7 +478,8 @@ test_that("diabetes='1' as character does not warn and BARD is computed as 3", {
     out <- liver_markers(df, col_map = cm),
     NA
   )
-  expect_equal(out$BARD, 3L)
+  # BMI=30(+1) + AST/ALT=1.33>=0.8(+2) + diabetes="1"->1L(+1) = 4
+  expect_equal(out$BARD, 4L)
 })
 
 test_that("non-binary diabetes values warn about coercion and propagate NA into BARD", {

@@ -41,6 +41,13 @@ A tibble of score columns only: \code{MDQ_symptom_count}, \code{MDQ_clustering},
 \description{
 Mood Disorder Questionnaire scoring
 }
+\note{
+The impairment column is expected to be \strong{binary} (1 = impaired, 0 = not).
+The original MDQ impairment question uses a 4-category scale
+(1 = no problem, 2 = minor, 3 = moderate, 4 = serious); if the raw
+4-category response is passed, the caller must recode it to binary
+(e.g., \code{impair_binary = as.integer(impair_raw >= 3)}) before scoring.
+}
 \examples{
 df <- data.frame(matrix(0, nrow = 1, ncol = 13))
 names(df) <- sprintf("mdq_\%02d", 1:13)

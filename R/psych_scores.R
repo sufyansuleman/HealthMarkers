@@ -260,7 +260,9 @@ phq9_score <- function(data,
 
 #' GAD-7 scoring
 #' @inheritParams phq9_score
-#' @references \insertRef{spitzer2006gad7}{HealthMarkers}; \insertRef{plummer2016gad7}{HealthMarkers}
+#' @references
+#' \insertRef{spitzer2006gad7}{HealthMarkers}
+#' \insertRef{plummer2016gad7}{HealthMarkers} (validation meta-analysis)
 #' @return A tibble of score columns only: `GAD7_total` and `GAD7_severity` (factor). Input columns are not included.
 #' @examples
 #' df <- data.frame(gad7_01 = 0, gad7_02 = 1, gad7_03 = 2, gad7_04 = 1,
@@ -300,7 +302,9 @@ gad7_score <- function(data,
 #' K6 scoring
 #' @inheritParams phq9_score
 #' @param cutoff Threshold for the K6 case flag.
-#' @references \insertRef{prochaska2012k6}{HealthMarkers}
+#' @references
+#' \insertRef{kessler2002k6k10}{HealthMarkers}
+#' \insertRef{prochaska2012k6}{HealthMarkers} (validation study)
 #' @return A tibble of score columns only: `K6_total` and `K6_case`. Input columns are not included.
 #' @examples
 #' df <- data.frame(k6_01 = 0, k6_02 = 1, k6_03 = 2, k6_04 = 1, k6_05 = 0, k6_06 = 1)
@@ -332,6 +336,13 @@ k6_score <- function(data, col_map = list(),
 
 #' K10 scoring
 #' @inheritParams phq9_score
+#' @note
+#' K10 items are summed as provided. The original scale uses 1--5 coding
+#' (total 10--50); some implementations subtract 1 (0--4, total 0--40).
+#' The function accepts either coding, as no reverse-scored items are
+#' involved and `min_val`/`max_val` only affect reversal.
+#' @references
+#' \insertRef{kessler2002k6k10}{HealthMarkers}
 #' @return A tibble of score columns only: `K10_total`. Input columns are not included.
 #' @examples
 #' df <- data.frame(k10_01 = 0, k10_02 = 1, k10_03 = 2, k10_04 = 1, k10_05 = 0,
@@ -364,6 +375,8 @@ k10_score <- function(data, col_map = list(),
 #' @inheritParams phq9_score
 #' @param method Scoring method: `likert` (0-3 per item) or `binary` (0/1 per item).
 #' @param case_cutoff_binary Cut-off for case status when using binary scoring.
+#' @references
+#' \insertRef{goldberg1988ghq12}{HealthMarkers}
 #' @return A tibble of score columns only: `GHQ12_total_likert` (likert method) or `GHQ12_total_binary` and `GHQ12_case_binary` (binary method). Input columns are not included.
 #' @examples
 #' df <- data.frame(ghq12_01 = 0, ghq12_02 = 1, ghq12_03 = 2, ghq12_04 = 1,
@@ -490,7 +503,14 @@ isi_score <- function(data, col_map = list(),
 #' @param symptom_cutoff Minimum symptom count for a positive screen.
 #' @param require_clustering Require clustering item == 1 to be positive.
 #' @param require_impairment Require impairment item == 1 to be positive.
-#' @references \insertRef{hirschfeld2000mdq}{HealthMarkers}
+#' @note
+#' The impairment column is expected to be **binary** (1 = impaired, 0 = not).
+#' The original MDQ impairment question uses a 4-category scale
+#' (1 = no problem, 2 = minor, 3 = moderate, 4 = serious); if the raw
+#' 4-category response is passed, the caller must recode it to binary
+#' (e.g., `impair_binary = as.integer(impair_raw >= 3)`) before scoring.
+#' @references
+#' \insertRef{hirschfeld2000mdq}{HealthMarkers}
 #' @return A tibble of score columns only: `MDQ_symptom_count`, `MDQ_clustering`, `MDQ_impairment`, `MDQ_positive_screen`. Input columns are not included.
 #' @examples
 #' df <- data.frame(matrix(0, nrow = 1, ncol = 13))
@@ -549,7 +569,14 @@ mdq_score <- function(data, col_map = list(),
 #' @param partA_items Vector of Part A item IDs.
 #' @param partA_thresholds Numeric thresholds applied to Part A items.
 #' @param partA_cutoff Count threshold for Part A positivity.
-#' @references \insertRef{adler2006asrs}{HealthMarkers}; \insertRef{kessler2007asrs}{HealthMarkers}
+#' @note
+#' Items are expected on a 0--4 scale (Never=0, Rarely=1, Sometimes=2,
+#' Often=3, Very Often=4). The default `partA_thresholds` follow the
+#' official WHO ASRS v1.1 guide: items 1--3 are positive at \eqn{\geq 3}
+#' (Often or Very Often) and items 4--6 at \eqn{\geq 4} (Very Often only).
+#' @references
+#' \insertRef{adler2006asrs}{HealthMarkers}
+#' \insertRef{kessler2007asrs}{HealthMarkers} (prevalence study; ASRS used as instrument)
 #' @return A tibble of score columns only: `ASRS_total`, `ASRS_partA_count`, `ASRS_partA_positive`. Input columns are not included.
 #' @examples
 #' df <- data.frame(matrix(2, nrow = 1, ncol = 18))
@@ -562,7 +589,7 @@ asrs_score <- function(data, col_map = list(),
                        impute = c("none","mean"),
                        prefix = "ASRS",
                        partA_items = sprintf("asrs_%02d", 1:6),
-                       partA_thresholds = rep(2, 6),
+                       partA_thresholds = c(3, 3, 3, 4, 4, 4),
                        partA_cutoff = 4,
                        verbose = TRUE) {
   na_action <- match.arg(na_action, c("keep","omit","error"))

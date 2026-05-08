@@ -22,7 +22,7 @@
 #'   - alm_bmi_ratio   (numeric)
 #'   - low_muscle_mass (logical; TRUE if below sex-specific cut-point;
 #'                      NA if sex unknown or ratio NA)
-#' @references \insertRef{mclean2014fnih}{HealthMarkers}; \insertRef{studenski2014fnih}{HealthMarkers}
+#' @references \insertRef{mclean2014fnih}{HealthMarkers}
 #'
 #' @examples
 #' df <- data.frame(ALM_kg = c(7.2, 5.8, 6.5), BMI = c(24, 28, 22),

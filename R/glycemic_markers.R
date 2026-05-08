@@ -19,12 +19,16 @@
 #' - C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin muU/mL; see notes)
 #' - leptin, adiponectin: ng/mL
 #'
+#' These indices are intended for research and feature-engineering applications.
+#' The prediabetes and diabetes flags apply standard HbA1c cut-offs (WHO/IDF criteria)
+#' but this function is not validated as a clinical diagnostic tool.
+#'
 #' Quality controls and options:
 #' - Input validation ensures required variables exist and are numeric-coercible.
 #' - Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).
 #' - Missing or non-finite inputs are handled via `na_action`.
 #' - Logs and divisions are computed safely (non-positive arguments yield NA).
-#' - Optional detection/handling of extreme input values via `check_extreme` and `extreme_action`.
+#' - Physiological range notes are printed when `verbose = TRUE` (values are not altered).
 #' - Verbose mode prints step-by-step progress and a completion summary.
 #'
 #' @param data A data.frame or tibble containing at least:
@@ -70,11 +74,11 @@
 #'   Users should verify unit conventions for their datasets; alternative C-peptide
 #'   HOMA implementations exist (e.g., HOMA2-CP).
 #' @references
-#' \insertRef{paulmichl2016spise}{HealthMarkers};
-#' \insertRef{bellogaytan2018metsir}{HealthMarkers};
-#' \insertRef{fruhbeck2018adiponectinleptin}{HealthMarkers};
-#' \insertRef{matthews1985homa}{HealthMarkers};
-#' \insertRef{simentalmendia2008tyg}{HealthMarkers};
+#' \insertRef{paulmichl2016spise}{HealthMarkers}
+#' \insertRef{bellogaytan2018metsir}{HealthMarkers}
+#' \insertRef{fruhbeck2018adiponectinleptin}{HealthMarkers}
+#' \insertRef{matthews1985homa}{HealthMarkers}
+#' \insertRef{simentalmendia2008tyg}{HealthMarkers}
 #' \insertRef{yang2006adiponectininsulin}{HealthMarkers}
 #' 
 #' @importFrom tibble tibble

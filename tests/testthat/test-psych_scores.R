@@ -15,7 +15,7 @@ sample_psych_df <- tibble(
   isi_01 = 2, isi_02 = 1, isi_03 = 2, isi_04 = 1, isi_05 = 0, isi_06 = 1, isi_07 = 0,
   mdq_01 = 1, mdq_02 = 1, mdq_03 = 1, mdq_04 = 0, mdq_05 = 1, mdq_06 = 1, mdq_07 = 1, mdq_08 = 0, mdq_09 = 1, mdq_10 = 1, mdq_11 = 0, mdq_12 = 1, mdq_13 = 1,
   mdq_cluster = 1, mdq_impair = 1,
-  asrs_01 = 4, asrs_02 = 3, asrs_03 = 3, asrs_04 = 2, asrs_05 = 2, asrs_06 = 3,
+  asrs_01 = 4, asrs_02 = 3, asrs_03 = 3, asrs_04 = 4, asrs_05 = 4, asrs_06 = 4,
   asrs_07 = 1, asrs_08 = 1, asrs_09 = 1, asrs_10 = 1, asrs_11 = 1, asrs_12 = 1,
   asrs_13 = 1, asrs_14 = 1, asrs_15 = 1, asrs_16 = 1, asrs_17 = 1, asrs_18 = 1,
   bis_01 = 2, bis_02 = 3, bis_03 = 2, bis_04 = 3, bis_05 = 1, bis_06 = 2,

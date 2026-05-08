@@ -54,6 +54,16 @@
 #' - Tyr: Serum tyrosine (umol/L)
 #' - Phe: Serum phenylalanine (umol/L)
 #'
+#' **Unit-mixing notes:**
+#' - `BUN_Cr_Ratio` divides BUN (mg/dL) by creatinine (umol/L). This is NOT
+#'   numerically equivalent to the standard clinical BUN:Creatinine ratio
+#'   (reference range ~10-20), which requires both in mg/dL. The result here
+#'   is approximately 88.4x smaller than the standard ratio. Provide creatinine
+#'   in mg/dL and adjust `col_map` if you require the standard clinical ratio.
+#' - `Mg_Cr_Ratio` divides Mg (mmol/L) by creatinine (umol/L). The result is
+#'   1/1000 of the standard Mg/Cr ratio in mmol/mmol. Typically applied to urine;
+#'   serum Mg/Cr is not a standard clinical metric.
+#'
 #' Default `extreme_rules` (inputs) are broad and intended for unit/entry checks:
 #' ferritin (0, 2000), transferrin_sat (0, 100), albumin (10, 60), total_protein (40, 100),
 #' EPA (0, 20), DHA (0, 20), Mg (0.2, 3), creatinine (20, 2000), glycated_albumin (0, 60),
@@ -68,7 +78,7 @@
 #' \insertRef{harris2004omega3}{HealthMarkers}
 #' \insertRef{koga2010glyalb}{HealthMarkers}
 #' \insertRef{block1998calcp}{HealthMarkers}
-#' \insertRef{waikar2009creak}{HealthMarkers}
+#' \insertRef{waikar2009creak}{HealthMarkers} (creatinine kinetics context)
 #' @examples
 #' # Quick smoke-test
 #' df <- data.frame(ferritin = 50, albumin = 45, uric_acid = 300, Na = 140)

@@ -41,10 +41,16 @@ Computes:
 \details{
 Assumptions/units:
 \itemize{
-\item ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via /6).
-\item MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.
+\item ALT, AST in U/L; BMI in kg/m^2.
+\item \code{insulin} is expected in muU/mL; if unavailable and \code{I0} is provided,
+\code{I0} is interpreted in pmol/L and converted to muU/mL via /6.
+\item MetS is taken directly if provided; otherwise derived using a simplified
+NCEP-ATP III style rule when sufficient inputs exist.
 \item Type2DM is taken from \code{diabetes} (logical or 0/1).
 }
+
+These scores are surrogate indices for research/feature-engineering use and
+are not validated as standalone clinical diagnostic tools.
 }
 \examples{
 df <- data.frame(ALT=20, AST=25, BMI=27, sex="female", diabetes=FALSE, I0=60)

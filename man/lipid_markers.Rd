@@ -71,6 +71,14 @@ waist, BMI, glucose), computes:
 }
 }
 \details{
+Assumed units (no automatic conversion except where noted):
+\itemize{
+\item TC, HDL_c, TG, LDL_c: mmol/L
+\item glucose: mmol/L (converted to mg/dL internally for TyG_BMI)
+\item waist: cm
+\item BMI: kg/m^2
+}
+
 Pre-computation (one level deep):
 \itemize{
 \item If \code{BMI} is absent but \code{weight} (kg) and \code{height} (m or cm) are
@@ -78,7 +86,7 @@ present, BMI is computed automatically.
 \item If \code{glucose} is absent but \code{G0} is present (or vice versa), the alias
 is derived automatically.
 \item If \code{LDL_c} is absent, it is always estimated via Friedewald
-(TC - HDL - TG/5). An informational message is emitted when
+(TC - HDL - TG/2.2, mmol/L form). An informational message is emitted when
 \code{verbose = TRUE}.
 }
 }
@@ -98,5 +106,5 @@ lipid_markers(df2, verbose = FALSE)
 \insertRef{amato2010vai}{HealthMarkers}
 \insertRef{kahn2005lap}{HealthMarkers}
 \insertRef{lee2016tyg}{HealthMarkers}
-\insertRef{lee2020tygbmi}{HealthMarkers}
+\insertRef{lee2020tygbmi}{HealthMarkers} (clinical application)
 }
