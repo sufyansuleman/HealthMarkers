@@ -190,6 +190,8 @@ articles:
   - title: "Cardiovascular risk"
     contents:
       - articles/cvd_risk
+
+  - title: "Liver function"
     contents:
       - articles/liver_markers
       - articles/liver_fat_markers
