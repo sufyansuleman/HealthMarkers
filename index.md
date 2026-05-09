@@ -1,5 +1,26 @@
 # HealthMarkers
 
+- [HealthMarkers](#healthmarkers)
+  - [Installation](#installation)
+  - [Package overview](#package-overview)
+  - [How to use HealthMarkers](#how-to-use-healthmarkers)
+  - [Selected Functions](#selected-functions)
+  - [Column mapping and multi-biobank
+    support](#column-mapping-and-multi-biobank-support)
+  - [Handle missing data before
+    computing](#handle-missing-data-before-computing)
+  - [Verbose diagnostics](#verbose-diagnostics)
+  - [Further information](#further-information)
+  - [Vignettes](#vignettes)
+  - [Development status and validated
+    publications](#development-status-and-validated-publications)
+  - [Contributing](#contributing)
+  - [Citation](#citation)
+  - [License](#license)
+  - [AI use disclaimer](#ai-use-disclaimer)
+
+# HealthMarkers
+
 **HealthMarkers** is a comprehensive R toolkit for computing,
 standardising, and summarising clinical and research biomarkers from
 routine laboratory and phenotypic data. It provides over 50 specialist
@@ -9,8 +30,8 @@ indices, psychiatric rating scales, alternate-biofluid panels, and much
 more. All accessible through a unified dispatcher,
 [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md).
 
-> **Full documentation, function reference, and vignettes** are
-> available at the package website:  
+> **Full documentation and function reference** are available at the
+> package website:  
 > <https://sufyansuleman.github.io/HealthMarkers/>
 
 - **Covers a wide range of biomarkers.** A single
@@ -38,7 +59,8 @@ more. All accessible through a unified dispatcher,
 
 ## Installation
 
-``` R
+``` r
+
 # From CRAN
 install.packages("HealthMarkers")
 
@@ -48,7 +70,8 @@ remotes::install_github("sufyansuleman/HealthMarkers")
 
 Optional packages unlock additional marker groups:
 
-``` R
+``` r
+
 install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
                    "RiskScorescvd", "di", "mice", "missForest"))
 ```
@@ -91,7 +114,8 @@ and which were skipped (and why) in the summary message.
 **Use this when** you want to compute many marker groups in one call and
 receive everything back as a single wide tibble.
 
-``` R
+``` r
+
 library(HealthMarkers)
 
 labs <- data.frame(
@@ -150,7 +174,8 @@ want to inspect one marker family in detail.
 **When to use:** fasting glucose + insulin data are available; OGTT data
 with multiple time points; DXA body-composition data; tracer clamp data.
 
-``` R
+``` r
+
 # Fasting indices (HOMA-IR, QUICKI, Bennett, FIRI, ...)
 # Needs: G0 (fasting glucose mmol/L), I0 (fasting insulin mU/L)
 fasting_is(data, col_map = list(G0 = "glucose", I0 = "insulin"))
@@ -179,7 +204,8 @@ all_insulin_indices(data, col_map = list(...), normalize = "none",
 **When to use:** primary prevention cohorts; assessing 10-year MACE
 risk; comparing risk algorithms side-by-side.
 
-``` R
+``` r
+
 # ASCVD Pooled Cohort Equations (10-yr or 30-yr)
 # Needs: age, sex, race, total_chol, HDL_c, sbp, bp_treated, smoker, diabetes, bmi
 # Requires: PooledCohort package
@@ -212,7 +238,8 @@ cvd_risk(data, model = "ALL")   # or "ASCVD", "QRISK3", "Stroke", etc.
 **When to use:** nephrology studies; CKD cohorts; monitoring
 progression.
 
-``` R
+``` r
+
 # Kidney Failure Risk Equation (KFRE) 2-year and 5-year probability
 # Needs: age, sex, eGFR (CKD-EPI, mL/min/1.73m²), UACR (mg/g)
 kidney_failure_risk(data, col_map = list(age="age", sex="sex",
@@ -233,7 +260,8 @@ urine_markers(data, col_map = list(urine_creat="UCr", urine_protein="UPr"))
 **When to use:** respiratory epidemiology; COPD staging; lung-function
 studies.
 
-``` R
+``` r
+
 # Individual spirometry z-scores and % predicted (GLI 2012)
 # Needs: FEV1, FVC; optionally age, height, sex, ethnicity
 # Requires: rspiro package
@@ -254,7 +282,8 @@ bode_index(data, col_map = list(fev1_pct="FEV1pct", sixmwd="Walk6m",
 **When to use:** mental health research; epidemiological surveys with
 standardised questionnaires.
 
-``` R
+``` r
+
 # Score one or many scales from item columns
 # Supported: PHQ-9, GAD-7, K6, K10, GHQ-12, WHO-5, ISI, MDQ,
 #            ASRS, BIS-11, SPQ, cognitive composite
@@ -281,7 +310,8 @@ k10_score(data)
 **When to use:** paediatric cohorts (SDS); obesity epidemiology;
 sarcopenia assessment.
 
-``` R
+``` r
+
 # Common obesity and adiposity indices
 # Needs: height, weight, WC, hip circumference; optionally age, sex
 obesity_indices(data)
@@ -304,7 +334,8 @@ alm_bmi_index(data, col_map = list(alm="ALM_kg", bmi="BMI", sex="Sex"))
 **When to use:** immunology studies; biological age estimation; chronic
 disease research.
 
-``` R
+``` r
+
 # Blood count-derived inflammatory ratios
 # Needs: neutrophils, lymphocytes, monocytes, platelets
 inflammatory_markers(data, col_map = list(neut="NEUT", lymph="LYMPH",
@@ -320,7 +351,8 @@ iAge(data, col_map = list(IL6="IL6", CXCL9="CXCL9"))
 **When to use:** stress research (saliva); cystic fibrosis / sweat
 testing; nephrology urine panels.
 
-``` R
+``` r
+
 saliva_markers(data, col_map = list(cortisol_wake="C_wake",
                                      cortisol_30="C_30min"))
 sweat_markers(data,  col_map = list(sweat_chloride="Cl_mmol"))
@@ -335,7 +367,8 @@ Every function accepts a `col_map` argument: a named list mapping
 internal keys (what the function expects) to your actual column names
 (what you have).
 
-``` R
+``` r
+
 # Internal key = "G0", your column is called "fasting_glucose_mmol"
 fasting_is(
   data    = my_data,
@@ -375,7 +408,8 @@ are also included.
 first** to see which columns are auto-detected and which need a manual
 mapping:
 
-``` R
+``` r
+
 library(HealthMarkers)
 hm_col_report(my_data)
 ```
@@ -406,7 +440,8 @@ This prints a report like:
 **Copy the printed `col_map` template** and fill in your column names
 for any unmatched keys:
 
-``` R
+``` r
+
 my_col_map <- list(
   eGFR = "GFR_ckdepi"
 )
@@ -414,7 +449,8 @@ my_col_map <- list(
 
 Or capture the auto-detected mappings directly and merge:
 
-``` R
+``` r
+
 # Returns a named list of all matched key → column pairs
 cm <- hm_col_report(my_data, verbose = FALSE)
 
@@ -424,7 +460,8 @@ cm$eGFR <- "GFR_ckdepi"
 
 **Pass `col_map` to any function:**
 
-``` R
+``` r
+
 all_health_markers(
   data    = my_data,
   which   = c("insulin_fasting", "glycemic", "lipid", "liver"),
@@ -435,7 +472,8 @@ all_health_markers(
 [`hm_col_report()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.md)
 accepts two optional flags:
 
-``` R
+``` r
+
 hm_col_report(my_data, show_unmatched = TRUE)  # list every unmatched key
 hm_col_report(my_data, fuzzy = TRUE)           # add fuzzy matching as last resort
 ```
@@ -485,7 +523,8 @@ marker function. The package provides three main helpers:
   missing values are roughly symmetric, or `median` when the data are
   skewed or contain outliers.
 
-``` R
+``` r
+
 # Multiple imputation (mice) recommended when you want to preserve inference uncertainty
 completed <- impute_mice(my_data, m = 5, seed = 42)
 
@@ -508,7 +547,8 @@ Set `verbose = TRUE` on any function to see progress messages about
 which columns were mapped, which groups were computed, and which were
 skipped (with reasons).:
 
-``` R
+``` r
+
 results <- all_health_markers(data = labs, which = c("lipid","liver"),
                                verbose = TRUE)
 #> Column mapping summary: TC->TC (user), HDL_c->HDL_c (user) ...
@@ -519,7 +559,8 @@ results <- all_health_markers(data = labs, which = c("lipid","liver"),
 
 Enable globally for an entire session:
 
-``` R
+``` r
+
 # levels: "none" (default), "inform" (progress only), "debug" (all internal steps)
 options(healthmarkers.verbose = "inform")
 ```
@@ -550,7 +591,8 @@ to keep installation fast).
 [`browseVignettes()`](https://rdrr.io/r/utils/browseVignettes.html) or
 [`vignette()`](https://rdrr.io/r/utils/vignette.html):
 
-``` R
+``` r
+
 browseVignettes("HealthMarkers")
 
 vignette("getting-started",     package = "HealthMarkers")
@@ -631,7 +673,8 @@ When contributing a new marker function please:
 
 ## Citation
 
-``` R
+``` r
+
 citation("HealthMarkers")
 ```
 
