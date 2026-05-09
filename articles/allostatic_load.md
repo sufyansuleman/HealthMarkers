@@ -32,6 +32,7 @@ Use a small subset of the simulated data. Replace `sim_small` with your
 data.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -45,6 +46,7 @@ sim_small <- dplyr::slice_head(sim, n = 30)
 Provide thresholds and, if needed, map them to your column names.
 
 ``` r
+
 thresholds <- list(sbp = 130, dbp = 85, CRP = 3)
 col_map <- list(sbp = "sbp", dbp = "dbp", CRP = "CRP")
 ```
@@ -52,6 +54,7 @@ col_map <- list(sbp = "sbp", dbp = "dbp", CRP = "CRP")
 ## Walkthrough (compute Allostatic Load)
 
 ``` r
+
 al <- allostatic_load(
   data = sim_small,
   thresholds = thresholds,
@@ -80,6 +83,7 @@ it is `>=`.
 Demonstrate row handling.
 
 ``` r
+
 demo <- sim_small[1:8, c("sbp", "dbp", "CRP")]
 demo$sbp[3] <- NA
 
@@ -126,6 +130,7 @@ of a bare tibble. The `summary` element contains `rows`, `biomarkers`,
 `total_flags`, and `mean_flags`.
 
 ``` r
+
 df_rs <- data.frame(
   SBP = c(118, 142, 130, 155, 120),
   DBP = c(76,   92,  85,  98,  78),
@@ -179,6 +184,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- data.frame(SBP = c(118, 142), DBP = c(76, 92))
@@ -232,6 +238,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

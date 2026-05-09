@@ -33,6 +33,7 @@ Use a small subset of the simulated data (30-50 rows). Swap `sim_small`
 with your data frame in practice.
 
 ``` r
+
 library(HealthMarkers)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
@@ -56,6 +57,7 @@ right-hand-side strings (your column names). The left-hand keys (`G0`,
 - `I0`: fasting insulin (pmol/L).
 
 ``` r
+
 col_map <- list(
   G0 = "G0",
   I0 = "I0"
@@ -72,6 +74,7 @@ Compute all indices and display only the newly calculated columns (not
 the full input data).
 
 ``` r
+
 fis <- fasting_is(
   data = sim_small,
   col_map = col_map,
@@ -127,6 +130,7 @@ rows are retained here because `na_action = "keep"`.
 Show how row handling behaves on a tiny slice.
 
 ``` r
+
 demo <- sim_small[1:6, c("G0", "I0")]
 demo$G0[2] <- NA
 
@@ -186,6 +190,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 invisible(fasting_is(

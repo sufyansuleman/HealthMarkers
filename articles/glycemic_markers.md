@@ -33,6 +33,7 @@ Use a small subset of the simulated data (30-50 rows). Swap `sim_small`
 with your data frame in practice.
 
 ``` r
+
 library(HealthMarkers)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
@@ -59,6 +60,7 @@ are fixed.
 - `adiponectin`: adiponectin (ng/mL)
 
 ``` r
+
 col_map <- list(
   HDL_c = "HDL_c",
   TG = "TG",
@@ -78,6 +80,7 @@ col_map <- list(
 Compute all markers and show only newly created columns.
 
 ``` r
+
 gm <- glycemic_markers(
   data     = sim_small,
   col_map  = col_map,
@@ -123,6 +126,7 @@ relate adipokines to insulin; HbA1c flags populate
 Providing `weight` and `height` instead of `BMI` works automatically:
 
 ``` r
+
 df_no_bmi <- data.frame(
   HDL_c   = c(1.0, 1.2),
   TG      = c(1.3, 1.5),
@@ -139,6 +143,7 @@ Similarly, providing `G0` without `glucose` enables METS_IR and
 TyG_index via alias:
 
 ``` r
+
 df_g0_only <- data.frame(
   HDL_c = 1.2, TG = 1.3, BMI = 24, G0 = 5.5
 )
@@ -155,6 +160,7 @@ of `G0`), pass a `col_map` that redirects them. The function
 materialises the alias and runs pre-computation normally.
 
 ``` r
+
 # Data has 'pglu0' instead of 'G0'
 df_mapped <- data.frame(
   HDL_c = 1.2, TG = 1.3, BMI = 24.0, pglu0 = 5.5
@@ -173,6 +179,7 @@ Similarly, map `weight` / `height` to differently-named anthropometric
 columns and BMI is derived automatically:
 
 ``` r
+
 df_wh <- data.frame(
   HDL_c = 1.1, TG = 1.4, wt_kg = 80, ht_cm = 175, glucose = 5.8
 )
@@ -195,6 +202,7 @@ auto-infers the mapping from common synonym patterns (e.g. `hdlc`,
 `col_map` with just the non-standard entries:
 
 ``` r
+
 # Column names match common synonyms — no col_map needed for those
 df_syn <- data.frame(
   hdlc = 1.0, trig = 1.3, bmi = 24.0, pglu0 = 5.5
@@ -214,6 +222,7 @@ c(SPISE = gm_syn$SPISE, METS_IR = gm_syn$METS_IR, TyG_index = gm_syn$TyG_index)
 Show row handling on a small slice.
 
 ``` r
+
 demo <- sim_small[1:6, c("HDL_c", "TG", "BMI")]
 demo$glucose   <- c(5.5, 6.2, 7.0, 5.8, 6.0, 5.4)
 demo$HbA1c     <- c(42, NA, 41, 45, 44, 40)
@@ -264,6 +273,7 @@ indices they affect), pre-computation actions, the full list of markers
 being computed with their inputs, and a per-column results summary.
 
 ``` r
+
 df_v <- data.frame(HDL_c = 1.0, TG = 1.3, BMI = 24, glucose = 5.6)
 glycem_out <- glycemic_markers(
   df_v,
@@ -306,6 +316,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

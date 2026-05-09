@@ -71,7 +71,8 @@ A tibble with columns:
 - `fvc_pred`, `fvc_z`, `fvc_pctpred`, `fvc_LLN`
 
 - `fev1_fvc_ratio`, `fev1_fvc_pred`, `fev1_fvc_z`, `fev1_fvc_pctpred`,
-  `fev1_fvc_LLN`
+  `fev1_fvc_LLN` (`NA` if the equation lacks native FEV1/FVC support in
+  rspiro)
 
 ## Details
 
@@ -79,6 +80,15 @@ Inputs are validated, missingness is handled via `na_action`, and
 heights are auto-detected as cm when any height \> 3; otherwise
 interpreted as metres (no automatic unit conversion beyond that
 heuristic, preserving prior behavior).
+
+## Note
+
+`fev1_fvc_z`, `fev1_fvc_pred`, and `fev1_fvc_LLN` are computed via
+rspiro's native FEV1/FVC parameter (equivalent to `param = "FEV1FVC"`).
+If that parameter is not supported by the installed rspiro version or
+equation, these columns fall back gracefully: `fev1_fvc_z` and
+`fev1_fvc_LLN` become `NA`; `fev1_fvc_pred` falls back to
+`fev1_pred / fvc_pred`.
 
 ## References
 
@@ -91,9 +101,16 @@ Respiratory Journal*, **40**, 1324–1343.
 values from a sample of the general U.S. population.” *American Journal
 of Respiratory and Critical Care Medicine*, **159**, 179–187.
 [doi:10.1164/ajrccm.159.1.9712108](https://doi.org/10.1164/ajrccm.159.1.9712108)
-. Bowerman SD, Quanjer PH, others (2023). “GLI-Global update.” *European
-Respiratory Journal*, **61**, 2201632. DOI not resolvable in Crossref as
-of 2026-03-16.
+. Stanojevic S, Kaminsky DA, Miller MR, Thompson BR, Aliverti A,
+Barjaktarevic I, Cooper BG, Culver BH, Derom E, Hall GL, Heggie A, Iyer
+VN, Jackson AS, Jensen RL, Langer D, Latourelle JC, Laucho-Contreras ME,
+MacIntyre N, McCormack MC, Rosenfeld M, Swenson ER, Thompson C,
+Topalovic M, Wilsher M, Wijnant SRA, Gore R, Ramsey SM, Bhatt SP (2022).
+“ERS/ATS technical standard on interpretive strategies for routine lung
+function tests.” *European Respiratory Journal*, **60**(1), 2101499.
+[doi:10.1183/13993003.01499-2021](https://doi.org/10.1183/13993003.01499-2021)
+. (race-neutral GLI global equations and interpretation framework; used
+by rspiro's `GLIgl` equation)
 
 ## See also
 
@@ -124,7 +141,7 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 #>   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]
 #>   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]
 #> pulmo_markers(): converting height from cm to m
-#> pulmo_markers(): results: fev1_pred 2/2, fev1_z 2/2, fev1_pctpred 2/2, fev1_LLN 2/2, fvc_pred 2/2, fvc_z 2/2, fvc_pctpred 2/2, fvc_LLN 2/2, fev1_fvc_ratio 2/2, fev1_fvc_pred 2/2, fev1_fvc_z 2/2, fev1_fvc_pctpred 2/2, fev1_fvc_LLN 0/2
+#> pulmo_markers(): results: fev1_pred 2/2, fev1_z 2/2, fev1_pctpred 2/2, fev1_LLN 2/2, fvc_pred 2/2, fvc_z 2/2, fvc_pctpred 2/2, fvc_LLN 2/2, fev1_fvc_ratio 2/2, fev1_fvc_pred 2/2, fev1_fvc_z 2/2, fev1_fvc_pctpred 2/2, fev1_fvc_LLN 2/2
 #> # A tibble: 2 × 13
 #>   fev1_pred fev1_z fev1_pctpred fev1_LLN fvc_pred  fvc_z fvc_pctpred fvc_LLN
 #>       <dbl>  <dbl>        <dbl>    <dbl>    <dbl>  <dbl>       <dbl>   <dbl>

@@ -66,6 +66,11 @@ A tibble of score columns only: `GHQ12_total_likert` (likert method) or
 `GHQ12_total_binary` and `GHQ12_case_binary` (binary method). Input
 columns are not included.
 
+## References
+
+Goldberg DP, Williams P (1988). *A User's Guide to the General Health
+Questionnaire*. NFER-Nelson, Windsor, UK.
+
 ## Examples
 
 ``` r

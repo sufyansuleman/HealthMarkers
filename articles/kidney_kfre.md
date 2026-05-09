@@ -28,6 +28,7 @@ G3–G5; interpret cautiously outside this range.
 ## Load packages and demo data
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -43,6 +44,7 @@ df <- tibble::tibble(
 ## Column map (required)
 
 ``` r
+
 col_map <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
 ```
 
@@ -52,6 +54,7 @@ Default `na_action = "keep"`: missing inputs propagate to `NA` risks; no
 extreme checks.
 
 ``` r
+
 kfre_default <- kidney_failure_risk(
   data = df,
   col_map = col_map,
@@ -81,6 +84,7 @@ Extreme values will produce extreme risk estimates. Pre-filter
 implausible inputs before calling.
 
 ``` r
+
 # Pre-filter example
 df_filtered <- df
 df_filtered$eGFR[df_filtered$eGFR > 200] <- NA
@@ -115,6 +119,7 @@ kfre_filtered
 inputs; `error` stops on missingness.
 
 ``` r
+
 df_na <- df
 df_na$eGFR[2] <- NA
 
@@ -140,6 +145,7 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 kidney_failure_risk(
   data    = df,
@@ -174,6 +180,7 @@ The bundled simulated dataset includes `eGFR` and `UACR` columns. Age
 and sex are also present, so the KFRE can run directly on `sim_small`:
 
 ``` r
+
 library(dplyr)
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim_small <- dplyr::slice_head(readRDS(sim_path), n = 50)

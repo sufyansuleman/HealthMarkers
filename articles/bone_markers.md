@@ -24,12 +24,27 @@ BMD_Tscore uses supplied reference mean and SD; SD must be positive.
 - Row policy via na_action: keep (default), omit, or error on
   missing/non-finite required inputs.
 
+## Important: BMD reference values are user-supplied
+
+- [`bone_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/bone_markers.md)
+  does not estimate internal BMD reference norms.
+- You must provide `BMD_ref_mean` and `BMD_ref_sd` for the reference
+  population you want to use.
+- Recommended sources:
+  - your own study/biobank reference distribution (preferred when
+    available), or
+  - external norms such as NHANES-derived reference values.
+- This choice directly affects
+  `BMD_Tscore = (BMD - BMD_ref_mean) / BMD_ref_sd`, so report your
+  reference source in analysis notes.
+
 ## Load packages and example data
 
 The simulated data lack DXA values; we create simple placeholders for
 illustration only; replace with your measurements.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 #> 
@@ -57,7 +72,15 @@ sim_small$BMD_ref_sd   <- 0.12
 
 Required keys plus optional markers (commented out below).
 
+`BMD_ref_mean` and `BMD_ref_sd` are required usage inputs and must be
+populated by you before calling
+[`bone_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/bone_markers.md).
+They are not computed inside the function. Use study-specific reference
+values when available; NHANES-based references are an acceptable
+external alternative.
+
 ``` r
+
 col_map <- list(
   age = "age",
   weight = "weight",
@@ -77,6 +100,7 @@ Defaults keep rows with missing inputs and return NA for their derived
 scores.
 
 ``` r
+
 bm_out <- bone_markers(
   data = sim_small,
   col_map = col_map,
@@ -136,6 +160,7 @@ head(select(bm_out, all_of(new_cols)))
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small[1:8, c("age","weight","height","ALM","FM","BMD","BMD_ref_mean","BMD_ref_sd")]
 demo$ALM[c(2, 5)] <- NA
 
@@ -204,6 +229,7 @@ Supply any of the optional keys (`TBS`, `HSA`, `PINP`, `CTX`, `BSAP`,
 optional columns return `NA`.
 
 ``` r
+
 demo2 <- demo
 demo2$PINP <- rnorm(nrow(demo2), mean = 55, sd = 20)
 col_map_opt <- c(col_map, list(PINP = "PINP"))
@@ -281,6 +307,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- tibble::tibble(
@@ -330,6 +357,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

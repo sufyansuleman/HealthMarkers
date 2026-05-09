@@ -86,33 +86,40 @@ If an ID column is detected in `data` (e.g. `id`, `IID`,
 Inputs are validated, missingness handled via `na_action`, logs made
 safe (\<= 0 -\> NA), and optional extremes scan/cap is available.
 
+## Note
+
+`log_cortisol_wake` and `log_amylase` use the **natural logarithm**
+([`log()`](https://rdrr.io/r/base/Log.html)). `CAR_AUC` is the
+trapezoidal area under the cortisol-time curve (Pruessner et al. 2003,
+AUC with respect to ground). `saliva_glucose` is a **pass-through**
+column; no formula is applied.
+
 ## References
 
-Original derivations Pruessner JC, Kirschbaum C, Meinlschmid G,
-Hellhammer DH. Two formulas for computation of the area under the curve
-represent measures of total hormone concentration versus time-dependent
-change. Psychoneuroendocrinology. 2003;28(7):916-931.
+Pruessner JC, Kirschbaum C, Meinlschmid G, Hellhammer DH (2003). “Two
+formulas for computation of the area under the curve represent measures
+of total hormone concentration versus time-dependent change.”
+*Psychoneuroendocrinology*, **28**(7), 916–931.
 [doi:10.1016/S0306-4530(02)00108-7](https://doi.org/10.1016/S0306-4530%2802%2900108-7)
-(AUC hormone measures) Kirschbaum C, Hellhammer DH. Salivary cortisol in
-psychoneuroendocrine research: recent developments and applications.
-Psychoneuroendocrinology. 1994;19(4):313-333.
+. Kirschbaum C, Hellhammer DH (1994). “Salivary cortisol in
+psychoneuroendocrine research: recent developments and applications.”
+*Psychoneuroendocrinology*, **19**(4), 313–333.
 [doi:10.1016/0306-4530(94)90013-2](https://doi.org/10.1016/0306-4530%2894%2990013-2)
-(Salivary cortisol methods)
-
-Validation and applications Clow A, Thorn L, Evans P, Hucklebridge F.
-The awakening cortisol response: methodological issues and significance.
-Stress. 2004;7(1):29-37.
+. (salivary cortisol methods; background) Clow A, Thorn L, Evans P,
+Hucklebridge F (2004). “The awakening cortisol response: methodological
+issues and significance.” *Stress*, **7**(1), 29–37.
 [doi:10.1080/10253890410001667205](https://doi.org/10.1080/10253890410001667205)
-(Cortisol awakening response) Nater UM, Rohleder N. Salivary
-alpha-amylase as a non-invasive biomarker for the sympathetic nervous
-system: current state of research. Psychoneuroendocrinology.
-2009;34(4):486-496.
+. (CAR methodological review; background) Nater UM, Rohleder N (2009).
+“Salivary alpha-amylase as a non-invasive biomarker for the sympathetic
+nervous system: current state of research.” *Psychoneuroendocrinology*,
+**34**(4), 486–496.
 [doi:10.1016/j.psyneuen.2009.01.014](https://doi.org/10.1016/j.psyneuen.2009.01.014)
-(Salivary alpha-amylase marker) Scales WE, Freeman EW, McCoy NL, Klerman
-EB. Salivary glucose as a measure of blood glucose: correlations and
-applications. Diabetes Care. 1987;10(4):414-418.
+. (salivary alpha-amylase SNS biomarker; background) Scales WE, Freeman
+EW, McCoy NL, Klerman EB (1987). “Salivary glucose as a measure of blood
+glucose: correlations and applications.” *Diabetes Care*, **10**(4),
+414–418.
 [doi:10.2337/diacare.10.4.414](https://doi.org/10.2337/diacare.10.4.414)
-(Salivary glucose application)
+. (salivary glucose application; pass-through, no formula)
 
 ## Examples
 

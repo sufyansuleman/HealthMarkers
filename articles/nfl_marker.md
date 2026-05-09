@@ -12,6 +12,7 @@ handling, returning a tidy tibble ready for downstream analysis.
 ## Load packages and demo data
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -25,12 +26,14 @@ df <- tibble::tibble(
 The only required key is `nfl`.
 
 ``` r
+
 cm <- list(nfl = "NfL")
 ```
 
 ## Core calculation
 
 ``` r
+
 out <- nfl_marker(
   data = df,
   col_map = cm,
@@ -56,6 +59,7 @@ with missing required inputs; `error` aborts if any required input is
 missing; `warn` keeps rows but emits a warning.
 
 ``` r
+
 df_na <- tibble::tibble(NfL = c(8.5, NA, 22.1))
 
 keep_out <- nfl_marker(df_na, cm, na_action = "keep")
@@ -75,6 +79,7 @@ Negative or implausibly high NfL values will be passed through as-is.
 Pre-filter before calling.
 
 ``` r
+
 df_ext <- tibble::tibble(NfL = c(8.5, -5, 22.1))  # negative value is implausible; pre-filter
 # Pre-filter:
 df_ext$NfL[df_ext$NfL < 0] <- NA
@@ -94,6 +99,7 @@ three structured messages on each call: preparing inputs, the column
 map, and a results summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 nfl_marker(tibble::tibble(NfL = c(8.5, 14.2, 22.1)), cm, verbose = TRUE)
 #> nfl_marker(): reading input 'data' — 3 rows × 1 variables
@@ -119,6 +125,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

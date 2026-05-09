@@ -52,9 +52,9 @@ Simrén J, Ashton NJ, Blennow K, Zetterberg H, et al. (2022). “Reference
 values for plasma neurofilament light in healthy individuals.” *Brain
 Communications*, **4**(4), fcac174.
 [doi:10.1093/braincomms/fcac174](https://doi.org/10.1093/braincomms/fcac174)
-. ; Disanto G, Barro C, Benkert P, et al. (2017). “Serum neurofilament
+. Disanto G, Barro C, Benkert P, et al. (2017). “Serum neurofilament
 light: a biomarker of neuronal damage in multiple sclerosis.” *Annals of
-Neurology*, **88**(9), 857–870.
+Neurology*, **81**(6), 857–870.
 [doi:10.1002/ana.24954](https://doi.org/10.1002/ana.24954) .
 
 ## Examples

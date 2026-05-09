@@ -40,6 +40,7 @@ Compute HOMA-IR from fasting glucose (mmol/L) and fasting insulin
 population:
 
 ``` r
+
 # Step 1: compute HOMA-IR
 data$HOMA_IR <- (data$fasting_glucose_mmol * data$fasting_insulin_uIU) / 22.5
 
@@ -61,6 +62,7 @@ alternatively the `childsds` package (CRAN) provides ready-to-use
 paediatric normative tables.
 
 ``` r
+
 # Manual z-score: (observed − reference_mean) / reference_sd
 data$bp_sys_z <- (data$sbp - ref_sbp_mean) / ref_sbp_sd
 ```
@@ -68,6 +70,7 @@ data$bp_sys_z <- (data$sbp - ref_sbp_mean) / ref_sbp_sd
 ## Quick start
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -111,6 +114,7 @@ Extreme inputs will produce extreme or incorrect flags. Pre-filter
 implausible values before calling.
 
 ``` r
+
 extreme <- peds
 extreme$triglycerides[1] <- 40  # extreme; pre-filter
 extreme$bp_sys_z[2] <- 9        # out of expected range; pre-filter
@@ -141,6 +145,7 @@ metabolic_risk_features(
 ## Missing data policy
 
 ``` r
+
 missing <- peds
 missing$glucose[2] <- NA
 
@@ -181,6 +186,7 @@ metabolic_risk_features(
 ## Expanded example: drop incomplete rows
 
 ``` r
+
 ext_cap <- peds
 ext_cap$triglycerides[1] <- 40   # extreme high
 ext_cap$bp_sys_z[2] <- 9         # extreme high
@@ -214,12 +220,12 @@ list(rows_returned = nrow(out_cap), flags = out_cap)
 
 ## Threshold quick-reference
 
-| Flag               | Logic (values in mmol/L unless noted)                                                 |
-|--------------------|---------------------------------------------------------------------------------------|
-| Dyslipidemia       | CT \> 5.2 OR LDL \> 3.4 OR HDL \< 1.0 OR TG \> 1.1 (age 0–9) OR TG \> 1.5 (age 10–19) |
-| Insulin resistance | z_HOMA \> 1.28 (≈90th percentile)                                                     |
-| Hyperglycemia      | Glucose 5.6–6.9 OR HbA1c 39–47 mmol/mol                                               |
-| Hypertension       | BP z-score \> 1.64 (systolic or diastolic)                                            |
+| Flag | Logic (values in mmol/L unless noted) |
+|----|----|
+| Dyslipidemia | CT \> 5.2 OR LDL \> 3.4 OR HDL \< 1.0 OR TG \> 1.1 (age 0–9) OR TG \> 1.5 (age 10–19) |
+| Insulin resistance | z_HOMA \> 1.28 (≈90th percentile) |
+| Hyperglycemia | Glucose 5.6–6.9 OR HbA1c 39–47 mmol/mol |
+| Hypertension | BP z-score \> 1.64 (systolic or diastolic) |
 
 ## Handling and outputs
 
@@ -236,6 +242,7 @@ list(rows_returned = nrow(out_cap), flags = out_cap)
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 metabolic_risk_features(
   data = peds,

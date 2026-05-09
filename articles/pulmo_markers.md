@@ -21,13 +21,13 @@ diagnostics.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                                        | Notes                         |
-|--------------|--------------------------------------------------------------------------|-------------------------------|
-| data         | Data frame/tibble with spirometry fields                                 | Required columns listed below |
-| equation     | “GLI”, “GLIgl” (ignores ethnicity), or “NHANES3”                         | Default GLI                   |
-| na_action    | keep (propagate NA), omit (drop rows), error (abort if required missing) | Default keep                  |
-| na_warn_prop | Proportion to trigger high-missingness warnings (default 0.2)            | Applies to required inputs    |
-| verbose      | TRUE/FALSE for progress and completion summaries                         | Default FALSE                 |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with spirometry fields | Required columns listed below |
+| equation | “GLI”, “GLIgl” (ignores ethnicity), or “NHANES3” | Default GLI |
+| na_action | keep (propagate NA), omit (drop rows), error (abort if required missing) | Default keep |
+| na_warn_prop | Proportion to trigger high-missingness warnings (default 0.2) | Applies to required inputs |
+| verbose | TRUE/FALSE for progress and completion summaries | Default FALSE |
 
 **Required columns** (names must match exactly): age (years), sex
 (“male”/“female” or 1/2 or 0/1), height (cm or m; auto-detected),
@@ -65,6 +65,7 @@ or division-by-zero occurred.
 ## Worked example 1: GLI (default), keep NAs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -100,6 +101,7 @@ and ratios.
 ## Worked example 2: GLIgl, drop incomplete rows
 
 ``` r
+
 df2 <- tibble::tibble(
   age = c(45, 62, 30),
   sex = c(1, 2, 2),
@@ -143,6 +145,7 @@ ignored for GLIgl. Outputs are returned only for complete cases.
 ## Verbose diagnostics
 
 ``` r
+
 if (requireNamespace("rspiro", quietly = TRUE)) {
   old_opt <- options(healthmarkers.verbose = "inform")
   pulmo_markers(
@@ -166,7 +169,7 @@ if (requireNamespace("rspiro", quietly = TRUE)) {
 #>   fvc_pred, fvc_z, fvc_pctpred, fvc_LLN [age, height, sex, ethnicity, fvc]
 #>   fev1_fvc_ratio, fev1_fvc_pred, fev1_fvc_z, fev1_fvc_pctpred, fev1_fvc_LLN [fev1, fvc]
 #> pulmo_markers(): converting height from cm to m
-#> pulmo_markers(): results: fev1_pred 3/3, fev1_z 3/3, fev1_pctpred 3/3, fev1_LLN 3/3, fvc_pred 3/3, fvc_z 3/3, fvc_pctpred 3/3, fvc_LLN 3/3, fev1_fvc_ratio 3/3, fev1_fvc_pred 3/3, fev1_fvc_z 3/3, fev1_fvc_pctpred 3/3, fev1_fvc_LLN 0/3
+#> pulmo_markers(): results: fev1_pred 3/3, fev1_z 3/3, fev1_pctpred 3/3, fev1_LLN 3/3, fvc_pred 3/3, fvc_z 3/3, fvc_pctpred 3/3, fvc_LLN 3/3, fev1_fvc_ratio 3/3, fev1_fvc_pred 3/3, fev1_fvc_z 3/3, fev1_fvc_pctpred 3/3, fev1_fvc_LLN 3/3
 ```
 
 ## Column recognition
@@ -177,6 +180,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

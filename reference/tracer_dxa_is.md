@@ -78,44 +78,53 @@ Expected units:
 
 - Fat mass, weight: kg; BMI: kg/m^2
 
+## Note
+
+`tracer_palmitate_SI` and `tracer_glycerol_SI` are simple rate/fat_mass
+ratios; the Steele (1959) non-steady-state tracer equation is **not**
+implemented here. The LIRI formula coefficients (-0.091, 0.4, 0.346,
+-0.408, 0.435) are attributed to Gastaldelli et al. but the paper cited
+(`gastaldelli2004betacell`) covers beta-cell dysfunction, not LIRI
+derivation; the primary LIRI source should be verified. In adipose-only
+mode (I30 absent) the mean-insulin term uses I0 twice as a fallback.
+
 ## References
 
 Groop LC, Bonadonna RC, Simonson DC, et al. (1989). “Different Effects
 of Insulin and Oral Hypoglycemic Agents on Glucose and Lipid Metabolism
 in Type II Diabetes.” *Journal of Clinical Investigation*, **84**(2),
-578–585. [doi:10.1172/JCI114142](https://doi.org/10.1172/JCI114142) . ;
-Steele R (1959). “Influences of Glucose Loading and of Injected Insulin
-on Hepatic Glucose Output.” *Annals of the New York Academy of
-Sciences*, **82**(2), 420–430.
+578–585. [doi:10.1172/JCI114142](https://doi.org/10.1172/JCI114142) .
+(tracer lipolysis methodology; background) Steele R (1959). “Influences
+of Glucose Loading and of Injected Insulin on Hepatic Glucose Output.”
+*Annals of the New York Academy of Sciences*, **82**(2), 420–430.
 [doi:10.1111/j.1749-6632.1959.tb44923.x](https://doi.org/10.1111/j.1749-6632.1959.tb44923.x)
-. ; Boston RC, Stefanovski D, Moate PJ, Sumner AE, Watanabe RM, Bergman
-RN (2003). “MINMOD Millennium: A Computer Program to Calculate Glucose
-Effectiveness and Insulin Sensitivity from the Frequently Sampled
-Intravenous Glucose Tolerance Test.” *Diabetes Technology &
-Therapeutics*, **5**(6), 1003–1015.
-[doi:10.1089/152091503322641060](https://doi.org/10.1089/152091503322641060)
-. ; Roden M, Price TB, Perseghin G, et al. (1996). “Mechanism of Free
-Fatty Acid-Induced Insulin Resistance in Humans.” *Journal of Clinical
-Investigation*, **97**(12), 2859–2865.
-[doi:10.1172/JCI118742](https://doi.org/10.1172/JCI118742) . ;
-Gastaldelli A, Ferrannini E, Miyazaki Y, Matsuda M, DeFronzo RA (2004).
-“Beta-Cell Dysfunction and Glucose Intolerance: Results from the San
-Antonio Metabolism Study.” *Diabetologia*, **47**(1), 31–39.
+. (tracer dilution theory; Steele equation not directly implemented —
+background) Roden M, Price TB, Perseghin G, et al. (1996). “Mechanism of
+Free Fatty Acid-Induced Insulin Resistance in Humans.” *Journal of
+Clinical Investigation*, **97**(12), 2859–2865.
+[doi:10.1172/JCI118742](https://doi.org/10.1172/JCI118742) .
+(FFA-induced insulin resistance mechanism; background) Gastaldelli A,
+Ferrannini E, Miyazaki Y, Matsuda M, DeFronzo RA (2004). “Beta-Cell
+Dysfunction and Glucose Intolerance: Results from the San Antonio
+Metabolism Study.” *Diabetologia*, **47**(1), 31–39.
 [doi:10.1007/s00125-003-1263-9](https://doi.org/10.1007/s00125-003-1263-9)
-. ; Karpe F, Dickmann JR, Frayn KN (2011). “Fatty Acids, Obesity, and
-Insulin Resistance: Time for a Reevaluation.” *Diabetes*, **60**(10),
-2441–2449. [doi:10.2337/db11-0425](https://doi.org/10.2337/db11-0425) .
-; Petersen KF, Dufour S, Savage DB, et al. (2007). “The Role of Skeletal
-Muscle Insulin Resistance in the Pathogenesis of the Metabolic
-Syndrome.” *Proceedings of the National Academy of Sciences*,
-**104**(31), 12587–12594.
+. (beta-cell dysfunction context; LIRI formula source unverified —
+background) Karpe F, Dickmann JR, Frayn KN (2011). “Fatty Acids,
+Obesity, and Insulin Resistance: Time for a Reevaluation.” *Diabetes*,
+**60**(10), 2441–2449.
+[doi:10.2337/db11-0425](https://doi.org/10.2337/db11-0425) . (FFA and
+insulin resistance review; background) Petersen KF, Dufour S, Savage DB,
+et al. (2007). “The Role of Skeletal Muscle Insulin Resistance in the
+Pathogenesis of the Metabolic Syndrome.” *Proceedings of the National
+Academy of Sciences*, **104**(31), 12587–12594.
 [doi:10.1073/pnas.0705408104](https://doi.org/10.1073/pnas.0705408104) .
-; Santomauro AT, Boden G, Silva ME, et al. (1999). “Overnight Lowering
-of Free Fatty Acids with Acipimox Improves Insulin Resistance and
-Glucose Tolerance in Obese Diabetic and Nondiabetic Subjects.”
-*Diabetes*, **48**(9), 1836–1841.
+(muscle insulin resistance and metabolic syndrome; background)
+Santomauro AT, Boden G, Silva ME, et al. (1999). “Overnight Lowering of
+Free Fatty Acids with Acipimox Improves Insulin Resistance and Glucose
+Tolerance in Obese Diabetic and Nondiabetic Subjects.” *Diabetes*,
+**48**(9), 1836–1841.
 [doi:10.2337/diabetes.48.9.1836](https://doi.org/10.2337/diabetes.48.9.1836)
-.
+. (FFA lowering and insulin sensitivity; background)
 
 ## Examples
 

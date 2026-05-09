@@ -132,84 +132,57 @@ it is prepended as the first output column.</p>
 <li><p>High-missingness diagnostics at debug level only</p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p><code>VitD_Z</code> and <code>Retinol_Z</code> are z-scores using <strong>user-supplied</strong> reference
+mean and SD; no population reference equations are applied. All ratio markers
+(<code>B12_Fol_Ratio</code>, <code>Ferr_TSat_R</code>, <code>Cort_DHEA_R</code>, <code>T_E2_Ratio</code>, <code>TSH_fT4_R</code>,
+<code>Toco_Lip_R</code>, <code>Mg_Zn_R</code>, <code>Cu_Zn_R</code>) are simple numerator/denominator
+divisions. <code>PIVKA_II</code>, <code>VitC</code>, <code>Homocysteine</code>, and <code>MMA</code> are
+<strong>pass-through</strong> columns; no formula is applied.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Holick MF. Vitamin D deficiency. N Engl J Med. 2007;357:266-281. <a href="https://doi.org/10.1056/NEJMra070553" class="external-link">doi:10.1056/NEJMra070553</a>
-
-O'Leary F, Samman S. Vitamin B12 in health and disease. Nutrients. 2010;2(3):299-316. <a href="https://doi.org/10.3390/nu2030299" class="external-link">doi:10.3390/nu2030299</a>
-
-Ganz T, Nemeth E. Iron homeostasis in host defence and inflammation. Nat Rev Immunol. 2015;15:500-510. <a href="https://doi.org/10.1038/nri3863" class="external-link">doi:10.1038/nri3863</a>
-
-Huxtable RJ. Physiological actions of taurine. Physiol Rev. 1992;72(1):101-163. (endocrine ratios context)</p>
+    <p>Holick MF (2007).
+“Vitamin D Deficiency.”
+<em>New England Journal of Medicine</em>, <b>357</b>(3), 266–281.
+<a href="https://doi.org/10.1056/NEJMra070553" class="external-link">doi:10.1056/NEJMra070553</a>
+.
+ (vitamin D deficiency review; background)
+O'Leary F, Samman S (2010).
+“Vitamin B12 in Health and Disease.”
+<em>Nutrients</em>, <b>2</b>(3), 299–316.
+<a href="https://doi.org/10.3390/nu2030299" class="external-link">doi:10.3390/nu2030299</a>
+.
+ (vitamin B12 in health and disease; background)
+Ganz T, Nemeth E (2015).
+“Iron homeostasis in host defence and inflammation.”
+<em>Nature Reviews Immunology</em>, <b>15</b>(8), 500–510.
+<a href="https://doi.org/10.1038/nri3863" class="external-link">doi:10.1038/nri3863</a>
+.
+ (iron homeostasis and ferritin; background)</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># All 25 required columns must be supplied</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  VitD <span class="op">=</span> <span class="fl">50</span>, VitD_ref_mean <span class="op">=</span> <span class="fl">40</span>, VitD_ref_sd <span class="op">=</span> <span class="fl">5</span>,</span></span>
-<span class="r-in"><span>  B12 <span class="op">=</span> <span class="fl">300</span>, Folate <span class="op">=</span> <span class="fl">15</span>,</span></span>
-<span class="r-in"><span>  Ferritin <span class="op">=</span> <span class="fl">100</span>, TSat <span class="op">=</span> <span class="fl">0.25</span>,</span></span>
-<span class="r-in"><span>  Cortisol <span class="op">=</span> <span class="fl">200</span>, DHEAS <span class="op">=</span> <span class="fl">100</span>,</span></span>
-<span class="r-in"><span>  Testosterone <span class="op">=</span> <span class="fl">12</span>, Estradiol <span class="op">=</span> <span class="fl">120</span>,</span></span>
-<span class="r-in"><span>  TSH <span class="op">=</span> <span class="fl">2</span>, free_T4 <span class="op">=</span> <span class="fl">14</span>,</span></span>
-<span class="r-in"><span>  Retinol <span class="op">=</span> <span class="fl">0.8</span>, Retinol_ref_mean <span class="op">=</span> <span class="fl">0.9</span>, Retinol_ref_sd <span class="op">=</span> <span class="fl">0.2</span>,</span></span>
-<span class="r-in"><span>  Tocopherol <span class="op">=</span> <span class="fl">30</span>, Total_lipids <span class="op">=</span> <span class="fl">3</span>,</span></span>
+<span class="r-in"><span>  B12 <span class="op">=</span> <span class="fl">300</span>, Folate <span class="op">=</span> <span class="fl">15</span>, Ferritin <span class="op">=</span> <span class="fl">80</span>, TSat <span class="op">=</span> <span class="fl">0.25</span>,</span></span>
+<span class="r-in"><span>  Cortisol <span class="op">=</span> <span class="fl">200</span>, DHEAS <span class="op">=</span> <span class="fl">100</span>, Testosterone <span class="op">=</span> <span class="fl">12</span>, Estradiol <span class="op">=</span> <span class="fl">120</span>,</span></span>
+<span class="r-in"><span>  TSH <span class="op">=</span> <span class="fl">2</span>, free_T4 <span class="op">=</span> <span class="fl">14</span>, Retinol <span class="op">=</span> <span class="fl">0.8</span>, Retinol_ref_mean <span class="op">=</span> <span class="fl">0.9</span>,</span></span>
+<span class="r-in"><span>  Retinol_ref_sd <span class="op">=</span> <span class="fl">0.2</span>, Tocopherol <span class="op">=</span> <span class="fl">30</span>, Total_lipids <span class="op">=</span> <span class="fl">3</span>,</span></span>
 <span class="r-in"><span>  PIVKA_II <span class="op">=</span> <span class="fl">5</span>, VitC <span class="op">=</span> <span class="fl">60</span>, Homocysteine <span class="op">=</span> <span class="fl">10</span>, MMA <span class="op">=</span> <span class="fl">0.3</span>,</span></span>
 <span class="r-in"><span>  Magnesium <span class="op">=</span> <span class="fl">0.8</span>, Zinc <span class="op">=</span> <span class="fl">15</span>, Copper <span class="op">=</span> <span class="fl">15</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cm</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">vitamin_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): reading input 'df' — 1 rows × 25 variables</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): col_map (25 columns — 25 specified)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitD              -&gt;  'VitD'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitD_ref_mean     -&gt;  'VitD_ref_mean'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitD_ref_sd       -&gt;  'VitD_ref_sd'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   B12               -&gt;  'B12'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Folate            -&gt;  'Folate'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ferritin          -&gt;  'Ferritin'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   TSat              -&gt;  'TSat'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Cortisol          -&gt;  'Cortisol'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   DHEAS             -&gt;  'DHEAS'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Testosterone      -&gt;  'Testosterone'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Estradiol         -&gt;  'Estradiol'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   TSH               -&gt;  'TSH'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   free_T4           -&gt;  'free_T4'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Retinol           -&gt;  'Retinol'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Retinol_ref_mean  -&gt;  'Retinol_ref_mean'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Retinol_ref_sd    -&gt;  'Retinol_ref_sd'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Tocopherol        -&gt;  'Tocopherol'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Total_lipids      -&gt;  'Total_lipids'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   PIVKA_II          -&gt;  'PIVKA_II'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitC              -&gt;  'VitC'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Homocysteine      -&gt;  'Homocysteine'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   MMA               -&gt;  'MMA'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Magnesium         -&gt;  'Magnesium'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Zinc              -&gt;  'Zinc'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Copper            -&gt;  'Copper'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): optional inputs</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   present:  VitD, VitD_ref_mean, VitD_ref_sd, B12, Folate, Ferritin, TSat, Cortisol, DHEAS, Testosterone, Estradiol, TSH, free_T4, Retinol, Retinol_ref_mean, Retinol_ref_sd, Tocopherol, Total_lipids, PIVKA_II, VitC, Homocysteine, MMA, Magnesium, Zinc, Copper</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): column map: VitD -&gt; 'VitD', VitD_ref_mean -&gt; 'VitD_ref_mean', VitD_ref_sd -&gt; 'VitD_ref_sd', B12 -&gt; 'B12', Folate -&gt; 'Folate', Ferritin -&gt; 'Ferritin', TSat -&gt; 'TSat', Cortisol -&gt; 'Cortisol', DHEAS -&gt; 'DHEAS', Testosterone -&gt; 'Testosterone', Estradiol -&gt; 'Estradiol', TSH -&gt; 'TSH', free_T4 -&gt; 'free_T4', Retinol -&gt; 'Retinol', Retinol_ref_mean -&gt; 'Retinol_ref_mean', Retinol_ref_sd -&gt; 'Retinol_ref_sd', Tocopherol -&gt; 'Tocopherol', Total_lipids -&gt; 'Total_lipids', PIVKA_II -&gt; 'PIVKA_II', VitC -&gt; 'VitC', Homocysteine -&gt; 'Homocysteine', MMA -&gt; 'MMA', Magnesium -&gt; 'Magnesium', Zinc -&gt; 'Zinc', Copper -&gt; 'Copper'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): computing markers:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitD_Z           [VitD, VitD_ref_mean, VitD_ref_sd]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   B12_Fol_Ratio    [B12, Folate]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Ferr_TSat_R      [Ferritin, TSat]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Cort_DHEA_R      [Cortisol, DHEAS]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   T_E2_Ratio       [Testosterone, Estradiol]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   TSH_fT4_R        [TSH, free_T4]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Retinol_Z        [Retinol, Retinol_ref_mean, Retinol_ref_sd]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Toco_Lip_R       [Tocopherol, Total_lipids]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   PIVKA_II         [PIVKA_II]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   VitC             [VitC]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Homocysteine     [Homocysteine]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   MMA              [MMA]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Mg_Zn_R          [Magnesium, Zinc]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Cu_Zn_R          [Copper, Zinc]</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> vitamin_markers(): results: VitD_Z 1/1, B12_Fol_Ratio 1/1, Ferr_TSat_R 1/1, Cort_DHEA_R 1/1, T_E2_Ratio 1/1, TSH_fT4_R 1/1, Retinol_Z 1/1, Toco_Lip_R 1/1, PIVKA_II 1/1, VitC 1/1, Homocysteine 1/1, MMA 1/1, Mg_Zn_R 1/1, Cu_Zn_R 1/1</span>
+<span class="r-in"><span><span class="fu">vitamin_markers</span><span class="op">(</span><span class="va">df</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   VitD_Z B12_Fol_Ratio Ferr_TSat_R Cort_DHEA_R T_E2_Ratio TSH_fT4_R Retinol_Z</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>      2            20         400           2        0.1     0.143      -<span style="color: #BB0000;">0.5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>      2            20         320           2        0.1     0.143      -<span style="color: #BB0000;">0.5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 7 more variables: Toco_Lip_R &lt;dbl&gt;, PIVKA_II &lt;dbl&gt;, VitC &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   Homocysteine &lt;dbl&gt;, MMA &lt;dbl&gt;, Mg_Zn_R &lt;dbl&gt;, Cu_Zn_R &lt;dbl&gt;</span></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

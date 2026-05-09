@@ -127,11 +127,14 @@ it is prepended as the first output column.</p></li>
 <li><p>HbA1c: mmol/mol</p></li>
 <li><p>C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin muU/mL; see notes)</p></li>
 <li><p>leptin, adiponectin: ng/mL</p></li>
-</ul><p>Quality controls and options:</p><ul><li><p>Input validation ensures required variables exist and are numeric-coercible.</p></li>
+</ul><p>These indices are intended for research and feature-engineering applications.
+The prediabetes and diabetes flags apply standard HbA1c cut-offs (WHO/IDF criteria)
+but this function is not validated as a clinical diagnostic tool.</p>
+<p>Quality controls and options:</p><ul><li><p>Input validation ensures required variables exist and are numeric-coercible.</p></li>
 <li><p>Non-numeric inputs are coerced to numeric with a warning (NAs introduced reported).</p></li>
 <li><p>Missing or non-finite inputs are handled via <code>na_action</code>.</p></li>
 <li><p>Logs and divisions are computed safely (non-positive arguments yield NA).</p></li>
-<li><p>Optional detection/handling of extreme input values via <code>check_extreme</code> and <code>extreme_action</code>.</p></li>
+<li><p>Physiological range notes are printed when <code>verbose = TRUE</code> (values are not altered).</p></li>
 <li><p>Verbose mode prints step-by-step progress and a completion summary.</p></li>
 </ul><p>Optional marker detection and pre-computation (one level deep):
 When <code>col_map = NULL</code> (default), column names are inferred automatically.
@@ -156,31 +159,31 @@ HOMA implementations exist (e.g., HOMA2-CP).</p></li>
 <em>Clinical Chemistry</em>, <b>62</b>(9), 1211–1219.
 <a href="https://doi.org/10.1373/clinchem.2016.257436" class="external-link">doi:10.1373/clinchem.2016.257436</a>
 .
-;
+
 Bello-Chavolla OY, Almeda-Valdes P, García-Sánchez A, et al. (2018).
 “METS-IR, a novel score to evaluate insulin sensitivity, is predictive of visceral adiposity and incident type 2 diabetes.”
 <em>European Journal of Endocrinology</em>, <b>178</b>(5), 533–544.
 <a href="https://doi.org/10.1530/EJE-17-0883" class="external-link">doi:10.1530/EJE-17-0883</a>
 .
-;
+
 Frühbeck G, Catalan V, Rodríguez A, Ramón Sánchez-Recalde Á, Becerril S, Sánchez-González Á, Baena N, Valentí-Azcárate F, Burrell MA, Salvador J (2019).
 “Adiponectin-leptin Ratio is a Functional Biomarker of Adipose Tissue Inflammation.”
 <em>Nutrients</em>, <b>11</b>(2), 454.
 <a href="https://doi.org/10.3390/nu11020454" class="external-link">doi:10.3390/nu11020454</a>
 .
-;
+
 Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985).
 “Homeostasis Model Assessment: Insulin Resistance and Beta-Cell Function from Fasting Plasma Glucose and Insulin Concentrations in Man.”
 <em>Diabetologia</em>, <b>28</b>(7), 412–419.
 <a href="https://doi.org/10.1007/BF00280883" class="external-link">doi:10.1007/BF00280883</a>
 .
-;
+
 Simental-Mendía LE, Rodríguez-Morán M, Guerrero-Romero F (2008).
 “The Product of Fasting Glucose and Triglycerides as Surrogate for Identifying Insulin Resistance.”
 <em>Metabolic Syndrome and Related Disorders</em>, <b>6</b>(4), 299–304.
 <a href="https://doi.org/10.1089/met.2008.0034" class="external-link">doi:10.1089/met.2008.0034</a>
 .
-;
+
 Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 “Relationship of Adiponectin with Insulin Sensitivity in Humans, Independent of Lipid Availability.”
 <em>Obesity</em>, <b>14</b>(2), 228–234.
@@ -190,7 +193,17 @@ Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Quick smoke-test</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>glucose <span class="op">=</span> <span class="fl">5.6</span>, HbA1c <span class="op">=</span> <span class="fl">44</span>, G0 <span class="op">=</span> <span class="fl">5.5</span>, I0 <span class="op">=</span> <span class="fl">60</span>,</span></span>
+<span class="r-in"><span>                 HDL_c <span class="op">=</span> <span class="fl">1.2</span>, TG <span class="op">=</span> <span class="fl">1.5</span>, BMI <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">glycemic_markers</span><span class="op">(</span><span class="va">df</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  8.14    335.           1        0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.81</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  HDL_c       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="fl">1.3</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  TG          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.3</span>, <span class="fl">2.0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  BMI         <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">24</span>, <span class="fl">30</span><span class="op">)</span>,</span></span>
@@ -202,7 +215,6 @@ Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 <span class="r-in"><span>  leptin      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  adiponectin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">5</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Full verbose output (default — shows mapping, missing notes, results)</span></span></span>
 <span class="r-in"><span><span class="fu">glycemic_markers</span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> glycemic_markers(): reading input 'df' — 2 rows × 10 variables</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> glycemic_markers(): col_map (10 columns — 10 inferred from data)</span>
@@ -233,20 +245,19 @@ Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD (2006).
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  8.10     <span style="color: #BB0000;">NA</span>            1        0    12.2  1.25 0.133       8.67</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  5.79    318.           0        0    23.0  4    0.041<span style="text-decoration: underline;">7</span>      9.33</span>
-<span class="r-in"><span><span class="co"># Suppress messaging for batch use</span></span></span>
 <span class="r-in"><span><span class="fu">glycemic_markers</span><span class="op">(</span><span class="va">df</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  8.10     <span style="color: #BB0000;">NA</span>            1        0    12.2  1.25 0.133       8.67</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  5.79    318.           0        0    23.0  4    0.041<span style="text-decoration: underline;">7</span>      9.33</span>
-<span class="r-in"><span><span class="co"># Drop rows with any missing input</span></span></span>
 <span class="r-in"><span><span class="fu">glycemic_markers</span><span class="op">(</span><span class="va">df</span>, na_action <span class="op">=</span> <span class="st">"omit"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  8.10     <span style="color: #BB0000;">NA</span>            1        0    12.2  1.25 0.133       8.67</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  5.79    318.           0        0    23.0  4    0.041<span style="text-decoration: underline;">7</span>      9.33</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

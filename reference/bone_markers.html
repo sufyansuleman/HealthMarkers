@@ -98,6 +98,8 @@ optionally <code>TBS</code>, <code>HSA</code>, <code>PINP</code>, <code>CTX</cod
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Notes:</p><ul><li><p>Units: height in meters; ALM, FM, weight in kilograms; BMD in g/cm^2; ALMI/FMI in kg/m^2.</p></li>
 <li><p>Non-finite values are treated as NA; division by zero is prevented by input checks.</p></li>
+<li><p><code>BMD_ref_mean</code> and <code>BMD_ref_sd</code> must be supplied by the user from an appropriate
+reference population (for example, study-specific values or external norms such as NHANES).</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -106,12 +108,8 @@ optionally <code>TBS</code>, <code>HSA</code>, <code>PINP</code>, <code>CTX</cod
 <em>Osteoporosis International</em>, <b>12</b>(8), 699–705.
 <a href="https://doi.org/10.1007/s001980170070" class="external-link">doi:10.1007/s001980170070</a>
 .
-; Kelly TL, Wilson KE, Heymsfield SB (2009).
-“Dual Energy X-Ray Absorptiometry Body Composition Reference Values from NHANES.”
-<em>PLoS ONE</em>, <b>33</b>(6), 783–789.
-<a href="https://doi.org/10.1371/journal.pone.0007038" class="external-link">doi:10.1371/journal.pone.0007038</a>
-.
-; World Health Organization (1994).
+
+World Health Organization (1994).
 <em>Assessment of Fracture Risk and Its Application to Screening for Postmenopausal Osteoporosis</em>, volume 843 of <em>Technical Report Series</em>.
 World Health Organization.
 No DOI for this WHO report; see URL, <a href="https://iris.who.int/handle/10665/39142" class="external-link">https://iris.who.int/handle/10665/39142</a>.</p>

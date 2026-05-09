@@ -19,7 +19,9 @@ Required columns (no unit conversion performed):
 
 - sex (1=male, 2=female)
 
-- race (one of "NHW","NHB","HW","HA" or accepted synonyms)
+- race (one of "NHW","NHB","HW", or accepted synonyms; "HA" is
+  recognised by the normaliser but has no default params — see `params`
+  argument)
 
 ## Usage
 
@@ -68,6 +70,11 @@ metss(
   Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
   list(intercept, waist, TG, HDL, glucose, MAP) where each component
   (except intercept) is a named numeric vector c(mean=, sd=, coef=).
+  Default parameters are provided for NHW, NHB, and HW (male and
+  female); no default HA parameters are included because Gurka et
+  al. (2014) did not publish HA-specific coefficients. Passing
+  `race = "HA"` with default params will raise an error; supply custom
+  params if needed.
 
 - col_map:
 
@@ -113,16 +120,17 @@ confirmatory factor analysis and a resulting continuous severity score.”
 metabolic syndrome and its association with risk for type 2 diabetes and
 cardiovascular disease.” *Diabetologia*, **58**(12), 2745–2752.
 [doi:10.1007/s00125-015-3759-5](https://doi.org/10.1007/s00125-015-3759-5)
-. DeBoer MD, Filipp SL, Gurka MJ (2017). “Independent associations
-between metabolic syndrome severity and future coronary heart disease by
-sex and race.” *Journal of the American College of Cardiology*,
-**69**(9), 1204–1205.
+. (clinical application) DeBoer MD, Filipp SL, Gurka MJ (2017).
+“Independent associations between metabolic syndrome severity and future
+coronary heart disease by sex and race.” *Journal of the American
+College of Cardiology*, **69**(9), 1204–1205.
 [doi:10.1016/j.jacc.2016.10.088](https://doi.org/10.1016/j.jacc.2016.10.088)
-. Gurka MJ, Filipp SL, Pearson TA, DeBoer MD (2018). “Assessing Baseline
-and Temporal Changes in Cardiometabolic Risk Using Metabolic Syndrome
-Severity and Common Risk Scores.” *Journal of the American Heart
-Association*, **7**(16), e009754.
+. (clinical application) Gurka MJ, Filipp SL, Pearson TA, DeBoer MD
+(2018). “Assessing Baseline and Temporal Changes in Cardiometabolic Risk
+Using Metabolic Syndrome Severity and Common Risk Scores.” *Journal of
+the American Heart Association*, **7**(16), e009754.
 [doi:10.1161/JAHA.118.009754](https://doi.org/10.1161/JAHA.118.009754) .
+(clinical application)
 
 ## Examples
 

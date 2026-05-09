@@ -72,23 +72,38 @@ Expected units:
 
 - body_surface_area: m^2
 
+## Note
+
+`sweat_chloride` and `sweat_lactate` are **pass-through** columns; no
+formula is applied. `Na_K_ratio` is a simple Na/K division. `sweat_rate`
+uses the mass-loss method: (weight_before - weight_after) / duration /
+body_surface_area (units: L/m²/h; assumes 1 kg \\\approx\\ 1 L). Dill &
+Costill 1974 describes haematocrit-based blood-volume change, not sweat
+rate directly; cited here as background context only.
+
 ## References
 
-Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat
-in cystic fibrosis of the pancreas utilizing pilocarpine by
-iontophoresis. Pediatrics. 1959;23(3):545-549. (Sweat chloride test
-origin) Dill DB, Costill DL. Calculation of percentage changes in
-volumes of blood, plasma, and red cells in dehydration. J Appl Physiol.
-1974;37(2):247-248.
+Gibson LE, Cooke RE (1959). “A test for concentration of electrolytes in
+sweat in cystic fibrosis of the pancreas utilizing pilocarpine by
+iontophoresis.” *Pediatrics*, **23**(3), 545–549. (pilocarpine sweat
+chloride test origin; background) Dill DB, Costill DL (1974).
+“Calculation of percentage changes in volumes of blood, plasma, and red
+cells in dehydration.” *Journal of Applied Physiology*, **37**(2),
+247–248.
 [doi:10.1152/jappl.1974.37.2.247](https://doi.org/10.1152/jappl.1974.37.2.247)
-Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis:
-consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr.
-2017;181S:S4-S15.e1.
+. (dehydration and fluid loss context; background) Farrell PM, White TB,
+Ren CL, Hempstead SE, Accurso F, Derichs N, Howenstine M, McColley SA,
+Rock M, Rosenfeld M, Sermet-Gaudelus I, Southern KW, Marshall BC, Sosnay
+PR (2017). “Diagnosis of cystic fibrosis: consensus guidelines from the
+Cystic Fibrosis Foundation.” *Journal of Pediatrics*, **181S**,
+S4–S15.e1.
 [doi:10.1016/j.jpeds.2016.09.064](https://doi.org/10.1016/j.jpeds.2016.09.064)
-Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human
-performance: impact of environment and physiological mechanisms. Sports
-Med. 2015;45(Suppl 1):S51-S60.
+. (CF diagnostic sweat chloride cutoffs; background) Sawka MN, Cheuvront
+SN, Kenefick RW (2015). “Hypohydration and human performance: impact of
+environment and physiological mechanisms.” *Sports Medicine*,
+**45**(Suppl 1), S51–S60.
 [doi:10.1007/s40279-015-0395-7](https://doi.org/10.1007/s40279-015-0395-7)
+. (sweat rate and hypohydration context; background)
 
 ## Examples
 

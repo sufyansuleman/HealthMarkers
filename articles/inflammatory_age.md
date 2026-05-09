@@ -7,6 +7,12 @@ of CRP, IL6, and TNFa. Supports NA policies and high-missingness
 warnings. Units assumed: CRP mg/L; IL6, TNFa pg/mL (no internal
 conversions).
 
+## Important note
+
+This function is a practical proxy and not the published multi-marker
+iAge model. Use it for exploratory feature engineering and cohort-level
+analyses, not as a standalone clinical decision metric.
+
 ## Background
 
 `iAge` is a simplified implementation of the inflammatory age proxy
@@ -22,11 +28,11 @@ Elevated iAge scores have been associated with:
   longitudinal cohorts
 - Cardiometabolic and neurodegenerative disease incidence
 
-| Marker | Biological role                                            | Default weight |
-|--------|------------------------------------------------------------|----------------|
-| CRP    | Acute-phase protein; reflects systemic IL-6 signalling     | 0.33           |
-| IL-6   | Pro-inflammatory interleukin; master acute-phase regulator | 0.33           |
-| TNF-α  | Pleiotropic cytokine; adipose source in metabolic disease  | 0.34           |
+| Marker | Biological role | Default weight |
+|----|----|----|
+| CRP | Acute-phase protein; reflects systemic IL-6 signalling | 0.33 |
+| IL-6 | Pro-inflammatory interleukin; master acute-phase regulator | 0.33 |
+| TNF-α | Pleiotropic cytokine; adipose source in metabolic disease | 0.34 |
 
 Approximate reference ranges (healthy adults, standard lab units): - CRP
 \< 3 mg/L (hs-CRP \< 1 mg/L = low cardiovascular risk) - IL-6 \< 7
@@ -38,6 +44,7 @@ Six participants spanning low to markedly elevated inflammatory burden,
 with one missing CRP to demonstrate NA handling.
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -53,6 +60,7 @@ df <- tibble::tibble(
 Map each marker to your column names; all three are mandatory.
 
 ``` r
+
 col_map <- list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")
 ```
 
@@ -62,6 +70,7 @@ Default behavior (`na_action = "omit"`/`ignore`/`warn`): NAs are ignored
 in the weighted sum (treated as 0 contribution), preserving row count.
 
 ``` r
+
 ia_default <- iAge(
   data = df,
   col_map = col_map,
@@ -87,11 +96,11 @@ As a weighted sum of (unstandardised) inflammatory markers, the raw
 score is influenced by the absolute magnitude of CRP (which dominates
 when elevated). As a broad guide:
 
-| Score | Inflammatory profile                                                            |
-|-------|---------------------------------------------------------------------------------|
-| 0–2   | Low burden; typical of healthy younger adults                                   |
-| 2–8   | Sub-clinical elevation; common in overweight, sedentary, or older adults        |
-| \> 8  | High chronic inflammation; consistent with metabolic syndrome or active disease |
+| Score | Inflammatory profile |
+|----|----|
+| 0–2 | Low burden; typical of healthy younger adults |
+| 2–8 | Sub-clinical elevation; common in overweight, sedentary, or older adults |
+| \> 8 | High chronic inflammation; consistent with metabolic syndrome or active disease |
 
 For cross-cohort comparison, normalise the score with
 [`normalize_vec()`](https://sufyansuleman.github.io/HealthMarkers/reference/normalize_vec.md)
@@ -103,6 +112,7 @@ For cross-cohort comparison, normalise the score with
 row. `na_action = "error"` stops on missing required inputs.
 
 ``` r
+
 ia_keep <- iAge(
   data = df,
   col_map = col_map,
@@ -127,6 +137,7 @@ Extreme marker values will produce extreme scores. Pre-filter
 implausible values before calling.
 
 ``` r
+
 df_ext <- df
 df_ext$CRP[2] <- 500  # extreme on purpose
 # Pre-filter or cap before passing to iAge
@@ -158,6 +169,7 @@ ia_filtered
   (ensure they sum to 1):
 
 ``` r
+
 iAge(df, col_map = col_map, weights = c(CRP = 0.5, IL6 = 0.25, TNFa = 0.25))
 #> # A tibble: 6 × 1
 #>    iAge
@@ -189,6 +201,7 @@ three structured messages on each call: preparing inputs, the column
 map, and a results summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- tibble::tibble(CRP = 1.2, IL6 = 2.0, TNFa = 1.0)
 iAge(df_v, col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa"), verbose = TRUE)
@@ -215,6 +228,7 @@ targeted immunoassay panels (e.g., Meso Scale Discovery, Luminex) and
 are absent from most routine clinical extracts.
 
 ``` r
+
 # Check which inflammation markers are present in your cohort data
 hm_col_report(your_data)
 ```
@@ -223,6 +237,7 @@ For datasets where only CRP is available, pass a single-marker `col_map`
 and assign all weight to CRP:
 
 ``` r
+
 iAge(
   data    = your_data,
   col_map = list(CRP = "hs_CRP"),  # IL6/TNFa omitted

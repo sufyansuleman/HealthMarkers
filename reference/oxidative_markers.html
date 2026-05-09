@@ -57,7 +57,8 @@
 
 
 <dt id="arg-col-map">col_map<a class="anchor" aria-label="anchor" href="#arg-col-map"></a></dt>
-<dd><p>Named list with required keys GSH and GSSG. Defaults assume same names.</p></dd>
+<dd><p>Named list with required keys <code>GSH</code> and <code>GSSG</code>. Defaults assume
+column names match keys. Both columns must be in the same units (e.g., µmol/L).</p></dd>
 
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
@@ -75,12 +76,20 @@ per-column results summary.</p></dd>
 it is prepended.</p>
     </div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p><code>GSH_GSSG_Ratio</code> is dimensionless only when <code>GSH</code> and <code>GSSG</code> are supplied in
+the same units (typically µmol/L). The formula <code>GSH / GSSG</code> is a standard
+biochemical redox ratio; no unit conversion is applied.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Forman HJ, Zhang H, Rinna A (2009).
 “Glutathione: Overview of its protective roles, measurement, and biosynthesis.”
 <em>Molecular Aspects of Medicine</em>, <b>30</b>(1–2), 1–12.
 <a href="https://doi.org/10.1016/j.mam.2008.08.006" class="external-link">doi:10.1016/j.mam.2008.08.006</a>
-.</p>
+.
+ (background review;
+GSH/GSSG is a standard biochemical redox ratio, not a formula from this paper)</p>
     </div>
 
     <div class="section level2">

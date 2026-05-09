@@ -76,6 +76,7 @@ Outputs: two data frames—`sim` (full) and `sim_small` (first 30 rows for
 fast examples).
 
 ``` r
+
 if (!requireNamespace("HealthMarkers", quietly = TRUE)) {
   if (requireNamespace("pkgload", quietly = TRUE)) {
     pkgload::load_all("..")
@@ -107,6 +108,7 @@ Output: a tibble of computed markers. Below we print only the new
 columns.
 
 ``` r
+
 hm_out <- all_health_markers(
   data = sim_small,
   which = c("glycemic", "lipid", "renal", "inflammatory"),
@@ -274,15 +276,15 @@ head(dplyr::select(hm_out, dplyr::all_of(hm_new_cols)))
 #> 2  0.4120879 0.7834761  1.190929  24.984    30.024 236.1715 0.5818192 43.32180
 #> 3  0.9924812 0.9912081  1.509719  19.260    26.750 230.1380 0.5165652 80.61015
 #> 4  1.0826446 0.8153524  1.242666  24.012    30.452 225.5786 0.6102493 93.72321
-#> 5  0.6736111 1.0959268  1.673274   9.840    21.320 215.1741 0.2392153 37.79522
-#> 6  0.4509804 0.7377906  1.116715  22.528    31.488 317.6446 0.3701522 57.57784
+#> 5  0.6736111 1.0959268  1.673274   9.840    21.320 215.1741 0.2435212 37.79522
+#> 6  0.4509804 0.7377906  1.116715  22.528    31.488 317.6446 0.3768149 57.57784
 #>   eGFR_combined FE_Urea Beta2Micro      LMR      NER      PIV       CLR
 #> 1      6.696628      NA       1.99 2.717986 11.70297 507.9409 1.8845950
 #> 2      4.949108      NA       1.88 4.866071 10.65432 144.7180 0.6009174
 #> 3      6.504759      NA       1.47 4.300216 12.11576 153.3411 0.5524862
 #> 4      7.710013      NA       1.54 5.509579 13.38866 195.0739 1.2378303
-#> 5      3.155730      NA       1.20 6.544444 13.24619 183.9484 1.2393888
-#> 6      4.915629      NA       1.75 4.351916 12.59779 287.1204 2.8422738
+#> 5      3.180975      NA       1.20 6.544444 13.24619 183.9484 1.2393888
+#> 6      4.954954      NA       1.75 4.351916 12.59779 287.1204 2.8422738
 #>          CAR       PCR mGPS
 #> 1 0.10439883  82.02247    0
 #> 2 0.03628809 155.72519    0
@@ -302,13 +304,13 @@ head(hm_new_cols)
 Most functions infer columns automatically. If your names differ,
 provide a `col_map`. Typical defaults:
 
-| Panel                                     | Typical columns                                  | Notes                                                                                                                                                        |
-|-------------------------------------------|--------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Glycemic                                  | `FPG`, `insulin_fasting`, `HbA1c`                | Uses fasting and HbA1c where available                                                                                                                       |
-| Lipid                                     | `TG`, `HDL_c`, `LDL_c`, `TC`                     | Supports TG/HDL aliasing for AIP                                                                                                                             |
-| Renal                                     | `creatinine`, `uacr`, `age`, `sex`               | Infers eGFR and kidney markers                                                                                                                               |
-| Blood pressure (used by CVD risk helpers) | `SBP`, `DBP`                                     | Inputs to CVD risk functions; not a standalone [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md) group |
-| Anthropometrics                           | `height`, `weight`, `BMI`, `waist_circumference` | Supports z-score and obesity indices                                                                                                                         |
+| Panel | Typical columns | Notes |
+|----|----|----|
+| Glycemic | `FPG`, `insulin_fasting`, `HbA1c` | Uses fasting and HbA1c where available |
+| Lipid | `TG`, `HDL_c`, `LDL_c`, `TC` | Supports TG/HDL aliasing for AIP |
+| Renal | `creatinine`, `uacr`, `age`, `sex` | Infers eGFR and kidney markers |
+| Blood pressure (used by CVD risk helpers) | `SBP`, `DBP` | Inputs to CVD risk functions; not a standalone [`all_health_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/all_health_markers.md) group |
+| Anthropometrics | `height`, `weight`, `BMI`, `waist_circumference` | Supports z-score and obesity indices |
 
 ### The easiest way: `hm_col_report()`
 
@@ -318,6 +320,7 @@ Call
 for your data:
 
 ``` r
+
 # See which columns are matched and how — no computation performed
 hm_col_report(my_data)
 
@@ -348,6 +351,7 @@ differ.
 Output: a tibble with the AIP result.
 
 ``` r
+
 lipid_cols <- list(TG = "TG", HDL_c = "HDL_c")
 
 aip <- cvd_marker_aip(sim_small, col_map = lipid_cols, na_action = "keep")
@@ -370,6 +374,7 @@ Most functions accept `na_action`. This shows how outputs differ when
 required inputs are missing.
 
 ``` r
+
 missing_demo <- sim_small[1:5, c("TG", "HDL_c")]
 missing_demo$TG[2] <- NA
 
@@ -405,6 +410,7 @@ cvd_marker_aip(missing_demo, col_map = lipid_cols, na_action = "omit")
 If you want to impute before computing markers:
 
 ``` r
+
 imputed <- impute_missing(sim_small, method = "mice", m = 1, maxit = 3)
 head(imputed)
 ```
@@ -434,6 +440,7 @@ Compute sweat markers; uses auto-inferred column names and verbose NA
 diagnostics.
 
 ``` r
+
 sweat <- sweat_markers(sim_small, verbose = FALSE)
 sweat_new <- setdiff(names(sweat), names(sim_small))
 head(dplyr::select(sweat, dplyr::all_of(sweat_new)))
@@ -456,6 +463,7 @@ not computed because their columns were absent from the data. This helps
 you distinguish “column not found” from “marker intentionally absent”.
 
 ``` r
+
 # Provide only required columns; optional columns are absent
 glyc_min <- sim_small[, c("HDL_c", "TG", "BMI")]
 
@@ -478,6 +486,7 @@ Input: `sim_small`; groups: glycemic, lipid, renal, inflammatory.
 Output: a tibble with those markers (first rows shown).
 
 ``` r
+
 cardio_panel <- all_health_markers(
   data = sim_small,
   which = c("glycemic", "lipid", "renal", "inflammatory"),
@@ -645,15 +654,15 @@ head(dplyr::select(cardio_panel, dplyr::all_of(cardio_new)))
 #> 2  0.4120879 0.7834761  1.190929  24.984    30.024 236.1715 0.5818192 43.32180
 #> 3  0.9924812 0.9912081  1.509719  19.260    26.750 230.1380 0.5165652 80.61015
 #> 4  1.0826446 0.8153524  1.242666  24.012    30.452 225.5786 0.6102493 93.72321
-#> 5  0.6736111 1.0959268  1.673274   9.840    21.320 215.1741 0.2392153 37.79522
-#> 6  0.4509804 0.7377906  1.116715  22.528    31.488 317.6446 0.3701522 57.57784
+#> 5  0.6736111 1.0959268  1.673274   9.840    21.320 215.1741 0.2435212 37.79522
+#> 6  0.4509804 0.7377906  1.116715  22.528    31.488 317.6446 0.3768149 57.57784
 #>   eGFR_combined FE_Urea Beta2Micro      LMR      NER      PIV       CLR
 #> 1      6.696628      NA       1.99 2.717986 11.70297 507.9409 1.8845950
 #> 2      4.949108      NA       1.88 4.866071 10.65432 144.7180 0.6009174
 #> 3      6.504759      NA       1.47 4.300216 12.11576 153.3411 0.5524862
 #> 4      7.710013      NA       1.54 5.509579 13.38866 195.0739 1.2378303
-#> 5      3.155730      NA       1.20 6.544444 13.24619 183.9484 1.2393888
-#> 6      4.915629      NA       1.75 4.351916 12.59779 287.1204 2.8422738
+#> 5      3.180975      NA       1.20 6.544444 13.24619 183.9484 1.2393888
+#> 6      4.954954      NA       1.75 4.351916 12.59779 287.1204 2.8422738
 #>          CAR       PCR mGPS
 #> 1 0.10439883  82.02247    0
 #> 2 0.03628809 155.72519    0
@@ -669,6 +678,7 @@ Input: `sim_small`; output: urine markers with rows containing required
 inputs.
 
 ``` r
+
 urine <- urine_markers(sim_small, na_action = "omit")
 urine_new <- setdiff(names(urine), names(sim_small))
 head(dplyr::select(urine, dplyr::all_of(urine_new)))
@@ -693,6 +703,7 @@ columns), set `which = "all"`. Here we keep it example-only to avoid
 long output:
 
 ``` r
+
 all_out <- all_health_markers(data = sim_small, which = "all", verbose = FALSE)
 head(setdiff(names(all_out), names(sim_small)))
 ```
@@ -702,6 +713,7 @@ head(setdiff(names(all_out), names(sim_small)))
 Select columns and write to a CSV (disabled during vignette build):
 
 ``` r
+
 export_cols <- c("aip", "egfr_ckd_epi", "homa_ir")
 out_path <- tempfile("healthmarkers_export_", fileext = ".csv")
 hm_out_subset <- dplyr::select(cardio_panel, dplyr::any_of(export_cols))

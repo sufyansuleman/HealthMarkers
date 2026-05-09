@@ -26,6 +26,7 @@ high-missingness columns, and (4) emit structured progress messages when
 ## Load packages and demo data
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -40,6 +41,7 @@ df <- tibble::tibble(
 ## `impute_missing()` — deterministic methods
 
 ``` r
+
 out_mean <- impute_missing(df, method = "mean")
 out_mean
 #> # A tibble: 5 × 4
@@ -57,6 +59,7 @@ Replace NAs column-by-column with the column mean. `sex` is untouched.
 ### Other methods
 
 ``` r
+
 # Median
 out_med <- suppressWarnings(impute_missing(df, method = "median"))
 # Zero
@@ -82,6 +85,7 @@ list(
 ### Target specific columns
 
 ``` r
+
 # Only impute insulin; leave glucose NA
 out_sel <- suppressWarnings(impute_missing(df, method = "mean", cols = "insulin"))
 list(glucose = out_sel$glucose, insulin = out_sel$insulin)
@@ -98,6 +102,7 @@ Requires at least two numeric columns with missing values. Returns one
 completed dataset from `m` imputations.
 
 ``` r
+
 if (requireNamespace("mice", quietly = TRUE)) {
   out_mice <- suppressWarnings(impute_mice(df, m = 5))
   print(out_mice)
@@ -117,6 +122,7 @@ if (requireNamespace("mice", quietly = TRUE)) {
 ## `impute_missforest()` — random forest imputation
 
 ``` r
+
 if (requireNamespace("missForest", quietly = TRUE)) {
   out_rf <- suppressWarnings(impute_missforest(df, ntree = 50))
   print(out_rf)
@@ -143,6 +149,7 @@ All three functions warn when a numeric column has missing values above
 `healthmarkers_impute_warn_high_missing`.
 
 ``` r
+
 df_hi <- tibble::tibble(x = c(1, NA, NA, NA), y = c(2, NA, 4, 5))
 suppressWarnings(
   tryCatch(
@@ -160,6 +167,7 @@ structured messages for each call: preparing inputs and a results
 summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- tibble::tibble(a = c(1, NA, 3), b = c(4, 5, NA), c = c(NA, 2, 2))

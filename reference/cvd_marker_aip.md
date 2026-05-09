@@ -45,6 +45,14 @@ cvd_marker_aip(
 
 A tibble with columns model = "AIP" and value.
 
+## References
+
+Dobiášová M (2004). “Atherogenic Index of Plasma (AIP)
+log(Triglycerides/HDL-Cholesterol): Theoretical and Practical
+Implications.” *Clinical Chemistry*, **50**(7), 1113–1115.
+[doi:10.1373/clinchem.2004.033175](https://doi.org/10.1373/clinchem.2004.033175)
+.
+
 ## Examples
 
 ``` r

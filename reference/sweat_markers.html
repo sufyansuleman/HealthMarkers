@@ -106,13 +106,38 @@ are used to avoid Inf/NaN, and an optional extremes scan/cap is available.</p>
 <li><p>body_surface_area: m^2</p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p><code>sweat_chloride</code> and <code>sweat_lactate</code> are <strong>pass-through</strong> columns; no formula
+is applied. <code>Na_K_ratio</code> is a simple Na/K division. <code>sweat_rate</code> uses the
+mass-loss method: (weight_before - weight_after) / duration / body_surface_area
+(units: L/m²/h; assumes 1 kg \(\approx\) 1 L).
+Dill &amp; Costill 1974 describes haematocrit-based blood-volume change, not sweat
+rate directly; cited here as background context only.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Gibson LE, Cooke RE. A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis. Pediatrics. 1959;23(3):545-549. (Sweat chloride test origin)
-Dill DB, Costill DL. Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration. J Appl Physiol. 1974;37(2):247-248. <a href="https://doi.org/10.1152/jappl.1974.37.2.247" class="external-link">doi:10.1152/jappl.1974.37.2.247</a>
-
-Farrell PM, White TB, Ren CL, et al. Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation. J Pediatr. 2017;181S:S4-S15.e1. <a href="https://doi.org/10.1016/j.jpeds.2016.09.064" class="external-link">doi:10.1016/j.jpeds.2016.09.064</a>
-
-Sawka MN, Cheuvront SN, Kenefick RW. Hypohydration and human performance: impact of environment and physiological mechanisms. Sports Med. 2015;45(Suppl 1):S51-S60. <a href="https://doi.org/10.1007/s40279-015-0395-7" class="external-link">doi:10.1007/s40279-015-0395-7</a></p>
+    <p>Gibson LE, Cooke RE (1959).
+“A test for concentration of electrolytes in sweat in cystic fibrosis of the pancreas utilizing pilocarpine by iontophoresis.”
+<em>Pediatrics</em>, <b>23</b>(3), 545–549.
+ (pilocarpine sweat chloride test origin; background)
+Dill DB, Costill DL (1974).
+“Calculation of percentage changes in volumes of blood, plasma, and red cells in dehydration.”
+<em>Journal of Applied Physiology</em>, <b>37</b>(2), 247–248.
+<a href="https://doi.org/10.1152/jappl.1974.37.2.247" class="external-link">doi:10.1152/jappl.1974.37.2.247</a>
+.
+ (dehydration and fluid loss context; background)
+Farrell PM, White TB, Ren CL, Hempstead SE, Accurso F, Derichs N, Howenstine M, McColley SA, Rock M, Rosenfeld M, Sermet-Gaudelus I, Southern KW, Marshall BC, Sosnay PR (2017).
+“Diagnosis of cystic fibrosis: consensus guidelines from the Cystic Fibrosis Foundation.”
+<em>Journal of Pediatrics</em>, <b>181S</b>, S4–S15.e1.
+<a href="https://doi.org/10.1016/j.jpeds.2016.09.064" class="external-link">doi:10.1016/j.jpeds.2016.09.064</a>
+.
+ (CF diagnostic sweat chloride cutoffs; background)
+Sawka MN, Cheuvront SN, Kenefick RW (2015).
+“Hypohydration and human performance: impact of environment and physiological mechanisms.”
+<em>Sports Medicine</em>, <b>45</b>(Suppl 1), S51–S60.
+<a href="https://doi.org/10.1007/s40279-015-0395-7" class="external-link">doi:10.1007/s40279-015-0395-7</a>
+.
+ (sweat rate and hypohydration context; background)</p>
     </div>
 
     <div class="section level2">

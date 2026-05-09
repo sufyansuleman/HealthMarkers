@@ -31,6 +31,7 @@ Simulated data lack Ca/Alb; we generate illustrative valuesreplace with
 real labs.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -47,6 +48,7 @@ sim_small$Alb <- pmax(2.5, pmin(5.0, rnorm(nrow(sim_small), 4.0, 0.4)))
 ## Map columns
 
 ``` r
+
 col_map <- list(calcium = "Ca", albumin = "Alb")
 ```
 
@@ -55,6 +57,7 @@ col_map <- list(calcium = "Ca", albumin = "Alb")
 Defaults keep rows with missing inputs and do not screen extremes.
 
 ``` r
+
 cc_out <- corrected_calcium(
   data = sim_small,
   col_map = col_map,
@@ -92,6 +95,7 @@ head(cc_out)
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small[1:8, c("Ca", "Alb")]
 demo$Ca[3] <- NA
 
@@ -127,6 +131,7 @@ Implausible Ca or Alb values will propagate through the Payne formula.
 Pre-filter before calling.
 
 ``` r
+
 demo2 <- demo
 demo2$Ca[5] <- 2.0  # implausibly low
 
@@ -162,6 +167,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "none")`.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 cc_verbose <- corrected_calcium(
@@ -200,6 +206,7 @@ options(old_opt)   # restore original setting
 ## Validation
 
 ``` r
+
 # Payne formula spot check (conventional): Ca = 9.0, Alb = 3.0 => 9.0 + 0.8*(4-3) = 9.8
 v1 <- corrected_calcium(data.frame(Ca = 9.0, Alb = 3.0), col_map, units = "conventional")
 stopifnot(abs(v1$corrected_calcium - 9.8) < 1e-10)

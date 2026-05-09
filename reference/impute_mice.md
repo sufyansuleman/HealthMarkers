@@ -55,10 +55,10 @@ Notes:
 
 Rubin DB (1987). *Multiple Imputation for Nonresponse in Surveys*.
 Wiley.
-[doi:10.1002/9780470316696](https://doi.org/10.1002/9780470316696) . ;
-van Buuren S, Groothuis-Oudshoorn K (2011). “mice: Multivariate
-Imputation by Chained Equations in R.” *Journal of Statistical
-Software*, **45**(3), 1–67.
+[doi:10.1002/9780470316696](https://doi.org/10.1002/9780470316696) . van
+Buuren S, Groothuis-Oudshoorn K (2011). “mice: Multivariate Imputation
+by Chained Equations in R.” *Journal of Statistical Software*,
+**45**(3), 1–67.
 [doi:10.18637/jss.v045.i03](https://doi.org/10.18637/jss.v045.i03) .
 
 ## Examples

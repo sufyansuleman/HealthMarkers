@@ -6,6 +6,18 @@ Standardize selected variables as SDS (z-scores) using supplied
 reference means and SDs. Supports row-retention policies, extreme SDS
 handling, and an optional diagnostic list output.
 
+## Derivation and intended use
+
+- [`calc_sds()`](https://sufyansuleman.github.io/HealthMarkers/reference/calc_sds.md)
+  applies the standard z-score equation directly:
+  `SDS = (x - mean) / sd`.
+- The `mean` and `sd` values are taken from your supplied `ref` table;
+  they are not estimated internally by the function.
+- This makes
+  [`calc_sds()`](https://sufyansuleman.github.io/HealthMarkers/reference/calc_sds.md)
+  a general SDS engine suitable for many domains, provided your
+  reference table is appropriate.
+
 ## When to use
 
 - You need z-scores for one or more variables using a chosen reference.
@@ -24,12 +36,24 @@ handling, and an optional diagnostic list output.
 - Extreme policy: check_extreme + extreme_strategy (cap/warn/error/NA)
   with sds_cap threshold.
 
+## Choosing reference values (important)
+
+- Use reference means/SDs from your own target cohort when available
+  (best practice).
+- If using external references, choose the closest match by age, sex,
+  ethnicity, assay/platform, and clinical context.
+- Keep units identical between `data` and `ref`; SDS is unit-sensitive
+  if means/SDs are from different scales.
+- Report the source and version of your reference table in analysis
+  outputs for reproducibility.
+
 ## Load packages and example data
 
 Build a small example reference for BMI and systolic BP; replace with
 your variables and reference stats.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -52,6 +76,7 @@ Defaults keep rows with missing inputs and return NA SDS for those
 cells.
 
 ``` r
+
 sds_tbl <- calc_sds(
   data = sim_small,
   vars = vars,
@@ -100,6 +125,7 @@ head(select(sds_tbl, id, all_of(new_cols)))
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small[1:8, ]
 demo$BMI[3] <- NA
 
@@ -134,6 +160,7 @@ list(
 Cap, warn, error, or set NA for SDS beyond the chosen limit.
 
 ``` r
+
 demo2 <- demo
 demo2$sbp[5] <- 500  # extreme SBP
 
@@ -164,6 +191,7 @@ head(select(a_cap, BMI_sds, sbp_sds))
 Request per-variable missing/extreme counts and any warnings.
 
 ``` r
+
 sds_list <- calc_sds(
   data = sim_small,
   vars = vars,
@@ -229,6 +257,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 ref_v <- data.frame(variable = c("BMI", "sbp"), mean = c(25, 120), sd = c(4, 15))

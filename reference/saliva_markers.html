@@ -116,24 +116,44 @@ it is prepended as the first output column.</p>
 (&lt;= 0 -&gt; NA), and optional extremes scan/cap is available.</p>
     </div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p><code>log_cortisol_wake</code> and <code>log_amylase</code> use the <strong>natural logarithm</strong> (<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log()</a></code>).
+<code>CAR_AUC</code> is the trapezoidal area under the cortisol-time curve (Pruessner
+et al. 2003, AUC with respect to ground). <code>saliva_glucose</code> is a
+<strong>pass-through</strong> column; no formula is applied.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Original derivations
-Pruessner JC, Kirschbaum C, Meinlschmid G, Hellhammer DH. Two formulas for computation of the area under the curve represent measures of total hormone concentration versus time-dependent change.
-Psychoneuroendocrinology. 2003;28(7):916-931. <a href="https://doi.org/10.1016/S0306-4530%2802%2900108-7" class="external-link">doi:10.1016/S0306-4530(02)00108-7</a>
- (AUC hormone measures)
-Kirschbaum C, Hellhammer DH. Salivary cortisol in psychoneuroendocrine research: recent developments and applications.
-Psychoneuroendocrinology. 1994;19(4):313-333. <a href="https://doi.org/10.1016/0306-4530%2894%2990013-2" class="external-link">doi:10.1016/0306-4530(94)90013-2</a>
- (Salivary cortisol methods)</p>
-<p>Validation and applications
-Clow A, Thorn L, Evans P, Hucklebridge F. The awakening cortisol response: methodological issues and significance.
-Stress. 2004;7(1):29-37. <a href="https://doi.org/10.1080/10253890410001667205" class="external-link">doi:10.1080/10253890410001667205</a>
- (Cortisol awakening response)
-Nater UM, Rohleder N. Salivary alpha-amylase as a non-invasive biomarker for the sympathetic nervous system: current state of research.
-Psychoneuroendocrinology. 2009;34(4):486-496. <a href="https://doi.org/10.1016/j.psyneuen.2009.01.014" class="external-link">doi:10.1016/j.psyneuen.2009.01.014</a>
- (Salivary alpha-amylase marker)
-Scales WE, Freeman EW, McCoy NL, Klerman EB. Salivary glucose as a measure of blood glucose: correlations and applications.
-Diabetes Care. 1987;10(4):414-418. <a href="https://doi.org/10.2337/diacare.10.4.414" class="external-link">doi:10.2337/diacare.10.4.414</a>
- (Salivary glucose application)</p>
+    <p>Pruessner JC, Kirschbaum C, Meinlschmid G, Hellhammer DH (2003).
+“Two formulas for computation of the area under the curve represent measures of total hormone concentration versus time-dependent change.”
+<em>Psychoneuroendocrinology</em>, <b>28</b>(7), 916–931.
+<a href="https://doi.org/10.1016/S0306-4530%2802%2900108-7" class="external-link">doi:10.1016/S0306-4530(02)00108-7</a>
+.
+
+Kirschbaum C, Hellhammer DH (1994).
+“Salivary cortisol in psychoneuroendocrine research: recent developments and applications.”
+<em>Psychoneuroendocrinology</em>, <b>19</b>(4), 313–333.
+<a href="https://doi.org/10.1016/0306-4530%2894%2990013-2" class="external-link">doi:10.1016/0306-4530(94)90013-2</a>
+.
+ (salivary cortisol methods; background)
+Clow A, Thorn L, Evans P, Hucklebridge F (2004).
+“The awakening cortisol response: methodological issues and significance.”
+<em>Stress</em>, <b>7</b>(1), 29–37.
+<a href="https://doi.org/10.1080/10253890410001667205" class="external-link">doi:10.1080/10253890410001667205</a>
+.
+ (CAR methodological review; background)
+Nater UM, Rohleder N (2009).
+“Salivary alpha-amylase as a non-invasive biomarker for the sympathetic nervous system: current state of research.”
+<em>Psychoneuroendocrinology</em>, <b>34</b>(4), 486–496.
+<a href="https://doi.org/10.1016/j.psyneuen.2009.01.014" class="external-link">doi:10.1016/j.psyneuen.2009.01.014</a>
+.
+ (salivary alpha-amylase SNS biomarker; background)
+Scales WE, Freeman EW, McCoy NL, Klerman EB (1987).
+“Salivary glucose as a measure of blood glucose: correlations and applications.”
+<em>Diabetes Care</em>, <b>10</b>(4), 414–418.
+<a href="https://doi.org/10.2337/diacare.10.4.414" class="external-link">doi:10.2337/diacare.10.4.414</a>
+.
+ (salivary glucose application; pass-through, no formula)</p>
     </div>
 
     <div class="section level2">

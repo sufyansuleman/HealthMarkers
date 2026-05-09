@@ -54,11 +54,12 @@ Malmstrom TK, Morley JE (2013). “SARC-F: a simple questionnaire to
 rapidly diagnose sarcopenia.” *Journal of the American Medical Directors
 Association*, **14**(8), 531–532.
 [doi:10.1016/j.jamda.2013.05.018](https://doi.org/10.1016/j.jamda.2013.05.018)
-. ; Malmstrom TK, Miller DK, Simonsick EM, Ferrucci L, Morley JE (2015).
+. Malmstrom TK, Miller DK, Simonsick EM, Ferrucci L, Morley JE (2016).
 “SARC-F: a symptom score to predict persons with sarcopenia at risk for
 poor functional outcomes.” *Journal of Cachexia, Sarcopenia and Muscle*,
 **7**(1), 28–36.
-[doi:10.1002/jcsm.12048](https://doi.org/10.1002/jcsm.12048) .
+[doi:10.1002/jcsm.12048](https://doi.org/10.1002/jcsm.12048) . (SARC-F
+validation and functional outcome prediction; background)
 
 ## Examples
 

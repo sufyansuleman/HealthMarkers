@@ -91,10 +91,15 @@ NAFLD-LFS = -2.89 + 1.18MetS + 0.45Type2DM + 0.15Insulin_u + 0.04AST - 0.94*(AST
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Assumptions/units:</p><ul><li><p>ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via /6).</p></li>
-<li><p>MetS is taken directly if provided; otherwise derived via NCEP-ATP III when sufficient inputs exist.</p></li>
+    <p>Assumptions/units:</p><ul><li><p>ALT, AST in U/L; BMI in kg/m^2.</p></li>
+<li><p><code>insulin</code> is expected in muU/mL; if unavailable and <code>I0</code> is provided,
+<code>I0</code> is interpreted in pmol/L and converted to muU/mL via /6.</p></li>
+<li><p>MetS is taken directly if provided; otherwise derived using a simplified
+NCEP-ATP III style rule when sufficient inputs exist.</p></li>
 <li><p>Type2DM is taken from <code>diabetes</code> (logical or 0/1).</p></li>
-</ul></div>
+</ul><p>These scores are surrogate indices for research/feature-engineering use and
+are not validated as standalone clinical diagnostic tools.</p>
+    </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Lee J, Kim D, Kim HJ, Lee CH, Yang JI, Kim W, Kim YJ, Yoon J, Cho S, Sung M, Lee H (2010).

@@ -150,26 +150,16 @@ legacy behavior; defaults to TRUE in this implementation).</p></dd>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>By default, returns a tibble with added <code>[var]_sds</code> columns (tidyverse-friendly).
+    <p>Derivation: for each requested variable, SDS is calculated as
+<code>(observed_value - reference_mean) / reference_sd</code> using user-supplied
+reference statistics in <code>ref</code>.</p>
+<p>Usage note: this function does not derive normative reference values internally.
+Users should provide <code>ref</code> from the target population (preferred), or from an
+external source matched as closely as possible on age/sex/ethnicity/context.
+Interpretability depends on the quality and relevance of those supplied
+reference means and SDs.</p>
+<p>By default, returns a tibble with added <code>[var]_sds</code> columns (tidyverse-friendly).
 For backward compatibility, you can request the previous list output.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Cole TJ, Green PJ (1992).
-“Smoothing Reference Centile Curves: The LMS Method and Penalized Likelihood.”
-<em>Statistics in Medicine</em>, <b>11</b>(10), 1305–1319.
-<a href="https://doi.org/10.1002/sim.4780111005" class="external-link">doi:10.1002/sim.4780111005</a>
-.
-;
-de Onis M, World Health Organization (2006).
-<em>WHO Child Growth Standards: Methods and Development</em>.
-World Health Organization.
-ISBN 924154693X, No DOI for this WHO report; see ISBN/URL, <a href="https://www.who.int/publications/i/item/924154693X" class="external-link">https://www.who.int/publications/i/item/924154693X</a>.
-;
-Kuczmarski RJ, Ogden CL, Grummer-Strawn LM, et al. (2000).
-“CDC Growth Charts: United States.”
-Technical Report 314, National Center for Health Statistics.
-No DOI for this CDC technical report; see URL, <a href="https://www.cdc.gov/growthcharts/cdc_charts.htm" class="external-link">https://www.cdc.gov/growthcharts/cdc_charts.htm</a>.</p>
     </div>
 
     <div class="section level2">

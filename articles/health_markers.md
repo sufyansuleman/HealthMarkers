@@ -49,6 +49,7 @@ Use the packaged simulated dataset for runnable examples. Swap
 `sim_small` with your data frame.
 
 ``` r
+
 library(HealthMarkers)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
@@ -71,6 +72,7 @@ names differ or when using insulin panels.
 - `age`, `sex`: demographics used by several groups
 
 ``` r
+
 col_map <- list(
   TG = "TG",
   HDL_c = "HDL_c",
@@ -94,6 +96,7 @@ on a small subset, focusing on glycemic, lipid, and liver groups
 (insulin panel excluded to keep inputs minimal). Show only new columns.
 
 ``` r
+
 mm <- metabolic_markers(
   data = sim_small,
   col_map = col_map,
@@ -114,17 +117,17 @@ head(dplyr::select(mm, dplyr::all_of(mm_new)))
 #> 5      3.12      0.75     2.962264    1.0314465      1.490566  0.6736111
 #> 6      4.00      0.58     3.380952    0.7619048      2.035714  0.4509804
 #>     VAI_Men VAI_Women LAP_Men LAP_Women  TyG_BMI       FLI       NFS      APRI
-#> 1 3.0404154  4.614469 105.525   127.575 297.9208 5.5614542 -22.36501 0.2140411
-#> 2 0.7834761  1.190929  24.984    30.024 236.1715 2.9074145 -22.49108 0.3308824
-#> 3 0.9912081  1.509719  19.260    26.750 230.1380 1.5564455 -30.82639 0.7000000
-#> 4 0.8153524  1.242666  24.012    30.452 225.5786 0.7301821 -26.95540 0.5615385
-#> 5 1.0959268  1.673274   9.840    21.320 215.1741 0.4444250 -22.01252 0.2272727
-#> 6 0.7377906  1.116715  22.528    31.488 317.6446 6.1582809 -28.18628 0.1707650
+#> 1 3.0404154  4.614469 105.525   127.575 297.9208 5.5614542 -2.109609 0.2140411
+#> 2 0.7834761  1.190929  24.984    30.024 236.1715 2.9074145 -1.047675 0.3308824
+#> 3 0.9912081  1.509719  19.260    26.750 230.1380 1.5564455 -1.601587 0.7000000
+#> 4 0.8153524  1.242666  24.012    30.452 225.5786 0.7301821 -1.651002 0.5615385
+#> 5 1.0959268  1.673274   9.840    21.320 215.1741 0.4444250 -1.103721 0.2272727
+#> 6 0.7377906  1.116715  22.528    31.488 317.6446 6.1582809 -2.406681 0.1707650
 #>        FIB4 BARD      ALBI  MELD_XI    SPISE  METS_IR prediabetes HOMA_CP LAR
 #> 1 0.5779393    1 -1.587680 68.33445 4.849288 302.5694           0      NA  NA
 #> 2 0.5623053    2 -1.505498 72.49500 7.113989 352.8944           1      NA  NA
 #> 3 1.1033166    1 -2.718063 71.93274 7.510664 298.4802           0      NA  NA
-#> 4 1.6544453    2 -2.057258 71.36352 8.292019 188.0396           0      NA  NA
+#> 4 1.6544453    3 -2.057258 71.36352 8.292019 188.0396           0      NA  NA
 #> 5 0.7601567    0 -1.459018 74.67420 8.381122 134.0136           0      NA  NA
 #> 6 0.7069672    1 -1.995310 73.23331 5.086907 179.8589           0      NA  NA
 #>   ASI TyG_index
@@ -147,6 +150,7 @@ can auto-infer columns or use your `col_map`. Here we request a
 multi-panel set and skip insulin for minimal inputs.
 
 ``` r
+
 hm <- all_health_markers(
   data = sim_small,
   col_map = col_map,
@@ -230,8 +234,8 @@ head(dplyr::select(hm, dplyr::all_of(hm_new)))
 #> 2  24.984    30.024 236.1715 0.5818192 43.32180      4.949108      NA
 #> 3  19.260    26.750 230.1380 0.5165652 80.61015      6.504759      NA
 #> 4  24.012    30.452 225.5786 0.6102493 93.72321      7.710013      NA
-#> 5   9.840    21.320 215.1741 0.2392153 37.79522      3.155730      NA
-#> 6  22.528    31.488 317.6446 0.3701522 57.57784      4.915629      NA
+#> 5   9.840    21.320 215.1741 0.2435212 37.79522      3.180975      NA
+#> 6  22.528    31.488 317.6446 0.3768149 57.57784      4.954954      NA
 #>   Beta2Micro      LMR      NER      PIV       CLR        CAR       PCR mGPS
 #> 1       1.99 2.717986 11.70297 507.9409 1.8845950 0.10439883  82.02247    0
 #> 2       1.88 4.866071 10.65432 144.7180 0.6009174 0.03628809 155.72519    0
@@ -251,6 +255,7 @@ OGTT/adipose/tracer inputs are skipped safely; fasting indices compute
 if `G0`/`I0` are present.
 
 ``` r
+
 col_map_insulin <- list(
   G0   = "G0",
   I0   = "I0",
@@ -464,6 +469,7 @@ which were skipped due to missing OGTT/adipose/tracer inputs.
 containing a missing lipid value.
 
 ``` r
+
 demo <- sim_small[1:6, c("TG", "HDL_c", "BMI", "ALT", "AST")]
 demo$TG[2] <- NA
 
@@ -518,6 +524,7 @@ three structured messages on each call: preparing inputs, a column
 mapping summary, and a group execution summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120, BMI = 25)
 col_v <- list(TC = "TC", HDL_c = "HDL_c", TG = "TG", LDL_c = "LDL_c", BMI = "BMI")
@@ -592,6 +599,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across 10 major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

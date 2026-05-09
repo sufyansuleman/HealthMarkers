@@ -61,11 +61,11 @@ Spitzer RL, Kroenke K, Williams JBW, Löwe B (2006). “A Brief Measure for
 Assessing Generalized Anxiety Disorder: The GAD-7.” *Archives of
 Internal Medicine*, **166**(10), 1092–1097.
 [doi:10.1001/archinte.166.10.1092](https://doi.org/10.1001/archinte.166.10.1092)
-. ; Plummer F, Manea L, Trepel D, McMillan D (2016). “Screening for
+. Plummer F, Manea L, Trepel D, McMillan D (2016). “Screening for
 Anxiety Disorders with the GAD-7 and GAD-2: A Systematic Review and
 Diagnostic Meta-Analysis.” *General Hospital Psychiatry*, **39**, 24–31.
 [doi:10.1016/j.genhosppsych.2015.11.005](https://doi.org/10.1016/j.genhosppsych.2015.11.005)
-.
+. (validation meta-analysis)
 
 ## Examples
 

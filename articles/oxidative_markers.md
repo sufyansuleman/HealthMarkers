@@ -18,13 +18,13 @@ performed.
 
 ## What you need (detailed inputs)
 
-| Argument  | Purpose/Options                                                       | Details/Notes                               |
-|-----------|-----------------------------------------------------------------------|---------------------------------------------|
-| data      | Data frame/tibble with GSH and GSSG columns                           | Columns can be any name, mapped via col_map |
-| col_map   | Named list: GSH, GSSG → your column names                             | Defaults to identity mapping                |
-| units     | No conversion performed; must match (e.g., µmol/L)                    | Mismatched units distort results            |
-| na_action | “keep” (propagate NA), “omit” (drop rows), “error” (abort if missing) | Controls missing data handling              |
-| verbose   | TRUE/FALSE: print progress and summary                                | Useful for diagnostics                      |
+| Argument | Purpose/Options | Details/Notes |
+|----|----|----|
+| data | Data frame/tibble with GSH and GSSG columns | Columns can be any name, mapped via col_map |
+| col_map | Named list: GSH, GSSG → your column names | Defaults to identity mapping |
+| units | No conversion performed; must match (e.g., µmol/L) | Mismatched units distort results |
+| na_action | “keep” (propagate NA), “omit” (drop rows), “error” (abort if missing) | Controls missing data handling |
+| verbose | TRUE/FALSE: print progress and summary | Useful for diagnostics |
 
 ### Example input table
 
@@ -60,6 +60,7 @@ performed.
 ## Worked example 1: Basic usage
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -83,6 +84,7 @@ are computed as GSH/GSSG for each row.
 ## Worked example 2: Omit missing data
 
 ``` r
+
 oxidative_markers(
   data = df,
   col_map = list(GSH = "GSH", GSSG = "GSSG"),
@@ -114,6 +116,7 @@ GSH) is dropped.
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 oxidative_markers(
   data = df,
@@ -144,6 +147,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

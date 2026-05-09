@@ -98,6 +98,14 @@
     <p>A tibble of score columns only: <code>MDQ_symptom_count</code>, <code>MDQ_clustering</code>, <code>MDQ_impairment</code>, <code>MDQ_positive_screen</code>. Input columns are not included.</p>
     </div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>The impairment column is expected to be <strong>binary</strong> (1 = impaired, 0 = not).
+The original MDQ impairment question uses a 4-category scale
+(1 = no problem, 2 = minor, 3 = moderate, 4 = serious); if the raw
+4-category response is passed, the caller must recode it to binary
+(e.g., <code>impair_binary = as.integer(impair_raw &gt;= 3)</code>) before scoring.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Hirschfeld RMA, Williams JBW, Spitzer RL, Calabrese JR, Flynn L, Keck PE, Lewis L, McElroy SL, Post RM, Rapport DJ, Russell JM, Sachs GS, Zajecka J (2000).
 “Development and Validation of a Screening Instrument for Bipolar Spectrum Disorder: The Mood Disorder Questionnaire.”

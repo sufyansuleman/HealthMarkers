@@ -39,6 +39,7 @@ Approximate reference values in healthy adults:
 ## Load packages and demo data
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -56,6 +57,7 @@ infection or high-grade malignancy.
 ## Column map (required)
 
 ``` r
+
 col_map <- list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM")
 ```
 
@@ -65,6 +67,7 @@ Default `na_action = "keep"`: ratios are `NA` where inputs are missing;
 no extreme scan.
 
 ``` r
+
 ktr <- kyn_trp_ratio(
   data = df,
   col_map = col_map,
@@ -92,6 +95,7 @@ Extreme Kyn or Trp values will produce extreme KTR. Pre-filter
 implausible inputs before calling.
 
 ``` r
+
 df_ext <- df
 df_ext$Kyn_nM[2] <- 50000  # extreme; pre-filter
 df_ext$Kyn_nM[df_ext$Kyn_nM > 20000] <- NA
@@ -123,6 +127,7 @@ ktr_filtered
 with missing inputs; `error` stops on missingness.
 
 ``` r
+
 df_na <- df
 df_na$Trp_uM[3] <- NA
 
@@ -149,6 +154,7 @@ list(keep_rows = nrow(keep_out), omit_rows = nrow(omit_out))
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 kyn_trp_ratio(
   data    = df,
@@ -185,6 +191,7 @@ mass-spectrometry panels. Column names vary widely across platforms. Use
 to check what is auto-detected in your dataset:
 
 ``` r
+
 hm_col_report(your_data)  # shows matched keys and suggests col_map entries
 ```
 

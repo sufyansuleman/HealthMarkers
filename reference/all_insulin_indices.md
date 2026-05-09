@@ -57,10 +57,11 @@ metrics), consult the individual function help pages (e.g. ?fasting_is,
 ?ogtt_is, ?adipo_is, ?tracer_dxa_is). Citations are intentionally not
 duplicated here.
 
-## References
-
 Aggregator wrapper. See underlying function help pages for full
 references: fasting_is(), ogtt_is(), adipo_is(), tracer_dxa_is().
+
+## References
+
 Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF,
 Hansen T, Grarup N (2024). “Genetic Underpinnings of Fasting and Oral
 Glucose-stimulated Based Insulin Sensitivity Indices.” *The Journal of
@@ -70,6 +71,18 @@ Clinical Endocrinology & Metabolism*, **109**(11), 2754–2763.
 ## Examples
 
 ``` r
+# Quick smoke-test (fasting indices only)
+df <- data.frame(G0 = 5.2, I0 = 60)
+all_insulin_indices(df, normalize = "none", mode = "IS",
+                    verbose = FALSE, na_action = "keep")
+#> # A tibble: 1 × 10
+#>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
+#>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
+#> 1         -10       4       -41.6  37.4  0.146        0.00213         -0.107
+#> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
+
+# \donttest{
+# Full panel with all supported inputs
 df <- data.frame(
   G0 = 5.2, I0 = 60, G30 = 7.5, I30 = 90, G120 = 6.2, I120 = 80,
   TG = 1.5, HDL_c = 1.3, FFA = 0.3, waist = 85, weight = 70, bmi = 24,
@@ -92,4 +105,5 @@ all_insulin_indices(df, col_map = list(
 #> #   BigttSi <dbl>, Ifc_inv <dbl>, HIRI_inv <dbl>, Belfiore_isi_gly <dbl>,
 #> #   Revised_QUICKI <dbl>, VAI_Men_inv <dbl>, VAI_Women_inv <dbl>,
 #> #   TG_HDL_C_inv <dbl>, TyG_inv <dbl>, LAP_Men_inv <dbl>, …
+# }
 ```

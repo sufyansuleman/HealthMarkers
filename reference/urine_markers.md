@@ -82,55 +82,50 @@ Expected units:
 - Optional tubular markers above assumed mg/L when normalized per g
   creatinine
 
+## Note
+
+UACR formula: albumin (mg/L) / creatinine (g/L) = albumin (mg/L)
+\\\times\\ 100 / creatinine (mg/dL). UPCR and per-gCr tubular markers
+use the same creatinine denominator:
+`gCr_den = creatinine (mg/dL) \times 0.01` (= g/L). Tubular markers
+(NGAL, KIM-1, NAG, Beta-2-microglobulin, alpha-1-microglobulin, IL-18,
+L-FABP) are **pass-through** columns normalised per g creatinine; no
+formula other than creatinine adjustment is applied.
+
 ## References
 
-### Original derivations
-
-- Mogensen CE. Microalbuminuria predicts clinical proteinuria and early
-  mortality in maturity-onset diabetes. N Engl J Med.
-  1984;310(6):356-360.
-  [doi:10.1056/NEJM198402093100602](https://doi.org/10.1056/NEJM198402093100602)
-  (UACR and microalbuminuria concept)
-
-- Ginsberg JM, Chang BS, Matarese RA, Garella S. Use of single voided
-  urine samples to estimate quantitative proteinuria. N Engl J Med.
-  1983;309(25):1543-1546.
-  [doi:10.1056/NEJM198312223092503](https://doi.org/10.1056/NEJM198312223092503)
-  (UPCR derivation and validation)
-
-- Bokenkamp A, Domanetzki M, Zinck R, Schumann G, Byrd D, Brodehl J.
-  Reference values for urinary albumin excretion in healthy children.
-  Pediatr Nephrol. 1998;12(6):478-483.
-  [doi:10.1007/s004670050480](https://doi.org/10.1007/s004670050480)
-  (Albumin excretion normative values)
-
-### Validation and consensus
-
-- Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group
-  (2013). “KDIGO 2012 Clinical Practice Guideline for the Evaluation and
-  Management of Chronic Kidney Disease.” *Kidney International
-  Supplements*, **3**(1), 1–150. Guideline without reliable DOI metadata
-  in Crossref; related synopsis PMID: 23732715,
-  <https://kdigo.org/guidelines/ckd-evaluation-and-management/>.
-  (Albuminuria stages A1-A3; UACR cutoffs)
-
-- de Zeeuw D, Parving HH, Henning RH. Microalbuminuria as an early
-  marker for cardiovascular disease. J Am Soc Nephrol.
-  2006;17(8):2100-2105.
-  [doi:10.1681/ASN.2006040388](https://doi.org/10.1681/ASN.2006040388)
-  (Prognostic validation of UACR)
-
-- Ichimura T, Hung CC, Yang SA, Stevens JL, Bonventre JV. Kidney injury
-  molecule-1: a tissue and urinary biomarker for nephrotoxicant-induced
-  renal injury. Am J Physiol Renal Physiol. 2004;286(3):F552-F563.
-  [doi:10.1152/ajprenal.00285.2002](https://doi.org/10.1152/ajprenal.00285.2002)
-  (KIM-1 as tubular marker)
-
-- Portilla D, Dent C, Sugaya T, et al. Liver fatty acid-binding protein
-  as a biomarker of acute kidney injury after cardiac surgery. Kidney
-  Int. 2008;73(4):465-472.
-  [doi:10.1038/sj.ki.5002688](https://doi.org/10.1038/sj.ki.5002688)
-  (L-FABP biomarker validation)
+Mogensen CE (1984). “Microalbuminuria predicts clinical proteinuria and
+early mortality in maturity-onset diabetes.” *New England Journal of
+Medicine*, **310**(6), 356–360.
+[doi:10.1056/NEJM198402093100602](https://doi.org/10.1056/NEJM198402093100602)
+. Ginsberg JM, Chang BS, Matarese RA, Garella S (1983). “Use of single
+voided urine samples to estimate quantitative proteinuria.” *New England
+Journal of Medicine*, **309**(25), 1543–1546.
+[doi:10.1056/NEJM198312223092503](https://doi.org/10.1056/NEJM198312223092503)
+. Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group
+(2013). “KDIGO 2012 Clinical Practice Guideline for the Evaluation and
+Management of Chronic Kidney Disease.” *Kidney International
+Supplements*, **3**(1), 1–150.
+[doi:10.1038/kisup.2012.73](https://doi.org/10.1038/kisup.2012.73) .
+Related synopsis: Stevens and Levin (2013), Ann Intern Med,
+doi:10.7326/0003-4819-158-11-201306040-00007,
+<https://kdigo.org/guidelines/ckd-evaluation-and-management/>.
+(albuminuria staging A1–A3 UACR cutoffs) de Zeeuw D, Parving H, Henning
+RH (2006). “Microalbuminuria as an early marker for cardiovascular
+disease.” *Journal of the American Society of Nephrology*, **17**(8),
+2100–2105.
+[doi:10.1681/ASN.2006040388](https://doi.org/10.1681/ASN.2006040388) .
+(prognostic UACR validation; background) Ichimura T, Hung CC, Yang SA,
+Stevens JL, Bonventre JV (2004). “Kidney injury molecule-1: a tissue and
+urinary biomarker for nephrotoxicant-induced renal injury.” *American
+Journal of Physiology: Renal Physiology*, **286**(3), F552–F563.
+[doi:10.1152/ajprenal.00285.2002](https://doi.org/10.1152/ajprenal.00285.2002)
+. (KIM-1 tubular biomarker; pass-through normalization, background)
+Portilla D, Dent C, Sugaya T, others (2008). “Urinary liver-type fatty
+acid-binding protein as a biomarker of acute kidney injury.” *Kidney
+International*, **73**(4), 465–472.
+[doi:10.1038/sj.ki.5002721](https://doi.org/10.1038/sj.ki.5002721) .
+(L-FABP tubular biomarker; pass-through normalization, background)
 
 ## Examples
 
@@ -161,7 +156,7 @@ urine_markers(df)
 #> # A tibble: 1 × 12
 #>    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
 #>   <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
-#> 1 25000 A3                normal           12500           NA           NA
+#> 1  2500 A3                normal           12500           NA           NA
 #> # ℹ 6 more variables: KIM1_per_gCr <dbl>, NAG_per_gCr <dbl>,
 #> #   Beta2Micro_per_gCr <dbl>, A1Micro_per_gCr <dbl>, IL18_per_gCr <dbl>,
 #> #   L_FABP_per_gCr <dbl>

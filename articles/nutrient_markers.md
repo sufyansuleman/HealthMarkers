@@ -34,6 +34,7 @@ safe divisions; no unit conversion.
 ## Quick start
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -69,6 +70,7 @@ Extreme inputs will produce extreme derived markers. Pre-filter
 implausible values before calling.
 
 ``` r
+
 # Pre-filter extreme ferritin
 df_clean <- df
 df_clean$ferritin[df_clean$ferritin > 2000] <- NA
@@ -91,6 +93,7 @@ nutrient_markers(
 ## Missing-data policy
 
 ``` r
+
 try(
   nutrient_markers(
     data = df,
@@ -120,6 +123,7 @@ try(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 nutrient_markers(
   data = df,
@@ -179,6 +183,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

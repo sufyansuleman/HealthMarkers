@@ -62,11 +62,17 @@ are not included.
 
 ## References
 
-Prochaska JJ, Sung H, Max W, Shi Y, Ong M (2012). “Validity Study of the
-K6 Scale as a Measure of Moderate Mental Distress Based on Mental Health
-Treatment Need and Utilization.” *International Journal of Methods in
-Psychiatric Research*, **21**(2), 88–97.
-[doi:10.1002/mpr.1349](https://doi.org/10.1002/mpr.1349) .
+Kessler RC, Andrews G, Colpe LJ, Hiripi E, Mroczek DK, Normand ST,
+Walters EE, Zaslavsky AM (2002). “Short screening scales to monitor
+population prevalences and trends in non-specific psychological
+distress.” *Psychological Medicine*, **32**(6), 959–976.
+[doi:10.1017/S0033291702006074](https://doi.org/10.1017/S0033291702006074)
+. Prochaska JJ, Sung H, Max W, Shi Y, Ong M (2012). “Validity Study of
+the K6 Scale as a Measure of Moderate Mental Distress Based on Mental
+Health Treatment Need and Utilization.” *International Journal of
+Methods in Psychiatric Research*, **21**(2), 88–97.
+[doi:10.1002/mpr.1349](https://doi.org/10.1002/mpr.1349) . (validation
+study)
 
 ## Examples
 

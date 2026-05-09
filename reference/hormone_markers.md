@@ -69,6 +69,36 @@ Tibble with one column per computable ratio. If an ID column is detected
 in `data` (e.g. `id`, `IID`, `participant_id`), it is prepended as the
 first output column.
 
+## Details
+
+Some inputs may be inferred when missing (for example, `free_T3` from
+`TSH` + `free_T4`, or `GH` from `IGF1`) using internal heuristics. These
+inferred values are intended for exploratory feature engineering only
+and must not be treated as clinical substitutes for directly measured
+assays. Ratios such as FAI, ARR, and CAR_slope have established
+literature usage; several other outputs are simple arithmetic composites
+included for feature-engineering convenience and may not have a single
+canonical derivation paper.
+
+## References
+
+Sowers MR, Zheng H, McConnell D, Nan B, Karvonen-Gutierrez CA, Randolph
+JF (2009). “Testosterone, sex hormone-binding globulin and free androgen
+index among adult women: chronological and ovarian aging.” *Human
+Reproduction*, **24**(9), 2276–2285.
+[doi:10.1093/humrep/dep209](https://doi.org/10.1093/humrep/dep209) .
+Funder JW, Carey RM, Mantero F, Murad MH, Reincke M, Shibata H,
+Stowasser M, Young WF (2016). “The Management of Primary Aldosteronism:
+Case Detection, Diagnosis, and Treatment: An Endocrine Society Clinical
+Practice Guideline.” *The Journal of Clinical Endocrinology &
+Metabolism*, **101**(5), 1889–1916.
+[doi:10.1210/jc.2015-4061](https://doi.org/10.1210/jc.2015-4061) . Clow
+A, Thorn L, Evans P, Hucklebridge F (2004). “The awakening cortisol
+response: methodological issues and significance.” *Stress*, **7**(1),
+29–37.
+[doi:10.1080/10253890410001667205](https://doi.org/10.1080/10253890410001667205)
+.
+
 ## Examples
 
 ``` r

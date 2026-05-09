@@ -113,14 +113,51 @@ Keys: c("chol_total","chol_ldl","chol_hdl","triglycerides","age_year",
 validated, NA values are kept (propagate to outputs), no extreme-value
 checks or capping are applied, and a tibble with 0/1 factor flags is returned.</p>
 <p>Units and criteria (no automatic unit conversion):</p><ul><li><p>Lipids (mmol/L): total cholesterol &gt; 5.2 OR LDL-C &gt; 3.4 OR HDL-C &lt; 1.0 OR
-triglycerides &gt; 1.1 (age 0-9) OR &gt; 1.5 (age 10-19) =&gt; dyslipidemia = 1.</p></li>
+triglycerides &gt; 1.1 (age 0-9) OR &gt; 1.5 (age 10-19) =&gt; dyslipidemia = 1.
+Note: no TG cutoff is applied for adults aged &gt;= 20 years.</p></li>
 <li><p>Insulin resistance: z_HOMA &gt; 1.28 (~=90th percentile) =&gt; insulin_resistance = 1.
-z_HOMA is a within-sample or external z-score of HOMA-IR.</p></li>
+z_HOMA is a within-sample or external z-score of HOMA-IR (see Matthews et al. 1985).</p></li>
 <li><p>Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in (39, 47) mmol/mol
-=&gt; hyperglycemia = 1.</p></li>
+=&gt; hyperglycemia = 1. Boundaries are EXCLUSIVE (open intervals); boundary values
+(exactly 5.6 or 6.9 mmol/L; exactly 39 or 47 mmol/mol) are not flagged.
+ADA criteria use inclusive lower bound (&gt;= 5.6 mmol/L, &gt;= 39 mmol/mol).</p></li>
 <li><p>Hypertension: either BP z-score &gt; 1.64 (~=95th percentile) for systolic or diastolic
 =&gt; hypertension = 1.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>These flags are heuristic screening rules derived from published clinical
+guidelines. They are not validated diagnostic criteria and should not replace
+clinical judgment. The dyslipidemia and hypertension thresholds are designed
+for pediatric populations (ages 0-19); for adults &gt;= 20, only TC, LDL-C, and
+HDL-C criteria contribute to the dyslipidemia flag.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>National Heart, Lung, and Blood Institute (2011).
+“Expert Panel on Integrated Guidelines for Cardiovascular Health and Risk Reduction in Children and Adolescents: Summary Report.”
+<em>Pediatrics</em>, <b>128</b>(Suppl 5), S213–S256.
+<a href="https://doi.org/10.1542/peds.2009-2107C" class="external-link">doi:10.1542/peds.2009-2107C</a>
+.
+
+American Diabetes Association Professional Practice Committee (2024).
+“2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes—2024.”
+<em>Diabetes Care</em>, <b>47</b>(Suppl 1), S20–S42.
+<a href="https://doi.org/10.2337/dc24-S002" class="external-link">doi:10.2337/dc24-S002</a>
+.
+
+Flynn JT, Kaelber DC, Baker-Smith CM, Blowey D, Carroll AE, Daniels SR, de Ferranti SD, Dionne JM, Falkner B, Flinn SK, Gidding SS, Goodwin C, Leu MG, Powers ME, Rea C, Samuels J, Simasek M, Tran VT, Urbina EM (2017).
+“Clinical Practice Guideline for Screening and Management of High Blood Pressure in Children and Adolescents.”
+<em>Pediatrics</em>, <b>140</b>(3), e20171904.
+<a href="https://doi.org/10.1542/peds.2017-1904" class="external-link">doi:10.1542/peds.2017-1904</a>
+.
+
+Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985).
+“Homeostasis Model Assessment: Insulin Resistance and Beta-Cell Function from Fasting Plasma Glucose and Insulin Concentrations in Man.”
+<em>Diabetologia</em>, <b>28</b>(7), 412–419.
+<a href="https://doi.org/10.1007/BF00280883" class="external-link">doi:10.1007/BF00280883</a>
+.</p>
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="liver_markers.html">liver_markers()</a></code>, <code><a href="lipid_markers.html">lipid_markers()</a></code>, <code><a href="kidney_failure_risk.html">kidney_failure_risk()</a></code>, <code><a href="inflammatory_markers.html">inflammatory_markers()</a></code></p></div>

@@ -91,6 +91,16 @@ is prepended as the first output column.
 
 ## Details
 
+Assumed units (no automatic conversion except where noted):
+
+- TC, HDL_c, TG, LDL_c: mmol/L
+
+- glucose: mmol/L (converted to mg/dL internally for TyG_BMI)
+
+- waist: cm
+
+- BMI: kg/m^2
+
 Pre-computation (one level deep):
 
 - If `BMI` is absent but `weight` (kg) and `height` (m or cm) are
@@ -100,7 +110,7 @@ Pre-computation (one level deep):
   is derived automatically.
 
 - If `LDL_c` is absent, it is always estimated via Friedewald (TC -
-  HDL - TG/5). An informational message is emitted when
+  HDL - TG/2.2, mmol/L form). An informational message is emitted when
   `verbose = TRUE`.
 
 ## References
@@ -130,6 +140,7 @@ Nonalcoholic Fatty Liver and Liver Fibrosis in Individuals with
 Overweight/Obesity.” *Metabolic Syndrome and Related Disorders*,
 **19**(3), 167–173.
 [doi:10.1089/met.2020.0109](https://doi.org/10.1089/met.2020.0109) .
+(clinical application)
 
 ## Examples
 
@@ -188,5 +199,5 @@ lipid_markers(df2, verbose = FALSE)
 #> # A tibble: 1 × 6
 #>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1
 #>       <dbl>     <dbl>        <dbl>        <dbl>         <dbl>      <dbl>
-#> 1       3.9     0.360            4         1.38          2.72         NA
+#> 1       3.9     0.818            4         1.38          2.37         NA
 ```

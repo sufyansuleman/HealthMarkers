@@ -124,6 +124,10 @@ weight/height options):
 
 - waist, hip: cm
 
+Note: WHtR, ABSI, BRI, CI, and RFM all require waist in the same unit as
+height (metres). The function converts waist internally (waist_cm / 100)
+for these five indices; users should always supply waist in cm.
+
 - sex: 0 = male, 1 = female (only required if include_RFM = TRUE)
 
 ## References
@@ -209,8 +213,8 @@ obesity_indices(
 #> # A tibble: 2 × 15
 #>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio
 #>       <dbl>    <dbl> <dbl> <chr>         <dbl>     <dbl>                 <dbl>
-#> 1        70     1.75  22.9 Normal weight 0.8           0                  45.7
-#> 2        80     1.65  29.4 Overweight    0.947         0                  54.5
+#> 1        70     1.75  22.9 Normal weight 0.8           0                 0.457
+#> 2        80     1.65  29.4 Overweight    0.947         0                 0.545
 #> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
 #> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 ```

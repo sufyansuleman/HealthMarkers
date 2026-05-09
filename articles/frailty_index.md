@@ -40,6 +40,7 @@ deficits (roughly 0–1).
 These examples run only if the `di` package is installed.
 
 ``` r
+
 library(HealthMarkers)
 
 has_di <- requireNamespace("di", quietly = TRUE)
@@ -63,6 +64,7 @@ when `cols = NULL`. Here we name them explicitly and keep `age` for
 optional plotting.
 
 ``` r
+
 cols <- c("d1", "d2", "d3")
 ```
 
@@ -72,6 +74,7 @@ Return a tidy tibble (`return = "data"`) so we can preview FI alongside
 deficits.
 
 ``` r
+
 if (has_di) {
   fi_tbl <- frailty_index(
     data = demo_df,
@@ -120,6 +123,7 @@ retains rows even if deficits contain `NA` (none in this slice).
 Demonstrate row dropping, capping, and tidy return.
 
 ``` r
+
 if (has_di) {
   demo_miss <- demo_df
   demo_miss$d2[3] <- NA       # introduce missing
@@ -206,6 +210,7 @@ message lists the selected deficit columns directly:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 if (has_di) {
   old_opt <- options(healthmarkers.verbose = "inform")
 

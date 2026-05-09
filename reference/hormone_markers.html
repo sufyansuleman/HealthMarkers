@@ -117,6 +117,37 @@ per-column results summary.</p></dd>
 detected in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>), it is prepended
 as the first output column.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Some inputs may be inferred when missing (for example, <code>free_T3</code> from
+<code>TSH</code> + <code>free_T4</code>, or <code>GH</code> from <code>IGF1</code>) using internal heuristics. These
+inferred values are intended for exploratory feature engineering only and
+must not be treated as clinical substitutes for directly measured assays.
+Ratios such as FAI, ARR, and CAR_slope have established literature usage;
+several other outputs are simple arithmetic composites included for
+feature-engineering convenience and may not have a single canonical
+derivation paper.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Sowers MR, Zheng H, McConnell D, Nan B, Karvonen-Gutierrez CA, Randolph JF (2009).
+“Testosterone, sex hormone-binding globulin and free androgen index among adult women: chronological and ovarian aging.”
+<em>Human Reproduction</em>, <b>24</b>(9), 2276–2285.
+<a href="https://doi.org/10.1093/humrep/dep209" class="external-link">doi:10.1093/humrep/dep209</a>
+.
+
+Funder JW, Carey RM, Mantero F, Murad MH, Reincke M, Shibata H, Stowasser M, Young WF (2016).
+“The Management of Primary Aldosteronism: Case Detection, Diagnosis, and Treatment: An Endocrine Society Clinical Practice Guideline.”
+<em>The Journal of Clinical Endocrinology &amp; Metabolism</em>, <b>101</b>(5), 1889–1916.
+<a href="https://doi.org/10.1210/jc.2015-4061" class="external-link">doi:10.1210/jc.2015-4061</a>
+.
+
+Clow A, Thorn L, Evans P, Hucklebridge F (2004).
+“The awakening cortisol response: methodological issues and significance.”
+<em>Stress</em>, <b>7</b>(1), 29–37.
+<a href="https://doi.org/10.1080/10253890410001667205" class="external-link">doi:10.1080/10253890410001667205</a>
+.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

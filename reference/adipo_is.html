@@ -17,7 +17,12 @@ McAuley_index = exp(2.63 - 0.28 ln(I0 (muU/mL)) - 0.31 ln(TG (mmol/L)))
 Adipo_inv = -(FFA * I0 (muU/mL))
 Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 
-'><meta property="og:description" content='Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
+
+Inversion Note: Most indices (VAI, LAP, TyG, TG/HDL, Adipo, Belfiore) are algebraically
+inverted from their original insulin RESISTANCE definitions so that more negative values
+consistently indicate worse adipose insulin sensitivity. Revised_QUICKI and McAuley_index
+are retained in their original orientation (already sensitivity indices; higher = better).
+See the vignette for detailed interpretation guidance.'><meta property="og:description" content='Computes adipose-related insulin sensitivity/resistance indices from fasting inputs.
 Expected input units (converted internally):
 Glucose G0 mmol/L -&amp;gt; mg/dL (* 18)
 Insulin I0 pmol/L -&amp;gt; muU/mL (/ 6)
@@ -35,7 +40,12 @@ McAuley_index = exp(2.63 - 0.28 ln(I0 (muU/mL)) - 0.31 ln(TG (mmol/L)))
 Adipo_inv = -(FFA * I0 (muU/mL))
 Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)
 
-'></head><body>
+
+Inversion Note: Most indices (VAI, LAP, TyG, TG/HDL, Adipo, Belfiore) are algebraically
+inverted from their original insulin RESISTANCE definitions so that more negative values
+consistently indicate worse adipose insulin sensitivity. Revised_QUICKI and McAuley_index
+are retained in their original orientation (already sensitivity indices; higher = better).
+See the vignette for detailed interpretation guidance.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -84,7 +94,12 @@ Expected input units (converted internally):</p><ul><li><p>Glucose G0 mmol/L -&g
 <li><p>McAuley_index = exp(2.63 - 0.28 ln(I0 (muU/mL)) - 0.31 ln(TG (mmol/L)))</p></li>
 <li><p>Adipo_inv = -(FFA * I0 (muU/mL))</p></li>
 <li><p>Belfiore_inv_FFA = - 2 / (I0 (muU/mL) * FFA + 1)</p></li>
-</ul></div>
+</ul><p><strong>Inversion Note</strong>: Most indices (VAI, LAP, TyG, TG/HDL, Adipo, Belfiore) are algebraically
+inverted from their original insulin RESISTANCE definitions so that more negative values
+consistently indicate worse adipose insulin sensitivity. Revised_QUICKI and McAuley_index
+are retained in their original orientation (already sensitivity indices; higher = better).
+See the vignette for detailed interpretation guidance.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
@@ -142,37 +157,37 @@ is prepended as the first output column.</p>
 <em>Journal of Clinical Endocrinology &amp; Metabolism</em>, <b>85</b>(7), 2402–2410.
 <a href="https://doi.org/10.1210/jcem.85.7.6661" class="external-link">doi:10.1210/jcem.85.7.6661</a>
 .
-;
+
 Amato MC, Giordano C, Galia M, Criscimanna A, Vitabile S, Midiri M, Galluzzo A (2010).
 “Visceral Adiposity Index: A Reliable Indicator of Visceral Fat Function Associated with Cardiometabolic Risk.”
 <em>Diabetes Care</em>, <b>33</b>(4), 920–922.
 <a href="https://doi.org/10.2337/dc09-1825" class="external-link">doi:10.2337/dc09-1825</a>
 .
-;
+
 Kahn HS (2005).
 “The Lipid Accumulation Product Performs Better than Body Mass Index as an Indicator of Cardiovascular Risk in Women.”
 <em>BMC Cardiovascular Disorders</em>, <b>5</b>(1), 26.
 <a href="https://doi.org/10.1186/1471-2261-5-26" class="external-link">doi:10.1186/1471-2261-5-26</a>
 .
-;
+
 Guerrero-Romero F, Simental-Mendía LE, González-Ortiz M, Martínez-Abundis E, Ramos-Zavala MG, Hernández-González SO, Jacques-Camarena O, Rodríguez-Morán M (2010).
 “The Product of Triglycerides and Glucose, a Simple Measure of Insulin Sensitivity. Comparison with the Euglycemic-Hyperinsulinemic Clamp.”
 <em>Journal of Clinical Endocrinology &amp; Metabolism</em>, <b>95</b>(7), 3347–3351.
 <a href="https://doi.org/10.1210/jc.2010-0288" class="external-link">doi:10.1210/jc.2010-0288</a>
 .
-;
+
 Dobiášová M, Frohlich JJ (2001).
 “The Plasma Parameter Log(TG/HDL-C) as an Atherogenic Index: Correlation with Lipoprotein Particle Size and Esterification Rate in ApoB-Lipoprotein-Depleted Plasma.”
 <em>Clinical Biochemistry</em>, <b>34</b>(7), 583–588.
 <a href="https://doi.org/10.1016/S0009-9120%2801%2900263-6" class="external-link">doi:10.1016/S0009-9120(01)00263-6</a>
 .
-;
+
 Belfiore F, Iannello S, Volpicelli G (1998).
 “Insulin Sensitivity Indices Calculated from Basal and OGTT-Related Insulin and Glucose Levels.”
 <em>Molecular Genetics and Metabolism</em>, <b>63</b>(2), 134–141.
 <a href="https://doi.org/10.1006/mgme.1997.2658" class="external-link">doi:10.1006/mgme.1997.2658</a>
 .
-;
+
 Raynaud E, Pérez-Martin A, Brun J, Benhaddad AA, Mercier J (1999).
 “Fasting Plasma Insulin and Insulin Resistance Indices.”
 <em>Diabetes &amp; Metabolism</em>, <b>25</b>(6), 524–532.

@@ -21,12 +21,12 @@ values and ratios \> 1 warnings.
 
 ## What you need (inputs & options)
 
-| Argument  | Purpose / Options                         | Notes                                                                           |
-|-----------|-------------------------------------------|---------------------------------------------------------------------------------|
-| data      | Data frame/tibble with spirometry         | Volumes must be in liters                                                       |
-| col_map   | Named list mapping columns                | Required: fev1, fvc; Optional: fev1_post, fvc_post, age, height, sex, ethnicity |
-| na_action | Missing-data policy for required fev1/fvc | “keep” (default), “omit”, “error”, “ignore”, “warn”                             |
-| verbose   | Emit progress messages                    | Default FALSE                                                                   |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with spirometry | Volumes must be in liters |
+| col_map | Named list mapping columns | Required: fev1, fvc; Optional: fev1_post, fvc_post, age, height, sex, ethnicity |
+| na_action | Missing-data policy for required fev1/fvc | “keep” (default), “omit”, “error”, “ignore”, “warn” |
+| verbose | Emit progress messages | Default FALSE |
 
 **Units:** Inputs must be liters. No unit conversion is performed.
 
@@ -74,6 +74,7 @@ a debug fallback reference is used or GLI fields stay NA.
 ## Worked example 1: Basic fixed-ratio outputs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -103,6 +104,7 @@ propagates where inputs are missing.
 ## Worked example 2: With post-BD and GLI inputs
 
 ``` r
+
 df2 <- tibble::tibble(
   fev1_pre = c(2.1, 0.9, 7.5),
   fvc_pre  = c(3.0, 1.8, 11.0),
@@ -152,6 +154,7 @@ remain NA. Bronchodilator deltas are percent changes pre→post.
 ## Worked example 3: Strict missing policy
 
 ``` r
+
 try(
   spirometry_markers(
     data = df,
@@ -181,6 +184,7 @@ Enable verbose output to inspect column mapping, row counts, and result
 summaries during QC:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 spirometry_markers(
   data.frame(FEV1 = 2.8, FVC = 3.5),
@@ -215,6 +219,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

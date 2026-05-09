@@ -144,7 +144,7 @@ shown when <code>verbose</code> (or debug) is enabled.</li>
 <li>Safe division: all ratios use a helper that sets NA for zero/invalid
 denominators and emits a consolidated warning.</li>
 <li>Sweat rate:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><mtext mathvariant="normal">weight_before</mtext><mo>−</mo><mtext mathvariant="normal">weight_after</mtext><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><mtext mathvariant="normal">duration</mtext><mi>/</mi><mtext mathvariant="normal">body_surface_area</mtext></mrow><annotation encoding="application/x-tex">(\text{weight_before} - \text{weight_after}) / \text{duration} / \text{body_surface_area}</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mtext mathvariant="normal">weight_before</mtext><mo>−</mo><mtext mathvariant="normal">weight_after</mtext><mo stretchy="false" form="postfix">)</mo><mi>/</mi><mtext mathvariant="normal">duration</mtext><mi>/</mi><mtext mathvariant="normal">body_surface_area</mtext></mrow><annotation encoding="application/x-tex">(\text{weight_before} - \text{weight_after}) / \text{duration} / \text{body_surface_area}</annotation></semantics></math>
 (1 kg ≈ 1 L water).</li>
 <li>Empty result: if <code>na_action = "omit"</code> drops all rows,
 returns a zero-row tibble with expected columns.</li>

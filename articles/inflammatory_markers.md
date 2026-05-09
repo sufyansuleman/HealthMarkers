@@ -13,6 +13,7 @@ classic + eos metrics. Inputs are coerced to numeric; non-finite become
 Synthetic counts to run both panels.
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -37,6 +38,7 @@ df <- tibble::tibble(
   CLR/CAR/mGPS); `ESR` optional passthrough.
 
 ``` r
+
 cm <- list(
   neutrophils = "neutrophils",
   lymphocytes = "lymphocytes",
@@ -53,6 +55,7 @@ cm <- list(
 ## Core calculation (classic panel)
 
 ``` r
+
 classic_out <- inflammatory_markers(
   data = df,
   col_map = cm,
@@ -73,6 +76,7 @@ classic_out
 ## Eosinophil panel
 
 ``` r
+
 df_ext <- df
 df_ext$CRP[3] <- 400  # intentional extreme value
 
@@ -103,6 +107,7 @@ with missing required inputs; `error` aborts if any required input is
 missing/non-finite.
 
 ``` r
+
 df_na <- df
 df_na$lymphocytes[2] <- NA
 
@@ -132,6 +137,7 @@ three structured messages on each call: preparing inputs, the column
 map, and a results summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- tibble::tibble(neutrophils = 4, lymphocytes = 2, monocytes = 0.5, platelets = 200, CRP = 2.5)
 cm_v <- list(neutrophils = "neutrophils", lymphocytes = "lymphocytes",

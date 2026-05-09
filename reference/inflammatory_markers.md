@@ -76,38 +76,38 @@ Derived markers:
   mg/L) when CRP available
 
 - Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV =
-  platelets*neutrophils*monocytes/lymphocytes; CLR = CRP/lymphocytes;
-  CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR
-  passthrough.
+  platelets \* neutrophils \* monocytes / lymphocytes; CLR =
+  CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP,
+  albumin); ESR passthrough.
+
+Note:
+
+- These outputs are deterministic algebraic indices computed from the
+  mapped laboratory variables. They are intended for feature engineering
+  and descriptive analyses, not as standalone diagnosis/prognosis tools.
+
+- References below document commonly used index definitions or
+  interpretation conventions directly used in this implementation.
 
 ## References
 
 Zahorec R (2001). “Ratio of neutrophil to lymphocyte counts–rapid and
 simple parameter of systemic inflammation and stress.” *Bratislavske
 lekarske listy*, **102**(1), 5–14. No DOI identified; PMID: 11723675,
-<https://pubmed.ncbi.nlm.nih.gov/11723675/>. ; Templeton AJ, others
-(2014). “Prognostic role of neutrophil-to-lymphocyte ratio in solid
-tumors: a systematic review and meta-analysis.” *Journal of the National
-Cancer Institute*, **106**(6), dju124.
-[doi:10.1093/jnci/dju124](https://doi.org/10.1093/jnci/dju124) . ; Hu B,
-others (2014). “Systemic Immune-Inflammation Index Predicts Prognosis of
-Patients after Curative Resection for Hepatocellular Carcinoma.”
-*Clinical Cancer Research*, **20**(23), 6212–6222.
+<https://pubmed.ncbi.nlm.nih.gov/11723675/>. Hu B, others (2014).
+“Systemic Immune-Inflammation Index Predicts Prognosis of Patients after
+Curative Resection for Hepatocellular Carcinoma.” *Clinical Cancer
+Research*, **20**(23), 6212–6222.
 [doi:10.1158/1078-0432.CCR-14-0442](https://doi.org/10.1158/1078-0432.CCR-14-0442)
-. ; Qi Q, others (2016). “A novel systemic inflammation response index
+. Qi Q, others (2016). “A novel systemic inflammation response index
 (SIRI) for predicting the survival of patients with pancreatic cancer
 after chemotherapy.” *Cancer*, **122**(14), 2158–2167.
-[doi:10.1002/cncr.30057](https://doi.org/10.1002/cncr.30057) . ;
-Mammadova A, Naurzvai D, others (2025). “Association of systemic
-immune-inflammation index and aggregate index of systemic inflammation
-with clinical status in stable and exacerbated COPD: A single-center
-retrospective study.” *Medicine*, **104**(39), e44589.
-[doi:10.1097/MD.0000000000044589](https://doi.org/10.1097/MD.0000000000044589)
-. ; Proctor MJ, others (2011). “An inflammation-based prognostic score
-(mGPS) predicts cancer survival independent of tumour site: a Glasgow
+[doi:10.1002/cncr.30057](https://doi.org/10.1002/cncr.30057) . Proctor
+MJ, others (2011). “An inflammation-based prognostic score (mGPS)
+predicts cancer survival independent of tumour site: a Glasgow
 Inflammation Outcome Study.” *British Journal of Cancer*, **104**(4),
 726–734.
-[doi:10.1038/sj.bjc.6606087](https://doi.org/10.1038/sj.bjc.6606087) . ;
+[doi:10.1038/sj.bjc.6606087](https://doi.org/10.1038/sj.bjc.6606087) .
 Pearson TA, others (2003). “Markers of inflammation and cardiovascular
 disease: a statement for healthcare professionals from the CDC and AHA.”
 *Circulation*, **107**(3), 499–511.
@@ -117,6 +117,16 @@ disease: a statement for healthcare professionals from the CDC and AHA.”
 ## Examples
 
 ``` r
+# Quick smoke-test
+df <- data.frame(neutrophils = 4, lymphocytes = 2, monocytes = 0.5,
+                 platelets = 200, WBC = 7, CRP = 2.5)
+inflammatory_markers(df, panel = "classic", na_action = "keep", verbose = FALSE)
+#> # A tibble: 1 × 8
+#>     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category
+#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <ord>       
+#> 1     2   100     4  1.33   400     1   200 moderate    
+
+# \donttest{
 df <- data.frame(
   neutrophils = c(4, 2),
   lymphocytes = c(2, 0),
@@ -133,7 +143,6 @@ cm <- list(
   platelets = "platelets", WBC = "WBC", CRP = "CRP", albumin = "albumin",
   eosinophils = "eosinophils", ESR = "ESR"
 )
-# Classic panel (no eosinophils key)
 classic_cm <- cm; classic_cm$eosinophils <- NULL; classic_cm$ESR <- NULL
 inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
 #> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables
@@ -159,7 +168,6 @@ inflammatory_markers(df, classic_cm, panel = "classic", na_action = "keep")
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <ord>       
 #> 1     2   100     4  1.33   400     1   200 moderate    
 #> 2   Inf   Inf     0  0.8    Inf   Inf   Inf low         
-# Eosinophil panel
 inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 #> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables
 #> inflammatory_markers(): col_map (9 columns — 9 specified)
@@ -184,4 +192,5 @@ inflammatory_markers(df, cm, panel = "eos", na_action = "keep", verbose = TRUE)
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>  <dbl> <dbl> <int> <dbl>
 #> 1     2   100     4    20   400     1   200   1.25 0.0625   80      0    12
 #> 2   Inf   Inf     0    20   Inf   Inf   Inf Inf    0.0190  188.     0    15
+# }
 ```

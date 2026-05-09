@@ -48,7 +48,7 @@
 <span>  impute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"mean"</span><span class="op">)</span>,</span>
 <span>  prefix <span class="op">=</span> <span class="st">"ASRS"</span>,</span>
 <span>  partA_items <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"asrs_%02d"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
-<span>  partA_thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">6</span><span class="op">)</span>,</span>
+<span>  partA_thresholds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">4</span><span class="op">)</span>,</span>
 <span>  partA_cutoff <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -103,17 +103,26 @@
     <p>A tibble of score columns only: <code>ASRS_total</code>, <code>ASRS_partA_count</code>, <code>ASRS_partA_positive</code>. Input columns are not included.</p>
     </div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>Items are expected on a 0–4 scale (Never=0, Rarely=1, Sometimes=2,
+Often=3, Very Often=4). The default <code>partA_thresholds</code> follow the
+official WHO ASRS v1.1 guide: items 1–3 are positive at \(\geq 3\)
+(Often or Very Often) and items 4–6 at \(\geq 4\) (Very Often only).</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Adler LA, Spencer T, Faraone SV, Kessler RC, Howes MJ, Biederman J, Secnik K, Fischer-Grodzicka A, Conners CK, Feldman P, Reimherr FW, Glatt SJ, Marchant BK, Gibbins C, Chan W, Goodblatt D, Roy-Bujnowski K, Johnson SL, Barkley R (2005).
+    <p>Kessler RC, Adler LA, Ames M, Demler O, Faraone SV, Hiripi E, Howes MJ, Jin R, Secnik K, Spencer T, Üstün TB, Walters EE (2005).
 “The World Health Organization Adult ADHD Self-Report Scale (ASRS): A Short Screening Scale for Use in the General Population.”
 <em>Psychological Medicine</em>, <b>35</b>(2), 245–256.
 <a href="https://doi.org/10.1017/S0033291704002892" class="external-link">doi:10.1017/S0033291704002892</a>
 .
-; Kessler RC, Adler L, Ames M, Demler O, Faraone SV, Hiripi E, Howes MJ, Jin R, Secnik K, Spencer T, Ustün TB, Walters EE (2006).
+
+Kessler RC, Adler L, Ames M, Demler O, Faraone SV, Hiripi E, Howes MJ, Jin R, Secnik K, Spencer T, Ustün TB, Walters EE (2006).
 “The Prevalence and Correlates of Adult ADHD in the United States: Results from the National Comorbidity Survey Replication.”
 <em>American Journal of Psychiatry</em>, <b>163</b>(4), 716–723.
 <a href="https://doi.org/10.1176/ajp.2006.163.4.716" class="external-link">doi:10.1176/ajp.2006.163.4.716</a>
-.</p>
+.
+ (prevalence study; ASRS used as instrument)</p>
     </div>
 
     <div class="section level2">
@@ -124,7 +133,7 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ASRS_total ASRS_partA_count ASRS_partA_positive</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>         36                6 TRUE               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>         36                0 FALSE              </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

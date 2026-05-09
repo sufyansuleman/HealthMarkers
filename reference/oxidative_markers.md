@@ -22,8 +22,9 @@ oxidative_markers(
 
 - col_map:
 
-  Named list with required keys GSH and GSSG. Defaults assume same
-  names.
+  Named list with required keys `GSH` and `GSSG`. Defaults assume column
+  names match keys. Both columns must be in the same units (e.g.,
+  µmol/L).
 
 - na_action:
 
@@ -39,13 +40,20 @@ oxidative_markers(
 A tibble with column GSH_GSSG_Ratio. If an ID column is detected, it is
 prepended.
 
+## Note
+
+`GSH_GSSG_Ratio` is dimensionless only when `GSH` and `GSSG` are
+supplied in the same units (typically µmol/L). The formula `GSH / GSSG`
+is a standard biochemical redox ratio; no unit conversion is applied.
+
 ## References
 
 Forman HJ, Zhang H, Rinna A (2009). “Glutathione: Overview of its
 protective roles, measurement, and biosynthesis.” *Molecular Aspects of
 Medicine*, **30**(1–2), 1–12.
 [doi:10.1016/j.mam.2008.08.006](https://doi.org/10.1016/j.mam.2008.08.006)
-.
+. (background review; GSH/GSSG is a standard biochemical redox ratio,
+not a formula from this paper)
 
 ## Examples
 

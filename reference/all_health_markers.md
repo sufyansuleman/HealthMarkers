@@ -85,14 +85,26 @@ consult the help pages of the source functions (e.g. ?allostatic_load,
 ?bone_markers, ?vitamin_markers, ?inflammatory_markers, etc.). This
 aggregator provides integration only and does not restate citations.
 
-## References
-
 Aggregator wrapper. See underlying function help pages for full
 references across categories included by `which`.
 
 ## Examples
 
 ``` r
+# Quick smoke-test (lipid group only, no insulin)
+df <- data.frame(TC = 200, HDL_c = 50, TG = 150, LDL_c = 120)
+all_health_markers(df, col_map = list(), which = "lipid",
+                   include_insulin = FALSE, normalize = "none",
+                   verbose = FALSE, na_action = "keep")
+#>    TC HDL_c  TG LDL_c     VLDL non_HDL remnant_c       AIP CRI_I CRI_II
+#> 1 200    50 150   120 68.18182     150        30 0.4771213     4    2.4
+#>   HDL_TG_ratio LDL_HDL_ratio non_HDL_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL
+#> 1    0.3333333           2.4       150            4            3           2.4
+#>   ApoB_ApoA1
+#> 1         NA
+
+# \donttest{
+# Lipid + liver groups
 df <- data.frame(
   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
   ALT = 30, AST = 20, BMI = 25
@@ -106,4 +118,5 @@ all_health_markers(df, col_map = list(), which = c("lipid","liver"),
 #> 1    2.4    0.3333333           2.4       150            4            3
 #>   ratio_LDL_HDL ApoB_ApoA1 FLI NFS APRI FIB4 BARD ALBI MELD_XI
 #> 1           2.4         NA  NA  NA   NA   NA    0   NA      NA
+# }
 ```

@@ -32,6 +32,7 @@ Use a small slice of the packaged simulated data. Replace `sim_small`
 with your data.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -45,6 +46,7 @@ sim_small <- dplyr::slice_head(sim, n = 30)
 Map each variable to your column names.
 
 ``` r
+
 col_map <- list(
   vars = list(
     BMI = "BMI",
@@ -63,6 +65,7 @@ data. Bind back with
 if needed.
 
 ``` r
+
 ref <- list(
   BMI = c(mean = mean(sim_small$BMI, na.rm = TRUE), sd = sd(sim_small$BMI, na.rm = TRUE)),
   waist = c(mean = mean(sim_small$waist, na.rm = TRUE), sd = sd(sim_small$waist, na.rm = TRUE)),
@@ -100,6 +103,7 @@ average, positive above, negative below the reference.
 Compare NA policies and SDS capping.
 
 ``` r
+
 demo <- sim_small[1:8, c("BMI", "waist", "height")]
 demo$BMI[3] <- NA        # missing
 
@@ -149,6 +153,7 @@ Set `return_summary = TRUE` to get a list with the SDS tibble plus
 counts of omitted rows, raw extreme adjustments, and SDS extremes:
 
 ``` r
+
 res <- adiposity_sds(
   data           = demo,
   col_map        = col_map,
@@ -208,6 +213,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 invisible(adiposity_sds(
   data  = sim_small[1:5, ],
@@ -263,6 +269,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

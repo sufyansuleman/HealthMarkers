@@ -33,6 +33,7 @@ MELD-XI) with configurable handling for missing data and extreme values.
 ## Quick start
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -61,11 +62,11 @@ liver_markers(
   na_action = "keep"
 )
 #> # A tibble: 3 × 7
-#>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
-#>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
-#> 1  27.9 -27.5 0.25   1.01     1 -2.76    8.20
-#> 2  87.0 -21.8 0.789  2.73     3 -2.45   10.0 
-#> 3  73.8 -22.6 0.5    2.53     3 -2.52   10.8
+#>     FLI    NFS  APRI  FIB4  BARD  ALBI MELD_XI
+#>   <dbl>  <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
+#> 1  27.9 -2.54  0.25   1.01     2 -2.76    8.20
+#> 2  87.0  0.763 0.789  2.73     4 -2.45   10.0 
+#> 3  73.8  1.15  0.5    2.53     4 -2.52   10.8
 ```
 
 ## Non-standard column names
@@ -77,6 +78,7 @@ built-in synonym dictionary (case-insensitive, common abbreviations:
 `platelets`, etc.).
 
 ``` r
+
 df_ns <- tibble::tibble(
   bmi_kgm2      = 27,
   waist_cm      = 92,
@@ -104,9 +106,9 @@ liver_markers(
   verbose = FALSE
 )
 #> # A tibble: 1 × 7
-#>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
-#>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
-#> 1  61.8 -24.2 0.364  1.43     2 -2.66    8.30
+#>     FLI    NFS  APRI  FIB4  BARD  ALBI MELD_XI
+#>   <dbl>  <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
+#> 1  61.8 -0.452 0.364  1.43     3 -2.66    8.30
 ```
 
 `GGT`, `AST`, `ALT`, `PLT` (→ `platelets`), `serum_albumin` (→
@@ -133,6 +135,7 @@ all matched automatically; only the five renamed keys required explicit
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 liver_markers(
   data = liver,
@@ -169,11 +172,11 @@ liver_markers(
 #>   MELD_XI    [bilirubin, creatinine]
 #> liver_markers(): results: FLI 3/3, NFS 3/3, APRI 3/3, FIB4 3/3, BARD 3/3, ALBI 3/3, MELD_XI 3/3
 #> # A tibble: 3 × 7
-#>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
-#>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
-#> 1  27.9 -27.5 0.25   1.01     1 -2.76    8.20
-#> 2  87.0 -21.8 0.789  2.73     3 -2.45   10.0 
-#> 3  73.8 -22.6 0.5    2.53     3 -2.52   10.8
+#>     FLI    NFS  APRI  FIB4  BARD  ALBI MELD_XI
+#>   <dbl>  <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
+#> 1  27.9 -2.54  0.25   1.01     2 -2.76    8.20
+#> 2  87.0  0.763 0.789  2.73     4 -2.45   10.0 
+#> 3  73.8  1.15  0.5    2.53     4 -2.52   10.8
 options(old_opt)
 ```
 
@@ -185,6 +188,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

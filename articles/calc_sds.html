@@ -68,6 +68,20 @@ reference means and SDs. Supports row-retention policies, extreme SDS
 handling, and an optional diagnostic list output.</p>
 </div>
 <div class="section level2">
+<h2 id="derivation-and-intended-use">Derivation and intended use<a class="anchor" aria-label="anchor" href="#derivation-and-intended-use"></a>
+</h2>
+<ul>
+<li>
+<code><a href="../reference/calc_sds.html">calc_sds()</a></code> applies the standard z-score equation
+directly: <code>SDS = (x - mean) / sd</code>.</li>
+<li>The <code>mean</code> and <code>sd</code> values are taken from your
+supplied <code>ref</code> table; they are not estimated internally by
+the function.</li>
+<li>This makes <code><a href="../reference/calc_sds.html">calc_sds()</a></code> a general SDS engine suitable for
+many domains, provided your reference table is appropriate.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="when-to-use">When to use<a class="anchor" aria-label="anchor" href="#when-to-use"></a>
 </h2>
 <ul>
@@ -91,6 +105,20 @@ positive sd per var.</li>
 <li>Row policy: na_strategy = keep (default), omit, or error.</li>
 <li>Extreme policy: check_extreme + extreme_strategy (cap/warn/error/NA)
 with sds_cap threshold.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="choosing-reference-values-important">Choosing reference values (important)<a class="anchor" aria-label="anchor" href="#choosing-reference-values-important"></a>
+</h2>
+<ul>
+<li>Use reference means/SDs from your own target cohort when available
+(best practice).</li>
+<li>If using external references, choose the closest match by age, sex,
+ethnicity, assay/platform, and clinical context.</li>
+<li>Keep units identical between <code>data</code> and <code>ref</code>;
+SDS is unit-sensitive if means/SDs are from different scales.</li>
+<li>Report the source and version of your reference table in analysis
+outputs for reproducibility.</li>
 </ul>
 </div>
 <div class="section level2">

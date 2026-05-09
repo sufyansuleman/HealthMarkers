@@ -57,13 +57,18 @@ A tibble with columns HSI and NAFLD_LFS.
 
 Assumptions/units:
 
-- ALT, AST in U/L; BMI in kg/m^2; I0 in pmol/L (converted to muU/mL via
-  /6).
+- ALT, AST in U/L; BMI in kg/m^2.
 
-- MetS is taken directly if provided; otherwise derived via NCEP-ATP III
-  when sufficient inputs exist.
+- `insulin` is expected in muU/mL; if unavailable and `I0` is provided,
+  `I0` is interpreted in pmol/L and converted to muU/mL via /6.
+
+- MetS is taken directly if provided; otherwise derived using a
+  simplified NCEP-ATP III style rule when sufficient inputs exist.
 
 - Type2DM is taken from `diabetes` (logical or 0/1).
+
+These scores are surrogate indices for research/feature-engineering use
+and are not validated as standalone clinical diagnostic tools.
 
 ## References
 

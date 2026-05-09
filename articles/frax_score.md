@@ -7,6 +7,12 @@ fracture risk (major osteoporotic and hip). Normalizes sex labels,
 applies HM-CS missing/extreme policies, and returns placeholder risks;
 it is **not** the proprietary FRAX algorithm.
 
+## Important note
+
+This function is an educational placeholder and must **not** be used for
+clinical decision-making, patient counseling, or guideline-based
+treatment selection.
+
 ## When to use
 
 - You need a placeholder fracture-risk proxy for demos or pipelines
@@ -32,6 +38,7 @@ it is **not** the proprietary FRAX algorithm.
 Illustrative demo data only; replace with your cohort.
 
 ``` r
+
 library(HealthMarkers)
 
 demo <- tibble::tibble(
@@ -53,6 +60,7 @@ demo <- tibble::tibble(
 Provide your column names; left-hand keys are fixed.
 
 ``` r
+
 col_map <- list(
   age = "Age",
   sex = "Sex",
@@ -83,6 +91,7 @@ col_map <- list(
 Return the placeholder risks and the normalized age/sex/BMD used.
 
 ``` r
+
 frax_out <- frax_score(
   data = demo,
   col_map = col_map,
@@ -121,6 +130,7 @@ capping/blanking applied by extreme checks.
 Show row handling on a small slice.
 
 ``` r
+
 demo_miss <- demo
 demo_miss$Age[3] <- NA      # missing age
 demo_miss$Sex[4] <- "X"    # unknown sex -> NA
@@ -182,6 +192,7 @@ three structured messages on each call: preparing inputs, the column
 map, and a results summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- data.frame(Age = c(65, 72), Sex = c("F", "M"),
                    bmd = c(-2.0, -1.0))
@@ -216,6 +227,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

@@ -52,17 +52,11 @@ frax_score(
 
 Tibble with frax_major_percent and frax_hip_percent.
 
-## References
+## Details
 
-Kanis JA, Johnell O, Oden A, et al. (2008). “FRAX and the Assessment of
-Fracture Probability in Men and Women from the UK.” *Osteoporosis
-International*, **19**(4), 385–397.
-[doi:10.1007/s00198-007-0543-5](https://doi.org/10.1007/s00198-007-0543-5)
-. ; Kanis JA, McCloskey EV, Johansson H, Oden A, others (2010).
-“Development and use of FRAX® in osteoporosis.” *Osteoporosis
-International*, **21**(S2), 407–413.
-[doi:10.1007/s00198-010-1253-y](https://doi.org/10.1007/s00198-010-1253-y)
-.
+Important: this function is an educational placeholder and must not be
+used for clinical decision-making, patient counseling, or
+guideline-based treatment selection.
 
 ## Examples
 

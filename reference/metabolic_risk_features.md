@@ -93,17 +93,54 @@ Units and criteria (no automatic unit conversion):
 
 - Lipids (mmol/L): total cholesterol \> 5.2 OR LDL-C \> 3.4 OR HDL-C \<
   1.0 OR triglycerides \> 1.1 (age 0-9) OR \> 1.5 (age 10-19) =\>
-  dyslipidemia = 1.
+  dyslipidemia = 1. Note: no TG cutoff is applied for adults aged \>= 20
+  years.
 
 - Insulin resistance: z_HOMA \> 1.28 (~=90th percentile) =\>
   insulin_resistance = 1. z_HOMA is a within-sample or external z-score
-  of HOMA-IR.
+  of HOMA-IR (see Matthews et al. 1985).
 
 - Hyperglycemia: fasting glucose in (5.6, 6.9) mmol/L OR HbA1c in
-  (39, 47) mmol/mol =\> hyperglycemia = 1.
+  (39, 47) mmol/mol =\> hyperglycemia = 1. Boundaries are EXCLUSIVE
+  (open intervals); boundary values (exactly 5.6 or 6.9 mmol/L; exactly
+  39 or 47 mmol/mol) are not flagged. ADA criteria use inclusive lower
+  bound (\>= 5.6 mmol/L, \>= 39 mmol/mol).
 
 - Hypertension: either BP z-score \> 1.64 (~=95th percentile) for
   systolic or diastolic =\> hypertension = 1.
+
+## Note
+
+These flags are heuristic screening rules derived from published
+clinical guidelines. They are not validated diagnostic criteria and
+should not replace clinical judgment. The dyslipidemia and hypertension
+thresholds are designed for pediatric populations (ages 0-19); for
+adults \>= 20, only TC, LDL-C, and HDL-C criteria contribute to the
+dyslipidemia flag.
+
+## References
+
+National Heart, Lung, and Blood Institute (2011). “Expert Panel on
+Integrated Guidelines for Cardiovascular Health and Risk Reduction in
+Children and Adolescents: Summary Report.” *Pediatrics*, **128**(Suppl
+5), S213–S256.
+[doi:10.1542/peds.2009-2107C](https://doi.org/10.1542/peds.2009-2107C) .
+American Diabetes Association Professional Practice Committee (2024).
+“2. Diagnosis and Classification of Diabetes: Standards of Care in
+Diabetes—2024.” *Diabetes Care*, **47**(Suppl 1), S20–S42.
+[doi:10.2337/dc24-S002](https://doi.org/10.2337/dc24-S002) . Flynn JT,
+Kaelber DC, Baker-Smith CM, Blowey D, Carroll AE, Daniels SR, de
+Ferranti SD, Dionne JM, Falkner B, Flinn SK, Gidding SS, Goodwin C, Leu
+MG, Powers ME, Rea C, Samuels J, Simasek M, Tran VT, Urbina EM (2017).
+“Clinical Practice Guideline for Screening and Management of High Blood
+Pressure in Children and Adolescents.” *Pediatrics*, **140**(3),
+e20171904.
+[doi:10.1542/peds.2017-1904](https://doi.org/10.1542/peds.2017-1904) .
+Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC
+(1985). “Homeostasis Model Assessment: Insulin Resistance and Beta-Cell
+Function from Fasting Plasma Glucose and Insulin Concentrations in Man.”
+*Diabetologia*, **28**(7), 412–419.
+[doi:10.1007/BF00280883](https://doi.org/10.1007/BF00280883) .
 
 ## See also
 

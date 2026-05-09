@@ -60,8 +60,6 @@ documentation (e.g. ?liver_markers, ?lipid_markers, ?glycemic_markers,
 ?metss, ?adiposity_sds). This wrapper omits repeated reference listings
 to avoid redundancy.
 
-## References
-
 Aggregator wrapper. See underlying function help pages for full
 references: all_insulin_indices(), lipid_markers(), liver_markers(),
 glycemic_markers(), metss().

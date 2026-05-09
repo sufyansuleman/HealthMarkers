@@ -1,4 +1,4 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
@@ -14,29 +14,29 @@ articles:
   articles/charlson_index: charlson_index.html
   articles/ckd_stage: ckd_stage.html
   articles/corrected_calcium: corrected_calcium.html
-  cvd_risk: cvd_risk.html
-  fasting_is: fasting_is.html
-  frailty_index: frailty_index.html
+  articles/cvd_risk: cvd_risk.html
+  articles/fasting_is: fasting_is.html
+  articles/frailty_index: frailty_index.html
   articles/frax_score: frax_score.html
-  getting-started: getting-started.html
-  glycemic_markers: glycemic_markers.html
-  health_markers: health_markers.html
+  articles/getting-started: getting-started.html
+  articles/glycemic_markers: glycemic_markers.html
+  articles/health_markers: health_markers.html
   articles/hormone_markers: hormone_markers.html
-  impute_missing: impute_missing.html
+  articles/impute_missing: impute_missing.html
   articles/inflammatory_age: inflammatory_age.html
-  inflammatory_markers: inflammatory_markers.html
+  articles/inflammatory_markers: inflammatory_markers.html
   articles/kidney_kfre: kidney_kfre.html
   articles/kyn_trp_ratio: kyn_trp_ratio.html
-  lipid_markers: lipid_markers.html
+  articles/lipid_markers: lipid_markers.html
   articles/liver_fat_markers: liver_fat_markers.html
-  liver_markers: liver_markers.html
+  articles/liver_markers: liver_markers.html
   articles/metabolic_risk_features: metabolic_risk_features.html
   articles/metss: metss.html
-  multi_biobank: multi_biobank.html
+  articles/multi_biobank: multi_biobank.html
   articles/nfl_marker: nfl_marker.html
   articles/nutrient_markers: nutrient_markers.html
-  obesity_indices: obesity_indices.html
-  ogtt_is: ogtt_is.html
+  articles/obesity_indices: obesity_indices.html
+  articles/ogtt_is: ogtt_is.html
   articles/oxidative_markers: oxidative_markers.html
   articles/psych_markers: psych_markers.html
   articles/pulmo_markers: pulmo_markers.html
@@ -49,7 +49,7 @@ articles:
   articles/urine_markers: urine_markers.html
   articles/vitamin_d_status: vitamin_d_status.html
   articles/vitamin_markers: vitamin_markers.html
-last_built: 2026-04-22T10:01Z
+last_built: 2026-05-09T17:59Z
 urls:
   reference: https://sufyansuleman.github.io/HealthMarkers/reference
   article: https://sufyansuleman.github.io/HealthMarkers/articles

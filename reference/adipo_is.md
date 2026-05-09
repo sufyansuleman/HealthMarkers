@@ -33,6 +33,14 @@ worse adipose IR):
 
 - Belfiore_inv_FFA = - 2 / (I0 (muU/mL) \* FFA + 1)
 
+**Inversion Note**: Most indices (VAI, LAP, TyG, TG/HDL, Adipo,
+Belfiore) are algebraically inverted from their original insulin
+RESISTANCE definitions so that more negative values consistently
+indicate worse adipose insulin sensitivity. Revised_QUICKI and
+McAuley_index are retained in their original orientation (already
+sensitivity indices; higher = better). See the vignette for detailed
+interpretation guidance.
+
 ## Usage
 
 ``` r
@@ -87,32 +95,32 @@ Katz A, Nambi SS, Mather K, Baron AD, Follmann DA, Sullivan G, Quon MJ
 (2000). “Quantitative Insulin Sensitivity Check Index: A Simple,
 Accurate Method for Assessing Insulin Sensitivity in Humans.” *Journal
 of Clinical Endocrinology & Metabolism*, **85**(7), 2402–2410.
-[doi:10.1210/jcem.85.7.6661](https://doi.org/10.1210/jcem.85.7.6661) . ;
+[doi:10.1210/jcem.85.7.6661](https://doi.org/10.1210/jcem.85.7.6661) .
 Amato MC, Giordano C, Galia M, Criscimanna A, Vitabile S, Midiri M,
 Galluzzo A (2010). “Visceral Adiposity Index: A Reliable Indicator of
 Visceral Fat Function Associated with Cardiometabolic Risk.” *Diabetes
 Care*, **33**(4), 920–922.
-[doi:10.2337/dc09-1825](https://doi.org/10.2337/dc09-1825) . ; Kahn HS
+[doi:10.2337/dc09-1825](https://doi.org/10.2337/dc09-1825) . Kahn HS
 (2005). “The Lipid Accumulation Product Performs Better than Body Mass
 Index as an Indicator of Cardiovascular Risk in Women.” *BMC
 Cardiovascular Disorders*, **5**(1), 26.
-[doi:10.1186/1471-2261-5-26](https://doi.org/10.1186/1471-2261-5-26) . ;
+[doi:10.1186/1471-2261-5-26](https://doi.org/10.1186/1471-2261-5-26) .
 Guerrero-Romero F, Simental-Mendía LE, González-Ortiz M,
 Martínez-Abundis E, Ramos-Zavala MG, Hernández-González SO,
 Jacques-Camarena O, Rodríguez-Morán M (2010). “The Product of
 Triglycerides and Glucose, a Simple Measure of Insulin Sensitivity.
 Comparison with the Euglycemic-Hyperinsulinemic Clamp.” *Journal of
 Clinical Endocrinology & Metabolism*, **95**(7), 3347–3351.
-[doi:10.1210/jc.2010-0288](https://doi.org/10.1210/jc.2010-0288) . ;
+[doi:10.1210/jc.2010-0288](https://doi.org/10.1210/jc.2010-0288) .
 Dobiášová M, Frohlich JJ (2001). “The Plasma Parameter Log(TG/HDL-C) as
 an Atherogenic Index: Correlation with Lipoprotein Particle Size and
 Esterification Rate in ApoB-Lipoprotein-Depleted Plasma.” *Clinical
 Biochemistry*, **34**(7), 583–588.
 [doi:10.1016/S0009-9120(01)00263-6](https://doi.org/10.1016/S0009-9120%2801%2900263-6)
-. ; Belfiore F, Iannello S, Volpicelli G (1998). “Insulin Sensitivity
+. Belfiore F, Iannello S, Volpicelli G (1998). “Insulin Sensitivity
 Indices Calculated from Basal and OGTT-Related Insulin and Glucose
 Levels.” *Molecular Genetics and Metabolism*, **63**(2), 134–141.
-[doi:10.1006/mgme.1997.2658](https://doi.org/10.1006/mgme.1997.2658) . ;
+[doi:10.1006/mgme.1997.2658](https://doi.org/10.1006/mgme.1997.2658) .
 Raynaud E, Pérez-Martin A, Brun J, Benhaddad AA, Mercier J (1999).
 “Fasting Plasma Insulin and Insulin Resistance Indices.” *Diabetes &
 Metabolism*, **25**(6), 524–532. No DOI identified in Crossref/PubMed as

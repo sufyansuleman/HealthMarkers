@@ -28,6 +28,7 @@ All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
 Replace the example slice with your data frame.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 #> 
@@ -50,6 +51,7 @@ TG and HDL_c are required. TC and LDL_c are optional but needed for
 Castelli indices.
 
 ``` r
+
 col_map <- list(
   TG = "TG",
   HDL_c = "HDL_c",
@@ -63,6 +65,7 @@ col_map <- list(
 Defaults keep rows with missing lipids and return NA for their ratios.
 
 ``` r
+
 aip_out <- atherogenic_indices(
   data = sim_small,
   col_map = col_map,
@@ -102,6 +105,7 @@ head(select(aip_out, all_of(new_cols)))
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small
 demo$HDL_c[c(2, 5)] <- NA
 
@@ -159,6 +163,7 @@ Zero or negative HDL_c denominators yield NA ratios and a warning.
 Filter or remove such values before calling.
 
 ``` r
+
 demo2 <- sim_small
 demo2$TG[5] <- 12000  # extreme TG
 # Note: extreme values will produce extreme ratio outputs; pre-filter if needed
@@ -229,6 +234,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- tibble::tibble(
@@ -272,6 +278,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

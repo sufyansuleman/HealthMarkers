@@ -73,7 +73,7 @@ Dobiášová M (2004). “Atherogenic Index of Plasma (AIP)
 log(Triglycerides/HDL-Cholesterol): Theoretical and Practical
 Implications.” *Clinical Chemistry*, **50**(7), 1113–1115.
 [doi:10.1373/clinchem.2004.033175](https://doi.org/10.1373/clinchem.2004.033175)
-. ; Castelli WP, Doyle JT, Gordon T, et al. (1977). “High-Density
+. Castelli WP, Doyle JT, Gordon T, et al. (1977). “High-Density
 Lipoprotein Cholesterol and Other Lipids in Coronary Heart Disease: The
 Framingham Study.” *American Journal of Medicine*, **62**(5), 707–714.
 [doi:10.1016/0002-9343(77)90874-9](https://doi.org/10.1016/0002-9343%2877%2990874-9)

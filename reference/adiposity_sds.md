@@ -106,13 +106,6 @@ applied before SDS computation. Extreme SDS handling (cap / warn / error
 (`na_strategy`, `extreme_strategy`) are soft-deprecated but still
 accepted.
 
-## References
-
-Cole TJ, Green PJ (1992). “Smoothing Reference Centile Curves: The LMS
-Method and Penalized Likelihood.” *Statistics in Medicine*, **11**(10),
-1305–1319.
-[doi:10.1002/sim.4780111005](https://doi.org/10.1002/sim.4780111005) .
-
 ## Examples
 
 ``` r

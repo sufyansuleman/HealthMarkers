@@ -61,20 +61,20 @@ Notes:
 - Non-finite values are treated as NA; division by zero is prevented by
   input checks.
 
+- `BMD_ref_mean` and `BMD_ref_sd` must be supplied by the user from an
+  appropriate reference population (for example, study-specific values
+  or external norms such as NHANES).
+
 ## References
 
 Koh LK, Ben Sedrine W, Torralba TP, Kung A, others (2001). “A Simple
 Tool to Identify Asian Women at Increased Risk of Osteoporosis.”
 *Osteoporosis International*, **12**(8), 699–705.
-[doi:10.1007/s001980170070](https://doi.org/10.1007/s001980170070) . ;
-Kelly TL, Wilson KE, Heymsfield SB (2009). “Dual Energy X-Ray
-Absorptiometry Body Composition Reference Values from NHANES.” *PLoS
-ONE*, **33**(6), 783–789.
-[doi:10.1371/journal.pone.0007038](https://doi.org/10.1371/journal.pone.0007038)
-. ; World Health Organization (1994). *Assessment of Fracture Risk and
-Its Application to Screening for Postmenopausal Osteoporosis*, volume
-843 of *Technical Report Series*. World Health Organization. No DOI for
-this WHO report; see URL, <https://iris.who.int/handle/10665/39142>.
+[doi:10.1007/s001980170070](https://doi.org/10.1007/s001980170070) .
+World Health Organization (1994). *Assessment of Fracture Risk and Its
+Application to Screening for Postmenopausal Osteoporosis*, volume 843 of
+*Technical Report Series*. World Health Organization. No DOI for this
+WHO report; see URL, <https://iris.who.int/handle/10665/39142>.
 
 ## Examples
 

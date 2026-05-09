@@ -47,8 +47,10 @@ Tibble with CKD_stage, Albuminuria_stage, KDIGO_risk.
 Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group (2013).
 “KDIGO 2012 Clinical Practice Guideline for the Evaluation and
 Management of Chronic Kidney Disease.” *Kidney International
-Supplements*, **3**(1), 1–150. Guideline without reliable DOI metadata
-in Crossref; related synopsis PMID: 23732715,
+Supplements*, **3**(1), 1–150.
+[doi:10.1038/kisup.2012.73](https://doi.org/10.1038/kisup.2012.73) .
+Related synopsis: Stevens and Levin (2013), Ann Intern Med,
+doi:10.7326/0003-4819-158-11-201306040-00007,
 <https://kdigo.org/guidelines/ckd-evaluation-and-management/>.
 
 ## Examples

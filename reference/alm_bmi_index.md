@@ -64,12 +64,7 @@ McLean RR, Shardell MD, Alley DE, et al. (2014). “Criteria for
 clinically relevant weakness and low lean mass: FNIH Sarcopenia
 Project.” *Journal of Gerontology A: Biological Sciences and Medical
 Sciences*, **69**(5), 576–583.
-[doi:10.1093/gerona/glu012](https://doi.org/10.1093/gerona/glu012) . ;
-Studenski SA, Peters KW, Alley DE, et al. (2014). “The FNIH Sarcopenia
-Project: Rationale, Study Description, Conference Recommendations, and
-Final Estimates.” *Journal of Gerontology A: Biological Sciences and
-Medical Sciences*, **69**(5), 564–570.
-[doi:10.1093/gerona/glu010](https://doi.org/10.1093/gerona/glu010) .
+[doi:10.1093/gerona/glu012](https://doi.org/10.1093/gerona/glu012) .
 
 ## Examples
 

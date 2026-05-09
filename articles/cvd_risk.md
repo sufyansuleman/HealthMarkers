@@ -33,6 +33,7 @@ demonstrate lipid markers (no optional packages required) and guarded
 runs for optional calculators.
 
 ``` r
+
 library(HealthMarkers)
 
 sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
@@ -45,6 +46,7 @@ sim_small <- dplyr::slice_head(sim, n = 30)
 Compute AIP and LDL particle number (ApoB proxy).
 
 ``` r
+
 aip_out <- cvd_risk(
   data = sim_small,
   model = "AIP",
@@ -91,6 +93,7 @@ list(
 The code below runs only if each required package is available.
 
 ``` r
+
 ascvd10 <- cvd_risk(sim_small, model = "ASCVD", year = 10)
 stroke10 <- cvd_risk(sim_small, model = "Stroke", year = 10)
 head(dplyr::bind_rows(ascvd10, stroke10))
@@ -102,6 +105,7 @@ head(dplyr::bind_rows(ascvd10, stroke10))
 ```
 
 ``` r
+
 qrisk10 <- cvd_risk(sim_small, model = "QRISK3")
 head(qrisk10)
 #> # A tibble: 1 × 3
@@ -111,6 +115,7 @@ head(qrisk10)
 ```
 
 ``` r
+
 rs_out <- cvd_risk(sim_small, model = "RiskScorescvd")
 head(rs_out)
 #> # A tibble: 1 × 4
@@ -150,6 +155,7 @@ dispatcher always emits a dispatch message at the debug level.
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 invisible(cvd_risk(
@@ -176,6 +182,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

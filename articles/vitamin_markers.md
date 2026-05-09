@@ -70,6 +70,7 @@ Output row count matches input unless `na_action = "omit"` removed rows.
 Basic run
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -105,6 +106,7 @@ vitamin_markers(
 Pre-filter and run
 
 ``` r
+
 df2 <- df
 # Force a few implausible values
 df2$TSat[2] <- 2.0
@@ -130,6 +132,7 @@ vitamin_markers(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 vitamin_markers(
   data = df,
@@ -200,6 +203,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

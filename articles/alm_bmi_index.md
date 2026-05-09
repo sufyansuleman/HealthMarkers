@@ -30,6 +30,7 @@ Use a small subset of the simulated data. Here we derive a simple ALM
 proxy for illustration.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -47,6 +48,7 @@ sim_small <- sim_small %>%
 Map your columns; sex is normalized by first letter (m/f/1/0).
 
 ``` r
+
 col_map <- list(
   alm = "ALM_kg",
   bmi = "BMI",
@@ -57,6 +59,7 @@ col_map <- list(
 ## Walkthrough (compute ALM/BMI and flag)
 
 ``` r
+
 alm_out <- alm_bmi_index(
   data = sim_small,
   col_map = col_map,
@@ -85,6 +88,7 @@ if below the sex-specific FNIH cut-point; `NA` if sex or ratio is `NA`.
 Compare NA handling.
 
 ``` r
+
 demo <- sim_small[1:8, c("ALM_kg", "BMI", "sex")]
 demo$ALM_kg[3] <- NA
 
@@ -138,6 +142,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- data.frame(
@@ -199,6 +204,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

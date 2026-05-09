@@ -60,7 +60,7 @@ Goff DC, Lloyd-Jones DM, Bennett G, Coady S, D'Agostino RB, et al.
 (2014). “2013/2014 ACC/AHA Guideline on the Assessment of Cardiovascular
 Risk.” *Circulation*, **129**(25 Suppl 2), S49–S73.
 [doi:10.1161/01.cir.0000437741.48606.98](https://doi.org/10.1161/01.cir.0000437741.48606.98)
-, Pooled Cohort Equations; ACC/AHA Task Force on Practice Guidelines.
+. Pooled Cohort Equations; ACC/AHA Task Force on Practice Guidelines.
 
 ## Examples
 

@@ -77,6 +77,14 @@ maximum applicable weight:
 
 Age points are not included here and can be added separately if needed.
 
+## References
+
+Charlson ME, Pompei P, Ales KL, MacKenzie CR (1987). “A New Method of
+Classifying Prognostic Comorbidity in Longitudinal Studies: Development
+and Validation.” *Journal of Chronic Diseases*, **40**(5), 373–383.
+[doi:10.1016/0021-9681(87)90171-8](https://doi.org/10.1016/0021-9681%2887%2990171-8)
+.
+
 ## Examples
 
 ``` r

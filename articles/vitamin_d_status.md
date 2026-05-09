@@ -51,6 +51,7 @@ enforces your missing-data policy, and can scan/cap implausible values.
 Quick categorization
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -73,6 +74,7 @@ vitamin_d_status(
 Pre-filter and classify
 
 ``` r
+
 df2 <- tibble::tibble(d = c(15, 280, 8, 65, NA))  # 280 is implausible; pre-filter
 
 # Pre-filter before calling
@@ -97,6 +99,7 @@ vitamin_d_status(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 vitamin_d_status(
   data = tibble::tibble(VitD = c(15, 32)),

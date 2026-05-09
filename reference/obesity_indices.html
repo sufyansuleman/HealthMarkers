@@ -157,7 +157,9 @@ Conicity Index (CI)
     <p>Units assumed (no automatic conversion beyond the specified weight/height options):</p><ul><li><p>weight: kg (or lb if weight_unit = "lb")</p></li>
 <li><p>height: m (or cm if height_unit = "cm")</p></li>
 <li><p>waist, hip: cm</p></li>
-<li><p>sex: 0 = male, 1 = female (only required if include_RFM = TRUE)</p></li>
+</ul><p>Note: WHtR, ABSI, BRI, CI, and RFM all require waist in the same unit as
+height (metres). The function converts waist internally (waist_cm / 100)
+for these five indices; users should always supply waist in cm.</p><ul><li><p>sex: 0 = male, 1 = female (only required if include_RFM = TRUE)</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -263,8 +265,8 @@ Maessen MF, Eijsvogels TM, Verheggen RJ, others (2014).
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 15</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        70     1.75  22.9 Normal weight 0.8           0                  45.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        80     1.65  29.4 Overweight    0.947         0                  54.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>        70     1.75  22.9 Normal weight 0.8           0                 0.457</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>        80     1.65  29.4 Overweight    0.947         0                 0.545</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: waist_to_BMI_ratio &lt;dbl&gt;, weight_to_height_ratio &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   AVI &lt;dbl&gt;, BAI &lt;dbl&gt;, ABSI &lt;dbl&gt;, BRI &lt;dbl&gt;, CI &lt;dbl&gt;, RFM &lt;dbl&gt;</span></span>
 </code></pre></div>

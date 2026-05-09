@@ -55,6 +55,22 @@ k10_score(
 A tibble of score columns only: `K10_total`. Input columns are not
 included.
 
+## Note
+
+K10 items are summed as provided. The original scale uses 1–5 coding
+(total 10–50); some implementations subtract 1 (0–4, total 0–40). The
+function accepts either coding, as no reverse-scored items are involved
+and `min_val`/`max_val` only affect reversal.
+
+## References
+
+Kessler RC, Andrews G, Colpe LJ, Hiripi E, Mroczek DK, Normand ST,
+Walters EE, Zaslavsky AM (2002). “Short screening scales to monitor
+population prevalences and trends in non-specific psychological
+distress.” *Psychological Medicine*, **32**(6), 959–976.
+[doi:10.1017/S0033291702006074](https://doi.org/10.1017/S0033291702006074)
+.
+
 ## Examples
 
 ``` r

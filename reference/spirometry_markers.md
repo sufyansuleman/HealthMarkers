@@ -43,16 +43,13 @@ fev1_pp, fvc_pp, fev1_z, fvc_z, ratio_z, gold_grade, bdr_fev1, bdr_fvc.
 Miller MR, Hankinson J, Brusasco V, et al. (2005). “Standardisation of
 spirometry.” *European Respiratory Journal*, **26**(2), 319–338.
 [doi:10.1183/09031936.05.00034805](https://doi.org/10.1183/09031936.05.00034805)
-. ; Quanjer PH, Stanojevic S, Cole TJ, Baur X, Hall GL, Culver BH, et
-al. (2012). “Multi-ethnic reference values for spirometry for the
-3–95-yr age range: the global lung function 2012 equations.” *European
-Respiratory Journal*, **40**, 1324–1343.
+. (spirometry standardisation methodology; background) Quanjer PH,
+Stanojevic S, Cole TJ, Baur X, Hall GL, Culver BH, et al. (2012).
+“Multi-ethnic reference values for spirometry for the 3–95-yr age range:
+the global lung function 2012 equations.” *European Respiratory
+Journal*, **40**, 1324–1343.
 [doi:10.1183/09031936.00080312](https://doi.org/10.1183/09031936.00080312)
-. ; Society AT (2002). “ATS statement: guidelines for the six-minute
-walk test.” *American Journal of Respiratory and Critical Care
-Medicine*, **166**(1), 111–117.
-[doi:10.1164/ajrccm.166.1.at1102](https://doi.org/10.1164/ajrccm.166.1.at1102)
-. ; for Chronic Obstructive Lung Disease (GOLD) GI (2025). “Global
+. for Chronic Obstructive Lung Disease (GOLD) GI (2025). “Global
 strategy for the diagnosis, management, and prevention of COPD.” Online
 report; no DOI assigned, <https://goldcopd.org/2025-gold-report/>.
 

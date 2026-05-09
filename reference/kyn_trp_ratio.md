@@ -57,25 +57,30 @@ MP, Wachter H (1998). “Serum kynurenine-to-tryptophan ratio increases
 with disease progression in HIV-1 infection.” *Clinical Chemistry*,
 **44**(4), 858–862.
 [doi:10.1093/clinchem/44.4.858](https://doi.org/10.1093/clinchem/44.4.858)
-, PMID:9555676. ; Damerell V, Midttun O, Ulvik A, et al. (2025).
+. PMID:9555676. ; Damerell V, Midttun O, Ulvik A, et al. (2025).
 “Circulating tryptophan-kynurenine pathway metabolites are associated
 with all-cause mortality among patients with stage I–III colorectal
 cancer.” *International Journal of Cancer*, **156**(3), 552–565.
-[doi:10.1002/ijc.35183](https://doi.org/10.1002/ijc.35183) .
+[doi:10.1002/ijc.35183](https://doi.org/10.1002/ijc.35183) . (clinical
+application in colorectal cancer)
 
 ## Examples
 
 ``` r
-df <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
-kyn_trp_ratio(df)
-#> kyn_trp_ratio(): reading input 'df' — 3 rows × 2 variables
-#> kyn_trp_ratio(): preparing inputs
-#> kyn_trp_ratio(): col_map (2 columns — 2 inferred from data)
-#>   kynurenine        ->  'Kyn_nM'    (inferred)
-#>   tryptophan        ->  'Trp_uM'    (inferred)
-#> kyn_trp_ratio(): computing markers:
-#>   kyn_trp_ratio  [kynurenine (nmol/L) / tryptophan (mumol/L)]
-#> kyn_trp_ratio(): results: kyn_trp_ratio 3/3
+# columns named exactly as the required keys (auto-detected)
+df <- data.frame(kynurenine = c(2500, 3100, 2700), tryptophan = c(55, 48, 62))
+kyn_trp_ratio(df, verbose = FALSE)
+#> # A tibble: 3 × 1
+#>   kyn_trp_ratio
+#>           <dbl>
+#> 1          45.5
+#> 2          64.6
+#> 3          43.5
+
+# non-standard column names require explicit col_map
+df2 <- data.frame(Kyn_nM = c(2500, 3100, 2700), Trp_uM = c(55, 48, 62))
+kyn_trp_ratio(df2, col_map = list(kynurenine = "Kyn_nM", tryptophan = "Trp_uM"),
+             verbose = FALSE)
 #> # A tibble: 3 × 1
 #>   kyn_trp_ratio
 #>           <dbl>

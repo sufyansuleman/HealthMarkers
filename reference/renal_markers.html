@@ -129,6 +129,18 @@ optional input extremes scan/cap. New arguments are appended for backward compat
 <li><p>creatinine_urine: mg/dL</p></li>
 </ul></div>
     <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p><code>eGFR_cr</code> uses the 2009 CKD-EPI creatinine equation (Levey et al. 2009) with the
+Black-race multiplier (\(\times 1.159\)) retained. The 2021 race-free CKD-EPI
+equations (Inker et al., NEJM 2021) are not yet implemented; the <code>race</code> input
+is accepted for forward compatibility and used only for the 2009 race factor.
+<code>eGFR_cys</code> and <code>eGFR_combined</code> use Inker et al. (2012); note that
+<code>eGFR_combined</code> applies its own sex (\(\times 1.008\) female) and race
+(\(\times 1.145\) Black) multipliers, which differ from those of <code>eGFR_cr</code>.
+<code>NGAL</code>, <code>KIM1</code>, <code>NAG</code>, <code>Beta2Micro</code>, <code>IL18</code>, and <code>L_FABP</code> are
+<strong>pass-through</strong> columns — values are returned as-is with no formula applied.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Levey AS, Stevens LA, Schmid CH, others (2009).
 “A new equation to estimate glomerular filtration rate.”
@@ -142,35 +154,30 @@ Inker LA, Schmid CH, Tighiouart H, others (2012).
 <a href="https://doi.org/10.1056/NEJMoa1114248" class="external-link">doi:10.1056/NEJMoa1114248</a>
 .
 
-Inker LA, Eneanya ND, Coresh J, others (2021).
-“New creatinine- and cystatin C-based equations for estimating GFR without race.”
-<em>New England Journal of Medicine</em>, <b>385</b>(19), 1737–1749.
-<a href="https://doi.org/10.1056/NEJMoa2102953" class="external-link">doi:10.1056/NEJMoa2102953</a>
-.
-
 Kaplan AA, Kohn OF (1992).
 “Fractional Excretion of Urea as a Guide to Renal Dysfunction.”
 <em>American Journal of Nephrology</em>, <b>12</b>(1–2), 49–54.
 <a href="https://doi.org/10.1159/000168417" class="external-link">doi:10.1159/000168417</a>
 .
-
+ (FE_Urea formula source; bib content: Kaplan and Kohn 1992)
 Parikh CR, Coca SG, Thiessen-Philbrook H, others (2011).
 “Postoperative Biomarkers Predict Acute Kidney Injury and Poor Outcomes after Adult Cardiac Surgery.”
 <em>Journal of the American Society of Nephrology</em>, <b>22</b>(12), 1737–1747.
 <a href="https://doi.org/10.1681/ASN.2010121302" class="external-link">doi:10.1681/ASN.2010121302</a>
 .
-
+ (clinical context; NGAL is a pass-through biomarker)
 Vaidya VS, Ramirez V, Ichimura T, others (2010).
 “Kidney injury molecule-1 outperforms traditional biomarkers of kidney injury in preclinical biomarker qualification studies.”
 <em>Nature Biotechnology</em>, <b>28</b>(5), 478–485.
 <a href="https://doi.org/10.1038/nbt.1623" class="external-link">doi:10.1038/nbt.1623</a>
 .
-
+ (KIM-1 biomarker qualification; pass-through)
 Portilla D, Dent C, Sugaya T, others (2008).
 “Urinary liver-type fatty acid-binding protein as a biomarker of acute kidney injury.”
 <em>Kidney International</em>, <b>73</b>(4), 465–472.
 <a href="https://doi.org/10.1038/sj.ki.5002721" class="external-link">doi:10.1038/sj.ki.5002721</a>
-.</p>
+.
+ (L-FABP as AKI biomarker; pass-through)</p>
     </div>
 
     <div class="section level2">

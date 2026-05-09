@@ -9,6 +9,7 @@ LDL estimation and NA/extreme handling.
 ## Load packages and data
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -30,6 +31,7 @@ lipids <- sim |>
 ## Core calculation
 
 ``` r
+
 lm_out <- lipid_markers(
   data = lipids,
   col_map = list(
@@ -60,6 +62,7 @@ common synonym patterns (e.g. `total_chol`, `total_cholesterol`, `tc`
 all resolve to `TC`).
 
 ``` r
+
 # Columns use non-standard names for weight and height
 df_mapped <- data.frame(
   TC = 5.0, HDL_c = 1.3, TG = 1.5, LDL_c = 3.0,
@@ -112,6 +115,7 @@ dictionary.
 ## Missing-data policy
 
 ``` r
+
 missing <- lipids
 missing$TG[4] <- NA
 
@@ -163,6 +167,7 @@ lipid_markers(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 lipid_markers(
   data    = dplyr::slice_head(lipids, n = 5),

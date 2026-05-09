@@ -27,6 +27,7 @@ risk assumes A1 for mapping.
 Example uses a 50-row slice of simulated data.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -41,6 +42,7 @@ sim_small <- dplyr::slice_head(sim, n = 30) %>%
 UACR is optional; omit it from col_map if unavailable.
 
 ``` r
+
 col_map <- list(eGFR = "eGFR", UACR = "UACR")
 ```
 
@@ -49,6 +51,7 @@ col_map <- list(eGFR = "eGFR", UACR = "UACR")
 Defaults keep rows with missing inputs and return NA stages for them.
 
 ``` r
+
 ckd_out <- ckd_stage(
   data = sim_small,
   col_map = col_map,
@@ -85,6 +88,7 @@ head(ckd_out)
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small[1:8, ]
 demo$eGFR[3] <- NA
 
@@ -120,6 +124,7 @@ Extreme eGFR or UACR will map to the most extreme KDIGO categories.
 Pre-filter implausible values before calling.
 
 ``` r
+
 demo2 <- demo
 demo2$UACR[5] <- 6000  # extreme albuminuria
 
@@ -172,6 +177,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- data.frame(eGFR = c(95, 52, 22), UACR = c(10, 400, NA))
@@ -209,6 +215,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

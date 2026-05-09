@@ -21,13 +21,13 @@ conversion is performed.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                                        | Notes                                          |
-|--------------|--------------------------------------------------------------------------|------------------------------------------------|
-| data         | Data frame/tibble with renal labs                                        | See required columns below                     |
-| col_map      | Named list mapping required/optional fields                              | Required keys: creatinine, age, sex, race, BUN |
-| na_action    | keep (propagate NA), omit (drop rows), error (abort if required missing) | Default keep                                   |
-| na_warn_prop | Proportion to trigger high-missingness warnings (default 0.2)            | Applies to required inputs                     |
-| verbose      | TRUE/FALSE for progress and summaries                                    | Default FALSE                                  |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with renal labs | See required columns below |
+| col_map | Named list mapping required/optional fields | Required keys: creatinine, age, sex, race, BUN |
+| na_action | keep (propagate NA), omit (drop rows), error (abort if required missing) | Default keep |
+| na_warn_prop | Proportion to trigger high-missingness warnings (default 0.2) | Applies to required inputs |
+| verbose | TRUE/FALSE for progress and summaries | Default FALSE |
 
 **Required columns (col_map):** creatinine (mg/dL), age (years), sex
 (1/0 or “male”/“female”), race (aliases to white/black/other), BUN
@@ -82,6 +82,7 @@ creatinine_urine + urea_urine.
 ## Worked example 1: Creatinine-only, keep NAs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -109,7 +110,7 @@ renal_markers(
 #>   eGFR_cr eGFR_cys eGFR_combined BUN_Cr_ratio FE_Urea  NGAL  KIM1   NAG
 #>     <dbl>    <dbl>         <dbl>        <dbl>   <dbl> <dbl> <dbl> <dbl>
 #> 1    93.7       NA            NA         14        NA    NA    NA    NA
-#> 2    46.6       NA            NA         16.9      NA    NA    NA    NA
+#> 2    47.5       NA            NA         16.9      NA    NA    NA    NA
 #> 3    NA         NA            NA         NA        NA    NA    NA    NA
 #> # ℹ 3 more variables: Beta2Micro <dbl>, IL18 <dbl>, L_FABP <dbl>
 ```
@@ -120,6 +121,7 @@ NA outputs because creatinine is missing.
 ## Worked example 2: Cystatin C, FE_Urea, drop incomplete
 
 ``` r
+
 df2 <- tibble::tibble(
   Cr = c(0.9, 2.2, 18),
   Age = c(55, 68, 50),
@@ -154,8 +156,8 @@ renal_markers(
 #>   eGFR_cr eGFR_cys eGFR_combined BUN_Cr_ratio FE_Urea  NGAL  KIM1   NAG
 #>     <dbl>    <dbl>         <dbl>        <dbl>   <dbl> <dbl> <dbl> <dbl>
 #> 1   95.8      79.3          87.4         17.8    12.9    20    NA    NA
-#> 2   21.9      44.9          32.4         18.2    34.4    35    NA    NA
-#> 3    3.07    126.           22.4         11.7   375      15    NA    NA
+#> 2   22.3      44.9          32.7         18.2    34.4    35    NA    NA
+#> 3    3.07    126.           22.1         11.7   375      15    NA    NA
 #> # ℹ 3 more variables: Beta2Micro <dbl>, IL18 <dbl>, L_FABP <dbl>
 ```
 
@@ -181,6 +183,7 @@ Enable verbose output to inspect column mapping, row counts, and result
 summaries during QC:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 renal_markers(
   data = tibble::tibble(Cr = 0.9, Age = 45, Sex = "male", Race = "white", BUN = 12),
@@ -223,6 +226,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

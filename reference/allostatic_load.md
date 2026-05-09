@@ -66,22 +66,10 @@ be required.
 
 ## References
 
-McEwen BS, Stellar E (1993). “Stress and the Individual: Mechanisms
-Leading to Disease.” *Archives of Internal Medicine*, **153**(18),
-2093–2101.
-[doi:10.1001/archinte.153.18.2093](https://doi.org/10.1001/archinte.153.18.2093)
-. ; Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). “Price
-of Adaptation—Allostatic Load and Its Health Consequences.” *Archives of
+Seeman TE, Singer BH, Rowe JW, Horwitz RI, McEwen BS (1997). “Price of
+Adaptation—Allostatic Load and Its Health Consequences.” *Archives of
 Internal Medicine*, **157**(19), 2259–2268.
 [doi:10.1001/archinte.1997.00440400111013](https://doi.org/10.1001/archinte.1997.00440400111013)
-. ; Juster R, McEwen BS, Lupien SJ (2010). “Allostatic Load Biomarkers
-of Chronic Stress and Impact on Health and Cognition.” *Neuroscience and
-Biobehavioral Reviews*, **35**(1), 2–16.
-[doi:10.1016/j.neubiorev.2009.10.002](https://doi.org/10.1016/j.neubiorev.2009.10.002)
-. ; Wiley JF, Gruenewald TL, Karlamangla AS, Seeman TE (2016). “Modeling
-Multisystem Physiological Dysregulation.” *Psychosomatic Medicine*,
-**78**(3), 290–301.
-[doi:10.1097/PSY.0000000000000288](https://doi.org/10.1097/PSY.0000000000000288)
 .
 
 ## See also

@@ -104,8 +104,13 @@ detected (e.g. <code>id</code>, <code>IID</code>, <code>participant_id</code>).<
 <li><p>SIRI = neutrophils * monocytes / lymphocytes</p></li>
 <li><p>AISI = neutrophils * monocytes * platelets / lymphocytes</p></li>
 <li><p>CRP_category: "low" (&lt;1 mg/L), "moderate" (1-3 mg/L), "high" (&gt;3 mg/L) when CRP available</p></li>
-<li><p>Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets<em>neutrophils</em>monocytes/lymphocytes;
+<li><p>Eosinophil-panel extras: NER = neutrophils / eosinophils; PIV = platelets * neutrophils * monocytes / lymphocytes;
 CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumin); ESR passthrough.</p></li>
+</ul><p>Note:</p><ul><li><p>These outputs are deterministic algebraic indices computed from the mapped
+laboratory variables. They are intended for feature engineering and descriptive
+analyses, not as standalone diagnosis/prognosis tools.</p></li>
+<li><p>References below document commonly used index definitions or interpretation
+conventions directly used in this implementation.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -113,32 +118,26 @@ CLR = CRP/lymphocytes; CAR = CRP/albumin; PCR = platelets/CRP; mGPS (CRP, albumi
 “Ratio of neutrophil to lymphocyte counts–rapid and simple parameter of systemic inflammation and stress.”
 <em>Bratislavske lekarske listy</em>, <b>102</b>(1), 5–14.
 No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/11723675/" class="external-link">https://pubmed.ncbi.nlm.nih.gov/11723675/</a>.
-; Templeton AJ, others (2014).
-“Prognostic role of neutrophil-to-lymphocyte ratio in solid tumors: a systematic review and meta-analysis.”
-<em>Journal of the National Cancer Institute</em>, <b>106</b>(6), dju124.
-<a href="https://doi.org/10.1093/jnci/dju124" class="external-link">doi:10.1093/jnci/dju124</a>
-.
-; Hu B, others (2014).
+
+Hu B, others (2014).
 “Systemic Immune-Inflammation Index Predicts Prognosis of Patients after Curative Resection for Hepatocellular Carcinoma.”
 <em>Clinical Cancer Research</em>, <b>20</b>(23), 6212–6222.
 <a href="https://doi.org/10.1158/1078-0432.CCR-14-0442" class="external-link">doi:10.1158/1078-0432.CCR-14-0442</a>
 .
-; Qi Q, others (2016).
+
+Qi Q, others (2016).
 “A novel systemic inflammation response index (SIRI) for predicting the survival of patients with pancreatic cancer after chemotherapy.”
 <em>Cancer</em>, <b>122</b>(14), 2158–2167.
 <a href="https://doi.org/10.1002/cncr.30057" class="external-link">doi:10.1002/cncr.30057</a>
 .
-; Mammadova A, Naurzvai D, others (2025).
-“Association of systemic immune-inflammation index and aggregate index of systemic inflammation with clinical status in stable and exacerbated COPD: A single-center retrospective study.”
-<em>Medicine</em>, <b>104</b>(39), e44589.
-<a href="https://doi.org/10.1097/MD.0000000000044589" class="external-link">doi:10.1097/MD.0000000000044589</a>
-.
-; Proctor MJ, others (2011).
+
+Proctor MJ, others (2011).
 “An inflammation-based prognostic score (mGPS) predicts cancer survival independent of tumour site: a Glasgow Inflammation Outcome Study.”
 <em>British Journal of Cancer</em>, <b>104</b>(4), 726–734.
 <a href="https://doi.org/10.1038/sj.bjc.6606087" class="external-link">doi:10.1038/sj.bjc.6606087</a>
 .
-; Pearson TA, others (2003).
+
+Pearson TA, others (2003).
 “Markers of inflammation and cardiovascular disease: a statement for healthcare professionals from the CDC and AHA.”
 <em>Circulation</em>, <b>107</b>(3), 499–511.
 <a href="https://doi.org/10.1161/01.CIR.0000052939.59093.45" class="external-link">doi:10.1161/01.CIR.0000052939.59093.45</a>
@@ -147,7 +146,17 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Quick smoke-test</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>neutrophils <span class="op">=</span> <span class="fl">4</span>, lymphocytes <span class="op">=</span> <span class="fl">2</span>, monocytes <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
+<span class="r-in"><span>                 platelets <span class="op">=</span> <span class="fl">200</span>, WBC <span class="op">=</span> <span class="fl">7</span>, CRP <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, panel <span class="op">=</span> <span class="st">"classic"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     NLR   PLR   LMR  dNLR   SII  SIRI  AISI CRP_category</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100     4  1.33   400     1   200 moderate    </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  neutrophils <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  lymphocytes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  monocytes   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.3</span><span class="op">)</span>,</span></span>
@@ -163,7 +172,6 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 <span class="r-in"><span>  platelets <span class="op">=</span> <span class="st">"platelets"</span>, WBC <span class="op">=</span> <span class="st">"WBC"</span>, CRP <span class="op">=</span> <span class="st">"CRP"</span>, albumin <span class="op">=</span> <span class="st">"albumin"</span>,</span></span>
 <span class="r-in"><span>  eosinophils <span class="op">=</span> <span class="st">"eosinophils"</span>, ESR <span class="op">=</span> <span class="st">"ESR"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Classic panel (no eosinophils key)</span></span></span>
 <span class="r-in"><span><span class="va">classic_cm</span> <span class="op">&lt;-</span> <span class="va">cm</span>; <span class="va">classic_cm</span><span class="op">$</span><span class="va">eosinophils</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>; <span class="va">classic_cm</span><span class="op">$</span><span class="va">ESR</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></span>
 <span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">classic_cm</span>, panel <span class="op">=</span> <span class="st">"classic"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables</span>
@@ -189,7 +197,6 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;ord&gt;</span>       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100     4  1.33   400     1   200 moderate    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>     0  0.8    <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span> low         </span>
-<span class="r-in"><span><span class="co"># Eosinophil panel</span></span></span>
 <span class="r-in"><span><span class="fu">inflammatory_markers</span><span class="op">(</span><span class="va">df</span>, <span class="va">cm</span>, panel <span class="op">=</span> <span class="st">"eos"</span>, na_action <span class="op">=</span> <span class="st">"keep"</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): reading input 'df' — 2 rows × 9 variables</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> inflammatory_markers(): col_map (9 columns — 9 specified)</span>
@@ -214,6 +221,7 @@ No DOI identified; PMID: 11723675, <a href="https://pubmed.ncbi.nlm.nih.gov/1172
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     2   100     4    20   400     1   200   1.25 0.062<span style="text-decoration: underline;">5</span>   80      0    12</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>     0    20   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span>   <span style="color: #BB0000;">Inf</span> <span style="color: #BB0000;">Inf</span>    0.019<span style="text-decoration: underline;">0</span>  188.     0    15</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

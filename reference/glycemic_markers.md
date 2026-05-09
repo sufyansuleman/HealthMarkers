@@ -93,6 +93,11 @@ Assumed units (no automatic conversion of inputs except where noted):
 
 - leptin, adiponectin: ng/mL
 
+These indices are intended for research and feature-engineering
+applications. The prediabetes and diabetes flags apply standard HbA1c
+cut-offs (WHO/IDF criteria) but this function is not validated as a
+clinical diagnostic tool.
+
 Quality controls and options:
 
 - Input validation ensures required variables exist and are
@@ -106,8 +111,8 @@ Quality controls and options:
 - Logs and divisions are computed safely (non-positive arguments yield
   NA).
 
-- Optional detection/handling of extreme input values via
-  `check_extreme` and `extreme_action`.
+- Physiological range notes are printed when `verbose = TRUE` (values
+  are not altered).
 
 - Verbose mode prints step-by-step progress and a completion summary.
 
@@ -139,26 +144,26 @@ of Insulin Sensitivity in White Juveniles and Adults without Diabetes
 Mellitus: The Single Point Insulin Sensitivity Estimator (SPISE).”
 *Clinical Chemistry*, **62**(9), 1211–1219.
 [doi:10.1373/clinchem.2016.257436](https://doi.org/10.1373/clinchem.2016.257436)
-. ; Bello-Chavolla OY, Almeda-Valdes P, García-Sánchez A, et al. (2018).
+. Bello-Chavolla OY, Almeda-Valdes P, García-Sánchez A, et al. (2018).
 “METS-IR, a novel score to evaluate insulin sensitivity, is predictive
 of visceral adiposity and incident type 2 diabetes.” *European Journal
 of Endocrinology*, **178**(5), 533–544.
-[doi:10.1530/EJE-17-0883](https://doi.org/10.1530/EJE-17-0883) . ;
+[doi:10.1530/EJE-17-0883](https://doi.org/10.1530/EJE-17-0883) .
 Frühbeck G, Catalan V, Rodríguez A, Ramón Sánchez-Recalde Á, Becerril S,
 Sánchez-González Á, Baena N, Valentí-Azcárate F, Burrell MA, Salvador J
 (2019). “Adiponectin-leptin Ratio is a Functional Biomarker of Adipose
 Tissue Inflammation.” *Nutrients*, **11**(2), 454.
-[doi:10.3390/nu11020454](https://doi.org/10.3390/nu11020454) . ;
-Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC
-(1985). “Homeostasis Model Assessment: Insulin Resistance and Beta-Cell
-Function from Fasting Plasma Glucose and Insulin Concentrations in Man.”
+[doi:10.3390/nu11020454](https://doi.org/10.3390/nu11020454) . Matthews
+DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985).
+“Homeostasis Model Assessment: Insulin Resistance and Beta-Cell Function
+from Fasting Plasma Glucose and Insulin Concentrations in Man.”
 *Diabetologia*, **28**(7), 412–419.
-[doi:10.1007/BF00280883](https://doi.org/10.1007/BF00280883) . ;
+[doi:10.1007/BF00280883](https://doi.org/10.1007/BF00280883) .
 Simental-Mendía LE, Rodríguez-Morán M, Guerrero-Romero F (2008). “The
 Product of Fasting Glucose and Triglycerides as Surrogate for
 Identifying Insulin Resistance.” *Metabolic Syndrome and Related
 Disorders*, **6**(4), 299–304.
-[doi:10.1089/met.2008.0034](https://doi.org/10.1089/met.2008.0034) . ;
+[doi:10.1089/met.2008.0034](https://doi.org/10.1089/met.2008.0034) .
 Furler SM, Gan SK, Poynten AM, Chisholm DJ, Campbell LV, Kriketos AD
 (2006). “Relationship of Adiponectin with Insulin Sensitivity in Humans,
 Independent of Lipid Availability.” *Obesity*, **14**(2), 228–234.
@@ -167,6 +172,16 @@ Independent of Lipid Availability.” *Obesity*, **14**(2), 228–234.
 ## Examples
 
 ``` r
+# Quick smoke-test
+df <- data.frame(glucose = 5.6, HbA1c = 44, G0 = 5.5, I0 = 60,
+                 HDL_c = 1.2, TG = 1.5, BMI = 24)
+glycemic_markers(df, verbose = FALSE)
+#> # A tibble: 1 × 8
+#>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index
+#>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl> <dbl>     <dbl>
+#> 1  8.14    335.           1        0      NA    NA    NA      8.81
+
+# \donttest{
 df <- tibble::tibble(
   HDL_c       = c(1.0, 1.3),
   TG          = c(1.3, 2.0),
@@ -179,7 +194,6 @@ df <- tibble::tibble(
   leptin      = c(10, 20),
   adiponectin = c(8, 5)
 )
-# Full verbose output (default — shows mapping, missing notes, results)
 glycemic_markers(df)
 #> glycemic_markers(): reading input 'df' — 2 rows × 10 variables
 #> glycemic_markers(): col_map (10 columns — 10 inferred from data)
@@ -210,18 +224,17 @@ glycemic_markers(df)
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
 #> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
 #> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
-# Suppress messaging for batch use
 glycemic_markers(df, verbose = FALSE)
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
 #> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
 #> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
-# Drop rows with any missing input
 glycemic_markers(df, na_action = "omit", verbose = FALSE)
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
 #> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
 #> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
+# }
 ```

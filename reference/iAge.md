@@ -1,10 +1,10 @@
 # Compute a simplified Inflammatory Age Index (iAge) with QA and verbose summaries
 
 Implements a linear proxy for immunosenescence based on key inflammatory
-biomarkers, following the approach introduced by Sayed et al. for the
-inflammatory aging clock (iAge). This simplified iAge is computed as a
-weighted sum of C-reactive protein (CRP), interleukin-6 (IL6), and tumor
-necrosis factor-alpha (TNFa).
+biomarkers, conceptually inspired by the inflammatory aging clock (iAge)
+literature. This simplified iAge is computed as a weighted sum of
+C-reactive protein (CRP), interleukin-6 (IL6), and tumor necrosis
+factor-alpha (TNFa).
 
 ## Usage
 
@@ -75,10 +75,11 @@ A tibble with one column:
 
 ## Details
 
-By default, missing inputs are omitted in the sum (consistent with prior
-behavior). Optional diagnostics can warn on high missingness and scan
-for extreme values, with the ability to cap, warn, or error on extremes.
-Verbose mode prints step-by-step progress and a final summary.
+By default, rows with any missing required marker return NA in the index
+(consistent with the default behavior of other package functions).
+Optional diagnostics can warn on high missingness and implausible
+negative values. Verbose mode prints step-by-step progress and a final
+summary.
 
 Assumed units (no automatic unit conversion):
 
@@ -96,12 +97,28 @@ Note:
   identical to the original published iAge but is inspired by its
   rationale.
 
+- This proxy is intended for exploratory feature engineering and
+  cohort-level analyses. It must not be treated as a validated
+  replacement for the published iAge model or used as a standalone
+  clinical decision metric.
+
 ## References
 
 Sayed N, others (2021). “An inflammatory aging clock (iAge) predicts
 multimorbidity, immunosenescence, frailty and cardiovascular aging.”
 *Nature Aging*, **1**, 598–610.
 [doi:10.1038/s43587-021-00082-y](https://doi.org/10.1038/s43587-021-00082-y)
+. (conceptual background; not method-identical to this implementation)
+Harris TB, Ferrucci L, Tracy RP, Corti MC, Wacholder S, Ettinger WH,
+Heimovitz H, Cohen HJ, Wallace R (1999). “Associations of Elevated
+Interleukin-6 and C-Reactive Protein Levels with Mortality in the
+Elderly.” *The American Journal of Medicine*, **106**(5), 506–512.
+[doi:10.1016/S0002-9343(99)00066-2](https://doi.org/10.1016/S0002-9343%2899%2900066-2)
+. Bruunsgaard H, Ladelund S, Pedersen AN, Schroll M, Jorgensen T,
+Pedersen BK (2003). “Predicting death from tumour necrosis factor-alpha
+and interleukin-6 in 80-year-old people.” *Clinical and Experimental
+Immunology*, **132**(1), 24–31.
+[doi:10.1046/j.1365-2249.2003.02137.x](https://doi.org/10.1046/j.1365-2249.2003.02137.x)
 .
 
 ## See also
@@ -118,7 +135,7 @@ df <- tibble(
   IL6  = c(2.0, 4.1, 1.5), # pg/mL
   TNFa = c(1.0, 1.8, 0.9)  # pg/mL
 )
-# Default behavior (omit NAs in row-wise sum)
+# Default behavior (rows with any missing marker return NA)
 iAge(
   df,
   col_map = list(CRP = "CRP", IL6 = "IL6", TNFa = "TNFa")

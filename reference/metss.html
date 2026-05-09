@@ -10,7 +10,8 @@ Required columns (no unit conversion performed):
 waist (cm), bp_sys (mmHg), bp_dia (mmHg)
 TG, HDL_c, glucose (mmol/L)
 sex (1=male, 2=female)
-race (one of &quot;NHW&quot;,&quot;NHB&quot;,&quot;HW&quot;,&quot;HA&quot; or accepted synonyms)
+race (one of &quot;NHW&quot;,&quot;NHB&quot;,&quot;HW&quot;, or accepted synonyms; &quot;HA&quot; is recognised
+by the normaliser but has no default params — see params argument)
 
 "><meta property="og:description" content="Computes a continuous metabolic syndrome severity z-score using sex- and
 race-specific standardized components and coefficients (factor-loading style).
@@ -23,7 +24,8 @@ Required columns (no unit conversion performed):
 waist (cm), bp_sys (mmHg), bp_dia (mmHg)
 TG, HDL_c, glucose (mmol/L)
 sex (1=male, 2=female)
-race (one of &quot;NHW&quot;,&quot;NHB&quot;,&quot;HW&quot;,&quot;HA&quot; or accepted synonyms)
+race (one of &quot;NHW&quot;,&quot;NHB&quot;,&quot;HW&quot;, or accepted synonyms; &quot;HA&quot; is recognised
+by the normaliser but has no default params — see params argument)
 
 "></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -68,7 +70,8 @@ race-specific standardized components and coefficients (factor-loading style).</
 </ul><p>Required columns (no unit conversion performed):</p><ul><li><p>waist (cm), bp_sys (mmHg), bp_dia (mmHg)</p></li>
 <li><p>TG, HDL_c, glucose (mmol/L)</p></li>
 <li><p>sex (1=male, 2=female)</p></li>
-<li><p>race (one of "NHW","NHB","HW","HA" or accepted synonyms)</p></li>
+<li><p>race (one of "NHW","NHB","HW", or accepted synonyms; "HA" is recognised
+by the normaliser but has no default params — see <code>params</code> argument)</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -117,7 +120,10 @@ race-specific standardized components and coefficients (factor-loading style).</
 <dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
 <dd><p>Named list keyed by "RACE_SEX" (e.g. "NHW_M"). Each element:
 list(intercept, waist, TG, HDL, glucose, MAP) where each component (except intercept)
-is a named numeric vector c(mean=, sd=, coef=).</p></dd>
+is a named numeric vector c(mean=, sd=, coef=). Default parameters are provided
+for NHW, NHB, and HW (male and female); no default HA parameters are included
+because Gurka et al. (2014) did not publish HA-specific coefficients. Passing
+<code>race = "HA"</code> with default params will raise an error; supply custom params if needed.</p></dd>
 
 
 <dt id="arg-col-map">col_map<a class="anchor" aria-label="anchor" href="#arg-col-map"></a></dt>
@@ -164,18 +170,19 @@ DeBoer MD, Gurka MJ, Woo JG, Morrison JA (2015).
 <em>Diabetologia</em>, <b>58</b>(12), 2745–2752.
 <a href="https://doi.org/10.1007/s00125-015-3759-5" class="external-link">doi:10.1007/s00125-015-3759-5</a>
 .
-
+ (clinical application)
 DeBoer MD, Filipp SL, Gurka MJ (2017).
 “Independent associations between metabolic syndrome severity and future coronary heart disease by sex and race.”
 <em>Journal of the American College of Cardiology</em>, <b>69</b>(9), 1204–1205.
 <a href="https://doi.org/10.1016/j.jacc.2016.10.088" class="external-link">doi:10.1016/j.jacc.2016.10.088</a>
 .
-
+ (clinical application)
 Gurka MJ, Filipp SL, Pearson TA, DeBoer MD (2018).
 “Assessing Baseline and Temporal Changes in Cardiometabolic Risk Using Metabolic Syndrome Severity and Common Risk Scores.”
 <em>Journal of the American Heart Association</em>, <b>7</b>(16), e009754.
 <a href="https://doi.org/10.1161/JAHA.118.009754" class="external-link">doi:10.1161/JAHA.118.009754</a>
-.</p>
+.
+ (clinical application)</p>
     </div>
 
     <div class="section level2">

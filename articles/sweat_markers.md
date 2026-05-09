@@ -17,13 +17,13 @@ and safe handling of zero/invalid denominators.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                        | Notes                                                                                                      |
-|--------------|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| data         | Data frame/tibble with sweat and anthropometric measures | Columns mapped via `col_map`                                                                               |
-| col_map      | Named list mapping required inputs                       | sweat_chloride, sweat_Na, sweat_K, sweat_lactate, weight_before, weight_after, duration, body_surface_area |
-| na_action    | Missing-data policy for required inputs                  | “keep” (default), “omit”, “error”                                                                          |
-| na_warn_prop | Proportion threshold for high-missingness diagnostics    | Default 0.2 (shown in debug/verbose)                                                                       |
-| verbose      | Emit progress and completion summaries                   | Default FALSE                                                                                              |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with sweat and anthropometric measures | Columns mapped via `col_map` |
+| col_map | Named list mapping required inputs | sweat_chloride, sweat_Na, sweat_K, sweat_lactate, weight_before, weight_after, duration, body_surface_area |
+| na_action | Missing-data policy for required inputs | “keep” (default), “omit”, “error” |
+| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose) |
+| verbose | Emit progress and completion summaries | Default FALSE |
 
 **Required columns (col_map):** sweat_chloride, sweat_Na, sweat_K,
 sweat_lactate (mmol/L), weight_before, weight_after (kg), duration (h),
@@ -43,7 +43,7 @@ units above.
 - Safe division: all ratios use a helper that sets NA for zero/invalid
   denominators and emits a consolidated warning.
 - Sweat rate:
-  $\left( \text{weight\_before} - \text{weight\_after} \right)/\text{duration}/\text{body\_surface\_area}$
+  $`(\text{weight_before} - \text{weight_after}) / \text{duration} / \text{body_surface_area}`$
   (1 kg ≈ 1 L water).
 - Empty result: if `na_action = "omit"` drops all rows, returns a
   zero-row tibble with expected columns.
@@ -58,6 +58,7 @@ units above.
 ## Worked example 1: Standard usage, keep NAs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -101,6 +102,7 @@ missing or denominators are zero (e.g., sweat_K = 0).
 ## Worked example 2: Pre-filter extremes, drop incomplete
 
 ``` r
+
 df2 <- tibble::tibble(
   cl = c(180, 250),       # extreme chloride; pre-filter
   na = c(60, 10),
@@ -154,6 +156,7 @@ incomplete rows are then dropped.
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 sweat_markers(
   data = tibble::tibble(
@@ -209,6 +212,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

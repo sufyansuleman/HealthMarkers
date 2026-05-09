@@ -26,6 +26,7 @@ Illustrative-only flags below; replace with your real comorbidity
 indicators.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -63,6 +64,7 @@ sim_small <- sim_small %>% mutate(
 Provide all 19 keys. Missing mappings error.
 
 ``` r
+
 col_map <- list(
   mi="mi", chf="chf", pvd="pvd", stroke="stroke", dementia="dementia", copd="copd",
   rheum="rheum", ulcer="ulcer", mild_liver="mild_liver", diabetes="diabetes",
@@ -78,6 +80,7 @@ Defaults keep rows with missing indicators and return NA scores for
 them.
 
 ``` r
+
 cci_out <- charlson_index(
   data = sim_small,
   col_map = col_map,
@@ -116,6 +119,7 @@ head(cci_out)
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small[1:8, names(col_map)]
 demo$renal[3] <- NA
 
@@ -143,6 +147,7 @@ Indicators outside 0-1 will warn. Pre-filter or recode non-binary values
 before calling.
 
 ``` r
+
 demo2 <- demo
 demo2$mi[5] <- 2  # out of bounds — will warn
 # Recode to valid binary before passing if needed
@@ -187,6 +192,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 patient <- tibble::tibble(

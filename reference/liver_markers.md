@@ -98,15 +98,17 @@ Formulas
   0.053*waist - 15.745) \* 100
 
 - NFS = -1.675 + 0.037*age + 0.094*BMI + 1.13*diabetes +
-  0.99*(AST/ALT) - 0.013*platelets - 0.66*albumin
+  0.99*(AST/ALT) - 0.013*platelets - 0.066*albumin (albumin in g/L;
+  Angulo 2007 published coefficient -0.66 was for g/dL, divided by 10
+  here)
 
 - APRI = (AST / 40) / platelets \* 100; assumes AST upper limit of
   normal = 40 U/L
 
 - FIB-4 = (age \* AST) / (platelets \* sqrt(ALT))
 
-- BARD = 1 if BMI\>=28, +1 if AST/ALT\>=0.8, +1 if diabetes present; sum
-  in 0,1,2,3
+- BARD = +1 if BMI\>=28, +2 if AST/ALT\>=0.8, +1 if diabetes present;
+  sum in 0-4
 
 - ALBI = 0.66*log10(bilirubin (mumol/L)) - 0.0852*albumin (g/L)
 
@@ -153,20 +155,29 @@ requiring anticoagulant therapy.” *Liver Transplantation*, **13**(1),
 ## Examples
 
 ``` r
+# Quick smoke-test
+df <- data.frame(ALT = 25, AST = 20, BMI = 24, platelets = 250)
+liver_markers(df, verbose = FALSE)
+#> # A tibble: 1 × 7
+#>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
+#>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
+#> 1    NA    NA   0.2    NA     2    NA      NA
+
+# \donttest{
 library(tibble)
 df <- tibble(
   BMI           = 24,
   waist         = 80,
-  TG = 150, # mg/dL
+  TG = 150,
   GGT           = 30,
   age           = 45,
   AST           = 25,
   ALT           = 20,
-  platelets     = 250, # 10^9/L
-  albumin       = 42,  # g/L
+  platelets     = 250,
+  albumin       = 42,
   diabetes      = FALSE,
-  bilirubin     = 1.0, # mg/dL
-  creatinine    = 0.9  # mg/dL
+  bilirubin     = 1.0,
+  creatinine    = 0.9
 )
 liver_markers(df)
 #> liver_markers(): reading input 'df' — 1 rows × 12 variables
@@ -197,10 +208,11 @@ liver_markers(df)
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
-#> 1  27.9 -27.5  0.25  1.01     1 -2.76    8.20
+#> 1  27.9 -2.54  0.25  1.01     2 -2.76    8.20
 liver_markers(df, verbose = FALSE)
 #> # A tibble: 1 × 7
 #>     FLI   NFS  APRI  FIB4  BARD  ALBI MELD_XI
 #>   <dbl> <dbl> <dbl> <dbl> <int> <dbl>   <dbl>
-#> 1  27.9 -27.5  0.25  1.01     1 -2.76    8.20
+#> 1  27.9 -2.54  0.25  1.01     2 -2.76    8.20
+# }
 ```

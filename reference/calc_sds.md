@@ -127,24 +127,19 @@ calc_sds(
 
 ## Details
 
+Derivation: for each requested variable, SDS is calculated as
+`(observed_value - reference_mean) / reference_sd` using user-supplied
+reference statistics in `ref`.
+
+Usage note: this function does not derive normative reference values
+internally. Users should provide `ref` from the target population
+(preferred), or from an external source matched as closely as possible
+on age/sex/ethnicity/context. Interpretability depends on the quality
+and relevance of those supplied reference means and SDs.
+
 By default, returns a tibble with added `[var]_sds` columns
 (tidyverse-friendly). For backward compatibility, you can request the
 previous list output.
-
-## References
-
-Cole TJ, Green PJ (1992). “Smoothing Reference Centile Curves: The LMS
-Method and Penalized Likelihood.” *Statistics in Medicine*, **11**(10),
-1305–1319.
-[doi:10.1002/sim.4780111005](https://doi.org/10.1002/sim.4780111005) . ;
-de Onis M, World Health Organization (2006). *WHO Child Growth
-Standards: Methods and Development*. World Health Organization. ISBN
-924154693X, No DOI for this WHO report; see ISBN/URL,
-<https://www.who.int/publications/i/item/924154693X>. ; Kuczmarski RJ,
-Ogden CL, Grummer-Strawn LM, et al. (2000). “CDC Growth Charts: United
-States.” Technical Report 314, National Center for Health Statistics. No
-DOI for this CDC technical report; see URL,
-<https://www.cdc.gov/growthcharts/cdc_charts.htm>.
 
 ## Examples
 

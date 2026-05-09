@@ -37,6 +37,7 @@ NA/extreme handling, and safe-division guards.
 ## Quick start
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -65,8 +66,8 @@ obesity_indices(
 #> # A tibble: 2 × 15
 #>   weight_kg height_m   BMI BMI_cat         WHR WHRadjBMI waist_to_height_ratio
 #>       <dbl>    <dbl> <dbl> <chr>         <dbl>     <dbl>                 <dbl>
-#> 1        70     1.75  22.9 Normal weight 0.8           0                  45.7
-#> 2        80     1.65  29.4 Overweight    0.947         0                  54.5
+#> 1        70     1.75  22.9 Normal weight 0.8           0                 0.457
+#> 2        80     1.65  29.4 Overweight    0.947         0                 0.545
 #> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
 #> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 ```
@@ -74,6 +75,7 @@ obesity_indices(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 obesity_indices(
   data = df,
@@ -98,8 +100,8 @@ obesity_indices(
 #> # A tibble: 2 × 14
 #>   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio
 #>       <dbl>    <dbl> <dbl> <chr>         <dbl>                 <dbl>
-#> 1        70     1.75  22.9 Normal weight 0.8                    45.7
-#> 2        80     1.65  29.4 Overweight    0.947                  54.5
+#> 1        70     1.75  22.9 Normal weight 0.8                   0.457
+#> 2        80     1.65  29.4 Overweight    0.947                 0.545
 #> # ℹ 8 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
 #> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>, RFM <dbl>
 options(old_opt)
@@ -108,6 +110,7 @@ options(old_opt)
 ## Missing-data policy
 
 ``` r
+
 try(
   obesity_indices(
     data = df,
@@ -121,8 +124,8 @@ try(
 #> # A tibble: 2 × 13
 #>   weight_kg height_m   BMI BMI_cat         WHR waist_to_height_ratio
 #>       <dbl>    <dbl> <dbl> <chr>         <dbl>                 <dbl>
-#> 1        70     1.75  22.9 Normal weight 0.8                    45.7
-#> 2        80     1.65  29.4 Overweight    0.947                  54.5
+#> 1        70     1.75  22.9 Normal weight 0.8                   0.457
+#> 2        80     1.65  29.4 Overweight    0.947                 0.545
 #> # ℹ 7 more variables: waist_to_BMI_ratio <dbl>, weight_to_height_ratio <dbl>,
 #> #   AVI <dbl>, BAI <dbl>, ABSI <dbl>, BRI <dbl>, CI <dbl>
 ```

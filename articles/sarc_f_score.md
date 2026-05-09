@@ -19,12 +19,12 @@ extreme screening/capping, and non-numeric coercion safeguards.
 
 ## What you need (inputs & options)
 
-| Argument  | Purpose / Options                       | Notes                                               |
-|-----------|-----------------------------------------|-----------------------------------------------------|
-| data      | Data frame/tibble with SARC-F responses | Columns mapped via `col_map`                        |
-| col_map   | Named list mapping required items       | strength, walking, chair, stairs, falls             |
-| na_action | Missing-data policy                     | “keep” (default), “omit”, “error”, “ignore”, “warn” |
-| verbose   | Emit progress messages                  | Default FALSE                                       |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with SARC-F responses | Columns mapped via `col_map` |
+| col_map | Named list mapping required items | strength, walking, chair, stairs, falls |
+| na_action | Missing-data policy | “keep” (default), “omit”, “error”, “ignore”, “warn” |
+| verbose | Emit progress messages | Default FALSE |
 
 **Required columns (col_map):** strength, walking, chair, stairs, falls
 (expected 0/1/2). Mapped columns must exist.
@@ -55,6 +55,7 @@ beyond coercion/capping/NA handling.
 ## Worked example 1: Basic usage (keep NAs)
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -93,6 +94,7 @@ an NA item yields `sarc_f_score = NA` and `sarc_f_high_risk = NA`.
 ## Worked example 2: Detect miscoded values
 
 ``` r
+
 df2 <- tibble::tibble(
   str = c(0, 3, -1),
   walk = c(1, 2, 1),
@@ -137,6 +139,7 @@ Enable verbose output to inspect column mapping, row counts, and result
 summaries during QC:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 sarc_f_score(
   data.frame(Strength = 1, Walking = 1, Chair = 1, Stairs = 0, Falls = 0),

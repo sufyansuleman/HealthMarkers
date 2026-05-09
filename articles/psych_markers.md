@@ -15,6 +15,7 @@ Here we build a tiny synthetic row with required item columns. Replace
 with your cohort data and adjust `col_map` to your column names.
 
 ``` r
+
 library(HealthMarkers)
 
 psych_df <- tibble::tibble(
@@ -46,6 +47,7 @@ Map canonical item IDs to your dataset columns. Keys for BIS/SPQ stay
 user-supplied (no item text in package).
 
 ``` r
+
 col_map <- list(
   phq9 = list(items = setNames(sprintf("phq9_%02d", 1:9), sprintf("phq9_%02d", 1:9))),
   gad7 = list(items = setNames(sprintf("gad7_%02d", 1:7), sprintf("gad7_%02d", 1:7))),
@@ -85,6 +87,7 @@ optional; here we keep defaults and missingness tolerance of 20% per
 scale.
 
 ``` r
+
 out <- psych_markers(
   data = psych_df,
   col_map = col_map,
@@ -115,6 +118,7 @@ dplyr::select(out, dplyr::all_of(new_cols))
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 psych_markers(
   data = psych_df,

@@ -17,13 +17,13 @@ and built-in unit conversions for insulin, TG, HDL-c.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                           | Notes                                |
-|--------------|-------------------------------------------------------------|--------------------------------------|
-| data         | Data frame/tibble with tracer, DXA, and optional OGTT/lipid | Columns mapped via `col_map`         |
-| col_map      | Named list mapping required keys                            | See below for required keys per mode |
-| na_action    | Missing-data policy for required inputs                     | “keep” (default), “omit”, “error”    |
-| na_warn_prop | Proportion threshold for high-missingness diagnostics       | Default 0.2 (shown in debug/verbose) |
-| verbose      | Emit progress and completion summaries                      | Default FALSE                        |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with tracer, DXA, and optional OGTT/lipid | Columns mapped via `col_map` |
+| col_map | Named list mapping required keys | See below for required keys per mode |
+| na_action | Missing-data policy for required inputs | “keep” (default), “omit”, “error” |
+| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose) |
+| verbose | Emit progress and completion summaries | Default FALSE |
 
 **Adipose-only required keys:** I0, rate_glycerol, rate_palmitate,
 fat_mass, weight, HDL_c, bmi.
@@ -68,6 +68,7 @@ micromol/min - Fat mass, weight: kg; BMI: kg/m²
 ## Worked example 1: Adipose-only mode
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -109,6 +110,7 @@ inputs are missing or invalid.
 ## Worked example 2: Full mode, drop incomplete
 
 ``` r
+
 df2 <- tibble::tibble(
   G0 = c(5.0, 6.2, 7.5), G30 = c(8.1, 9.5, 10.2), G120 = c(6.7, 8.8, 9.1),
   I0 = c(55, 90, 5100),   I30 = c(220, 260, 5200), I120 = c(150, 200, 5300),
@@ -161,6 +163,7 @@ incomplete rows are then dropped.
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 tracer_dxa_is(
   data = tibble::tibble(
@@ -212,6 +215,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

@@ -20,14 +20,14 @@ before logs.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                     | Notes                                                  |
-|--------------|-------------------------------------------------------|--------------------------------------------------------|
-| data         | Data frame/tibble with salivary measures              | Columns mapped via `col_map`                           |
-| col_map      | Named list mapping required inputs                    | cort1, cort2, cort3 (cortisol); amylase; glucose       |
-| na_action    | Missing-data policy for required inputs               | “keep” (default), “omit”, “error”                      |
-| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose)                   |
-| times        | Sampling times (minutes) for CAR AUC                  | Numeric length 3, non-decreasing; default c(0, 30, 60) |
-| verbose      | Emit progress and completion summaries                | Default FALSE                                          |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with salivary measures | Columns mapped via `col_map` |
+| col_map | Named list mapping required inputs | cort1, cort2, cort3 (cortisol); amylase; glucose |
+| na_action | Missing-data policy for required inputs | “keep” (default), “omit”, “error” |
+| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose) |
+| times | Sampling times (minutes) for CAR AUC | Numeric length 3, non-decreasing; default c(0, 30, 60) |
+| verbose | Emit progress and completion summaries | Default FALSE |
 
 **Required columns (col_map):** cort1, cort2, cort3 (cortisol nmol/L),
 amylase (U/mL), glucose (mg/dL). Mapped columns must exist.
@@ -69,6 +69,7 @@ alpha-amylase in U/mL, salivary glucose in mg/dL.
 ## Worked example 1: Standard times, keep NAs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -107,6 +108,7 @@ and CAR_AUC due to missing cort1.
 ## Worked example 2: Custom times, drop incomplete
 
 ``` r
+
 df2 <- tibble::tibble(
   c1 = c(14, 0, 2200),    # zero and extreme cortisol; pre-filter
   c2 = c(19, 12, 2100),
@@ -153,6 +155,7 @@ Enable verbose output to inspect column mapping, row counts, and result
 summaries during QC:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 saliva_markers(
   tibble::tibble(
@@ -191,6 +194,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 
@@ -205,10 +209,10 @@ hm_col_report(your_data)
 ## Validation notes
 
 - CAR_AUC is trapezoidal:
-  $\sum_{i = 1}^{2}\frac{c_{i} + c_{i + 1}}{2} \times \left( t_{i + 1} - t_{i} \right)$
+  $`\sum_{i=1}^{2} \frac{c_i + c_{i+1}}{2} \times (t_{i+1} - t_i)`$
   using the three cortisol values and the `times` gaps.
-- Safe logs: $\log(x)$ is only taken when $x > 0$ and finite; otherwise
-  NA.
+- Safe logs: $`\log(x)`$ is only taken when $`x > 0`$ and finite;
+  otherwise NA.
 
 ## See also
 

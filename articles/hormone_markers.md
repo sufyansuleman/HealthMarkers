@@ -7,6 +7,12 @@ Compute nine hormone ratios with built-in QA: `FAI`, `LH_FSH`, `E2_P`,
 are coerced to numeric, non-finite become `NA`, and optional extreme
 screening can warn, cap, blank, or error on out-of-range labs.
 
+## Important note
+
+When missing inputs are inferred (for example, estimated `free_T3` or
+`GH`), those values are heuristic placeholders for exploratory feature
+engineering only and are not clinical substitutes for direct assays.
+
 ## When to use
 
 - You have a complete hormone panel (mapped via `col_map`) and need
@@ -34,6 +40,7 @@ Use a small synthetic tibble (covers all required inputs) so the chunk
 runs anywhere. Replace `horm_demo` with your lab data.
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -75,6 +82,7 @@ computation.
   30)
 
 ``` r
+
 col_map <- list(
   total_testosterone = "tt",
   SHBG = "shbg",
@@ -102,6 +110,7 @@ Compute all ratios and preview the outputs. Non-finite values are set to
 `NA`; rows are retained when `na_action = "keep"`/`"ignore"`.
 
 ``` r
+
 hm_out <- hormone_markers(
   data = horm_demo,
   col_map = col_map,
@@ -125,6 +134,7 @@ Show the difference between keeping rows (propagating `NA`) and omitting
 rows when required inputs are missing.
 
 ``` r
+
 horm_demo_na <- horm_demo
 horm_demo_na$ft3[2] <- NA
 
@@ -154,6 +164,7 @@ Extreme labs will produce extreme ratios. Pre-filter implausible values
 before calling.
 
 ``` r
+
 horm_demo_ext <- horm_demo
 horm_demo_ext$aldo[1] <- 2000  # intentionally extreme
 # Pre-filter or cap before calling
@@ -184,6 +195,7 @@ three structured messages on each call: preparing inputs, the column
 map, and a results summary.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 df_v <- data.frame(
   total_testosterone = 10, SHBG = 2, LH = 8, FSH = 4,
@@ -245,6 +257,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

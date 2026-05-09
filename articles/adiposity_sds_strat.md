@@ -31,6 +31,7 @@ Use a small slice of the packaged simulated data. Replace `sim_small`
 with your data.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 
@@ -60,6 +61,7 @@ data. Use
 to rejoin.
 
 ``` r
+
 # Hard-coded reference values (typical population means/SDs)
 ref <- list(
   M = list(BMI = c(mean = 24.5, sd = 3.8), waist = c(mean = 88, sd = 12)),
@@ -93,6 +95,7 @@ Spot-check row 1 (male): BMI_SDS = (25.2 − 24.5) / 3.8 = 0.1842. Row 2
 Map sex and each variable to your column names.
 
 ``` r
+
 col_map <- list(
   sex = "sex",
   vars = list(
@@ -106,6 +109,7 @@ col_map <- list(
 ## Walkthrough with simulated data (build sex-specific refs)
 
 ``` r
+
 # Build sex-specific references from the demo slice
 ref_sex <- sim_small |>
   group_by(sex) |>
@@ -157,6 +161,7 @@ negative below.
 Compare row handling with NA policy.
 
 ``` r
+
 demo <- sim_small[1:8, c("sex", "BMI", "waist", "height")]
 demo$BMI[3] <- NA         # missing
 
@@ -191,6 +196,7 @@ Use `prefix` to namespace output columns when combining multiple calls
 on the same data frame:
 
 ``` r
+
 # Same data as quick-start but prefix with "z_"
 sds_prefixed <- adiposity_sds_strat(
   df_demo, col_map = col_map, ref = ref, prefix = "z_"
@@ -215,6 +221,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` must also be active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 invisible(adiposity_sds_strat(df_demo, col_map = col_map, ref = ref))
 #> adiposity_sds_strat(): reading input 'df_demo' — 4 rows × 3 variables

@@ -19,6 +19,7 @@ Only `ALT`, `AST`, and `BMI` are strictly required. Without sex/diabetes
 the female and diabetes terms default to 0.
 
 ``` r
+
 df <- data.frame(ALT = c(30, 45, 60), AST = c(20, 30, 25), BMI = c(24, 28, 33))
 
 liver_fat_markers(
@@ -39,6 +40,7 @@ Providing `sex`, `diabetes`, and `insulin` enables the full NAFLD-LFS
 formula.
 
 ``` r
+
 df2 <- data.frame(
   ALT      = c(30, 45, 60),
   AST      = c(20, 30, 25),
@@ -74,6 +76,7 @@ NCEP-ATP III criteria if `waist`, `TG`, `HDL_c`, a blood pressure
 column, and `glucose` are provided.
 
 ``` r
+
 df3 <- data.frame(
   ALT = 55, AST = 30, BMI = 31,
   sex = "female", diabetes = FALSE, insulin = 18,
@@ -101,6 +104,7 @@ Use `na_action` to control how rows with missing required values are
 treated.
 
 ``` r
+
 df_na <- data.frame(ALT = c(30, NA, 50), AST = c(20, 25, 30), BMI = c(25, 28, 31))
 
 # omit: return only complete rows
@@ -135,6 +139,7 @@ Enable step-by-step messages to trace exactly which columns are mapped
 and how many rows were computed successfully.
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- data.frame(ALT = c(30, 45), AST = c(20, 30), BMI = c(24, 28),
@@ -176,6 +181,7 @@ options(old_opt)
 When columns carry site-specific names, specify the mapping explicitly:
 
 ``` r
+
 df_ns <- data.frame(
   alt_IU_L     = c(28, 42, 65, 38),
   ast_IU_L     = c(18, 28, 35, 22),
@@ -211,6 +217,7 @@ Extreme ALT or AST values will produce extreme index scores. Pre-filter
 implausible inputs before calling.
 
 ``` r
+
 df_ext <- data.frame(
   ALT = c(30, 650, 60),  # 650 is implausibly extreme; pre-filter
   AST = c(20,  30, 25),
@@ -248,6 +255,7 @@ columns, enabling HSI (and partial NAFLD-LFS) computation with no column
 renaming:
 
 ``` r
+
 sim_path  <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim_small <- dplyr::slice_head(readRDS(sim_path), n = 50)
 

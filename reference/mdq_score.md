@@ -64,6 +64,14 @@ mdq_score(
 A tibble of score columns only: `MDQ_symptom_count`, `MDQ_clustering`,
 `MDQ_impairment`, `MDQ_positive_screen`. Input columns are not included.
 
+## Note
+
+The impairment column is expected to be **binary** (1 = impaired, 0 =
+not). The original MDQ impairment question uses a 4-category scale (1 =
+no problem, 2 = minor, 3 = moderate, 4 = serious); if the raw 4-category
+response is passed, the caller must recode it to binary (e.g.,
+`impair_binary = as.integer(impair_raw >= 3)`) before scoring.
+
 ## References
 
 Hirschfeld RMA, Williams JBW, Spitzer RL, Calabrese JR, Flynn L, Keck

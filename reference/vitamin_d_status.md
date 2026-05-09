@@ -66,7 +66,7 @@ to ng/mL).
 
 for Vitamin D IoM(CtRDRI, Calcium (2011). *Dietary Reference Intakes for
 Calcium and Vitamin D*. National Academies Press.
-[doi:10.17226/13050](https://doi.org/10.17226/13050) . ; Holick MF,
+[doi:10.17226/13050](https://doi.org/10.17226/13050) . Holick MF,
 Binkley NC, Bischoff-Ferrari HA, et al. (2011). “Evaluation, Treatment,
 and Prevention of Vitamin D Deficiency: an Endocrine Society Clinical
 Practice Guideline.” *Journal of Clinical Endocrinology & Metabolism*,

@@ -34,6 +34,7 @@ Component scoring: FEV1% (\>=65 -\> 0, 50-64 -\> 1, 36-49 -\> 2, \<=35
 Replace the example slice with your data frame.
 
 ``` r
+
 library(HealthMarkers)
 library(dplyr)
 #> 
@@ -55,6 +56,7 @@ sim_small <- dplyr::slice_head(sim, n = 30)
 Here we use FEV1 percent-predicted from the example data.
 
 ``` r
+
 col_map <- list(
   fev1_pct = "FEV1pct",
   sixmwd = "sixmwd",
@@ -68,6 +70,7 @@ col_map <- list(
 Defaults keep rows with missing inputs and return NA for their scores.
 
 ``` r
+
 bode_out <- bode_index(
   data = sim_small,
   col_map = col_map,
@@ -106,6 +109,7 @@ head(select(bode_out, all_of(new_cols)))
 ### Compare row policies
 
 ``` r
+
 demo <- sim_small
 demo$mmrc[c(2, 6)] <- NA
 
@@ -163,6 +167,7 @@ Extreme inputs will produce extreme scores. Pre-filter implausible
 values before calling.
 
 ``` r
+
 demo2 <- sim_small
 demo2$sixmwd[5] <- 20   # extreme low walk
 demo2$BMI[6] <- 80      # extreme high BMI
@@ -232,6 +237,7 @@ Set `verbose = TRUE` to emit three structured messages per call:
 `options(healthmarkers.verbose = "inform")` active:
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- data.frame(

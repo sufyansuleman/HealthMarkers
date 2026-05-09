@@ -18,14 +18,14 @@ the returned indices.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                  | Notes                                                                                                                                   |
-|--------------|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| data         | Data frame/tibble with OGTT labs and demographics  | Columns mapped via `col_map`                                                                                                            |
-| col_map      | Named list mapping required keys                   | G0/G30/G120 (glucose mmol/L); I0/I30/I120 (insulin pmol/L); weight (kg); bmi (kg/m^2); age (years); sex (1=male, 2=female; 0/1 coerced) |
-| normalize    | Output normalization method                        | “none”, “z”, “inverse”, “range”, “robust” (default “none”)                                                                              |
-| na_action    | Missing-data policy for required inputs            | “keep” (default), “omit”, “error”                                                                                                       |
-| na_warn_prop | Proportion to trigger high-missingness diagnostics | Default 0.2 (emitted in debug/verbose)                                                                                                  |
-| verbose      | Emit progress and completion summaries             | Default FALSE                                                                                                                           |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with OGTT labs and demographics | Columns mapped via `col_map` |
+| col_map | Named list mapping required keys | G0/G30/G120 (glucose mmol/L); I0/I30/I120 (insulin pmol/L); weight (kg); bmi (kg/m^2); age (years); sex (1=male, 2=female; 0/1 coerced) |
+| normalize | Output normalization method | “none”, “z”, “inverse”, “range”, “robust” (default “none”) |
+| na_action | Missing-data policy for required inputs | “keep” (default), “omit”, “error” |
+| na_warn_prop | Proportion to trigger high-missingness diagnostics | Default 0.2 (emitted in debug/verbose) |
+| verbose | Emit progress and completion summaries | Default FALSE |
 
 **Units:** Inputs must already be in mmol/L (glucose) and pmol/L
 (insulin); weight kg; BMI kg/m^2; age years; sex coded 1/2 (0/1
@@ -70,6 +70,7 @@ insulin to muU/mL (/6) where specific formulas require it.
 ## Worked example 1: Basic usage (raw outputs)
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -107,6 +108,7 @@ missing or non-finite.
 ## Worked example 2: Normalization
 
 ``` r
+
 ogtt_is(
   data = df,
   col_map = list(
@@ -148,6 +150,7 @@ column-map resolution and result counts.
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 ogtt_is(
   data = df,

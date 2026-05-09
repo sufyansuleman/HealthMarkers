@@ -73,13 +73,9 @@ A tibble with one SDS column per retained variable: `varname_SDS`, where
 
 ## References
 
-Cole TJ, Green PJ (1992). “Smoothing Reference Centile Curves: The LMS
-Method and Penalized Likelihood.” *Statistics in Medicine*, **11**(10),
-1305–1319.
-[doi:10.1002/sim.4780111005](https://doi.org/10.1002/sim.4780111005) . ;
 World Health Organization (1995). *Physical Status: The Use and
 Interpretation of Anthropometry*, volume 854 of *Technical Report
-Series*. World Health Organization. ISBN 9241208546, No DOI for this WHO
+Series*. World Health Organization. ISBN 9241208546. No DOI for this WHO
 report; see ISBN/URL,
 <https://www.who.int/publications/i/item/9241208546>.
 

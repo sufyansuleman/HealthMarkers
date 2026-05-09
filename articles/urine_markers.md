@@ -21,12 +21,12 @@ conversion is applied.
 
 ## What you need (inputs & options)
 
-| Argument     | Purpose / Options                                     | Notes                                               |
-|--------------|-------------------------------------------------------|-----------------------------------------------------|
-| data         | Data frame/tibble with urine assays                   | Columns mapped by name (defaults assume same names) |
-| na_action    | Missing-data policy for required inputs               | “keep” (default), “omit”, “error”                   |
-| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose)                |
-| verbose      | Emit progress and completion summaries                | Default FALSE                                       |
+| Argument | Purpose / Options | Notes |
+|----|----|----|
+| data | Data frame/tibble with urine assays | Columns mapped by name (defaults assume same names) |
+| na_action | Missing-data policy for required inputs | “keep” (default), “omit”, “error” |
+| na_warn_prop | Proportion threshold for high-missingness diagnostics | Default 0.2 (shown in debug/verbose) |
+| verbose | Emit progress and completion summaries | Default FALSE |
 
 **Required columns:** urine_albumin (mg/L), urine_creatinine (mg/dL).
 
@@ -64,6 +64,7 @@ Na/K mmol/L; tubular marker units consistent across markers.
 ## Worked example 1: Standard inputs, keep NAs
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -82,11 +83,11 @@ urine_markers(
   verbose = TRUE
 )
 #> # A tibble: 3 × 12
-#>     UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
-#>    <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
-#> 1  25000 A3                normal           12000         2.5          1500
-#> 2 562500 A3                normal              NA         2.67         5000
-#> 3     NA NA                normal           18000        NA            4000
+#>    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
+#>   <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
+#> 1  2500 A3                normal           12000         2.5          1500
+#> 2 56250 A3                normal              NA         2.67         5000
+#> 3    NA NA                normal           18000        NA            4000
 #> # ℹ 6 more variables: KIM1_per_gCr <dbl>, NAG_per_gCr <dbl>,
 #> #   Beta2Micro_per_gCr <dbl>, A1Micro_per_gCr <dbl>, IL18_per_gCr <dbl>,
 #> #   L_FABP_per_gCr <dbl>
@@ -99,6 +100,7 @@ missing or zero denominators (e.g., urine_K = 0).
 ## Worked example 2: Drop incomplete rows
 
 ``` r
+
 df2 <- tibble::tibble(
   urine_albumin = c(20, 120000),    # extreme albumin; pre-filter
   urine_creatinine = c(1.2, 0.005), # very low creatinine; pre-filter
@@ -118,9 +120,9 @@ urine_markers(
   verbose = TRUE
 )
 #> # A tibble: 1 × 12
-#>     UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
-#>    <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
-#> 1 16667. A3                normal           6667.         2.57         833.
+#>    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
+#>   <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
+#> 1 1667. A3                normal           6667.         2.57         833.
 #> # ℹ 6 more variables: KIM1_per_gCr <dbl>, NAG_per_gCr <dbl>,
 #> #   Beta2Micro_per_gCr <dbl>, A1Micro_per_gCr <dbl>, IL18_per_gCr <dbl>,
 #> #   L_FABP_per_gCr <dbl>
@@ -143,6 +145,7 @@ incomplete rows are then dropped; zero-denominator warnings list counts.
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 urine_markers(
   data = tibble::tibble(urine_albumin = 30, urine_creatinine = 2),
@@ -161,7 +164,7 @@ urine_markers(
 #> # A tibble: 1 × 12
 #>    UACR albuminuria_stage microalbuminuria  UPCR U_Na_K_ratio NGAL_per_gCr
 #>   <dbl> <fct>             <fct>            <dbl>        <dbl>        <dbl>
-#> 1 15000 A3                normal              NA           NA           NA
+#> 1  1500 A3                normal              NA           NA           NA
 #> # ℹ 6 more variables: KIM1_per_gCr <dbl>, NAG_per_gCr <dbl>,
 #> #   Beta2Micro_per_gCr <dbl>, A1Micro_per_gCr <dbl>, IL18_per_gCr <dbl>,
 #> #   L_FABP_per_gCr <dbl>
@@ -176,6 +179,7 @@ Compatibility](https://sufyansuleman.github.io/HealthMarkers/articles/multi_biob
 article for recognised synonyms across major biobanks.
 
 ``` r
+
 hm_col_report(your_data)
 ```
 

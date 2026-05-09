@@ -130,12 +130,16 @@ If an ID column is detected in <code>data</code> (e.g. <code>id</code>, <code>II
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Pre-computation (one level deep):</p><ul><li><p>If <code>BMI</code> is absent but <code>weight</code> (kg) and <code>height</code> (m or cm) are
+    <p>Assumed units (no automatic conversion except where noted):</p><ul><li><p>TC, HDL_c, TG, LDL_c: mmol/L</p></li>
+<li><p>glucose: mmol/L (converted to mg/dL internally for TyG_BMI)</p></li>
+<li><p>waist: cm</p></li>
+<li><p>BMI: kg/m^2</p></li>
+</ul><p>Pre-computation (one level deep):</p><ul><li><p>If <code>BMI</code> is absent but <code>weight</code> (kg) and <code>height</code> (m or cm) are
 present, BMI is computed automatically.</p></li>
 <li><p>If <code>glucose</code> is absent but <code>G0</code> is present (or vice versa), the alias
 is derived automatically.</p></li>
 <li><p>If <code>LDL_c</code> is absent, it is always estimated via Friedewald
-(TC - HDL - TG/5). An informational message is emitted when
+(TC - HDL - TG/2.2, mmol/L form). An informational message is emitted when
 <code>verbose = TRUE</code>.</p></li>
 </ul></div>
     <div class="section level2">
@@ -168,7 +172,8 @@ Khamseh ME, Malek M, Abbasi R, Taheri E, others (2021).
 “Triglyceride Glucose Index and Related Parameters (Triglyceride Glucose-Body Mass Index and Triglyceride Glucose-Waist Circumference) Identify Nonalcoholic Fatty Liver and Liver Fibrosis in Individuals with Overweight/Obesity.”
 <em>Metabolic Syndrome and Related Disorders</em>, <b>19</b>(3), 167–173.
 <a href="https://doi.org/10.1089/met.2020.0109" class="external-link">doi:10.1089/met.2020.0109</a>
-.</p>
+.
+ (clinical application)</p>
     </div>
 
     <div class="section level2">
@@ -227,7 +232,7 @@ Khamseh ME, Malek M, Abbasi R, Taheri E, others (2021).
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   non_HDL_c remnant_c ratio_TC_HDL ratio_TG_HDL ratio_LDL_HDL ApoB_ApoA1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9     0.360            4         1.38          2.72         <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>       3.9     0.818            4         1.38          2.37         <span style="color: #BB0000;">NA</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

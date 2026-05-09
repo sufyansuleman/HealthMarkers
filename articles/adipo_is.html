@@ -70,6 +70,67 @@ worse). Inputs are fasting; common glucose/insulin/TG/HDL unit
 conversions are handled internally.</p>
 </div>
 <div class="section level2">
+<h2 id="important-understanding-inverted-indices">Important: Understanding Inverted Indices<a class="anchor" aria-label="anchor" href="#important-understanding-inverted-indices"></a>
+</h2>
+<p>Most indices returned by <code><a href="../reference/adipo_is.html">adipo_is()</a></code> are
+<strong>originally described in the literature as insulin RESISTANCE
+markers</strong> (higher values = worse metabolic health). To align with
+the package’s sensitivity-centric philosophy, we have
+<strong>algebraically inverted</strong> these indices so that
+<strong>more negative values indicate worse insulin resistance</strong>
+(equivalently, lower insulin sensitivity).</p>
+<div class="section level3">
+<h3 id="inversion-strategy">Inversion Strategy<a class="anchor" aria-label="anchor" href="#inversion-strategy"></a>
+</h3>
+<p>For indices that measure insulin resistance (IR), we apply the
+transformation:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mtext mathvariant="normal">Index</mtext><mtext mathvariant="normal">inv</mtext></msub><mo>=</mo><mi>−</mi><msub><mtext mathvariant="normal">Index</mtext><mtext mathvariant="normal">IR</mtext></msub></mrow><annotation encoding="application/x-tex">\text{Index}_{\text{inv}} = -\text{Index}_{\text{IR}}</annotation></semantics></math></p>
+<p>This ensures a consistent interpretation: <strong>more negative =
+worse adipose insulin sensitivity</strong>.</p>
+<div class="section level4">
+<h4 id="examples-of-inversions">Examples of Inversions<a class="anchor" aria-label="anchor" href="#examples-of-inversions"></a>
+</h4>
+<ul>
+<li><p><strong>TG_HDL_C_inv</strong> = −(TG / HDL)<br>
+Original resistance index: TG/HDL (higher = worse IR)</p></li>
+<li><p><strong>TyG_inv</strong> = −ln(TG × G0 / 2)<br>
+Original resistance index: TyG (higher = worse IR)</p></li>
+<li><p><strong>LAP_inv (sex-specific)</strong> = −(LAP values)<br>
+Original: Lipid Accumulation Product (Kahn 2005)</p></li>
+<li><p><strong>VAI_inv (sex-specific)</strong> = −(VAI values)<br>
+Original: Visceral Adiposity Index (Amato 2010)</p></li>
+<li><p><strong>Adipo_inv</strong> = −(FFA × I0)<br>
+Original: FFA × Fasting Insulin (higher = worse sensitivity)</p></li>
+<li><p><strong>Belfiore_inv_FFA</strong> = −2 / (I0 × FFA + 1)<br>
+Original: Belfiore index for insulin sensitivity using FFA</p></li>
+</ul>
+</div>
+<div class="section level4">
+<h4 id="indices-not-inverted">Indices NOT Inverted<a class="anchor" aria-label="anchor" href="#indices-not-inverted"></a>
+</h4>
+<ul>
+<li>
+<strong>Revised_QUICKI</strong> and <strong>McAuley_index</strong>
+are retained in their original orientation because they are
+<strong>already described as insulin SENSITIVITY indices</strong>
+(higher values = better sensitivity). No inversion is applied.</li>
+</ul>
+</div>
+</div>
+<div class="section level3">
+<h3 id="practical-interpretation">Practical Interpretation<a class="anchor" aria-label="anchor" href="#practical-interpretation"></a>
+</h3>
+<p>In plots and models: - More <strong>negative</strong> values of
+<code>*_inv</code> indices → <strong>worse</strong> adipose insulin
+sensitivity - More <strong>positive</strong> values of
+<code>Revised_QUICKI</code> or <code>McAuley_index</code> →
+<strong>better</strong> insulin sensitivity</p>
+<p>When combining multiple indices for clustering or PCA, use
+<code>normalize = "z"</code> to put all indices on a comparable scale
+before analysis.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="when-to-use-this">When to use this<a class="anchor" aria-label="anchor" href="#when-to-use-this"></a>
 </h2>
 <ul>

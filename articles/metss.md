@@ -33,6 +33,7 @@ plausibility diagnostics.
 ## Quick start
 
 ``` r
+
 library(HealthMarkers)
 library(tibble)
 
@@ -75,6 +76,7 @@ Extreme inputs will produce extreme MetSSS scores. The
 before calling.
 
 ``` r
+
 extreme <- mets
 extreme$TG[2] <- 25       # extreme; pre-filter
 extreme$bp_sys[1] <- 400  # out of range; pre-filter
@@ -107,6 +109,7 @@ metss(
 ## Missing data policy
 
 ``` r
+
 missing <- mets
 missing$HDL_c[1] <- NA
 
@@ -161,6 +164,7 @@ metss(
 ## Verbose diagnostics
 
 ``` r
+
 old_opt <- options(healthmarkers.verbose = "inform")
 metss(
   data = mets,
@@ -221,6 +225,7 @@ means and standard deviations are derived from NHANES; regression
 coefficients weight the contribution of each standardised component:
 
 ``` r
+
 # Full 8-group params object (consult Gurka & DeBoer for exact published values)
 all_params <- list(
   NHW_M = list(
@@ -299,6 +304,7 @@ all_params <- list(
 Pass the full list when your dataset includes multiple race/sex groups:
 
 ``` r
+
 metss(data = your_cohort, params = all_params, na_action = "keep")
 ```
 
@@ -309,6 +315,7 @@ The bundled simulated dataset has `waist`, `TG`, `HDL_c`, `glucose`,
 and run MetSSS directly on `sim_small`:
 
 ``` r
+
 library(dplyr)
 sim_path  <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
 sim_small <- dplyr::slice_head(readRDS(sim_path), n = 50)

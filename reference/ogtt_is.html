@@ -146,6 +146,15 @@ prepended as the first output column.</p>
 <li><p>weight in kg; BMI in kg/m^2; age in years; sex coded 1 = male, 2 = female</p></li>
 </ul><p>Notes</p><ul><li><p>Conversions mirror existing implementation to preserve outputs. Some
 formulas intentionally use unconverted inputs (as in prior code).</p></li>
+<li><p>Modified_stumvoll and Stumvoll_Demographics use raw pmol/L and mmol/L
+as published in Stumvoll et al. (2000). BigttSi likewise uses raw units.</p></li>
+<li><p>Matsuda_AUC is a non-standard AUC-based variant; the original Matsuda
+index (Matsuda_ISI) uses time-point means, not AUCs.</p></li>
+<li><p>Cederholm_index uses log(I0 + I120) as implemented (sum, not mean);
+Gutt_index uses log((I0 + I120)/2) (mean). This mirrors published
+implementations; the difference is a constant log(2) offset.</p></li>
+<li><p>Ifc_inv and HIRI_inv are derived composite proxies not attributed to a
+single formula publication; treat as research tools.</p></li>
 <li><p>Logs are safe: log(x) becomes NA when x &lt;= 0 or non-finite.</p></li>
 </ul></div>
     <div class="section level2">
@@ -155,48 +164,49 @@ formulas intentionally use unconverted inputs (as in prior code).</p></li>
 <em>Diabetes Care</em>, <b>22</b>(9), 1462–1470.
 <a href="https://doi.org/10.2337/diacare.22.9.1462" class="external-link">doi:10.2337/diacare.22.9.1462</a>
 .
-;
+
 Gutt M, Davis CL, Spitzer SB, et al. (2000).
 “Validation of the Insulin Sensitivity Index (ISI\(_{0,120}\)) Derived from Oral Glucose Tolerance Testing.”
 <em>Diabetes Research and Clinical Practice</em>, <b>47</b>(3), 177–184.
 <a href="https://doi.org/10.1016/S0168-8227%2899%2900116-3" class="external-link">doi:10.1016/S0168-8227(99)00116-3</a>
 .
-;
+
 Stumvoll M, Mitrakou A, Pimenta W, et al. (2000).
 “Use of the Oral Glucose Tolerance Test to Assess Insulin Release and Sensitivity.”
 <em>Diabetes Care</em>, <b>23</b>(3), 295–301.
 <a href="https://doi.org/10.2337/diacare.23.3.295" class="external-link">doi:10.2337/diacare.23.3.295</a>
 .
-;
+
 Hansen T, Drivsholm T, Urhammer SA, Palacios RR, et al. (2007).
 “The BIGTT Test.”
 <em>Diabetes Care</em>, <b>30</b>(2), 257–262.
 <a href="https://doi.org/10.2337/dc06-1240" class="external-link">doi:10.2337/dc06-1240</a>
 .
-;
+
 Avignon A, Charles M, Rabasa-Lhoret R, et al. (1999).
 “Assessment of Insulin Sensitivity from Oral Glucose Tolerance Test in Normal Subjects and in Insulin-Resistant Patients.”
 <em>International Journal of Obesity</em>, <b>23</b>(5), 512–517.
 <a href="https://doi.org/10.1038/sj.ijo.0800864" class="external-link">doi:10.1038/sj.ijo.0800864</a>
 .
-;
+
 Belfiore F, Iannello S, Volpicelli G (1998).
 “Insulin Sensitivity Indices Calculated from Basal and OGTT-Related Insulin and Glucose Levels.”
 <em>Molecular Genetics and Metabolism</em>, <b>63</b>(2), 134–141.
 <a href="https://doi.org/10.1006/mgme.1997.2658" class="external-link">doi:10.1006/mgme.1997.2658</a>
 .
-;
+
 Matthews DR, Hosker JP, Rudenski AS, Naylor BA, Treacher DF, Turner RC (1985).
 “Homeostasis Model Assessment: Insulin Resistance and Beta-Cell Function from Fasting Plasma Glucose and Insulin Concentrations in Man.”
 <em>Diabetologia</em>, <b>28</b>(7), 412–419.
 <a href="https://doi.org/10.1007/BF00280883" class="external-link">doi:10.1007/BF00280883</a>
 .
-;
+
 Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T, Grarup N (2024).
 “Genetic Underpinnings of Fasting and Oral Glucose-stimulated Based Insulin Sensitivity Indices.”
 <em>The Journal of Clinical Endocrinology &amp; Metabolism</em>, <b>109</b>(11), 2754–2763.
 <a href="https://doi.org/10.1210/clinem/dgae275" class="external-link">doi:10.1210/clinem/dgae275</a>
-.</p>
+.
+ (genetic epidemiology study reviewing IS indices)</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -16,13 +16,13 @@ column is not recognised.
 Every HealthMarkers function looks up your column names through a
 five-layer matching pipeline before any computation:
 
-| Layer | Method                                               | Example                               |
-|-------|------------------------------------------------------|---------------------------------------|
-| 1     | Exact match in synonym dictionary                    | `LBXGLU` → `fasting_glucose`          |
-| 2     | Case-insensitive exact match                         | `lbxglu` → `fasting_glucose`          |
-| 3     | Data column name contains a synonym (≥ 4 chars)      | `plasma_glukoosi` → `fasting_glucose` |
-| 4     | Synonym contains the data column name (≥ 4 chars)    | `glukos` → `fasting_glucose`          |
-| 5     | Fuzzy (Jaro–Winkler) match, only when `fuzzy = TRUE` | `glucos` → `fasting_glucose`          |
+| Layer | Method | Example |
+|----|----|----|
+| 1 | Exact match in synonym dictionary | `LBXGLU` → `fasting_glucose` |
+| 2 | Case-insensitive exact match | `lbxglu` → `fasting_glucose` |
+| 3 | Data column name contains a synonym (≥ 4 chars) | `plasma_glukoosi` → `fasting_glucose` |
+| 4 | Synonym contains the data column name (≥ 4 chars) | `glukos` → `fasting_glucose` |
+| 5 | Fuzzy (Jaro–Winkler) match, only when `fuzzy = TRUE` | `glucos` → `fasting_glucose` |
 
 The first four layers are active by default. Layer 5 is opt-in and is
 most useful for catching typos in column names.
@@ -106,6 +106,7 @@ Before running any computation on a new dataset, call
 to see exactly which columns are matched and how:
 
 ``` r
+
 library(HealthMarkers)
 
 # Load your biobank extract (example: HUNT data with Norwegian column names)
@@ -144,6 +145,7 @@ compute it from raw inputs), 2. Provide an explicit `col_map` entry, or
 that key.
 
 ``` r
+
 # Capture the auto-detected map and add manual overrides
 cm <- hm_col_report(hunt_data, verbose = FALSE)
 cm$eGFR <- "ckd_epi_gfr_ml_min"   # fill in the actual column name
@@ -185,6 +187,7 @@ will work even if `eGFR` is absent from your data, as long as
 ## Example: running on UK Biobank data
 
 ``` r
+
 library(HealthMarkers)
 
 # Load UKB extract (columns follow _0_0 naming)
@@ -205,6 +208,7 @@ results <- all_health_markers(
 ## Example: running on NHANES data
 
 ``` r
+
 # NHANES lab data (LBXGLU, LBXSCH, LBXWBCSI, etc.)
 nhanes_lab <- read.csv("nhanes_lab.csv")
 nhanes_bp  <- read.csv("nhanes_bp.csv")
@@ -222,6 +226,7 @@ results <- all_health_markers(nhanes, which = c("glycemic", "lipid",
 ## Example: running on OMOP / All of Us data (LOINC codes)
 
 ``` r
+
 # Columns named LOINC_2345_7, LOINC_2160_0, LOINC_718_7, etc.
 omop_labs <- dplyr::collect(tbl(con, "measurement_wide"))
 
@@ -243,6 +248,7 @@ options:
 **Option A — explicit `col_map` (immediate, no code changes):**
 
 ``` r
+
 my_col_map <- list(
   fasting_glucose  = "p_glu_0",
   total_cholesterol = "tot_kol",
@@ -267,15 +273,15 @@ name(s) used.
 
 ## Summary
 
-| Biobank / system      | Language           | Key feature                                       |
-|-----------------------|--------------------|---------------------------------------------------|
-| UK Biobank            | English            | `_0_0` field suffix notation                      |
-| NHANES                | English            | `LBX`/`LBD`/`BPX`/`URX` prefixes                  |
-| Danish registers      | Danish + NPU codes | `NPU01994` etc.; `kreatinin`, `kolesterol`        |
-| HUNT / Tromsø         | Norwegian          | `triglyserider`, `karbamid`, double-k `blodtrykk` |
-| FinnGen / THL         | Finnish            | `-iini` endings; `glukoosi`, `kreatiniini`        |
-| Estonian Biobank      | Estonian           | `kolesterool` (double-o), `naatrium` (≠ natrium)  |
-| LifeLines / Rotterdam | Dutch              | `ureum` (= urea), `urinezuur` (uric acid)         |
-| Generation Scotland   | English            | `SBP_mean`, `genetic_sex`                         |
-| All of Us / OMOP      | LOINC              | `LOINC_XXXX_X` format                             |
-| NAKO / KORA           | German             | `Cholesterin`, `Triglyzeride`, `Harnsäure`        |
+| Biobank / system | Language | Key feature |
+|----|----|----|
+| UK Biobank | English | `_0_0` field suffix notation |
+| NHANES | English | `LBX`/`LBD`/`BPX`/`URX` prefixes |
+| Danish registers | Danish + NPU codes | `NPU01994` etc.; `kreatinin`, `kolesterol` |
+| HUNT / Tromsø | Norwegian | `triglyserider`, `karbamid`, double-k `blodtrykk` |
+| FinnGen / THL | Finnish | `-iini` endings; `glukoosi`, `kreatiniini` |
+| Estonian Biobank | Estonian | `kolesterool` (double-o), `naatrium` (≠ natrium) |
+| LifeLines / Rotterdam | Dutch | `ureum` (= urea), `urinezuur` (uric acid) |
+| Generation Scotland | English | `SBP_mean`, `genetic_sex` |
+| All of Us / OMOP | LOINC | `LOINC_XXXX_X` format |
+| NAKO / KORA | German | `Cholesterin`, `Triglyzeride`, `Harnsäure` |

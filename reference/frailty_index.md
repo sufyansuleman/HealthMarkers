@@ -137,14 +137,6 @@ Searle SD, Mitnitski A, Gahbauer EA, Gill TM, Rockwood K (2008). “A
 Standard Procedure for Creating a Frailty Index.” *BMC Geriatrics*,
 **8**, 24.
 [doi:10.1186/1471-2318-8-24](https://doi.org/10.1186/1471-2318-8-24) .
-Rockwood K, Theou O (2020). “Using the Clinical Frailty Scale in
-Allocating Scarce Health Care Resources.” *Canadian Geriatrics Journal*,
-**23**(3), 210–215.
-[doi:10.5770/cgj.23.463](https://doi.org/10.5770/cgj.23.463) . Cesari M,
-Gambassi G, van Kan GA, Vellas B (2014). “The Frailty Phenotype and the
-Frailty Index: Different Instruments for Different Purposes.” *Age and
-Ageing*, **43**(1), 10–12.
-[doi:10.1093/ageing/aft160](https://doi.org/10.1093/ageing/aft160) .
 
 ## Examples
 
