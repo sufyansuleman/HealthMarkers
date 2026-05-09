@@ -1,3 +1,25 @@
+HealthMarkers
+================
+
+- [HealthMarkers](#healthmarkers)
+  - [Installation](#installation)
+  - [Package overview](#package-overview)
+  - [How to use HealthMarkers](#how-to-use-healthmarkers)
+  - [Selected Functions](#selected-functions)
+  - [Column mapping and multi-biobank
+    support](#column-mapping-and-multi-biobank-support)
+  - [Handle missing data before
+    computing](#handle-missing-data-before-computing)
+  - [Verbose diagnostics](#verbose-diagnostics)
+  - [Further information](#further-information)
+  - [Vignettes](#vignettes)
+  - [Development status and validated
+    publications](#development-status-and-validated-publications)
+  - [Contributing](#contributing)
+  - [Citation](#citation)
+  - [License](#license)
+  - [AI use disclaimer](#ai-use-disclaimer)
+
 <!-- badges: start -->
 
 [![CRAN
@@ -18,8 +40,8 @@ indices, psychiatric rating scales, alternate-biofluid panels, and much
 more. All accessible through a unified dispatcher,
 `all_health_markers()`.
 
-> **Full documentation, function reference, and vignettes** are
-> available at the package website:  
+> **Full documentation and function reference** are available at the
+> package website:\
 > <https://sufyansuleman.github.io/HealthMarkers/>
 
 - **Covers a wide range of biomarkers.** A single `all_health_markers()`
@@ -46,16 +68,20 @@ more. All accessible through a unified dispatcher,
 
 ## Installation
 
-    # From CRAN
-    install.packages("HealthMarkers")
+``` r
+# From CRAN
+install.packages("HealthMarkers")
 
-    # Development version from GitHub
-    remotes::install_github("sufyansuleman/HealthMarkers")
+# Development version from GitHub
+remotes::install_github("sufyansuleman/HealthMarkers")
+```
 
 Optional packages unlock additional marker groups:
 
-    install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
-                       "RiskScorescvd", "di", "mice", "missForest"))
+``` r
+install.packages(c("CVrisk", "rspiro", "PooledCohort", "QRISK3",
+                   "RiskScorescvd", "di", "mice", "missForest"))
+```
 
 When optional packages are absent, their dependent groups are skipped
 safely; running with `verbose = TRUE` shows which groups were computed
@@ -65,159 +91,58 @@ and which were skipped (and why) in the summary message.
 
 ## Package overview
 
-<table>
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Domain</th>
-<th>Functions</th>
-<th>Outputs</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Insulin sensitivity</strong></td>
-<td><code>fasting_is()</code>, <code>ogtt_is()</code>,
-<code>adipo_is()</code>, <code>tracer_dxa_is()</code>,
-<code>all_insulin_indices()</code></td>
-<td>HOMA-IR, QUICKI, Matsuda, Stumvoll, Gutt, SPISE, LIRI, 40+
-indices</td>
-</tr>
-<tr>
-<td><strong>Glycaemic</strong></td>
-<td><code>glycemic_markers()</code></td>
-<td>TyG index, METS-IR, LAR, ASI, HOMA-CP, diabetes risk flags</td>
-</tr>
-<tr>
-<td><strong>Lipid &amp; atherogenic</strong></td>
-<td><code>lipid_markers()</code>, <code>atherogenic_indices()</code>,
-<code>cvd_marker_aip()</code>,
-<code>cvd_marker_ldl_particle_number()</code></td>
-<td>TC/HDL, AIP, CRI-I/II, Castelli, LDL particle number</td>
-</tr>
-<tr>
-<td><strong>Liver</strong></td>
-<td><code>liver_markers()</code>, <code>liver_fat_markers()</code></td>
-<td>FLI, NFS, FIB-4, APRI, BARD, ALBI, MELD-XI, HSI, LAP</td>
-</tr>
-<tr>
-<td><strong>Metabolic syndrome</strong></td>
-<td><code>metss()</code>, <code>metabolic_risk_features()</code>,
-<code>allostatic_load()</code></td>
-<td>MetS severity, component flags, allostatic load index</td>
-</tr>
-<tr>
-<td><strong>Cardiovascular risk</strong></td>
-<td><code>cvd_risk()</code>, <code>cvd_risk_ascvd()</code>,
-<code>cvd_risk_qrisk3()</code>, <code>cvd_risk_scorescvd()</code>,
-<code>cvd_risk_stroke()</code></td>
-<td>ASCVD (PCE), QRISK3, SCORE2/SCORE2-OP, 10-yr stroke risk</td>
-</tr>
-<tr>
-<td><strong>Renal / CKD</strong></td>
-<td><code>kidney_failure_risk()</code>, <code>renal_markers()</code>,
-<code>ckd_stage()</code>, <code>urine_markers()</code></td>
-<td>KFRE 2-yr/5-yr, eGFR (CKD-EPI), CKD stage, UACR, FE-Urea</td>
-</tr>
-<tr>
-<td><strong>Pulmonary</strong></td>
-<td><code>pulmo_markers()</code>, <code>spirometry_markers()</code>,
-<code>bode_index()</code></td>
-<td>FEV1/FVC z-scores, GLI 2012 % predicted, BODE index</td>
-</tr>
-<tr>
-<td><strong>Inflammatory</strong></td>
-<td><code>inflammatory_markers()</code>, <code>iAge()</code></td>
-<td>NLR, PLR, SII, LMR, iAge inflammatory clock</td>
-</tr>
-<tr>
-<td><strong>Hormonal</strong></td>
-<td><code>hormone_markers()</code></td>
-<td>T/E2 ratio, TSH/fT4, cortisol/DHEA, LH/FSH, HOMA-B, FAI</td>
-</tr>
-<tr>
-<td><strong>Body composition</strong></td>
-<td><code>obesity_indices()</code>, <code>adiposity_sds()</code>,
-<code>adiposity_sds_strat()</code>, <code>alm_bmi_index()</code></td>
-<td>BMI, WHR, ABSI, BRI, BAI, sex/age-stratified SDS, ALM/BMI</td>
-</tr>
-<tr>
-<td><strong>Bone</strong></td>
-<td><code>bone_markers()</code>, <code>frax_score()</code></td>
-<td>P1NP, osteocalcin, CTX, NTX, FRAX 10-yr fracture probability</td>
-</tr>
-<tr>
-<td><strong>Frailty / comorbidity</strong></td>
-<td><code>frailty_index()</code>, <code>charlson_index()</code>,
-<code>sarc_f_score()</code></td>
-<td>Rockwood deficit index, Charlson CCI, SARC-F</td>
-</tr>
-<tr>
-<td><strong>Vitamins &amp; nutrients</strong></td>
-<td><code>vitamin_markers()</code>, <code>vitamin_d_status()</code>,
-<code>nutrient_markers()</code></td>
-<td>Vitamin D status category, B12/folate ratio, ferritin
-saturation</td>
-</tr>
-<tr>
-<td><strong>Alternate biofluids</strong></td>
-<td><code>saliva_markers()</code>, <code>sweat_markers()</code>,
-<code>urine_markers()</code></td>
-<td>Cortisol awakening response, sweat chloride, urinary ratios</td>
-</tr>
-<tr>
-<td><strong>Neurological</strong></td>
-<td><code>nfl_marker()</code>, <code>kyn_trp_ratio()</code>,
-<code>corrected_calcium()</code></td>
-<td>Age-adjusted NfL, kynurenine/tryptophan ratio, corrected
-calcium</td>
-</tr>
-<tr>
-<td><strong>Psychiatric</strong></td>
-<td><code>psych_markers()</code></td>
-<td>PHQ-9, GAD-7, ISI, GHQ-12, K10, K6, WHO-5, ASRS, BIS-11, SPQ</td>
-</tr>
-<tr>
-<td><strong>Anthropometric SDS</strong></td>
-<td><code>calc_sds()</code></td>
-<td>Generic SDS z-score from any reference mean and SD</td>
-</tr>
-</tbody>
-</table>
+| Domain | Functions | Outputs |
+|----|----|----|
+| **Insulin sensitivity** | `fasting_is()`, `ogtt_is()`, `adipo_is()`, `tracer_dxa_is()`, `all_insulin_indices()` | HOMA-IR, QUICKI, Matsuda, Stumvoll, Gutt, SPISE, LIRI, 40+ indices |
+| **Glycaemic** | `glycemic_markers()` | TyG index, METS-IR, LAR, ASI, HOMA-CP, diabetes risk flags |
+| **Lipid & atherogenic** | `lipid_markers()`, `atherogenic_indices()`, `cvd_marker_aip()`, `cvd_marker_ldl_particle_number()` | TC/HDL, AIP, CRI-I/II, Castelli, LDL particle number |
+| **Liver** | `liver_markers()`, `liver_fat_markers()` | FLI, NFS, FIB-4, APRI, BARD, ALBI, MELD-XI, HSI, LAP |
+| **Metabolic syndrome** | `metss()`, `metabolic_risk_features()`, `allostatic_load()` | MetS severity, component flags, allostatic load index |
+| **Cardiovascular risk** | `cvd_risk()`, `cvd_risk_ascvd()`, `cvd_risk_qrisk3()`, `cvd_risk_scorescvd()`, `cvd_risk_stroke()` | ASCVD (PCE), QRISK3, SCORE2/SCORE2-OP, 10-yr stroke risk |
+| **Renal / CKD** | `kidney_failure_risk()`, `renal_markers()`, `ckd_stage()`, `urine_markers()` | KFRE 2-yr/5-yr, eGFR (CKD-EPI), CKD stage, UACR, FE-Urea |
+| **Pulmonary** | `pulmo_markers()`, `spirometry_markers()`, `bode_index()` | FEV1/FVC z-scores, GLI 2012 % predicted, BODE index |
+| **Inflammatory** | `inflammatory_markers()`, `iAge()` | NLR, PLR, SII, LMR, iAge inflammatory clock |
+| **Hormonal** | `hormone_markers()` | T/E2 ratio, TSH/fT4, cortisol/DHEA, LH/FSH, HOMA-B, FAI |
+| **Body composition** | `obesity_indices()`, `adiposity_sds()`, `adiposity_sds_strat()`, `alm_bmi_index()` | BMI, WHR, ABSI, BRI, BAI, sex/age-stratified SDS, ALM/BMI |
+| **Bone** | `bone_markers()`, `frax_score()` | P1NP, osteocalcin, CTX, NTX, FRAX 10-yr fracture probability |
+| **Frailty / comorbidity** | `frailty_index()`, `charlson_index()`, `sarc_f_score()` | Rockwood deficit index, Charlson CCI, SARC-F |
+| **Vitamins & nutrients** | `vitamin_markers()`, `vitamin_d_status()`, `nutrient_markers()` | Vitamin D status category, B12/folate ratio, ferritin saturation |
+| **Alternate biofluids** | `saliva_markers()`, `sweat_markers()`, `urine_markers()` | Cortisol awakening response, sweat chloride, urinary ratios |
+| **Neurological** | `nfl_marker()`, `kyn_trp_ratio()`, `corrected_calcium()` | Age-adjusted NfL, kynurenine/tryptophan ratio, corrected calcium |
+| **Psychiatric** | `psych_markers()` | PHQ-9, GAD-7, ISI, GHQ-12, K10, K6, WHO-5, ASRS, BIS-11, SPQ |
+| **Anthropometric SDS** | `calc_sds()` | Generic SDS z-score from any reference mean and SD |
 
 ------------------------------------------------------------------------
 
 ## How to use HealthMarkers
 
-### all\_health\_markers()\`: the dispatcher
+### all_health_markers()\`: the dispatcher
 
 **Use this when** you want to compute many marker groups in one call and
 receive everything back as a single wide tibble.
 
-    library(HealthMarkers)
+``` r
+library(HealthMarkers)
 
-    labs <- data.frame(
-      age  = 52,  sex  = "M",
-      G0   = 5.8, I0   = 14.2,
-      TC   = 5.6, LDL_c = 3.4, HDL_c = 1.1, TG = 2.1,
-      ALT  = 38,  AST  = 30,   BMI   = 30.1,
-      SBP  = 138, DBP  = 88,   WC    = 98,
-      eGFR = 74,  UACR = 18
-    )
+labs <- data.frame(
+  age  = 52,  sex  = "M",
+  G0   = 5.8, I0   = 14.2,
+  TC   = 5.6, LDL_c = 3.4, HDL_c = 1.1, TG = 2.1,
+  ALT  = 38,  AST  = 30,   BMI   = 30.1,
+  SBP  = 138, DBP  = 88,   WC    = 98,
+  eGFR = 74,  UACR = 18
+)
 
-    results <- all_health_markers(
-      data    = labs,
-      which   = c("glycemic", "lipid", "liver", "renal", "kidney_kfre",
-                  "mets", "obesity_metrics"),
-      verbose = TRUE
-    )
+results <- all_health_markers(
+  data    = labs,
+  which   = c("glycemic", "lipid", "liver", "renal", "kidney_kfre",
+              "mets", "obesity_metrics"),
+  verbose = TRUE
+)
 
-    # results is the original data + all computed columns as one wide tibble
-    names(results)
+# results is the original data + all computed columns as one wide tibble
+names(results)
+```
 
 The `which` argument accepts any of the following group keys:
 
@@ -253,166 +178,182 @@ want to inspect one marker family in detail.
 **When to use:** fasting glucose + insulin data are available; OGTT data
 with multiple time points; DXA body-composition data; tracer clamp data.
 
-    # Fasting indices (HOMA-IR, QUICKI, Bennett, FIRI, ...)
-    # Needs: G0 (fasting glucose mmol/L), I0 (fasting insulin mU/L)
-    fasting_is(data, col_map = list(G0 = "glucose", I0 = "insulin"))
+``` r
+# Fasting indices (HOMA-IR, QUICKI, Bennett, FIRI, ...)
+# Needs: G0 (fasting glucose mmol/L), I0 (fasting insulin mU/L)
+fasting_is(data, col_map = list(G0 = "glucose", I0 = "insulin"))
 
-    # OGTT indices (Matsuda, Stumvoll, Gutt, Avignon, ...)
-    # Needs: G0/G30/G60/G120 and I0/I30/I60/I120 (mmol/L and mU/L)
-    ogtt_is(data, col_map = list(G0="G0", G30="G30", G60="G60", G120="G120",
-                                  I0="I0", I30="I30", I60="I60", I120="I120"))
+# OGTT indices (Matsuda, Stumvoll, Gutt, Avignon, ...)
+# Needs: G0/G30/G60/G120 and I0/I30/I60/I120 (mmol/L and mU/L)
+ogtt_is(data, col_map = list(G0="G0", G30="G30", G60="G60", G120="G120",
+                              I0="I0", I30="I30", I60="I60", I120="I120"))
 
-    # Adipose-tissue indices (LIRI, SPISE, VAI, LAP, ...)
-    # Needs: BMI, WC, TG, HDL_c
-    adipo_is(data, col_map = list(BMI="BMI", WC="WC", TG="TG", HDL_c="HDL_c"))
+# Adipose-tissue indices (LIRI, SPISE, VAI, LAP, ...)
+# Needs: BMI, WC, TG, HDL_c
+adipo_is(data, col_map = list(BMI="BMI", WC="WC", TG="TG", HDL_c="HDL_c"))
 
-    # DXA / tracer-based indices
-    # Needs: fat mass, lean mass, Ra (palmitate/glycerol rates)
-    tracer_dxa_is(data, col_map = list(fat_mass="FM_kg", lean_mass="LM_kg"))
+# DXA / tracer-based indices
+# Needs: fat mass, lean mass, Ra (palmitate/glycerol rates)
+tracer_dxa_is(data, col_map = list(fat_mass="FM_kg", lean_mass="LM_kg"))
 
-    # All insulin indices at once (fasting + OGTT + adipose + DXA)
-    all_insulin_indices(data, col_map = list(...), normalize = "none",
-                        mode = "both",  # "IS" = sensitivity only, "IR" = resistance only
-                        na_action = "keep")
+# All insulin indices at once (fasting + OGTT + adipose + DXA)
+all_insulin_indices(data, col_map = list(...), normalize = "none",
+                    mode = "both",  # "IS" = sensitivity only, "IR" = resistance only
+                    na_action = "keep")
+```
 
 ### Cardiovascular risk
 
 **When to use:** primary prevention cohorts; assessing 10-year MACE
 risk; comparing risk algorithms side-by-side.
 
-    # ASCVD Pooled Cohort Equations (10-yr or 30-yr)
-    # Needs: age, sex, race, total_chol, HDL_c, sbp, bp_treated, smoker, diabetes, bmi
-    # Requires: PooledCohort package
-    cvd_risk_ascvd(data, year = 10)
+``` r
+# ASCVD Pooled Cohort Equations (10-yr or 30-yr)
+# Needs: age, sex, race, total_chol, HDL_c, sbp, bp_treated, smoker, diabetes, bmi
+# Requires: PooledCohort package
+cvd_risk_ascvd(data, year = 10)
 
-    # QRISK3 (UK population)
-    # Requires: QRISK3 package
-    cvd_risk_qrisk3(data)
+# QRISK3 (UK population)
+# Requires: QRISK3 package
+cvd_risk_qrisk3(data)
 
-    # SCORE2 / SCORE2-OP (European)
-    # Requires: RiskScorescvd package
-    cvd_risk_scorescvd(data)
+# SCORE2 / SCORE2-OP (European)
+# Requires: RiskScorescvd package
+cvd_risk_scorescvd(data)
 
-    # 10-year stroke risk (Pooled Cohort)
-    # Requires: PooledCohort package
-    cvd_risk_stroke(data)
+# 10-year stroke risk (Pooled Cohort)
+# Requires: PooledCohort package
+cvd_risk_stroke(data)
 
-    # Atherogenic index of plasma (log TG/HDL)
-    cvd_marker_aip(data, col_map = list(TG = "TG", HDL_c = "HDL_c"))
+# Atherogenic index of plasma (log TG/HDL)
+cvd_marker_aip(data, col_map = list(TG = "TG", HDL_c = "HDL_c"))
 
-    # LDL particle number from ApoB
-    cvd_marker_ldl_particle_number(data, col_map = list(ApoB = "ApoB"))
+# LDL particle number from ApoB
+cvd_marker_ldl_particle_number(data, col_map = list(ApoB = "ApoB"))
 
-    # Run all CVD algorithms at once and pick one model
-    cvd_risk(data, model = "ALL")   # or "ASCVD", "QRISK3", "Stroke", etc.
+# Run all CVD algorithms at once and pick one model
+cvd_risk(data, model = "ALL")   # or "ASCVD", "QRISK3", "Stroke", etc.
+```
 
 ### Renal function
 
 **When to use:** nephrology studies; CKD cohorts; monitoring
 progression.
 
-    # Kidney Failure Risk Equation (KFRE) 2-year and 5-year probability
-    # Needs: age, sex, eGFR (CKD-EPI, mL/min/1.73m²), UACR (mg/g)
-    kidney_failure_risk(data, col_map = list(age="age", sex="sex",
-                                              eGFR="eGFR", UACR="UACR"))
+``` r
+# Kidney Failure Risk Equation (KFRE) 2-year and 5-year probability
+# Needs: age, sex, eGFR (CKD-EPI, mL/min/1.73m²), UACR (mg/g)
+kidney_failure_risk(data, col_map = list(age="age", sex="sex",
+                                          eGFR="eGFR", UACR="UACR"))
 
-    # eGFR, creatinine ratios, BUN/creatinine, FE-Urea, etc.
-    renal_markers(data, col_map = list(creatinine="Creat", age="age", sex="sex"))
+# eGFR, creatinine ratios, BUN/creatinine, FE-Urea, etc.
+renal_markers(data, col_map = list(creatinine="Creat", age="age", sex="sex"))
 
-    # KDIGO CKD staging (G1–G5 × A1–A3)
-    ckd_stage(data, col_map = list(eGFR="eGFR", UACR="UACR"))
+# KDIGO CKD staging (G1–G5 × A1–A3)
+ckd_stage(data, col_map = list(eGFR="eGFR", UACR="UACR"))
 
-    # Urine panel: protein/creatinine ratio, microalbumin, osmolality
-    urine_markers(data, col_map = list(urine_creat="UCr", urine_protein="UPr"))
+# Urine panel: protein/creatinine ratio, microalbumin, osmolality
+urine_markers(data, col_map = list(urine_creat="UCr", urine_protein="UPr"))
+```
 
 ### Pulmonary function
 
 **When to use:** respiratory epidemiology; COPD staging; lung-function
 studies.
 
-    # Individual spirometry z-scores and % predicted (GLI 2012)
-    # Needs: FEV1, FVC; optionally age, height, sex, ethnicity
-    # Requires: rspiro package
-    spirometry_markers(data, col_map = list(fev1="FEV1", fvc="FVC",
-                                             age="age", height="ht_cm", sex="sex"))
+``` r
+# Individual spirometry z-scores and % predicted (GLI 2012)
+# Needs: FEV1, FVC; optionally age, height, sex, ethnicity
+# Requires: rspiro package
+spirometry_markers(data, col_map = list(fev1="FEV1", fvc="FVC",
+                                         age="age", height="ht_cm", sex="sex"))
 
-    # Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) no extra packages needed
-    pulmo_markers(data)
+# Simpler pulmonary ratios (FEV1/FVC, FEF25-75, etc.) no extra packages needed
+pulmo_markers(data)
 
-    # BODE index for COPD prognosis
-    # Needs: FEV1% predicted, 6-minute walk distance, mMRC dyspnoea score, BMI
-    bode_index(data, col_map = list(fev1_pct="FEV1pct", sixmwd="Walk6m",
-                                      mmrc="mMRC", bmi="BMI"))
+# BODE index for COPD prognosis
+# Needs: FEV1% predicted, 6-minute walk distance, mMRC dyspnoea score, BMI
+bode_index(data, col_map = list(fev1_pct="FEV1pct", sixmwd="Walk6m",
+                                  mmrc="mMRC", bmi="BMI"))
+```
 
 ### Psychiatric scores
 
 **When to use:** mental health research; epidemiological surveys with
 standardised questionnaires.
 
-    # Score one or many scales from item columns
-    # Supported: PHQ-9, GAD-7, K6, K10, GHQ-12, WHO-5, ISI, MDQ,
-    #            ASRS, BIS-11, SPQ, cognitive composite
-    #
-    # col_map is a nested list keyed by instrument name.
-    # Internal item keys use zero-padded names (phq9_01 ... phq9_09).
-    psych_markers(
-      data,
-      col_map = list(
-        phq9 = list(items = list(phq9_01 = "Q1", phq9_02 = "Q2", ...)),
-        gad7 = list(items = list(gad7_01 = "G1", gad7_02 = "G2", ...))
-      ),
-      which   = c("phq9", "gad7", "k10")  # choose scales to score
-    )
+``` r
+# Score one or many scales from item columns
+# Supported: PHQ-9, GAD-7, K6, K10, GHQ-12, WHO-5, ISI, MDQ,
+#            ASRS, BIS-11, SPQ, cognitive composite
+#
+# col_map is a nested list keyed by instrument name.
+# Internal item keys use zero-padded names (phq9_01 ... phq9_09).
+psych_markers(
+  data,
+  col_map = list(
+    phq9 = list(items = list(phq9_01 = "Q1", phq9_02 = "Q2", ...)),
+    gad7 = list(items = list(gad7_01 = "G1", gad7_02 = "G2", ...))
+  ),
+  which   = c("phq9", "gad7", "k10")  # choose scales to score
+)
 
-    # If your columns are already named phq9_01 ... phq9_09 etc., no col_map needed:
-    phq9_score(data)
-    gad7_score(data)
-    k10_score(data)
+# If your columns are already named phq9_01 ... phq9_09 etc., no col_map needed:
+phq9_score(data)
+gad7_score(data)
+k10_score(data)
+```
 
 ### Body composition, anthropometric and SDS
 
 **When to use:** paediatric cohorts (SDS); obesity epidemiology;
 sarcopenia assessment.
 
-    # Common obesity and adiposity indices
-    # Needs: height, weight, WC, hip circumference; optionally age, sex
-    obesity_indices(data)
+``` r
+# Common obesity and adiposity indices
+# Needs: height, weight, WC, hip circumference; optionally age, sex
+obesity_indices(data)
 
-    # SDS z-scores from user-supplied reference mean and SD
-    calc_sds(x = data$BMI, mean_ref = 22.5, sd_ref = 3.8)
+# SDS z-scores from user-supplied reference mean and SD
+calc_sds(x = data$BMI, mean_ref = 22.5, sd_ref = 3.8)
 
-    # Sex-stratified SDS for multiple adiposity variables simultaneously
-    adiposity_sds_strat(data, col_map = list(sex = "sex"),
-                        var_cols = c("BMI","WC","WHR"),
-                        ref_male = list(BMI = c(mean=25, sd=4)),
-                        ref_female = list(BMI = c(mean=24, sd=3.8)))
+# Sex-stratified SDS for multiple adiposity variables simultaneously
+adiposity_sds_strat(data, col_map = list(sex = "sex"),
+                    var_cols = c("BMI","WC","WHR"),
+                    ref_male = list(BMI = c(mean=25, sd=4)),
+                    ref_female = list(BMI = c(mean=24, sd=3.8)))
 
-    # Appendicular lean mass / BMI index (sarcopenia screening)
-    alm_bmi_index(data, col_map = list(alm="ALM_kg", bmi="BMI", sex="Sex"))
+# Appendicular lean mass / BMI index (sarcopenia screening)
+alm_bmi_index(data, col_map = list(alm="ALM_kg", bmi="BMI", sex="Sex"))
+```
 
 ### Inflammatory and aging markers
 
 **When to use:** immunology studies; biological age estimation; chronic
 disease research.
 
-    # Blood count-derived inflammatory ratios
-    # Needs: neutrophils, lymphocytes, monocytes, platelets
-    inflammatory_markers(data, col_map = list(neut="NEUT", lymph="LYMPH",
-                                               mono="MONO", plt="PLT"))
+``` r
+# Blood count-derived inflammatory ratios
+# Needs: neutrophils, lymphocytes, monocytes, platelets
+inflammatory_markers(data, col_map = list(neut="NEUT", lymph="LYMPH",
+                                           mono="MONO", plt="PLT"))
 
-    # iAge inflammatory aging clock
-    # Needs: a panel of inflammatory proteins (IL-6, CXCL9, etc.)
-    iAge(data, col_map = list(IL6="IL6", CXCL9="CXCL9"))
+# iAge inflammatory aging clock
+# Needs: a panel of inflammatory proteins (IL-6, CXCL9, etc.)
+iAge(data, col_map = list(IL6="IL6", CXCL9="CXCL9"))
+```
 
 ### Alternate biofluids
 
 **When to use:** stress research (saliva); cystic fibrosis / sweat
 testing; nephrology urine panels.
 
-    saliva_markers(data, col_map = list(cortisol_wake="C_wake",
-                                         cortisol_30="C_30min"))
-    sweat_markers(data,  col_map = list(sweat_chloride="Cl_mmol"))
-    urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
+``` r
+saliva_markers(data, col_map = list(cortisol_wake="C_wake",
+                                     cortisol_30="C_30min"))
+sweat_markers(data,  col_map = list(sweat_chloride="Cl_mmol"))
+urine_markers(data,  col_map = list(urine_creat="UCr", urine_na="UNa"))
+```
 
 ------------------------------------------------------------------------
 
@@ -422,11 +363,13 @@ Every function accepts a `col_map` argument: a named list mapping
 internal keys (what the function expects) to your actual column names
 (what you have).
 
-    # Internal key = "G0", your column is called "fasting_glucose_mmol"
-    fasting_is(
-      data    = my_data,
-      col_map = list(G0 = "fasting_glucose_mmol", I0 = "insulin_uU_mL")
-    )
+``` r
+# Internal key = "G0", your column is called "fasting_glucose_mmol"
+fasting_is(
+  data    = my_data,
+  col_map = list(G0 = "fasting_glucose_mmol", I0 = "insulin_uU_mL")
+)
+```
 
 ### Multi-biobank automatic variable name OR column name recognition
 
@@ -434,102 +377,15 @@ The synonym dictionary recognises column names from 15+ major cohorts
 and biobanks out of the box. The table below shows how the same analyte
 is named across systems:
 
-<table>
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-</colgroup>
-<thead>
-<tr>
-<th>Internal key</th>
-<th>UK Biobank</th>
-<th>NHANES</th>
-<th>HUNT/Tromsø</th>
-<th>FinnGen</th>
-<th>Estonian BB</th>
-<th>LifeLines (NL)</th>
-<th>LOINC</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>fasting_glucose</code></td>
-<td><code>glucose_0_0</code></td>
-<td><code>LBXGLU</code></td>
-<td><code>fastende_blodsukker</code></td>
-<td><code>paastoglukoosi</code></td>
-<td><code>p_glukoos</code></td>
-<td><code>nuchtere_glucose</code></td>
-<td><code>LOINC_2345_7</code></td>
-</tr>
-<tr>
-<td><code>total_cholesterol</code></td>
-<td><code>cholesterol_0_0</code></td>
-<td><code>LBXSCH</code></td>
-<td><code>total_kolesterol</code></td>
-<td><code>kokonaiskolesteroli</code></td>
-<td><code>kogukolesterool</code></td>
-<td><code>totaal_cholesterol</code></td>
-<td><code>LOINC_2093_3</code></td>
-</tr>
-<tr>
-<td><code>creatinine</code></td>
-<td><code>creatinine_0_0</code></td>
-<td><code>LBXSCR</code></td>
-<td><code>kreatinin</code></td>
-<td><code>kreatiniini</code></td>
-<td><code>kreatiniin</code></td>
-<td><code>creatinine</code></td>
-<td><code>LOINC_2160_0</code></td>
-</tr>
-<tr>
-<td><code>HbA1c</code></td>
-<td><code>glycated_haemoglobin_hba1c_0_0</code></td>
-<td><code>LBXGH</code></td>
-<td><code>HbA1c</code></td>
-<td><code>hemoglobiini_a1c</code></td>
-<td><code>HbA1c</code></td>
-<td><code>geglycosyleerd_hemoglobine</code></td>
-<td><code>LOINC_4548_4</code></td>
-</tr>
-<tr>
-<td><code>SBP</code></td>
-<td><code>systolic_blood_pressure_0_0</code></td>
-<td><code>BPXSY1</code></td>
-<td><code>systolisk_blodtrykk</code></td>
-<td><code>SBP</code></td>
-<td><code>sbp</code></td>
-<td><code>systolische_bloeddruk</code></td>
-<td><code>LOINC_8480_6</code></td>
-</tr>
-<tr>
-<td><code>vitaminD</code></td>
-<td><code>vitamin_d_0_0</code></td>
-<td><code>LBXVD2</code></td>
-<td><code>d_vitamin</code></td>
-<td><code>D_vitamiini</code></td>
-<td><code>D_vitamiin</code></td>
-<td><code>vitamine_D</code></td>
-<td><code>LOINC_62292_8</code></td>
-</tr>
-<tr>
-<td><code>ALT</code></td>
-<td><code>alanine_aminotransferase_0_0</code></td>
-<td><code>LBXSATSI</code></td>
-<td><code>ALAT</code></td>
-<td><code>alaniiniaminotransferaasi</code></td>
-<td><code>ALAT</code></td>
-<td><code>alanineaminotransferase</code></td>
-<td><code>LOINC_1742_6</code></td>
-</tr>
-</tbody>
-</table>
+| Internal key | UK Biobank | NHANES | HUNT/Tromsø | FinnGen | Estonian BB | LifeLines (NL) | LOINC |
+|----|----|----|----|----|----|----|----|
+| `fasting_glucose` | `glucose_0_0` | `LBXGLU` | `fastende_blodsukker` | `paastoglukoosi` | `p_glukoos` | `nuchtere_glucose` | `LOINC_2345_7` |
+| `total_cholesterol` | `cholesterol_0_0` | `LBXSCH` | `total_kolesterol` | `kokonaiskolesteroli` | `kogukolesterool` | `totaal_cholesterol` | `LOINC_2093_3` |
+| `creatinine` | `creatinine_0_0` | `LBXSCR` | `kreatinin` | `kreatiniini` | `kreatiniin` | `creatinine` | `LOINC_2160_0` |
+| `HbA1c` | `glycated_haemoglobin_hba1c_0_0` | `LBXGH` | `HbA1c` | `hemoglobiini_a1c` | `HbA1c` | `geglycosyleerd_hemoglobine` | `LOINC_4548_4` |
+| `SBP` | `systolic_blood_pressure_0_0` | `BPXSY1` | `systolisk_blodtrykk` | `SBP` | `sbp` | `systolische_bloeddruk` | `LOINC_8480_6` |
+| `vitaminD` | `vitamin_d_0_0` | `LBXVD2` | `d_vitamin` | `D_vitamiini` | `D_vitamiin` | `vitamine_D` | `LOINC_62292_8` |
+| `ALT` | `alanine_aminotransferase_0_0` | `LBXSATSI` | `ALAT` | `alaniiniaminotransferaasi` | `ALAT` | `alanineaminotransferase` | `LOINC_1742_6` |
 
 For **OMOP CDM / All of Us** data, concept codes in `LOINC_XXXX_X`
 format are recognised for all major analytes. For **Nordic EHR /
@@ -545,8 +401,10 @@ are also included.
 **Call `hm_col_report()` first** to see which columns are auto-detected
 and which need a manual mapping:
 
-    library(HealthMarkers)
-    hm_col_report(my_data)
+``` r
+library(HealthMarkers)
+hm_col_report(my_data)
+```
 
 This prints a report like:
 
@@ -572,168 +430,64 @@ This prints a report like:
 **Copy the printed `col_map` template** and fill in your column names
 for any unmatched keys:
 
-    my_col_map <- list(
-      eGFR = "GFR_ckdepi"
-    )
+``` r
+my_col_map <- list(
+  eGFR = "GFR_ckdepi"
+)
+```
 
 Or capture the auto-detected mappings directly and merge:
 
-    # Returns a named list of all matched key → column pairs
-    cm <- hm_col_report(my_data, verbose = FALSE)
+``` r
+# Returns a named list of all matched key → column pairs
+cm <- hm_col_report(my_data, verbose = FALSE)
 
-    # Add manual overrides for anything not matched
-    cm$eGFR <- "GFR_ckdepi"
+# Add manual overrides for anything not matched
+cm$eGFR <- "GFR_ckdepi"
+```
 
 **Pass `col_map` to any function:**
 
-    all_health_markers(
-      data    = my_data,
-      which   = c("insulin_fasting", "glycemic", "lipid", "liver"),
-      col_map = cm
-    )
+``` r
+all_health_markers(
+  data    = my_data,
+  which   = c("insulin_fasting", "glycemic", "lipid", "liver"),
+  col_map = cm
+)
+```
 
 `hm_col_report()` accepts two optional flags:
 
-    hm_col_report(my_data, show_unmatched = TRUE)  # list every unmatched key
-    hm_col_report(my_data, fuzzy = TRUE)           # add fuzzy matching as last resort
+``` r
+hm_col_report(my_data, show_unmatched = TRUE)  # list every unmatched key
+hm_col_report(my_data, fuzzy = TRUE)           # add fuzzy matching as last resort
+```
 
 ### Internal key reference
 
 The most commonly needed internal keys are:
 
-<table>
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Internal key</th>
-<th>Meaning</th>
-<th>Example column names</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>G0</code></td>
-<td>Fasting glucose (mmol/L)</td>
-<td><code>pglu0</code>, <code>fasting_glucose</code>,
-<code>gluc0</code>, <code>LBXGLU</code>,
-<code>paastoglukoosi</code></td>
-</tr>
-<tr>
-<td><code>I0</code></td>
-<td>Fasting insulin (mU/L or pmol/L)</td>
-<td><code>insu0</code>, <code>insulin0</code>,
-<code>ins_fast</code></td>
-</tr>
-<tr>
-<td><code>G30</code>, <code>G120</code></td>
-<td>30-/120-min OGTT glucose</td>
-<td><code>pglu30</code>, <code>pglu120</code></td>
-</tr>
-<tr>
-<td><code>I30</code>, <code>I120</code></td>
-<td>30-/120-min OGTT insulin</td>
-<td><code>insu30</code>, <code>insu120</code></td>
-</tr>
-<tr>
-<td><code>TG</code></td>
-<td>Triglycerides (mmol/L)</td>
-<td><code>trig</code>, <code>TryG</code>, <code>TAG</code>,
-<code>triglyserider</code>, <code>triglyseridit</code>,
-<code>LOINC_2571_8</code></td>
-</tr>
-<tr>
-<td><code>HDL_c</code></td>
-<td>HDL cholesterol</td>
-<td><code>hdlc</code>, <code>HDL</code>, <code>hdl_chol</code>,
-<code>hdl_kolesteroli</code>, <code>LOINC_2085_9</code></td>
-</tr>
-<tr>
-<td><code>LDL_c</code></td>
-<td>LDL cholesterol</td>
-<td><code>ldl</code>, <code>LDL</code>, <code>ldl_chol</code>,
-<code>ldl_kolesteroli</code>, <code>LOINC_13457_7</code></td>
-</tr>
-<tr>
-<td><code>TC</code></td>
-<td>Total cholesterol</td>
-<td><code>chol</code>, <code>total_chol</code>,
-<code>kokonaiskolesteroli</code>, <code>LOINC_2093_3</code></td>
-</tr>
-<tr>
-<td><code>ALT</code></td>
-<td>Alanine aminotransferase</td>
-<td><code>alat</code>, <code>SGPT</code>, <code>GPT</code>,
-<code>LBXSATSI</code>, <code>NPU03429</code>,
-<code>LOINC_1742_6</code></td>
-</tr>
-<tr>
-<td><code>albumin</code></td>
-<td>Serum albumin</td>
-<td><code>alb</code>, <code>Albumin</code>, <code>NPU04998</code>,
-<code>albumiini</code>, <code>LOINC_1751_7</code></td>
-</tr>
-<tr>
-<td><code>creatinine</code></td>
-<td>Serum creatinine</td>
-<td><code>crea</code>, <code>kreatinin</code>, <code>kreatiniini</code>,
-<code>NPU01994</code>, <code>LOINC_2160_0</code></td>
-</tr>
-<tr>
-<td><code>UACR</code></td>
-<td>Urine albumin/creatinine ratio</td>
-<td><code>ualbcrea</code>, <code>ACR</code></td>
-</tr>
-<tr>
-<td><code>SBP</code> / <code>DBP</code></td>
-<td>Systolic/diastolic BP</td>
-<td><code>sysbp</code>, <code>diabp</code>,
-<code>systolisk_blodtrykk</code>, <code>LOINC_8480_6</code></td>
-</tr>
-<tr>
-<td><code>BMI</code></td>
-<td>Body mass index</td>
-<td><code>bmi</code>, <code>BMI_kgm2</code>, <code>painoindeksi</code>,
-<code>LOINC_39156_5</code></td>
-</tr>
-<tr>
-<td><code>waist</code></td>
-<td>Waist circumference (cm)</td>
-<td><code>waist_cm</code>, <code>WC</code>, <code>midjeomkrets</code>,
-<code>tailleomtrek</code></td>
-</tr>
-<tr>
-<td><code>vitaminD</code></td>
-<td>25-OH vitamin D</td>
-<td><code>vitd25</code>, <code>d_vitamin</code>,
-<code>D_vitamiini</code>, <code>NPU10501</code>,
-<code>LOINC_62292_8</code></td>
-</tr>
-<tr>
-<td><code>HbA1c</code></td>
-<td>Glycated haemoglobin</td>
-<td><code>hba1c</code>, <code>HbA1c</code>,
-<code>hemoglobiini_a1c</code>, <code>NPU27300</code>,
-<code>LOINC_4548_4</code></td>
-</tr>
-<tr>
-<td><code>WBC</code></td>
-<td>White blood cells</td>
-<td><code>leukocytes</code>, <code>leukocytter</code>,
-<code>leukocyter</code>, <code>LOINC_6690_2</code></td>
-</tr>
-<tr>
-<td><code>Hgb</code></td>
-<td>Haemoglobin</td>
-<td><code>hb</code>, <code>haemoglobin</code>,
-<code>hemoglobiini</code>, <code>NPU03609</code>,
-<code>LOINC_718_7</code></td>
-</tr>
-</tbody>
-</table>
+| Internal key | Meaning | Example column names |
+|----|----|----|
+| `G0` | Fasting glucose (mmol/L) | `pglu0`, `fasting_glucose`, `gluc0`, `LBXGLU`, `paastoglukoosi` |
+| `I0` | Fasting insulin (mU/L or pmol/L) | `insu0`, `insulin0`, `ins_fast` |
+| `G30`, `G120` | 30-/120-min OGTT glucose | `pglu30`, `pglu120` |
+| `I30`, `I120` | 30-/120-min OGTT insulin | `insu30`, `insu120` |
+| `TG` | Triglycerides (mmol/L) | `trig`, `TryG`, `TAG`, `triglyserider`, `triglyseridit`, `LOINC_2571_8` |
+| `HDL_c` | HDL cholesterol | `hdlc`, `HDL`, `hdl_chol`, `hdl_kolesteroli`, `LOINC_2085_9` |
+| `LDL_c` | LDL cholesterol | `ldl`, `LDL`, `ldl_chol`, `ldl_kolesteroli`, `LOINC_13457_7` |
+| `TC` | Total cholesterol | `chol`, `total_chol`, `kokonaiskolesteroli`, `LOINC_2093_3` |
+| `ALT` | Alanine aminotransferase | `alat`, `SGPT`, `GPT`, `LBXSATSI`, `NPU03429`, `LOINC_1742_6` |
+| `albumin` | Serum albumin | `alb`, `Albumin`, `NPU04998`, `albumiini`, `LOINC_1751_7` |
+| `creatinine` | Serum creatinine | `crea`, `kreatinin`, `kreatiniini`, `NPU01994`, `LOINC_2160_0` |
+| `UACR` | Urine albumin/creatinine ratio | `ualbcrea`, `ACR` |
+| `SBP` / `DBP` | Systolic/diastolic BP | `sysbp`, `diabp`, `systolisk_blodtrykk`, `LOINC_8480_6` |
+| `BMI` | Body mass index | `bmi`, `BMI_kgm2`, `painoindeksi`, `LOINC_39156_5` |
+| `waist` | Waist circumference (cm) | `waist_cm`, `WC`, `midjeomkrets`, `tailleomtrek` |
+| `vitaminD` | 25-OH vitamin D | `vitd25`, `d_vitamin`, `D_vitamiini`, `NPU10501`, `LOINC_62292_8` |
+| `HbA1c` | Glycated haemoglobin | `hba1c`, `HbA1c`, `hemoglobiini_a1c`, `NPU27300`, `LOINC_4548_4` |
+| `WBC` | White blood cells | `leukocytes`, `leukocytter`, `leukocyter`, `LOINC_6690_2` |
+| `Hgb` | Haemoglobin | `hb`, `haemoglobin`, `hemoglobiini`, `NPU03609`, `LOINC_718_7` |
 
 ------------------------------------------------------------------------
 
@@ -752,16 +506,16 @@ marker function. The package provides three main helpers:
   pipelines. Use `mean` when missing values are roughly symmetric, or
   `median` when the data are skewed or contain outliers.
 
-<!-- -->
+``` r
+# Multiple imputation (mice) recommended when you want to preserve inference uncertainty
+completed <- impute_mice(my_data, m = 5, seed = 42)
 
-    # Multiple imputation (mice) recommended when you want to preserve inference uncertainty
-    completed <- impute_mice(my_data, m = 5, seed = 42)
+# Random-forest imputation (missForest) recommended for predictive filling of missing values
+completed <- impute_missforest(my_data)
 
-    # Random-forest imputation (missForest) recommended for predictive filling of missing values
-    completed <- impute_missforest(my_data)
-
-    # Simple deterministic imputation for fast exploratory analysis
-    completed <- impute_missing(my_data, method = "median")
+# Simple deterministic imputation for fast exploratory analysis
+completed <- impute_missing(my_data, method = "median")
+```
 
 `impute_missing()` supports several methods beyond `median`, including
 `mean`, `zero`, and `constant`.
@@ -774,17 +528,21 @@ Set `verbose = TRUE` on any function to see progress messages about
 which columns were mapped, which groups were computed, and which were
 skipped (with reasons).:
 
-    results <- all_health_markers(data = labs, which = c("lipid","liver"),
-                                   verbose = TRUE)
-    #> Column mapping summary: TC->TC (user), HDL_c->HDL_c (user) ...
-    #> -> lipid
-    #> -> liver
-    #> all_health_markers(): summary - computed: lipid, liver | skipped/failed: none
+``` r
+results <- all_health_markers(data = labs, which = c("lipid","liver"),
+                               verbose = TRUE)
+#> Column mapping summary: TC->TC (user), HDL_c->HDL_c (user) ...
+#> -> lipid
+#> -> liver
+#> all_health_markers(): summary - computed: lipid, liver | skipped/failed: none
+```
 
 Enable globally for an entire session:
 
-    # levels: "none" (default), "inform" (progress only), "debug" (all internal steps)
-    options(healthmarkers.verbose = "inform")
+``` r
+# levels: "none" (default), "inform" (progress only), "debug" (all internal steps)
+options(healthmarkers.verbose = "inform")
+```
 
 ------------------------------------------------------------------------
 
@@ -811,23 +569,25 @@ to keep installation fast).
 **Bundled with the package** accessible via `browseVignettes()` or
 `vignette()`:
 
-    browseVignettes("HealthMarkers")
+``` r
+browseVignettes("HealthMarkers")
 
-    vignette("getting-started",     package = "HealthMarkers")
-    vignette("fasting_is",          package = "HealthMarkers")
-    vignette("ogtt_is",             package = "HealthMarkers")
-    vignette("glycemic_markers",    package = "HealthMarkers")
-    vignette("lipid_markers",       package = "HealthMarkers")
-    vignette("cvd_risk",            package = "HealthMarkers")
-    vignette("liver_markers",       package = "HealthMarkers")
-    vignette("frailty_index",       package = "HealthMarkers")
-    vignette("inflammatory_markers",package = "HealthMarkers")
-    vignette("obesity_indices",     package = "HealthMarkers")
-    vignette("impute_missing",      package = "HealthMarkers")
-    vignette("health_markers",      package = "HealthMarkers")
+vignette("getting-started",     package = "HealthMarkers")
+vignette("fasting_is",          package = "HealthMarkers")
+vignette("ogtt_is",             package = "HealthMarkers")
+vignette("glycemic_markers",    package = "HealthMarkers")
+vignette("lipid_markers",       package = "HealthMarkers")
+vignette("cvd_risk",            package = "HealthMarkers")
+vignette("liver_markers",       package = "HealthMarkers")
+vignette("frailty_index",       package = "HealthMarkers")
+vignette("inflammatory_markers",package = "HealthMarkers")
+vignette("obesity_indices",     package = "HealthMarkers")
+vignette("impute_missing",      package = "HealthMarkers")
+vignette("health_markers",      package = "HealthMarkers")
+```
 
-**All 47 vignettes** (including adipo\_is, tracer\_dxa\_is,
-allostatic\_load, bone\_markers, psych\_markers, the new multi-biobank
+**All 47 vignettes** (including adipo_is, tracer_dxa_is,
+allostatic_load, bone_markers, psych_markers, the new multi-biobank
 guide, and 30 more) are rendered and searchable on the package website:
 
 > <https://sufyansuleman.github.io/HealthMarkers/articles/>
@@ -889,7 +649,9 @@ When contributing a new marker function please:
 
 ## Citation
 
-    citation("HealthMarkers")
+``` r
+citation("HealthMarkers")
+```
 
 ------------------------------------------------------------------------
 
