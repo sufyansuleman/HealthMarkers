@@ -9,9 +9,9 @@
 ^\.gitignore$
 ^vignettes/\.gitignore$
 ^tools($|/)
-^docs$
-^doc$
-^Meta$
+^docs($|/)
+^doc($|/)
+^Meta($|/)
 ^\.Rhistory$
 ^\.Rprofile$
 \.linter
