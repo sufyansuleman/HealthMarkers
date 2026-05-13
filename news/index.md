@@ -4,6 +4,19 @@
 
 ### New features
 
+- **[`hm_normalize()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_normalize.md)
+  — post-computation normalisation helper (new function).** Apply
+  z-score, rank-based inverse-normal transform (Rankit), min-max, or
+  robust median/MAD scaling to any marker output data frame. Use `cols`
+  to target specific columns and `skip_cols` to protect covariates
+  (e.g. age, BMI) from being rescaled. This covers domain functions
+  whose internal `normalize` argument currently has no effect
+  ([`glycemic_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/glycemic_markers.md),
+  [`lipid_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/lipid_markers.md),
+  [`renal_markers()`](https://sufyansuleman.github.io/HealthMarkers/reference/renal_markers.md),
+  etc.). See
+  [`?hm_normalize`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_normalize.md).
+
 - **Multi-biobank column inference (major).** The internal synonym
   dictionary
   ([`.hm_default_col_patterns_exact()`](https://sufyansuleman.github.io/HealthMarkers/reference/dot-hm_default_col_patterns_exact.md))

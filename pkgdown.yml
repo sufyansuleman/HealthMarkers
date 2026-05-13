@@ -18,7 +18,6 @@ articles:
   articles/fasting_is: fasting_is.html
   articles/frailty_index: frailty_index.html
   articles/frax_score: frax_score.html
-  articles/getting-started: getting-started.html
   articles/glycemic_markers: glycemic_markers.html
   articles/health_markers: health_markers.html
   articles/hormone_markers: hormone_markers.html
@@ -34,6 +33,7 @@ articles:
   articles/metss: metss.html
   articles/multi_biobank: multi_biobank.html
   articles/nfl_marker: nfl_marker.html
+  articles/normalisation: normalisation.html
   articles/nutrient_markers: nutrient_markers.html
   articles/obesity_indices: obesity_indices.html
   articles/ogtt_is: ogtt_is.html
@@ -49,7 +49,7 @@ articles:
   articles/urine_markers: urine_markers.html
   articles/vitamin_d_status: vitamin_d_status.html
   articles/vitamin_markers: vitamin_markers.html
-last_built: 2026-05-13T12:14Z
+last_built: 2026-05-13T19:29Z
 urls:
   reference: https://sufyansuleman.github.io/HealthMarkers/reference
   article: https://sufyansuleman.github.io/HealthMarkers/articles

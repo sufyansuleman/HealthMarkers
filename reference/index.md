@@ -216,6 +216,8 @@ Fasting, OGTT, adipose-tissue, tracer and DXA-based indices.
   : Impute missing values via random forest (missForest)
 - [`normalize_vec()`](https://sufyansuleman.github.io/HealthMarkers/reference/normalize_vec.md)
   : Normalize a numeric vector
+- [`hm_normalize()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_normalize.md)
+  : Normalise marker columns in a data frame
 - [`validate_inputs()`](https://sufyansuleman.github.io/HealthMarkers/reference/validate_inputs.md)
   : Validate required inputs for a calling function
 - [`marker_summary()`](https://sufyansuleman.github.io/HealthMarkers/reference/marker_summary.md)

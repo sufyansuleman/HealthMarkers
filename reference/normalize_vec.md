@@ -83,16 +83,13 @@ Methods:
 
 Beasley TM, Erickson S, Allison DB (2009). “Rank-based inverse normal
 transformations are increasingly used, but are they merited?” *Behavior
-Genetics*, **39**(2), 214–227.
-[doi:10.1007/s10519-009-9241-9](https://doi.org/10.1007/s10519-009-9241-9)
-. Leys C, Ley C, Klein O, Bernard P, Licata L (2013). “Detecting
-outliers: Do not use standard deviation around the mean, use median
-absolute deviation around the median.” *Journal of Experimental Social
-Psychology*, **49**(4), 764–766.
+Genetics*, **39**(2), 214–227. Leys C, Ley C, Klein O, Bernard P, Licata
+L (2013). “Detecting outliers: Do not use standard deviation around the
+mean, use median absolute deviation around the median.” *Journal of
+Experimental Social Psychology*, **49**(4), 764–766.
 [doi:10.1016/j.jesp.2013.03.013](https://doi.org/10.1016/j.jesp.2013.03.013)
 . Bland JM, Altman DG (1996). “Statistics notes: measurement error.”
 *BMJ*, **313**(7047), 41–42.
-[doi:10.1136/bmj.313.7047.41](https://doi.org/10.1136/bmj.313.7047.41) .
 
 ## Examples
 

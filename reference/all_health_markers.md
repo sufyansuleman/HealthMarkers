@@ -13,7 +13,9 @@ all_health_markers(
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
   verbose = TRUE,
-  na_action = c("keep", "omit", "error")
+  na_action = c("keep", "omit", "error"),
+  id_col = NULL,
+  return_input = TRUE
 )
 ```
 
@@ -59,9 +61,28 @@ all_health_markers(
   One of c("keep","omit","error"); forwarded to underlying calculators
   (HM-CS v2).
 
+- id_col:
+
+  Optional character string naming a column in `data` to include in the
+  returned output when `return_input = FALSE`. Ignored when
+  `return_input = TRUE`. Typical use: participant ID or sample barcode.
+
+- return_input:
+
+  Logical (default `TRUE`). When `TRUE` the original input columns are
+  retained in the output (current behaviour). When `FALSE` only the
+  newly computed marker columns are returned, plus `id_col` if supplied.
+  Set to `FALSE` to avoid carrying a large input data frame through the
+  pipeline — join back later with
+  [`cbind()`](https://rdrr.io/r/base/cbind.html) or
+  [`dplyr::left_join()`](https://dplyr.tidyverse.org/reference/mutate-joins.html)
+  on `id_col`.
+
 ## Value
 
-Data frame with original columns plus many derived markers.
+Data frame. When `return_input = TRUE` (default): original columns plus
+all derived markers. When `return_input = FALSE`: only the newly
+computed columns (and `id_col` if specified).
 
 ## Details
 

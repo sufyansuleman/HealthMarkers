@@ -67,6 +67,7 @@ glycemic_markers(), metss().
 ## Examples
 
 ``` r
+# \donttest{
 df <- data.frame(
   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
   ALT = 30, AST = 20, BMI = 25
@@ -77,4 +78,5 @@ metabolic_markers(df, col_map = list(), which = c("lipid","liver"),
 #> 1 200    50 150   120  30  20  25       150        30            4            3
 #>   ratio_LDL_HDL ApoB_ApoA1 FLI NFS APRI FIB4 BARD ALBI MELD_XI
 #> 1           2.4         NA  NA  NA   NA   NA    0   NA      NA
+# }
 ```

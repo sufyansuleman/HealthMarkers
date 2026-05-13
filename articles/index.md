@@ -1,10 +1,5 @@
 # Articles
 
-### Getting started
-
-- [Getting Started with
-  HealthMarkers](https://sufyansuleman.github.io/HealthMarkers/articles/getting-started.md):
-
 ### Multi-biobank compatibility
 
 - [Multi-Biobank Compatibility: Automatic Column
@@ -146,6 +141,8 @@
 
 - [Imputing missing
   values](https://sufyansuleman.github.io/HealthMarkers/articles/impute_missing.md):
+- [Normalising marker
+  outputs](https://sufyansuleman.github.io/HealthMarkers/articles/normalisation.md):
 
 ### Overview
 

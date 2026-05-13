@@ -98,6 +98,7 @@ The object returned by frailty_index() (di::di object if return="list").
 ## Examples
 
 ``` r
+# \donttest{
 if (requireNamespace("di", quietly = TRUE)) {
   df <- data.frame(age = c(70, 75, 80), d1 = c(0, 1, 1),
     d2 = c(0.2, 0.8, 1.0), d3 = c(TRUE, FALSE, TRUE))
@@ -116,4 +117,5 @@ if (requireNamespace("di", quietly = TRUE)) {
 #> 2  1 0.75  0
 #> 3  1 1.00  1
 #> 
+# }
 ```

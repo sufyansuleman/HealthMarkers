@@ -37,7 +37,8 @@
 <h2 class="pkg-version" data-toc-text="0.1.2" id="healthmarkers-012">HealthMarkers 0.1.2<a class="anchor" aria-label="anchor" href="#healthmarkers-012"></a></h2>
 <div class="section level3">
 <h3 id="new-features-0-1-2">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-2"></a></h3>
-<ul><li>
+<ul><li><p><strong><code><a href="../reference/hm_normalize.html">hm_normalize()</a></code> — post-computation normalisation helper (new function).</strong> Apply z-score, rank-based inverse-normal transform (Rankit), min-max, or robust median/MAD scaling to any marker output data frame. Use <code>cols</code> to target specific columns and <code>skip_cols</code> to protect covariates (e.g. age, BMI) from being rescaled. This covers domain functions whose internal <code>normalize</code> argument currently has no effect (<code><a href="../reference/glycemic_markers.html">glycemic_markers()</a></code>, <code><a href="../reference/lipid_markers.html">lipid_markers()</a></code>, <code><a href="../reference/renal_markers.html">renal_markers()</a></code>, etc.). See <code><a href="../reference/hm_normalize.html">?hm_normalize</a></code>.</p></li>
+<li>
 <p><strong>Multi-biobank column inference (major).</strong> The internal synonym dictionary (<code><a href="../reference/dot-hm_default_col_patterns_exact.html">.hm_default_col_patterns_exact()</a></code>) now recognises column-naming conventions from 15+ major cohort studies and biobanks for all primary analytes:</p>
 <ul><li>
 <strong>UK Biobank</strong> — <code>_0_0</code> / <code>_1_0</code> field naming (e.g. <code>glucose_0_0</code>, <code>creatinine_0_0</code>, <code>vitamin_d_0_0</code>); <code>standing_height</code>, <code>25OHD</code>.</li>

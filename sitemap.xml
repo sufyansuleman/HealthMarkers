@@ -17,7 +17,6 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/fasting_is.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/frailty_index.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/frax_score.html</loc></url>
-<url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/getting-started.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/glycemic_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/health_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/hormone_markers.html</loc></url>
@@ -34,6 +33,7 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/metss.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/multi_biobank.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/nfl_marker.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/normalisation.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/nutrient_markers.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/obesity_indices.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/articles/ogtt_is.html</loc></url>
@@ -93,6 +93,7 @@
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_bind_cols_quiet.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_col_report.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_fmt_col_map.html</loc></url>
+<url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_normalize.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_result_summary.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hm_validate_inputs.html</loc></url>
 <url><loc>https://sufyansuleman.github.io/HealthMarkers/reference/hormone_markers.html</loc></url>
