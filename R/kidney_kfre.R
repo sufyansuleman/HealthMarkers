@@ -1,4 +1,4 @@
-﻿#' Kidney Failure Risk Equation (KFRE, 2- and 5-year risk)
+#' Kidney Failure Risk Equation (KFRE, 2- and 5-year risk)
 #'
 #' Compute 2- and 5-year risk of end-stage kidney disease using the original
 #' 4-variable KFRE (Tangri et al., 2011) with optional data-quality diagnostics,

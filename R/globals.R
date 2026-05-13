@@ -154,3 +154,92 @@ normalize_vec <- function(
   # Fallback (should not reach)
   return(x)
 }
+
+#' Normalise marker columns in a data frame
+#'
+#' A convenience wrapper around [normalize_vec()] that applies a normalisation
+#' method to every selected numeric column in a data frame and returns the
+#' modified data frame. The most common use-case is to normalise the output of
+#' any HealthMarkers function — especially domain functions such as
+#' `glycemic_markers()`, `lipid_markers()`, or `renal_markers()` whose internal
+#' `normalize` argument currently has no effect.
+#'
+#' @param data A data frame (or tibble) containing marker columns to normalise.
+#' @param cols Character vector of column names to normalise.  If `NULL`
+#'   (default), **all numeric columns** in `data` are normalised.
+#' @param method One of `c("z","inverse","range","robust")`.  Passed directly to
+#'   [normalize_vec()]:
+#'   \describe{
+#'     \item{`"z"`}{z-score (mean 0, sd 1).}
+#'     \item{`"inverse"`}{Rank-based inverse-normal transform (Rankit; default).}
+#'     \item{`"range"`}{Min-max scaling to `feature_range` (default `[0, 1]`).}
+#'     \item{`"robust"`}{Median/MAD scaling.}
+#'   }
+#' @param skip_cols Character vector of column names to leave untouched even if
+#'   they are numeric (e.g. `c("age", "BMI")`).  Ignored when `cols` is
+#'   explicitly supplied.
+#' @param ... Additional arguments forwarded to [normalize_vec()] (e.g.
+#'   `feature_range`, `invnorm_denominator`, `ties`).
+#'
+#' @return The input `data` with the selected columns replaced by their
+#'   normalised values.  Class (tibble, data.frame, etc.) is preserved.
+#'
+#' @seealso [normalize_vec()] for single-vector normalisation.
+#'
+#' @export
+#'
+#' @examples
+#' # Build a tiny data frame with pre-computed marker columns
+#' df <- data.frame(
+#'   age    = c(45, 52, 61),
+#'   HOMA_IR = c(1.2, 3.4, 2.1),
+#'   TyG     = c(8.1, 9.0, 8.6),
+#'   NLR     = c(2.1, 3.5, 1.8)
+#' )
+#'
+#' marker_cols <- c("HOMA_IR", "TyG", "NLR")
+#'
+#' # z-score normalise marker columns only
+#' hm_normalize(df, cols = marker_cols, method = "z")
+#'
+#' # Inverse-normal transform, leaving age untouched
+#' hm_normalize(df, method = "inverse", skip_cols = "age")
+hm_normalize <- function(
+  data,
+  cols       = NULL,
+  method     = c("z", "inverse", "range", "robust"),
+  skip_cols  = NULL,
+  ...
+) {
+  method <- match.arg(method)
+
+  if (!is.data.frame(data)) {
+    rlang::abort("`data` must be a data frame.", class = "healthmarkers_hm_normalize_error")
+  }
+
+  # Determine target columns
+  if (!is.null(cols)) {
+    bad <- setdiff(cols, names(data))
+    if (length(bad)) {
+      rlang::abort(
+        paste0("Column(s) not found in `data`: ", paste(bad, collapse = ", ")),
+        class = "healthmarkers_hm_normalize_error"
+      )
+    }
+    target <- cols
+  } else {
+    target <- names(data)[vapply(data, is.numeric, logical(1))]
+    if (!is.null(skip_cols)) {
+      target <- setdiff(target, skip_cols)
+    }
+  }
+
+  if (length(target) == 0L) {
+    rlang::warn("hm_normalize(): no numeric columns to normalise; returning data unchanged.",
+                class = "healthmarkers_hm_normalize_warn_no_cols")
+    return(data)
+  }
+
+  data[target] <- lapply(data[target], normalize_vec, method = method, ...)
+  data
+}

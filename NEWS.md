@@ -2,6 +2,14 @@
 
 ## New features
 
+* **`hm_normalize()` — post-computation normalisation helper (new function).**
+  Apply z-score, rank-based inverse-normal transform (Rankit), min-max, or
+  robust median/MAD scaling to any marker output data frame.  Use `cols` to
+  target specific columns and `skip_cols` to protect covariates (e.g. age, BMI)
+  from being rescaled.  This covers domain functions whose internal `normalize`
+  argument currently has no effect (`glycemic_markers()`, `lipid_markers()`,
+  `renal_markers()`, etc.).  See `?hm_normalize`.
+
 * **Multi-biobank column inference (major).** The internal synonym dictionary
   (`.hm_default_col_patterns_exact()`) now recognises column-naming conventions
   from 15+ major cohort studies and biobanks for all primary analytes:

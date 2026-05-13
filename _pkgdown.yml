@@ -160,16 +160,13 @@ reference:
       - impute_mice
       - impute_missforest
       - normalize_vec
+      - hm_normalize
       - validate_inputs
       - marker_summary
       - health_summary
       - plot_frailty_age
 
 articles:
-  - title: "Getting started"
-    contents:
-      - articles/getting-started
-
   - title: "Multi-biobank compatibility"
     contents:
       - articles/multi_biobank
@@ -268,6 +265,7 @@ articles:
   - title: "Data utilities"
     contents:
       - articles/impute_missing
+      - articles/normalisation
 
   - title: "Overview"
     contents:

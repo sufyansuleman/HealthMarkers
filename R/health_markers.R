@@ -483,12 +483,14 @@ all_insulin_indices <- function(
 #' all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
 #' @export
 #' @examples
+#' \donttest{
 #' df <- data.frame(
 #'   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
 #'   ALT = 30, AST = 20, BMI = 25
 #' )
 #' metabolic_markers(df, col_map = list(), which = c("lipid","liver"),
 #'                   normalize = "none", mode = "both", verbose = FALSE, na_action = "keep")
+#' }
 metabolic_markers <- function(
   data,
   col_map = NULL,
@@ -593,7 +595,17 @@ metabolic_markers <- function(
 #' @param mode One of c("both","IS","IR") passed to insulin indices.
 #' @param verbose Logical.
 #' @param na_action One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).
-#' @return Data frame with original columns plus many derived markers.
+#' @param id_col Optional character string naming a column in `data` to include
+#'   in the returned output when `return_input = FALSE`. Ignored when
+#'   `return_input = TRUE`. Typical use: participant ID or sample barcode.
+#' @param return_input Logical (default `TRUE`). When `TRUE` the original input
+#'   columns are retained in the output (current behaviour). When `FALSE` only
+#'   the newly computed marker columns are returned, plus `id_col` if supplied.
+#'   Set to `FALSE` to avoid carrying a large input data frame through the
+#'   pipeline — join back later with `cbind()` or `dplyr::left_join()` on `id_col`.
+#' @return Data frame. When `return_input = TRUE` (default): original columns
+#'   plus all derived markers. When `return_input = FALSE`: only the newly
+#'   computed columns (and `id_col` if specified).
 #' @note
 #' Aggregator wrapper. See underlying function help pages for full references
 #' across categories included by `which`.
@@ -623,9 +635,12 @@ all_health_markers <- function(
   normalize = c("none","z","inverse","range","robust"),
   mode = c("both","IS","IR"),
   verbose = TRUE,
-  na_action = c("keep","omit","error")
+  na_action = c("keep","omit","error"),
+  id_col = NULL,
+  return_input = TRUE
 ) {
   orig_col_map <- if (missing(col_map)) NULL else col_map
+  orig_cols    <- names(data)
 
   normalize <- .hm_normalize_choice(normalize, c("none","z","inverse","range","robust"))
   mode <- .hm_normalize_choice(mode, c("both","IS","IR"))
@@ -808,5 +823,10 @@ all_health_markers <- function(
     }
   }
 
+  if (!isTRUE(return_input)) {
+    new_cols <- setdiff(names(out), orig_cols)
+    keep     <- if (!is.null(id_col) && id_col %in% names(out)) c(id_col, new_cols) else new_cols
+    return(out[keep])
+  }
   out
 }

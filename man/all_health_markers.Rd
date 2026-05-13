@@ -12,7 +12,9 @@ all_health_markers(
   normalize = c("none", "z", "inverse", "range", "robust"),
   mode = c("both", "IS", "IR"),
   verbose = TRUE,
-  na_action = c("keep", "omit", "error")
+  na_action = c("keep", "omit", "error"),
+  id_col = NULL,
+  return_input = TRUE
 )
 }
 \arguments{
@@ -37,9 +39,21 @@ that require it, and an error is thrown if required keys (e.g. \code{TG},
 \item{verbose}{Logical.}
 
 \item{na_action}{One of c("keep","omit","error"); forwarded to underlying calculators (HM-CS v2).}
+
+\item{id_col}{Optional character string naming a column in \code{data} to include
+in the returned output when \code{return_input = FALSE}. Ignored when
+\code{return_input = TRUE}. Typical use: participant ID or sample barcode.}
+
+\item{return_input}{Logical (default \code{TRUE}). When \code{TRUE} the original input
+columns are retained in the output (current behaviour). When \code{FALSE} only
+the newly computed marker columns are returned, plus \code{id_col} if supplied.
+Set to \code{FALSE} to avoid carrying a large input data frame through the
+pipeline — join back later with \code{cbind()} or \code{dplyr::left_join()} on \code{id_col}.}
 }
 \value{
-Data frame with original columns plus many derived markers.
+Data frame. When \code{return_input = TRUE} (default): original columns
+plus all derived markers. When \code{return_input = FALSE}: only the newly
+computed columns (and \code{id_col} if specified).
 }
 \description{
 Compute all available HealthMarkers categories

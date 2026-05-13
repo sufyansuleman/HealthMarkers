@@ -45,10 +45,12 @@ Aggregator wrapper. See underlying function help pages for full references:
 all_insulin_indices(), lipid_markers(), liver_markers(), glycemic_markers(), metss().
 }
 \examples{
+\donttest{
 df <- data.frame(
   TC = 200, HDL_c = 50, TG = 150, LDL_c = 120,
   ALT = 30, AST = 20, BMI = 25
 )
 metabolic_markers(df, col_map = list(), which = c("lipid","liver"),
                   normalize = "none", mode = "both", verbose = FALSE, na_action = "keep")
+}
 }

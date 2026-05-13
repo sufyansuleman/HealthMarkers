@@ -1,0 +1,159 @@
+---
+title: "Normalising marker outputs"
+output: rmarkdown::html_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(purl = FALSE)
+```
+
+## Scope
+
+This article explains how to normalise biomarker outputs computed by HealthMarkers
+functions using `hm_normalize()` and the underlying `normalize_vec()`.
+
+Normalisation is useful before:
+
+- Genome-wide association studies (GWAS) — inverse-normal transform is standard
+- Principal component analysis (PCA) — z-score or min-max
+- Polygenic score construction — z-score or robust scaling
+- Visualisation — when variables are on very different scales
+
+## When to use `hm_normalize()` vs the built-in `normalize` argument
+
+The `normalize` argument is only implemented in the insulin sensitivity functions
+(`fasting_is()`, `ogtt_is()`, `adipo_is()`, `all_insulin_indices()`).
+For all other domain functions — `glycemic_markers()`, `lipid_markers()`,
+`renal_markers()`, etc. — the `normalize` argument has no effect.
+
+`hm_normalize()` works post-computation on **any** data frame and covers all cases.
+
+## Setup
+
+```{r}
+if (requireNamespace("pkgload", quietly = TRUE)) {
+  pkgload::load_all()
+} else {
+  library(HealthMarkers)
+}
+
+sim_path <- system.file("extdata", "simulated_hm_data.rds", package = "HealthMarkers")
+sim      <- readRDS(sim_path)[1:50, ]
+```
+
+## Step 1 — compute markers
+
+```{r}
+out <- all_health_markers(
+  data    = sim,
+  which   = c("glycemic", "lipid", "renal", "inflammatory"),
+  verbose = FALSE
+)
+
+# New marker columns added by all_health_markers()
+new_cols <- setdiff(names(out), names(sim))
+cat("New marker columns:", length(new_cols), "\n")
+```
+
+## Step 2 — normalise with `hm_normalize()`
+
+### Z-score (mean 0, sd 1)
+
+```{r}
+out_z <- hm_normalize(out, cols = new_cols, method = "z")
+round(head(out_z[new_cols[1:5]]), 3)
+```
+
+### Rank-based inverse-normal transform (Rankit)
+
+The most common choice for GWAS. Normally distributed regardless of the original
+distribution.
+
+```{r}
+out_int <- hm_normalize(out, cols = new_cols, method = "inverse")
+round(head(out_int[new_cols[1:5]]), 3)
+```
+
+Use the Blom denominator instead of Rankit:
+
+```{r}
+out_blom <- hm_normalize(out, cols = new_cols, method = "inverse",
+                          invnorm_denominator = "blom")
+```
+
+### Min-max scaling to [0, 1]
+
+```{r}
+out_range <- hm_normalize(out, cols = new_cols, method = "range")
+round(head(out_range[new_cols[1:5]]), 3)
+```
+
+Scale to a custom interval (e.g. [-1, 1]):
+
+```{r}
+out_range2 <- hm_normalize(out, cols = new_cols, method = "range",
+                            feature_range = c(-1, 1))
+```
+
+### Robust median/MAD scaling
+
+Less sensitive to outliers than z-score.
+
+```{r}
+out_rob <- hm_normalize(out, cols = new_cols, method = "robust")
+round(head(out_rob[new_cols[1:5]]), 3)
+```
+
+## Protecting covariate columns
+
+Use `skip_cols` to exclude variables you want to keep on their original scale.
+When `cols = NULL` (the default), `hm_normalize()` targets all numeric columns;
+`skip_cols` removes covariates from that set.
+
+```{r}
+# Normalise all numeric columns except age, BMI, sex-encoded variables
+out_protected <- hm_normalize(out, method = "inverse",
+                               skip_cols = c("age", "BMI", "sex"))
+```
+
+## Using `normalize_vec()` on a single vector
+
+`hm_normalize()` calls `normalize_vec()` internally. You can also use it directly:
+
+```{r}
+x <- out[[new_cols[1]]]
+
+normalize_vec(x, method = "z")[1:10]
+normalize_vec(x, method = "inverse")[1:10]
+normalize_vec(x, method = "range")[1:10]
+normalize_vec(x, method = "robust")[1:10]
+```
+
+## Comparison of methods
+
+```{r}
+compare <- data.frame(
+  raw     = x,
+  z       = normalize_vec(x, "z"),
+  INT     = normalize_vec(x, "inverse"),
+  range01 = normalize_vec(x, "range"),
+  robust  = normalize_vec(x, "robust")
+)
+round(head(compare, 10), 3)
+```
+
+Summary statistics after normalisation:
+
+```{r}
+round(sapply(compare, function(v) c(mean = mean(v, na.rm = TRUE),
+                                     sd   = sd(v, na.rm = TRUE),
+                                     min  = min(v, na.rm = TRUE),
+                                     max  = max(v, na.rm = TRUE))), 3)
+```
+
+## See also
+
+- `?hm_normalize` — full argument reference
+- `?normalize_vec` — single-vector normalisation details
+- [Fasting insulin sensitivity](fasting_is.html) — `normalize` argument used at compute time
