@@ -32,7 +32,7 @@ been moved into a `\donttest{}` block in this submission.
 
 ## Resubmission notes
 
-This is a resubmission addressing feedback from Uwe Ligges:
+This is a resubmission for version 0.1.3 addressing feedback from Uwe Ligges:
 
 1. **Slow examples (> 10s)**: Replaced slow examples with fast smoke-test
    examples for all 7 flagged functions. Full examples moved into `\donttest{}`
@@ -46,6 +46,17 @@ This is a resubmission addressing feedback from Uwe Ligges:
 
 3. **Test suite run time**: Added `skip_on_cran()` to the first test in each
    of the 41 slow test files. Tests now complete in ~31s on CRAN (was 522s).
+
+4. **CRAN-like Suggests check**: Fixed `tests/testthat/test-frailty_index.R` so
+   it reliably simulates a missing `di` package during `R_CHECK_SUGGESTS_ONLY=false`.
+
+5. **Metadata and documentation updates**: Updated `DESCRIPTION` title and
+   description for a more realistic CRAN package summary, and tightened the
+   README installation and quick-start sections.
+
+6. **No API changes**: This submission contains only documentation, metadata,
+   and test infrastructure updates; no exported function behavior has been
+   changed.
 
 ## Downstream dependencies
 

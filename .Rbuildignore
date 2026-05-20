@@ -28,3 +28,6 @@
 ^CRAN-SUBMISSION$
 ^vignettes/articles($|/)
 ^check_output\.txt$
+^full_check_err\.txt$
+^full_check_out\.txt$
+^.*\.tar\.gz$

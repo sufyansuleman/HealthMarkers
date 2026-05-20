@@ -1,33 +1,20 @@
 Package: HealthMarkers
 Type: Package
-Title: Toolkit for Clinical, Metabolic, and Cardiovascular Biomarker Calculations
-Version: 0.1.2
+Title: Clinical and Metabolic Biomarker Calculation Toolkit
+Version: 0.1.3
 Authors@R:
     person(given = "Sufyan", family = "Suleman",
            email = "sufyansuleman@hotmail.com",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6612-6915"))
-Description: Computes over 50 specialist health marker functions covering
-    insulin sensitivity and resistance indices (fasting, oral glucose
-    tolerance test, adipose-tissue, tracer, and dual-energy X-ray
-    absorptiometry (DXA)-based), glycaemic and lipid markers, atherogenic
-    and metabolic syndrome scores, liver steatosis and fibrosis scores, and
-    cardiovascular risk algorithms (Framingham Heart Study equations,
-    atherosclerotic cardiovascular disease (ASCVD) Pooled Cohort Equations,
-    the QRISK3 cardiac risk score, and Systematic Coronary Risk Evaluation 2
-    (SCORE2) including the Older Persons variant (SCORE2-OP)). Also
-    implements renal function (estimated glomerular filtration rate (eGFR),
-    Kidney Failure Risk Equation (KFRE), chronic kidney disease (CKD)
-    staging), pulmonary function (spirometry z-scores, Body-mass index,
-    airflow Obstruction, Dyspnea, and Exercise capacity index (BODE)),
-    inflammatory markers and the inflammatory age clock (iAge), hormonal
-    panels, body composition and anthropometric z-scores, bone turnover
-    markers and fracture risk (Fracture Risk Assessment Tool (FRAX)),
-    frailty and comorbidity indices (Rockwood, Charlson), psychiatric rating
-    scales, and biomarker panels from alternative biofluids (urine, saliva,
-    sweat). Missing value imputation helpers, pre or post computation
-    normalization and a unified all_health_markers() dispatcher that returns
-    all requested marker groups as a single wide tibble are included.
+Author: Sufyan Suleman [aut, cre]
+Maintainer: Sufyan Suleman <sufyansuleman@hotmail.com>
+Description: Computes specialist biomarker indices and risk scores for metabolic,
+    cardiovascular, renal, hepatic, inflammatory, frailty, and psychiatric
+    health assessment. Includes fasting and OGTT insulin sensitivity/resistance
+    indices, ASCVD/QRISK3/KFRE risk equations, liver and kidney markers,
+    frailty and comorbidity indices, biofluid marker panels, and utilities for
+    column mapping, normalization, imputation, and combined marker dispatch.
 License: MIT + file LICENSE
 URL: https://sufyansuleman.github.io/HealthMarkers/,
     https://github.com/sufyansuleman/HealthMarkers
