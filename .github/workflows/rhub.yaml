@@ -1,0 +1,31 @@
+name: rhub
+
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: 'R-hub JSON config'
+        required: true
+      name:
+        description: 'R-hub check name'
+        required: true
+      id:
+        description: 'R-hub check id'
+        required: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/r-hub/containers/gcc15:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build package
+        run: |
+          R CMD build .
+
+      - name: Run CRAN-style check
+        run: |
+          R CMD check --as-cran --no-manual --no-build-vignettes *.tar.gz
