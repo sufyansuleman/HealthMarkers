@@ -22,6 +22,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v3
+
+      - name: Install package dependencies
+        run: |
+          Rscript -e 'install.packages("remotes", repos = "https://cloud.r-project.org")'
+          Rscript -e 'remotes::install_deps(dependencies = TRUE, upgrade = "never")'
+
       - name: Build package
         run: |
           R CMD build .
