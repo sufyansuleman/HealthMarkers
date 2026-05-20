@@ -2,6 +2,8 @@
 
 ## HealthMarkers 0.1.2
 
+CRAN release: 2026-05-19
+
 ### New features
 
 - **[`hm_normalize()`](https://sufyansuleman.github.io/HealthMarkers/reference/hm_normalize.md)
