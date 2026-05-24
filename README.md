@@ -27,6 +27,7 @@ HealthMarkers
 
 <!-- badges: start -->
 
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/HealthMarkers)](https://cran.r-project.org/package=HealthMarkers)
 [![R-CMD-check](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
