@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,14 @@
       <small>Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3" id="healthmarkers-013">HealthMarkers 0.1.3<a class="anchor" aria-label="anchor" href="#healthmarkers-013"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-and-cran-checks-0-1-3">Bug fixes and CRAN checks<a class="anchor" aria-label="anchor" href="#bug-fixes-and-cran-checks-0-1-3"></a></h3>
+<ul><li><p><strong>CRAN / Fedora check fix</strong> — Addressed the issue that caused a Fedora build failure reported by CRAN. Slow examples were moved into <code>\donttest{}</code> blocks and long-running tests were guarded with <code>skip_on_cran()</code>; system-dependent behavior was removed or made optional. I re-ran <code>R CMD check --as-cran</code> locally and performed a Fedora-style check in Docker; the package now passes these checks.</p></li>
+<li><p><strong>Metadata</strong> — Bumped <code>Version</code> to 0.1.3 and updated <code>CRAN-SUBMISSION</code> and <code>cran-comments.md</code> to reflect the resubmission.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="healthmarkers-012">HealthMarkers 0.1.2<a class="anchor" aria-label="anchor" href="#healthmarkers-012"></a></h2><p class="text-muted">CRAN release: 2026-05-19</p>
 <div class="section level3">
@@ -96,8 +104,8 @@ The function uses a five-layer matching pipeline and returns the matched mapping
 <h3 id="bug-fixes-and-improvements-0-1-1">Bug fixes and improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-improvements-0-1-1"></a></h3>
 <ul><li>
 <code><a href="../reference/pulmo_markers.html">pulmo_markers()</a></code>: fixed column-inference logic for spirometry z-score inputs.</li>
-<li>All marker functions: standardised verbose progress messages to emit at the <code>"debug"</code> level when <code>verbose = FALSE</code>, so that <code>getOption("healthmarkers.verbose")</code> controls visibility consistently across every function.</li>
-<li>Computing-phase messages are now unconditionally emitted at <code>"debug"</code> level (independent of the per-call <code>verbose</code> argument) in <code><a href="../reference/bone_markers.html">bone_markers()</a></code>, <code><a href="../reference/ckd_stage.html">ckd_stage()</a></code>, and <code><a href="../reference/corrected_calcium.html">corrected_calcium()</a></code>.</li>
+<li>All marker functions: standardised verbose progress messages to emit at the “debug” level when <code>verbose = FALSE</code>, so that <code>getOption("healthmarkers.verbose")</code> controls visibility consistently across every function.</li>
+<li>Computing-phase messages are now unconditionally emitted at “debug” level (independent of the per-call <code>verbose</code> argument) in <code><a href="../reference/bone_markers.html">bone_markers()</a></code>, <code><a href="../reference/ckd_stage.html">ckd_stage()</a></code>, and <code><a href="../reference/corrected_calcium.html">corrected_calcium()</a></code>.</li>
 <li>
 <code><a href="../reference/all_health_markers.html">all_health_markers()</a></code>: column inference is now keyed to the requested groups, falls back to regex-based <code><a href="../reference/infer_cols.html">infer_cols()</a></code> when exact matches fail, and reports per-group status (including missing optional packages) in verbose summaries.</li>
 <li>Cardiovascular risk wrappers: <code><a href="../reference/cvd_risk_qrisk3.html">cvd_risk_qrisk3()</a></code> now prefers the correctly named <code>ethnicity</code> column (typo tolerated for backward compatibility), and optional dependency errors now report the missing package name consistently.</li>
