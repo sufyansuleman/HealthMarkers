@@ -1,3 +1,17 @@
+# HealthMarkers 0.1.3
+
+## Bug fixes and CRAN checks
+
+* **CRAN / Fedora check fix** — Addressed the issue that caused a Fedora build
+  failure reported by CRAN. Slow examples were moved into `\donttest{}` blocks
+  and long-running tests were guarded with `skip_on_cran()`; system-dependent
+  behavior was removed or made optional. I re-ran `R CMD check --as-cran`
+  locally and performed a Fedora-style check in Docker; the package now
+  passes these checks.
+
+* **Metadata** — Bumped `Version` to 0.1.3 and updated `CRAN-SUBMISSION` and
+  `cran-comments.md` to reflect the resubmission.
+
 # HealthMarkers 0.1.2
 
 ## New features
@@ -90,9 +104,9 @@
 
 * `pulmo_markers()`: fixed column-inference logic for spirometry z-score inputs.
 * All marker functions: standardised verbose progress messages to emit at the
-  `"debug"` level when `verbose = FALSE`, so that `getOption("healthmarkers.verbose")`
+  "debug" level when `verbose = FALSE`, so that `getOption("healthmarkers.verbose")`
   controls visibility consistently across every function.
-* Computing-phase messages are now unconditionally emitted at `"debug"` level
+* Computing-phase messages are now unconditionally emitted at "debug" level
   (independent of the per-call `verbose` argument) in `bone_markers()`,
   `ckd_stage()`, and `corrected_calcium()`.
 * `all_health_markers()`: column inference is now keyed to the requested

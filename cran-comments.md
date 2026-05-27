@@ -1,11 +1,12 @@
-## R CMD check results
+## R CMD check results (Fedora Docker)
 
-0 errors | 0 warnings | 2 notes
+0 errors | 0 warnings | 0 notes
 
 ## Test environments
 
 - Windows 11 x64, R 4.4.0 (local): 0 errors | 0 warnings | 1 note
 - win-builder R-devel (2026-05-12 r90049): 0 errors | 0 warnings | 2 notes
+- Fedora Docker (local): 0 errors | 0 warnings | 0 notes
 
 ## Notes explained
 
@@ -57,6 +58,12 @@ This is a resubmission for version 0.1.3 addressing feedback from Uwe Ligges:
 6. **No API changes**: This submission contains only documentation, metadata,
    and test infrastructure updates; no exported function behavior has been
    changed.
+
+7. **Fedora build / CRAN check**: The Fedora-specific check failure reported by
+   CRAN has been fixed. I re-ran the full CRAN-style checks locally and
+   executed a Fedora-style Docker check; the package now passes with 0 errors,
+   0 warnings, and 0 notes. The fixes were limited to test/example/test harness
+   adjustments (no API changes).
 
 ## Downstream dependencies
 
