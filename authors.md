@@ -11,13 +11,13 @@ Source:
 [`inst/CITATION`](https://github.com/sufyansuleman/HealthMarkers/blob/main/inst/CITATION)
 
 Suleman, S. (2026). HealthMarkers: Toolkit for Clinical, Metabolic, and
-Cardiovascular Biomarker Calculations. R package version 0.1.3.
+Cardiovascular Biomarker Calculations. R package version 0.1.2.
 https://github.com/sufyansuleman/HealthMarkers
 
     @Manual{,
       title = {HealthMarkers: Toolkit for Clinical, Metabolic, and Cardiovascular Biomarker Calculations},
       author = {Sufyan Suleman},
       year = {2026},
-      note = {R package version 0.1.3},
+      note = {R package version 0.1.2},
       url = {https://github.com/sufyansuleman/HealthMarkers},
     }
