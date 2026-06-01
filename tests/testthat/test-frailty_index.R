@@ -25,8 +25,20 @@ local_no_di <- function() {
 
 # 1) frailty_index errors if 'di' not installed
 test_that("frailty_index errors without di installed", {
-  unload_di_if_loaded()
-  local_no_di()
+  # Mock .need_pkg_di directly in the HealthMarkers namespace.
+  # This is reliable regardless of whether 'di' is installed or already loaded
+  # in the session (the withr::with_libpaths / requireNamespace approach fails
+  # on Fedora because the namespace is already resident in memory).
+  local_mocked_bindings(
+    .need_pkg_di = function() {
+      rlang::abort(
+        "Package 'di' is required for this feature. Install it first.",
+        class = "healthmarkers_missing_package",
+        package = "di"
+      )
+    },
+    .package = "HealthMarkers"
+  )
   expect_error(
     frailty_index(tibble::tibble(a = 1, b = 0)),
     "Package 'di' is required"

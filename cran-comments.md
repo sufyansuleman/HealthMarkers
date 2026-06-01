@@ -59,11 +59,15 @@ This is a resubmission for version 0.1.3 addressing feedback from Uwe Ligges:
    and test infrastructure updates; no exported function behavior has been
    changed.
 
-7. **Fedora build / CRAN check**: The Fedora-specific check failure reported by
-   CRAN has been fixed. I re-ran the full CRAN-style checks locally and
-   executed a Fedora-style Docker check; the package now passes with 0 errors,
-   0 warnings, and 0 notes. The fixes were limited to test/example/test harness
-   adjustments (no API changes).
+7. **Fedora build / CRAN check (`r-devel-linux-x86_64-fedora-gcc` ERROR)**:  
+   Root cause identified and fixed. The test `test-frailty_index.R:16`
+   ("frailty_index errors without di installed") failed because on Fedora the
+   `di` namespace is already resident in the session, so `requireNamespace("di")`
+   always returns `TRUE` — the old `withr::with_libpaths()` / `base::requireNamespace`
+   mock could not intercept it. Fixed by replacing that approach with
+   `testthat::local_mocked_bindings(.need_pkg_di = ..., .package = "HealthMarkers")`
+   which mocks the internal gatekeeper function directly and is reliable on all
+   platforms. Confirmed FAIL 0 locally.
 
 ## Downstream dependencies
 
