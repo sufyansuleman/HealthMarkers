@@ -4,12 +4,19 @@
 
 ### Bug fixes and CRAN checks
 
-- **CRAN / Fedora check fix** — Addressed the issue that caused a Fedora
-  build failure reported by CRAN. Slow examples were moved into
-  `\donttest{}` blocks and long-running tests were guarded with
-  `skip_on_cran()`; system-dependent behavior was removed or made
-  optional. I re-ran `R CMD check --as-cran` locally and performed a
-  Fedora-style check in Docker; the package now passes these checks.
+- **CRAN / Fedora `r-devel-linux-x86_64-fedora-gcc` ERROR fix.**  
+  `test-frailty_index.R` test 1 (“frailty_index errors without di
+  installed”) failed on Fedora because the `di` namespace is already
+  resident in memory for the whole test session, so
+  [`requireNamespace("di")`](https://rdrr.io/r/base/ns-load.html) always
+  returns `TRUE` regardless of
+  [`withr::with_libpaths()`](https://withr.r-lib.org/reference/with_libpaths.html)
+  or mocking
+  [`base::requireNamespace`](https://rdrr.io/r/base/ns-load.html). Fixed
+  by mocking `.need_pkg_di()` directly in the `HealthMarkers` namespace
+  via `testthat::local_mocked_bindings(.package = "HealthMarkers")`.
+  This is reliable on all platforms regardless of whether `di` is
+  installed or loaded.
 
 - **Metadata** — Bumped `Version` to 0.1.3 and updated `CRAN-SUBMISSION`
   and `cran-comments.md` to reflect the resubmission.
