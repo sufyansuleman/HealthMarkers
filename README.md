@@ -35,6 +35,7 @@ downloads](https://img.shields.io/github/downloads/sufyansuleman/HealthMarkers/t
 [![R-CMD-check](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sufyansuleman/HealthMarkers/actions/workflows/R-CMD-check.yaml)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/1012367183.svg)](https://doi.org/10.5281/zenodo.20668334)
 <!-- badges: end -->
 
 # HealthMarkers
