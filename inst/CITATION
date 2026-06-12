@@ -6,11 +6,12 @@ bibentry(
   author   = person("Sufyan", "Suleman"),
   year     = format(Sys.Date(), "%Y"),
   note     = sprintf("R package version %s", meta$Version),
+  doi      = "10.5281/zenodo.20668334",
   url      = "https://github.com/sufyansuleman/HealthMarkers",
   textVersion = paste0(
     "Suleman, S. (", format(Sys.Date(), "%Y"), "). ",
     "HealthMarkers: Toolkit for Clinical, Metabolic, and Cardiovascular Biomarker Calculations. ",
     "R package version ", meta$Version, ". ",
-    "https://github.com/sufyansuleman/HealthMarkers"
+    "https://doi.org/10.5281/zenodo.20668334"
   )
 )

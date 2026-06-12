@@ -7,8 +7,6 @@ Authors@R:
            email = "sufyansuleman@hotmail.com",
            role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-6612-6915"))
-Author: Sufyan Suleman [aut, cre]
-Maintainer: Sufyan Suleman <sufyansuleman@hotmail.com>
 Description: Computes specialist biomarker indices and risk scores for metabolic,
     cardiovascular, renal, hepatic, inflammatory, frailty, and psychiatric
     health assessment. Includes fasting and OGTT insulin sensitivity/resistance
