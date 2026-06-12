@@ -54,22 +54,24 @@ This function preserves prior behavior by default:
 \item No capping or out-of-range checks are applied.
 }
 
-Units (no automatic conversion):
+Units:
 \itemize{
 \item age: years; sex: 1 = male, 2 = female
 \item eGFR: mL/min/1.73 m^2
-\item UACR: mg/g (albumin-to-creatinine ratio)
+\item UACR: mg/g (albumin-to-creatinine ratio); converted internally to mg/mmol
+(/ 8.84) for the equation, which is defined in mg/mmol.
 }
 
 Details
 \itemize{
-\item Prognostic index: \verb{PI = 0.220 x log(age) + (-0.556) x log(eGFR) + 0.451 x log(UACR) + 0.391 x (male)}
-where male = 1 if sex == 1, else 0.
-\item Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).
+\item 4-variable KFRE (Tangri 2011), non-North-American recalibration:
+\code{PI = -0.2201*(age/10 - 7.036) + 0.2467*(male - 0.5642) - 0.5567*(eGFR/5 - 7.222) + 0.4510*(ln(ACR_mmol) - 5.137)}
+where male = 1 if sex == 1 else 0, and \code{ACR_mmol = UACR[mg/g] / 8.84}.
+\item Baseline survival (non-North-American): S0(2y) = 0.9832, S0(5y) = 0.9365.
 \item Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).
 \item The 2016 JAMA study provides a large, multinational validation of the KFRE in humans.
-\item This implementation computes the original 4-variable linear predictor and does not
-apply recalibration or alternative coefficient sets.
+\item Uses the non-North-American recalibration; the North-American original uses
+different baseline-survival constants.
 }
 }
 \examples{

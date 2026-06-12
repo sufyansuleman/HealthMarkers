@@ -26,9 +26,18 @@ test_that("fasting_is returns 10 indices and computes HOMA_IR_inv correctly", {
   expect_named(out, expected_names, ignore.order = TRUE)
   expect_equal(ncol(out), length(expected_names))
 
-  # manual HOMA_IR_inv = -((G0*18)*(I0/6)) / 22.5
-  expected_homa <- -((5.5 * 18) * (60 / 6)) / 22.5
+  # manual HOMA_IR_inv = -(G0[mmol/L] * (I0/6)) / 22.5  (Matthews 1985)
+  expected_homa <- -(5.5 * (60 / 6)) / 22.5
   expect_equal(out$HOMA_IR_inv, expected_homa)
+  # HOMA_IR_rev_inv expresses the same index via the mg/dL convention (/405)
+  # and must therefore equal HOMA_IR_inv.
+  expect_equal(out$HOMA_IR_rev_inv, expected_homa)
+
+  # FIRI uses glucose in mmol/L (Duncan 1995)
+  expect_equal(out$FIRI, (5.5 * (60 / 6)) / 25)
+
+  # QUICKI uses log10 of insulin (muU/mL) and glucose (mg/dL) (Katz 2000)
+  expect_equal(out$QUICKI, 1 / (log10(60 / 6) + log10(5.5 * 18)))
 })
 
 test_that("fasting_is is vectorized over multiple rows", {

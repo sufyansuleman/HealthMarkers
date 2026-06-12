@@ -60,11 +60,13 @@ Given fasting labs and anthropometry, computes:
 }
 }
 \details{
-Assumed units (no automatic conversion of inputs except where noted):
+Assumed input units are mmol/L for glucose and lipids; indices convert
+internally to the units their original publications require:
 \itemize{
-\item HDL_c, TG: mmol/L (TyG internally converts TG to mg/dL via 88.57)
+\item HDL_c, TG: mmol/L. SPISE (Paulmichl 2016) and METS_IR (Bello-Gaytan 2018)
+convert HDL_c (*38.67) and TG (*88.57) to mg/dL; TyG converts TG (*88.57).
 \item BMI: kg/m^2
-\item glucose, G0: mmol/L (TyG internally converts glucose to mg/dL via 18)
+\item glucose, G0: mmol/L. METS_IR and TyG convert glucose (*18) to mg/dL.
 \item HbA1c: mmol/mol
 \item C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin muU/mL; see notes)
 \item leptin, adiponectin: ng/mL

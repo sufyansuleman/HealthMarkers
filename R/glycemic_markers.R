@@ -11,10 +11,12 @@
 #'  - ASI (Adiponectin Sensitivity Index; adiponectin/insulin)
 #'  - TyG_index (Triglyceride-Glucose Index)
 #'
-#' Assumed units (no automatic conversion of inputs except where noted):
-#' - HDL_c, TG: mmol/L (TyG internally converts TG to mg/dL via 88.57)
+#' Assumed input units are mmol/L for glucose and lipids; indices convert
+#' internally to the units their original publications require:
+#' - HDL_c, TG: mmol/L. SPISE (Paulmichl 2016) and METS_IR (Bello-Gaytan 2018)
+#'   convert HDL_c (*38.67) and TG (*88.57) to mg/dL; TyG converts TG (*88.57).
 #' - BMI: kg/m^2
-#' - glucose, G0: mmol/L (TyG internally converts glucose to mg/dL via 18)
+#' - glucose, G0: mmol/L. METS_IR and TyG convert glucose (*18) to mg/dL.
 #' - HbA1c: mmol/mol
 #' - C_peptide, I0: pmol/L (HOMA_CP uses I-like conversion factor 6 as in insulin muU/mL; see notes)
 #' - leptin, adiponectin: ng/mL
@@ -345,12 +347,15 @@ glycemic_markers <- function(
   lg <- function(x) .gm_log(x)
   dv <- function(a, b) .gm_safe_div(a, b)
 
-  TG_mgdl <- TG * 88.57
+  TG_mgdl  <- TG * 88.57
+  HDL_mgdl <- HDL_c * 38.67
 
-  SPISE <- dv(600 * (HDL_c ^ 0.185), ((TG ^ 0.2) * (BMI ^ 1.338)))
+  # SPISE (Paulmichl 2016) is defined with HDL-c and TG in mg/dL.
+  SPISE <- dv(600 * (HDL_mgdl ^ 0.185), ((TG_mgdl ^ 0.2) * (BMI ^ 1.338)))
 
+  # METS-IR (Bello-Chavolla 2018) is defined with glucose, TG, HDL-c in mg/dL.
   METS_IR <- if (!is.null(glucose)) {
-    dv(lg(2 * glucose + TG) * BMI, lg(HDL_c))
+    dv(lg(2 * (glucose * 18) + TG_mgdl) * BMI, lg(HDL_mgdl))
   } else {
     rep(NA_real_, NROW(HDL_c))
   }

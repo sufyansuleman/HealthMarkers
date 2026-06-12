@@ -22,6 +22,18 @@ test_that("kidney_failure_risk returns a tibble with 2 risk estimates between 0 
   expect_true(all(out$KFRE_5yr >= 0 & out$KFRE_5yr <= 1))
 })
 
+test_that("KFRE matches Tangri 2011 non-North-American formula (mg/g input)", {
+  skip_on_cran()
+  df <- tibble(age = 60, sex = 1, eGFR = 45, UACR = 300)
+  cm <- list(age = "age", sex = "sex", eGFR = "eGFR", UACR = "UACR")
+  out <- kidney_failure_risk(df, col_map = cm, verbose = FALSE)
+  acr_mmol <- 300 / 8.84
+  pi <- -0.2201 * (60 / 10 - 7.036) + 0.2467 * (1 - 0.5642) +
+        -0.5567 * (45 / 5 - 7.222) + 0.4510 * (log(acr_mmol) - 5.137)
+  expect_equal(out$KFRE_2yr, 1 - 0.9832^exp(pi), tolerance = 1e-9)
+  expect_equal(out$KFRE_5yr, 1 - 0.9365^exp(pi), tolerance = 1e-9)
+})
+
 test_that("kidney_failure_risk errors if mapped columns are missing in data", {
   skip_on_cran()
   df_bad <- tibble(

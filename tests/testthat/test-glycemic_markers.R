@@ -23,21 +23,22 @@ test_that("errors if missing any of HDL_c, TG, or BMI", {
 test_that("SPISE is computed correctly", {
   skip_on_cran()
   df <- tibble(HDL_c = 1.0, TG = 1.3, BMI = 24)
-  expected <- 600 * 1.0^0.185 / (1.3^0.2 * 24^1.338)
+  # SPISE (Paulmichl 2016) uses HDL-c and TG in mg/dL (HDL*38.67, TG*88.57)
+  expected <- 600 * (1.0 * 38.67)^0.185 / ((1.3 * 88.57)^0.2 * 24^1.338)
   out <- glycemic_markers(df, verbose = FALSE)
   expect_equal(out$SPISE, expected, tolerance = 1e-8)
 })
 
 test_that("METS_IR returns finite when glucose present and HDL_c != 1, NA when denominator is zero", {
   skip_on_cran()
-  # Use HDL_c != 1 so log(HDL_c) != 0 and result is finite
+  # METS-IR (Bello-Chavolla 2018) uses glucose/TG/HDL in mg/dL
   df_with <- tibble(HDL_c = 1.2, TG = 1.3, BMI = 24, glucose = 5.6)
   out1 <- glycemic_markers(df_with, verbose = FALSE)
-  expected <- (log(2 * 5.6 + 1.3) * 24) / log(1.2)
+  expected <- (log(2 * (5.6 * 18) + 1.3 * 88.57) * 24) / log(1.2 * 38.67)
   expect_equal(out1$METS_IR, expected, tolerance = 1e-8)
 
-  # Denominator zero case -> safe division returns NA
-  df_den0 <- tibble(HDL_c = 1, TG = 1.3, BMI = 24, glucose = 5.6)
+  # Denominator zero case (ln(HDL in mg/dL) == 0 <=> HDL_mgdl == 1) -> NA
+  df_den0 <- tibble(HDL_c = 1 / 38.67, TG = 1.3, BMI = 24, glucose = 5.6)
   out_den0 <- glycemic_markers(df_den0, verbose = FALSE)
   expect_true(is.na(out_den0$METS_IR))
 
@@ -261,7 +262,7 @@ test_that("BMI pre-computed from weight and height when BMI absent", {
   )
   out <- glycemic_markers(df, verbose = FALSE)
   expected_bmi <- 70 / (175 / 100)^2
-  expected_spise <- 600 * 1.0^0.185 / (1.3^0.2 * expected_bmi^1.338)
+  expected_spise <- 600 * (1.0 * 38.67)^0.185 / ((1.3 * 88.57)^0.2 * expected_bmi^1.338)
   expect_equal(out$SPISE, expected_spise, tolerance = 1e-6)
 })
 
@@ -310,7 +311,7 @@ test_that("BMI derived from mapped weight/height with non-standard column names"
   cm  <- list(HDL_c = "hdlc", TG = "trig", weight = "wt_kg", height = "ht_cm")
   out <- glycemic_markers(df, col_map = cm, verbose = FALSE)
   expected_bmi   <- 70 / (175 / 100)^2
-  expected_spise <- 600 * 1.0^0.185 / (1.3^0.2 * expected_bmi^1.338)
+  expected_spise <- 600 * (1.0 * 38.67)^0.185 / ((1.3 * 88.57)^0.2 * expected_bmi^1.338)
   expect_equal(out$SPISE, expected_spise, tolerance = 1e-6,
                info = "SPISE should use BMI precomputed from mapped weight/height")
 })

@@ -347,6 +347,14 @@ cvd_risk_scorescvd <- function(data, ...) {
 #'
 #' Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 #'
+#' Note on units: AIP is defined by Dobiasova (2004) with TG and HDL_c in
+#' mmol/L, and its published risk strata assume mmol/L. AIP is NOT
+#' scale-invariant (TG and HDL-c convert with different factors), so mg/dL
+#' inputs shift AIP by about +0.36. This wrapper follows the mg/dL convention
+#' used by the other `cvd_*` calculators; supply mmol/L (and divide intent
+#' accordingly) if you need values comparable to the original strata. See
+#' [atherogenic_indices()] for the mmol/L implementation.
+#'
 #' @param data A data frame with numeric columns TG and HDL_c (mg/dL).
 #' @param col_map Named list mapping required keys:
 #'   - TG: triglycerides

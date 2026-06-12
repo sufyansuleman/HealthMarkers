@@ -35,7 +35,10 @@ A tibble with columns HSI and NAFLD_LFS.
 Computes:
 \itemize{
 \item HSI = 8 * (ALT/AST) + BMI + 2 (if female) + 2 (if diabetes)
-\item NAFLD-LFS = -2.89 + 1.18\emph{MetS + 0.45}Type2DM + 0.15\emph{Insulin_u + 0.04}AST - 0.94*(AST/ALT)
+\item NAFLD-LFS = -2.89 + 1.18\emph{MetS(yes=1/no=0) + 0.45}Type2DM(yes=2/no=0)
+\itemize{
+\item 0.15\emph{Insulin_u + 0.04}AST - 0.94*(AST/ALT)
+}
 }
 }
 \details{

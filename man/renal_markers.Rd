@@ -78,8 +78,9 @@ Black-race multiplier (\eqn{\times 1.159}) retained. The 2021 race-free CKD-EPI
 equations (Inker et al., NEJM 2021) are not yet implemented; the \code{race} input
 is accepted for forward compatibility and used only for the 2009 race factor.
 \code{eGFR_cys} and \code{eGFR_combined} use Inker et al. (2012); note that
-\code{eGFR_combined} applies its own sex (\eqn{\times 1.008} female) and race
-(\eqn{\times 1.145} Black) multipliers, which differ from those of \code{eGFR_cr}.
+\code{eGFR_combined} uses its own creatinine alpha (\eqn{-0.207} male /
+\eqn{-0.248} female) and its own sex (\eqn{\times 0.969} female) and race
+(\eqn{\times 1.08} Black) multipliers, which differ from those of \code{eGFR_cr}.
 \code{NGAL}, \code{KIM1}, \code{NAG}, \code{Beta2Micro}, \code{IL18}, and \code{L_FABP} are
 \strong{pass-through} columns — values are returned as-is with no formula applied.
 }

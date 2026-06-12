@@ -44,6 +44,15 @@ Compute 10 fasting indices from glucose (mmol/L) and insulin (pmol/L):
 Fasting_inv, Raynaud, HOMA_IR_inv, FIRI, QUICKI, Belfiore_basal, Ig_ratio_basal,
 Isi_basal, Bennett, HOMA_IR_rev_inv. Units converted internally:
 G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).
+
+Unit conventions follow each index's original publication:
+\itemize{
+\item HOMA_IR_inv (Matthews 1985) and FIRI (Duncan 1995) use glucose in mmol/L
+(raw G0) with divisors 22.5 and 25 respectively. HOMA_IR_rev_inv expresses
+the same standard HOMA-IR via the mg/dL convention (G0_mg / 405); it
+therefore equals HOMA_IR_inv.
+\item QUICKI (Katz 2000) uses log10 of glucose (mg/dL) and insulin (muU/mL).
+}
 }
 \examples{
 # Minimal example (units: G0 in mmol/L, I0 in pmol/L)

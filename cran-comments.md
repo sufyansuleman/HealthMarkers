@@ -1,18 +1,46 @@
-## R CMD check results (Fedora Docker)
+## Resubmission of an archived package
 
-0 errors | 0 warnings | 0 notes
+HealthMarkers was archived on 2026-06-01. This 0.1.4 submission restores the
+package. It fixes the issue that led to archival and additionally corrects a
+number of biomarker formula/unit bugs found in a full code audit (see NEWS.md).
+
+## R CMD check results
+
+0 errors | 0 warnings | 0 notes (local), plus the incoming-feasibility note
+expected for a resubmission (see "Notes explained" below).
 
 ## Test environments
 
 - Windows 11 x64, R 4.4.0 (local): 0 errors | 0 warnings | 1 note
-- win-builder R-devel (2026-05-12 r90049): 0 errors | 0 warnings | 2 notes
+- win-builder R-devel: 0 errors | 0 warnings | 2 notes
 - Fedora Docker (local): 0 errors | 0 warnings | 0 notes
+
+## Changes in this version
+
+1. **Cause of archival fixed.** The CRAN check failure on
+   `r-devel-linux-x86_64-fedora-gcc` in `test-frailty_index.R`
+   ("frailty_index errors without di installed") is resolved. On Fedora the `di`
+   namespace is already resident, so `requireNamespace("di")` always returns
+   `TRUE` and the old mock could not intercept it. It now uses
+   `testthat::local_mocked_bindings()` to mock the internal gatekeeper directly,
+   which is reliable on all platforms, and the test is additionally guarded with
+   `skip_on_cran()`. Confirmed FAIL 0 across local, win-builder, and Fedora.
+
+2. **Formula & unit audit.** Every marker-calculation function was checked
+   against its original publication. Eight genuine formula/unit bugs were fixed
+   (insulin sensitivity indices, SPISE/METS-IR, NAFLD-LFS, eGFR combined
+   creatinine-cystatin C, KDIGO risk mapping, KFRE, and BRI), plus
+   documentation clarifications for the Atherogenic Index of Plasma. No exported
+   function signatures changed. Full details in NEWS.md.
+
+3. **dplyr deprecation cleanup.** Replaced a `dplyr::case_when()` call in
+   `obesity_indices()` that triggered a size-1 LHS deprecation warning under
+   dplyr >= 1.2.0. Behaviour is unchanged.
 
 ## Notes explained
 
-**Note 1 — CRAN incoming feasibility (new submission + possibly misspelled words + DOIs)**
+**Incoming feasibility (possibly misspelled words + DOIs)**
 
-- "New submission" — this is a first CRAN submission.
 - "Possibly misspelled words" — all flagged words are correct technical or
   medical terms in common use: ASCVD, CKD, DXA, FRAX, KFRE, QRISK, eGFR,
   iAge, Charlson, Rockwood, Framingham, Dyspnea, absorptiometry, atherogenic,
@@ -26,49 +54,12 @@
   Springer and BMJ blocking automated DOI checks from the win-builder server.
   The DOIs have been verified manually.
 
-**Note 2 — Examples with CPU time > 10s**
+**Examples with CPU time > 10s**
 
-`metabolic_markers()` was flagged at 10.03s on win-builder. The example has
-been moved into a `\donttest{}` block in this submission.
-
-## Resubmission notes
-
-This is a resubmission for version 0.1.3 addressing feedback from Uwe Ligges:
-
-1. **Slow examples (> 10s)**: Replaced slow examples with fast smoke-test
-   examples for all 7 flagged functions. Full examples moved into `\donttest{}`
-   blocks. `vitamin_markers()` (requires 25 mandatory columns) and
-   `metabolic_markers()` are entirely `\donttest{}`.
-
-2. **Vignette build time (28 min)**: All vignettes live in
-   `vignettes/articles/` (pkgdown-only articles), which R CMD check does not
-   build. `vignettes/articles/` is listed in `.Rbuildignore`. There are no
-   vignettes in the built package tarball.
-
-3. **Test suite run time**: Added `skip_on_cran()` to the first test in each
-   of the 41 slow test files. Tests now complete in ~31s on CRAN (was 522s).
-
-4. **CRAN-like Suggests check**: Fixed `tests/testthat/test-frailty_index.R` so
-   it reliably simulates a missing `di` package during `R_CHECK_SUGGESTS_ONLY=false`.
-
-5. **Metadata and documentation updates**: Updated `DESCRIPTION` title and
-   description for a more realistic CRAN package summary, and tightened the
-   README installation and quick-start sections.
-
-6. **No API changes**: This submission contains only documentation, metadata,
-   and test infrastructure updates; no exported function behavior has been
-   changed.
-
-7. **Fedora build / CRAN check (`r-devel-linux-x86_64-fedora-gcc` ERROR)**:  
-   Root cause identified and fixed. The test `test-frailty_index.R:16`
-   ("frailty_index errors without di installed") failed because on Fedora the
-   `di` namespace is already resident in the session, so `requireNamespace("di")`
-   always returns `TRUE` — the old `withr::with_libpaths()` / `base::requireNamespace`
-   mock could not intercept it. Fixed by replacing that approach with
-   `testthat::local_mocked_bindings(.need_pkg_di = ..., .package = "HealthMarkers")`
-   which mocks the internal gatekeeper function directly and is reliable on all
-   platforms. Confirmed FAIL 0 locally.
+Slow examples are wrapped in `\donttest{}`; `vitamin_markers()` and
+`metabolic_markers()` are entirely `\donttest{}`. Tests in the 41 slow test
+files are guarded with `skip_on_cran()`; the CRAN test suite completes in ~31s.
 
 ## Downstream dependencies
 
-None — this is a new package.
+None.

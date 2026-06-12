@@ -7,6 +7,13 @@
 #' Isi_basal, Bennett, HOMA_IR_rev_inv. Units converted internally:
 #' G0_mg = G0*18 (mg/dL), I0_u = I0/6 (muU/mL).
 #'
+#' Unit conventions follow each index's original publication:
+#' - HOMA_IR_inv (Matthews 1985) and FIRI (Duncan 1995) use glucose in mmol/L
+#'   (raw G0) with divisors 22.5 and 25 respectively. HOMA_IR_rev_inv expresses
+#'   the same standard HOMA-IR via the mg/dL convention (G0_mg / 405); it
+#'   therefore equals HOMA_IR_inv.
+#' - QUICKI (Katz 2000) uses log10 of glucose (mg/dL) and insulin (muU/mL).
+#'
 #' @param data Data frame with required inputs.
 #' @param col_map Named list mapping required keys:
 #'   - G0: fasting glucose (mmol/L)
@@ -159,6 +166,14 @@ fasting_is <- function(
     out[!is.finite(out)] <- NA_real_
     out
   }
+  # log base 10 (QUICKI is defined with log10 in Katz et al. 2000)
+  lg10 <- function(x) {
+    y <- x
+    y[!(is.finite(y) & y > 0)] <- NA_real_
+    out <- suppressWarnings(log10(y))
+    out[!is.finite(out)] <- NA_real_
+    out
+  }
   sdiv <- function(a, b) {
     z <- a / b
     z[!is.finite(z)] <- NA_real_
@@ -168,9 +183,11 @@ fasting_is <- function(
   out <- tibble::tibble(
     Fasting_inv     = -I0_u,
     Raynaud         = sdiv(40, I0_u),
-    HOMA_IR_inv     = -sdiv(G0_mg * I0_u, 22.5),
-    FIRI            =  sdiv(G0_mg * I0_u, 25),
-    QUICKI          = sdiv(1, lg(G0_mg) + lg(I0_u)),
+    # HOMA-IR (Matthews 1985) and FIRI (Duncan 1995) are defined with glucose
+    # in mmol/L; use raw G0 (not the mg/dL-converted G0_mg).
+    HOMA_IR_inv     = -sdiv(G0 * I0_u, 22.5),
+    FIRI            =  sdiv(G0 * I0_u, 25),
+    QUICKI          = sdiv(1, lg10(G0_mg) + lg10(I0_u)),
     Belfiore_basal  = sdiv(2, (I0_u * G0_mg) + 1),
     Ig_ratio_basal  = -sdiv(I0_u, G0_mg),
     Isi_basal       = sdiv(10000, G0_mg * I0_u),

@@ -46,6 +46,17 @@ test_that("returns all expected indices for single row", {
   expect_true(all(vapply(out, function(x) is.finite(x[1]), logical(1))))
 })
 
+test_that("Cederholm_index uses glucose in mmol/L (Cederholm & Wibell 1990)", {
+  skip_on_cran()
+  out <- run_ogtt(base_df, normalize = "none")
+  # glucose stays in mmol/L (raw); insulin in muU/mL (/6); natural log of sum
+  G0 <- 5.5; G120 <- 6.2; wt <- 70
+  I0 <- 60 / 6; I120 <- 50 / 6
+  expected_cederholm <- (75000 + (G0 - G120) * 1.15 * 180 * 0.19 * wt) /
+    (120 * ((G0 + G120) / 2) * log(I0 + I120))
+  expect_equal(out$Cederholm_index, expected_cederholm)
+})
+
 test_that("vectorized input: two rows gives two outputs", {
   skip_on_cran()
   df2 <- dplyr::bind_rows(base_df, dplyr::mutate(base_df, G0 = 6))

@@ -703,7 +703,7 @@ articles](https://sufyansuleman.github.io/HealthMarkers/articles/)
 | Topic | Article |
 |----|----|
 | Fasting insulin sensitivity (HOMA-IR, QUICKI, 15+ indices) | [fasting_is](https://sufyansuleman.github.io/HealthMarkers/articles/fasting_is.html) |
-| OGTT insulin sensitivity (Matsuda, Stumvoll, Gutt, 25+ indices) | [adipo_is](https://sufyansuleman.github.io/HealthMarkers/articles/adipo_is.html) |
+| OGTT insulin sensitivity (Matsuda, Stumvoll, Gutt, 25+ indices) | [ogtt_is](https://sufyansuleman.github.io/HealthMarkers/articles/ogtt_is.html) |
 | Glycaemic markers (TyG, METS-IR, LAR, diabetes flags) | [glycemic_markers](https://sufyansuleman.github.io/HealthMarkers/articles/glycemic_markers.html) |
 | Lipid and atherogenic indices | [lipid_markers](https://sufyansuleman.github.io/HealthMarkers/articles/lipid_markers.html) |
 | Cardiovascular risk scores (ASCVD, QRISK3, SCORE2) | [cvd_risk](https://sufyansuleman.github.io/HealthMarkers/articles/cvd_risk.html) |

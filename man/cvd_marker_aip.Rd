@@ -35,6 +35,15 @@ A tibble with columns model = "AIP" and value.
 \description{
 Computes log10(TG / HDL_c) with input validation and HM-CS NA handling.
 }
+\details{
+Note on units: AIP is defined by Dobiasova (2004) with TG and HDL_c in
+mmol/L, and its published risk strata assume mmol/L. AIP is NOT
+scale-invariant (TG and HDL-c convert with different factors), so mg/dL
+inputs shift AIP by about +0.36. This wrapper follows the mg/dL convention
+used by the other \verb{cvd_*} calculators; supply mmol/L (and divide intent
+accordingly) if you need values comparable to the original strata. See
+\code{\link[=atherogenic_indices]{atherogenic_indices()}} for the mmol/L implementation.
+}
 \examples{
 df <- data.frame(TG = c(150, 200), HDL_c = c(50, 40))
 cvd_marker_aip(df)

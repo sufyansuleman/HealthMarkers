@@ -37,22 +37,30 @@ Calculates:
 }
 }
 \details{
+Units (package convention): TG, HDL_c, TC, LDL_c in mmol/L.
+\itemize{
+\item AIP (Dobiasova 2004) is defined with TG and HDL_c in mmol/L and is NOT
+scale-invariant: TG and HDL-c convert to mg/dL with different factors
+(88.57 vs 38.67), so mg/dL inputs shift AIP by +log10(88.57/38.67) approx
++0.36 and invalidate the published risk strata. Provide mmol/L.
+\item CRI_I (TC/HDL_c) and CRI_II (LDL_c/HDL_c) are ratios of cholesterol
+fractions and ARE scale-invariant (identical in mg/dL or mmol/L).
+}
+
 Behavior:
 \itemize{
 \item Required keys: TG, HDL_c. Optional: TC, LDL_c.
 \item NA policy via \code{na_action}: "keep" (default), "omit" (drop rows with any NA in used lipids), "error".
-\item Extreme screening via \code{check_extreme} and \code{extreme_action} ("warn","cap","error","ignore","NA").
-Default bounds (mg/dL) used only for screening: TG (0, 10000), HDL_c (0, 1000), LDL_c (0, 10000), TC (0, 10000).
-Note: All indices are unitless ratios; units cancel in computations.
 \item Emits progress via \code{hm_inform()} when \code{verbose = TRUE} or when package option enables logs.
 }
 }
 \examples{
+# Units: mmol/L (TG, HDL_c, TC, LDL_c)
 df <- tibble::tibble(
-  TG = c(150, 200),
-  HDL_c = c(50, 40),
-  TC = c(200, 220),
-  LDL_c = c(120, 150)
+  TG = c(1.7, 2.3),
+  HDL_c = c(1.3, 1.0),
+  TC = c(5.2, 5.7),
+  LDL_c = c(3.1, 3.9)
 )
 cm <- list(TG = "TG", HDL_c = "HDL_c", TC = "TC", LDL_c = "LDL_c")
 atherogenic_indices(df, col_map = cm)

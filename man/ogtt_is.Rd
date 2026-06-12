@@ -76,9 +76,12 @@ formulas intentionally use unconverted inputs (as in prior code).
 as published in Stumvoll et al. (2000). BigttSi likewise uses raw units.
 \item Matsuda_AUC is a non-standard AUC-based variant; the original Matsuda
 index (Matsuda_ISI) uses time-point means, not AUCs.
-\item Cederholm_index uses log(I0 + I120) as implemented (sum, not mean);
-Gutt_index uses log((I0 + I120)/2) (mean). This mirrors published
-implementations; the difference is a constant log(2) offset.
+\item Cederholm_index uses glucose in mmol/L (raw G0/G120), as defined by
+Cederholm & Wibell (1990); the formula's *180 term is itself the
+mmol/L->mg conversion, so glucose must NOT be pre-converted to mg/dL.
+Gutt_index, by contrast, is defined in mg/dL (no *180 term) and so uses
+the converted glucose. Cederholm uses log(I0 + I120) (sum) while Gutt uses
+log((I0 + I120)/2) (mean), mirroring published implementations.
 \item Ifc_inv and HIRI_inv are derived composite proxies not attributed to a
 single formula publication; treat as research tools.
 \item Logs are safe: log(x) becomes NA when x <= 0 or non-finite.

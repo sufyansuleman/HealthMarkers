@@ -48,6 +48,12 @@ test_that("core metrics compute correctly without options", {
   expect_true(all(is.finite(out$ABSI)))
   expect_true(all(is.finite(out$BRI)))
   expect_true(all(is.finite(out$CI)))
+
+  # BRI (Thomas 2013): ratio = WC_m / (pi * height_m); waist 90/100 cm
+  wc_m <- c(90, 100) / 100; h_m <- c(1.75, 1.65)
+  bri_ref <- 364.2 - 365.5 * sqrt(pmax(0, 1 - (wc_m / (pi * h_m))^2))
+  expect_equal(out$BRI, bri_ref, tolerance = 1e-8)
+  expect_true(all(out$BRI > 0))  # was ~0/negative under the old 2*pi bug
 })
 
 # 2) Test adjust_WHR and include_RFM

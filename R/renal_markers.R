@@ -58,8 +58,9 @@
 #' equations (Inker et al., NEJM 2021) are not yet implemented; the `race` input
 #' is accepted for forward compatibility and used only for the 2009 race factor.
 #' `eGFR_cys` and `eGFR_combined` use Inker et al. (2012); note that
-#' `eGFR_combined` applies its own sex (\eqn{\times 1.008} female) and race
-#' (\eqn{\times 1.145} Black) multipliers, which differ from those of `eGFR_cr`.
+#' `eGFR_combined` uses its own creatinine alpha (\eqn{-0.207} male /
+#' \eqn{-0.248} female) and its own sex (\eqn{\times 0.969} female) and race
+#' (\eqn{\times 1.08} Black) multipliers, which differ from those of `eGFR_cr`.
 #' `NGAL`, `KIM1`, `NAG`, `Beta2Micro`, `IL18`, and `L_FABP` are
 #' **pass-through** columns — values are returned as-is with no formula applied.
 #'
@@ -262,11 +263,14 @@ renal_markers <- function(data,
     cys_sex <- ifelse(sexi == 1, 1, 0.932)
     eGFR_cys <- 133 * (min_cys^-0.499) * (max_cys^-1.328) *
       (0.996^age) * cys_sex
-    # combined creatinine + cystatin (Inker 2012; sex/race factors differ from eGFR_cr)
-    factor_sex_comb  <- ifelse(sexi == 1, 1, 1.008)   # Inker 2012: female multiplier
-    factor_race_comb <- ifelse(race == "black", 1.145, 1)  # Inker 2012: race multiplier
+    # combined creatinine + cystatin (Inker 2012). The combined equation uses
+    # its OWN creatinine alpha (-0.207 male / -0.248 female), distinct from the
+    # creatinine-only alpha, plus its own sex/race multipliers.
+    alpha_comb       <- ifelse(sexi == 1, -0.207, -0.248) # Inker 2012 combined
+    factor_sex_comb  <- ifelse(sexi == 1, 1, 0.969)       # Inker 2012: female multiplier
+    factor_race_comb <- ifelse(race == "black", 1.08, 1)  # Inker 2012: Black multiplier
     eGFR_combined <- 135 *
-      (min_ratio^alpha) * (max_ratio^-0.601) *
+      (min_ratio^alpha_comb) * (max_ratio^-0.601) *
       (min_cys^-0.375) * (max_cys^-0.711) *
       (0.995^age) * factor_race_comb * factor_sex_comb
   } else {

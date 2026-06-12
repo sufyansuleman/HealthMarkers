@@ -130,15 +130,14 @@ ckd_stage <- function(
   # For risk mapping, treat missing albuminuria as A1 by convention
   A_filled <- as.character(A); A_filled[is.na(A_filled)] <- "A1"
 
+  # KDIGO 2012 risk heatmap (GFR x albuminuria)
   kdigo_map <- function(g, a) {
     if (is.na(g) || is.na(a)) return(NA_character_)
-    if (g %in% c("G1","G2") && a == "A1") return("Low")
-    if (g %in% c("G1","G2") && a %in% c("A2","A3")) return("Moderate")
-    if (g == "G3a" && a == "A1") return("Moderate")
-    if (g == "G3a" && a %in% c("A2","A3")) return("High")
-    if (g == "G3b") return(ifelse(a == "A1","High","Very High"))
+    if (g %in% c("G1","G2")) return(switch(a, A1 = "Low",      A2 = "Moderate",  A3 = "High"))
+    if (g == "G3a")          return(switch(a, A1 = "Moderate", A2 = "High",      A3 = "Very High"))
+    if (g == "G3b")          return(switch(a, A1 = "High",     A2 = "Very High", A3 = "Very High"))
     if (g %in% c("G4","G5")) return("Very High")
-    "Moderate"
+    NA_character_
   }
   KDIGO <- mapply(kdigo_map, as.character(G), A_filled, USE.NAMES = FALSE)
 

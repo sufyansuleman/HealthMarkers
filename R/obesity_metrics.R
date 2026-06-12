@@ -146,17 +146,15 @@ obesity_indices <- function(data,
       data <- data[keep, , drop = FALSE]
     }
   }
-  # Unit-normalized base fields
+  # Unit-normalized base fields. weight_unit/height_unit are scalar (match.arg),
+  # so use scalar conversion factors rather than case_when (which warns in
+  # dplyr >= 1.2.0 on size-1 LHS with size->1 RHS).
+  wt_factor <- if (weight_unit == "lb") 0.45359237 else 1
+  ht_factor <- if (height_unit == "cm") 1 / 100 else 1
   out <- dplyr::mutate(
     data,
-    weight_kg = dplyr::case_when(
-      weight_unit == "kg" ~ !!wt_q,
-      weight_unit == "lb" ~ !!wt_q * 0.45359237
-    ),
-    height_m = dplyr::case_when(
-      height_unit == "m" ~ !!ht_q,
-      height_unit == "cm" ~ !!ht_q / 100
-    )
+    weight_kg = !!wt_q * wt_factor,
+    height_m  = !!ht_q * ht_factor
   )
 
   # Compute BMI and category using normalized units
@@ -211,8 +209,9 @@ obesity_indices <- function(data,
   denom_absi <- (safe_pow(out$BMI, 2/3)) * (safe_pow(out$height_m, 1/2))
   ABSI <- safe_div(wst / 100, denom_absi, "ABSI")  # waist to metres (Krakauer 2012)
 
-  # BRI: waist converted to metres; ratio must be dimensionless (Thomas et al. 2013)
-  ratio <- ifelse(out$height_m > 0, (wst / 100) / (2 * pi * out$height_m), NA_real_)
+  # BRI (Thomas et al. 2013): eccentricity ratio = (WC/(2*pi)) / (0.5*height)
+  # = WC / (pi*height), with waist and height in metres.
+  ratio <- ifelse(out$height_m > 0, (wst / 100) / (pi * out$height_m), NA_real_)
   BRI <- 364.2 - 365.5 * sqrt(pmax(0, 1 - (ratio^2)))
 
   # CI: waist converted to metres per Valdez (1991)

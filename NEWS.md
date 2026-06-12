@@ -1,3 +1,101 @@
+# HealthMarkers 0.1.4
+
+## Formula & unit audit
+
+This release follows a systematic, script-by-script audit of every
+marker-calculation function in the package, checking each formula and its unit
+handling against the original publication. The supporting/utility scripts were
+also confirmed to apply no hidden unit conversions (column inference maps names
+only; the global pre-computation helper keeps variables in their canonical
+units). The fixes below correct genuine formula/unit bugs; the great majority of
+functions were verified correct and unchanged.
+
+### Bug fixes — insulin sensitivity indices
+
+* **`fasting_is()` — `HOMA_IR_inv`.** HOMA-IR (Matthews et al. 1985) is defined
+  with glucose in mmol/L (divisor 22.5). The previous code applied the mg/dL
+  conversion (`*18`) while keeping the 22.5 divisor, yielding values 18x too
+  large. Now uses raw mmol/L glucose. `HOMA_IR_rev_inv` (mg/dL convention,
+  `/405`) already produced the correct value and is unchanged; the two columns
+  are now equal, as intended.
+
+* **`fasting_is()` — `FIRI`.** The Fasting Insulin Resistance Index (Duncan et
+  al. 1995) is defined with glucose in mmol/L (divisor 25). Now uses raw mmol/L
+  glucose instead of the mg/dL-converted value (previously 18x too large).
+
+* **`fasting_is()` — `QUICKI`.** Now uses `log10` (as defined by Katz et al.
+  2000) instead of natural log. Glucose (mg/dL) and insulin (muU/mL) units were
+  already correct.
+
+* **`ogtt_is()` — `Cederholm_index`.** Cederholm & Wibell (1990) is defined with
+  glucose in mmol/L; the formula's `*180` term is itself the mmol/L->mg
+  conversion. The previous code pre-converted glucose to mg/dL (`*18`), causing a
+  double conversion and a non-linear distortion of the index. Now uses raw
+  mmol/L glucose. `Gutt_index` (defined in mg/dL, no `*180` term) is unchanged
+  and correct.
+
+### Bug fixes — other markers
+
+* **`glycemic_markers()` — `SPISE` and `METS_IR`.** Both indices are defined for
+  inputs in **mg/dL** (SPISE: Paulmichl 2016; METS-IR: Bello-Gaytan 2018) and
+  carry validated cut-offs in those units. The previous code fed raw mmol/L
+  values, giving systematically wrong (non-constant) results. Now converts HDL-c
+  (`*38.67`), TG (`*88.57`) and glucose (`*18`) to mg/dL internally. `TyG_index`
+  was already correct.
+
+* **`liver_fat_markers()` — `NAFLD_LFS`.** The NAFLD Liver Fat Score (Kotronen et
+  al. 2009) codes type-2 diabetes as **yes = 2 / no = 0**, so the diabetic
+  contribution is `0.45 * 2 = 0.90`. The previous code used a 0/1 indicator,
+  giving half the intended contribution for people with diabetes. Fixed.
+
+* **`renal_markers()` — `eGFR_combined`.** The combined creatinine–cystatin C
+  CKD-EPI equation (Inker et al. 2012) uses its own creatinine `alpha`
+  (-0.207 male / -0.248 female) and its own female (`x0.969`) and Black
+  (`x1.08`) multipliers. The previous code reused the creatinine-only `alpha`
+  (-0.411 / -0.329) and incorrect multipliers (`1.008`, `1.145`). All three
+  corrected. `eGFR_cr` (2009) and `eGFR_cys` (2012) were already correct.
+
+* **`ckd_stage()` — `KDIGO_risk`.** Two cells of the KDIGO 2012 risk heatmap were
+  mis-mapped: G1/G2 + A3 now returns **High** (was "Moderate"), and G3a + A3 now
+  returns **Very High** (was "High"). GFR and albuminuria stage cut-offs were
+  already correct.
+
+* **`kidney_failure_risk()` — KFRE.** The 4-variable Kidney Failure Risk Equation
+  (Tangri et al. 2011) was reimplemented correctly. The previous linear predictor
+  used log-transformed age and eGFR (the equation uses `age/10` and `eGFR/5`
+  linearly), the wrong sign on age, no covariate centring, an incorrect sex
+  coefficient, and baseline-survival constants matching no published calibration.
+  Now uses the non-North-American calibration:
+  `PI = -0.2201*(age/10 - 7.036) + 0.2467*(male - 0.5642) - 0.5567*(eGFR/5 - 7.222) + 0.4510*(ln(ACR_mmol) - 5.137)`,
+  `S0(2y) = 0.9832`, `S0(5y) = 0.9365`. UACR continues to be supplied in mg/g and
+  is converted internally to mg/mmol (`/8.84`).
+
+* **`obesity_indices()` — `BRI`.** The Body Roundness Index (Thomas et al. 2013)
+  eccentricity ratio is `WC / (pi * height)`; the previous code used
+  `WC / (2*pi * height)` (half the correct value), which produced near-zero or
+  negative BRI for normal adults. Fixed.
+
+### Documentation clarifications
+
+* **`atherogenic_indices()` and `cvd_marker_aip()` — AIP units.** The Atherogenic
+  Index of Plasma `log10(TG/HDL)` is not scale-invariant (TG and HDL-c convert to
+  mg/dL with different factors), and its published risk strata assume mmol/L.
+  Documentation and the `atherogenic_indices()` example were corrected to mmol/L,
+  with an explicit note that mg/dL inputs shift AIP by about +0.36. Formulas are
+  unchanged.
+
+### Internal
+
+* **`obesity_indices()` — dplyr deprecation.** Replaced the unit-normalization
+  `dplyr::case_when()` calls with scalar conversion factors. `weight_unit` and
+  `height_unit` are scalar arguments, so the previous size-1 LHS / vector RHS
+  pattern triggered a deprecation warning under dplyr >= 1.2.0. Behaviour is
+  unchanged.
+
+### Metadata
+
+* Bumped `Version` to 0.1.4.
+
 # HealthMarkers 0.1.3
 
 ## Bug fixes and CRAN checks

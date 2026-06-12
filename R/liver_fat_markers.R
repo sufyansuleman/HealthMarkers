@@ -2,7 +2,8 @@
 #'
 #' Computes:
 #' - HSI = 8 * (ALT/AST) + BMI + 2 (if female) + 2 (if diabetes)
-#' - NAFLD-LFS = -2.89 + 1.18*MetS + 0.45*Type2DM + 0.15*Insulin_u + 0.04*AST - 0.94*(AST/ALT)
+#' - NAFLD-LFS = -2.89 + 1.18*MetS(yes=1/no=0) + 0.45*Type2DM(yes=2/no=0)
+#'   + 0.15*Insulin_u + 0.04*AST - 0.94*(AST/ALT)
 #'
 #' Assumptions/units:
 #' - ALT, AST in U/L; BMI in kg/m^2.
@@ -259,7 +260,9 @@ liver_fat_markers <- function(data,
     rep(NA_real_, length(BMI))
   }
   
-  NAFLD_LFS <- -2.89 + 1.18 * MetS + 0.45 * dm2_flag + 0.15 * Ins_u + 0.04 * AST - 0.94 * sdiv(AST, ALT)
+  # NAFLD-LFS codes type-2 diabetes as yes = 2 / no = 0 (Kotronen 2009),
+  # so the diabetic contribution is 0.45 * 2 = 0.90.
+  NAFLD_LFS <- -2.89 + 1.18 * MetS + 0.45 * (2L * dm2_flag) + 0.15 * Ins_u + 0.04 * AST - 0.94 * sdiv(AST, ALT)
   
   out <- tibble::tibble(HSI = as.numeric(HSI), NAFLD_LFS = as.numeric(NAFLD_LFS))
   if (na_action_eff != "omit") {
