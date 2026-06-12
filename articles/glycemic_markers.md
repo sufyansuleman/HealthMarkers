@@ -93,12 +93,12 @@ head(dplyr::select(gm, dplyr::all_of(gm_new)))
 #> # A tibble: 6 × 7
 #>   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index
 #>   <dbl>   <dbl>       <int>   <dbl> <dbl> <dbl>     <dbl>
-#> 1  4.85    336.           0      NA    NA    NA      9.67
-#> 2  7.11    369.           1      NA    NA    NA      8.07
-#> 3  7.51    289.           0      NA    NA    NA      8.43
-#> 4  8.29    164.           0      NA    NA    NA      8.23
-#> 5  8.38    116.           0      NA    NA    NA      8.51
-#> 6  5.09    165.           0      NA    NA    NA      8.44
+#> 1  3.89    50.8           0      NA    NA    NA      9.67
+#> 2  5.71    43.0           1      NA    NA    NA      8.07
+#> 3  6.02    39.4           0      NA    NA    NA      8.43
+#> 4  6.65    36.2           0      NA    NA    NA      8.23
+#> 5  6.72    33.0           0      NA    NA    NA      8.51
+#> 6  4.08    49.3           0      NA    NA    NA      8.44
 ```
 
 Interpretation: SPISE and METS_IR summarize insulin
@@ -136,7 +136,7 @@ df_no_bmi <- data.frame(
 )
 gm_precomp <- glycemic_markers(df_no_bmi, verbose = FALSE)
 gm_precomp$SPISE  # computed via auto-derived BMI
-#> [1] 8.649504 7.229832
+#> [1] 6.937422 5.798760
 ```
 
 Similarly, providing `G0` without `glucose` enables METS_IR and
@@ -150,7 +150,7 @@ df_g0_only <- data.frame(
 gm_alias <- glycemic_markers(df_g0_only, verbose = FALSE)
 c(METS_IR = gm_alias$METS_IR, TyG_index = gm_alias$TyG_index)
 #>   METS_IR TyG_index 
-#> 330.35250   8.64813
+#>  35.94105   8.64813
 ```
 
 ## Non-standard column names
@@ -172,7 +172,7 @@ gm_mapped <- glycemic_markers(
 )
 c(METS_IR = gm_mapped$METS_IR, TyG_index = gm_mapped$TyG_index)
 #>   METS_IR TyG_index 
-#> 330.35250   8.64813
+#>  35.94105   8.64813
 ```
 
 Similarly, map `weight` / `height` to differently-named anthropometric
@@ -189,7 +189,7 @@ gm_wh <- glycemic_markers(
   verbose = FALSE
 )
 gm_wh$SPISE   # BMI was derived from wt_kg / ht_cm
-#> [1] 7.254687
+#> [1] 5.818695
 ```
 
 ## Partial col_map and dictionary inference
@@ -214,7 +214,7 @@ gm_syn <- glycemic_markers(
 )
 c(SPISE = gm_syn$SPISE, METS_IR = gm_syn$METS_IR, TyG_index = gm_syn$TyG_index)
 #>     SPISE   METS_IR TyG_index 
-#>   8.10289        NA   8.64813
+#>  6.499004 37.733862  8.648130
 ```
 
 ## Missing data handling
@@ -305,7 +305,7 @@ glycem_out <- glycemic_markers(
 #>   LAR             NA [leptin/adiponectin missing]
 #>   ASI             NA [adiponectin/I0 missing]
 #>   TyG_index       [TG, glucose]
-#> glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1
+#> glycemic_markers(): results: SPISE 1/1, METS_IR 1/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1
 ```
 
 ## Column recognition

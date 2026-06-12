@@ -41,7 +41,7 @@ Belfiore_isi_gly
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -150,9 +150,12 @@ formulas intentionally use unconverted inputs (as in prior code).</p></li>
 as published in Stumvoll et al. (2000). BigttSi likewise uses raw units.</p></li>
 <li><p>Matsuda_AUC is a non-standard AUC-based variant; the original Matsuda
 index (Matsuda_ISI) uses time-point means, not AUCs.</p></li>
-<li><p>Cederholm_index uses log(I0 + I120) as implemented (sum, not mean);
-Gutt_index uses log((I0 + I120)/2) (mean). This mirrors published
-implementations; the difference is a constant log(2) offset.</p></li>
+<li><p>Cederholm_index uses glucose in mmol/L (raw G0/G120), as defined by
+Cederholm &amp; Wibell (1990); the formula's *180 term is itself the
+mmol/L-&gt;mg conversion, so glucose must NOT be pre-converted to mg/dL.
+Gutt_index, by contrast, is defined in mg/dL (no *180 term) and so uses
+the converted glucose. Cederholm uses log(I0 + I120) (sum) while Gutt uses
+log((I0 + I120)/2) (mean), mirroring published implementations.</p></li>
 <li><p>Ifc_inv and HIRI_inv are derived composite proxies not attributed to a
 single formula publication; treat as research tools.</p></li>
 <li><p>Logs are safe: log(x) becomes NA when x &lt;= 0 or non-finite.</p></li>
@@ -264,7 +267,7 @@ Suleman S, Madsen AL, Ängquist LH, Schubert M, Linneberg A, Loos RJF, Hansen T,
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 14</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>    10.8            1.10       2.67        9.62          10.2        9.93</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>    10.8            35.8       2.67        9.62          10.2        9.93</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: Modified_stumvoll &lt;dbl&gt;, Stumvoll_Demographics &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   Matsuda_AUC &lt;dbl&gt;, Matsuda_ISI &lt;dbl&gt;, BigttSi &lt;dbl&gt;, Ifc_inv &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   HIRI_inv &lt;dbl&gt;, Belfiore_isi_gly &lt;dbl&gt;</span></span>

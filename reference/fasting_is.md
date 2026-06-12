@@ -5,6 +5,15 @@ Fasting_inv, Raynaud, HOMA_IR_inv, FIRI, QUICKI, Belfiore_basal,
 Ig_ratio_basal, Isi_basal, Bennett, HOMA_IR_rev_inv. Units converted
 internally: G0_mg = G0\*18 (mg/dL), I0_u = I0/6 (muU/mL).
 
+Unit conventions follow each index's original publication:
+
+- HOMA_IR_inv (Matthews 1985) and FIRI (Duncan 1995) use glucose in
+  mmol/L (raw G0) with divisors 22.5 and 25 respectively.
+  HOMA_IR_rev_inv expresses the same standard HOMA-IR via the mg/dL
+  convention (G0_mg / 405); it therefore equals HOMA_IR_inv.
+
+- QUICKI (Katz 2000) uses log10 of glucose (mg/dL) and insulin (muU/mL).
+
 ## Usage
 
 ``` r
@@ -126,9 +135,9 @@ head(res)
 #> # A tibble: 3 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1       -10         4       -41.6  37.4  0.146       0.00213          -0.107
-#> 2       -20         2       -97.6  87.8  0.130       0.000910         -0.182
-#> 3       -13.3       3       -51.2  46.1  0.142       0.00173          -0.154
+#> 1       -10         4       -2.31  2.08  0.337       0.00213          -0.107
+#> 2       -20         2       -5.42  4.88  0.299       0.000910         -0.182
+#> 3       -13.3       3       -2.84  2.56  0.327       0.00173          -0.154
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 
 # With NA handling
@@ -153,7 +162,7 @@ fasting_is(df2, col_map = list(G0 = "G0", I0 = "I0"), na_action = "keep")
 #> # A tibble: 2 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1         -15    2.67         -60    54  0.139        0.00148         -0.167
-#> 2         -25    1.6           NA    NA NA           NA               NA    
+#> 1         -15    2.67       -3.33     3  0.319        0.00148         -0.167
+#> 2         -25    1.6        NA       NA NA           NA               NA    
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 ```

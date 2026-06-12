@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -172,12 +172,12 @@ are fixed.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
 <span><span class="co">#&gt;   SPISE METS_IR prediabetes HOMA_CP   LAR   ASI TyG_index</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  4.85    336.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.67</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  7.11    369.           1      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.07</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  7.51    289.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  8.29    164.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.23</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  8.38    116.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.51</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  5.09    165.           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.44</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>  3.89    50.8           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      9.67</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>  5.71    43.0           1      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.07</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>  6.02    39.4           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.43</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>  6.65    36.2           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.23</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>  6.72    33.0           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.51</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>  4.08    49.3           0      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>      8.44</span></span></code></pre></div>
 <p>Interpretation: SPISE and METS_IR summarize insulin
 sensitivity/resistance; TyG_index rises with higher TG/glucose; HOMA_CP
 approximates insulin resistance via C-peptide and glucose; LAR and ASI
@@ -220,7 +220,7 @@ units for C-peptide.</li>
 <span><span class="op">)</span></span>
 <span><span class="va">gm_precomp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span><span class="va">df_no_bmi</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">gm_precomp</span><span class="op">$</span><span class="va">SPISE</span>  <span class="co"># computed via auto-derived BMI</span></span>
-<span><span class="co">#&gt; [1] 8.649504 7.229832</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 6.937422 5.798760</span></span></code></pre></div>
 <p>Similarly, providing <code>G0</code> without <code>glucose</code>
 enables METS_IR and TyG_index via alias:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -230,7 +230,7 @@ enables METS_IR and TyG_index via alias:</p>
 <span><span class="va">gm_alias</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/glycemic_markers.html">glycemic_markers</a></span><span class="op">(</span><span class="va">df_g0_only</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>METS_IR <span class="op">=</span> <span class="va">gm_alias</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_alias</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   METS_IR TyG_index </span></span>
-<span><span class="co">#&gt; 330.35250   8.64813</span></span></code></pre></div>
+<span><span class="co">#&gt;  35.94105   8.64813</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="non-standard-column-names">Non-standard column names<a class="anchor" aria-label="anchor" href="#non-standard-column-names"></a>
@@ -251,7 +251,7 @@ alias and runs pre-computation normally.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>METS_IR <span class="op">=</span> <span class="va">gm_mapped</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_mapped</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   METS_IR TyG_index </span></span>
-<span><span class="co">#&gt; 330.35250   8.64813</span></span></code></pre></div>
+<span><span class="co">#&gt;  35.94105   8.64813</span></span></code></pre></div>
 <p>Similarly, map <code>weight</code> / <code>height</code> to
 differently-named anthropometric columns and BMI is derived
 automatically:</p>
@@ -265,7 +265,7 @@ automatically:</p>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">gm_wh</span><span class="op">$</span><span class="va">SPISE</span>   <span class="co"># BMI was derived from wt_kg / ht_cm</span></span>
-<span><span class="co">#&gt; [1] 7.254687</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 5.818695</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="partial-col_map-and-dictionary-inference">Partial col_map and dictionary inference<a class="anchor" aria-label="anchor" href="#partial-col_map-and-dictionary-inference"></a>
@@ -288,7 +288,7 @@ synonym patterns (e.g. <code>hdlc</code>, <code>hdl_cholesterol</code>,
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>SPISE <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">SPISE</span>, METS_IR <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">METS_IR</span>, TyG_index <span class="op">=</span> <span class="va">gm_syn</span><span class="op">$</span><span class="va">TyG_index</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     SPISE   METS_IR TyG_index </span></span>
-<span><span class="co">#&gt;   8.10289        NA   8.64813</span></span></code></pre></div>
+<span><span class="co">#&gt;  6.499004 37.733862  8.648130</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="missing-data-handling">Missing data handling<a class="anchor" aria-label="anchor" href="#missing-data-handling"></a>
@@ -380,7 +380,7 @@ per-column results summary.</p>
 <span><span class="co">#&gt;   LAR             NA [leptin/adiponectin missing]</span></span>
 <span><span class="co">#&gt;   ASI             NA [adiponectin/I0 missing]</span></span>
 <span><span class="co">#&gt;   TyG_index       [TG, glucose]</span></span>
-<span><span class="co">#&gt; glycemic_markers(): results: SPISE 1/1, METS_IR 0/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1</span></span></code></pre></div>
+<span><span class="co">#&gt; glycemic_markers(): results: SPISE 1/1, METS_IR 1/1, prediabetes 0/1, diabetes 0/1, HOMA_CP 0/1, LAR 0/1, ASI 0/1, TyG_index 1/1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="column-recognition">Column recognition<a class="anchor" aria-label="anchor" href="#column-recognition"></a>

@@ -78,13 +78,16 @@ A tibble with columns:
 
 ## Details
 
-Assumed units (no automatic conversion of inputs except where noted):
+Assumed input units are mmol/L for glucose and lipids; indices convert
+internally to the units their original publications require:
 
-- HDL_c, TG: mmol/L (TyG internally converts TG to mg/dL via 88.57)
+- HDL_c, TG: mmol/L. SPISE (Paulmichl 2016) and METS_IR
+  (Bello-Gaytan 2018) convert HDL_c (\*38.67) and TG (\*88.57) to mg/dL;
+  TyG converts TG (\*88.57).
 
 - BMI: kg/m^2
 
-- glucose, G0: mmol/L (TyG internally converts glucose to mg/dL via 18)
+- glucose, G0: mmol/L. METS_IR and TyG convert glucose (\*18) to mg/dL.
 
 - HbA1c: mmol/mol
 
@@ -179,7 +182,7 @@ glycemic_markers(df, verbose = FALSE)
 #> # A tibble: 1 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR   ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl> <dbl>     <dbl>
-#> 1  8.14    335.           1        0      NA    NA    NA      8.81
+#> 1  6.53    36.4           1        0      NA    NA    NA      8.81
 
 # \donttest{
 df <- tibble::tibble(
@@ -218,23 +221,23 @@ glycemic_markers(df)
 #>   LAR             [leptin, adiponectin]
 #>   ASI             [adiponectin, I0]
 #>   TyG_index       [TG, glucose]
-#> glycemic_markers(): results: SPISE 2/2, METS_IR 1/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2
+#> glycemic_markers(): results: SPISE 2/2, METS_IR 2/2, prediabetes 2/2, diabetes 2/2, HOMA_CP 2/2, LAR 2/2, ASI 2/2, TyG_index 2/2
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
-#> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
-#> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
+#> 1  6.50    37.8           1        0    12.2  1.25 0.133       8.67
+#> 2  4.64    46.5           0        0    23.0  4    0.0417      9.33
 glycemic_markers(df, verbose = FALSE)
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
-#> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
-#> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
+#> 1  6.50    37.8           1        0    12.2  1.25 0.133       8.67
+#> 2  4.64    46.5           0        0    23.0  4    0.0417      9.33
 glycemic_markers(df, na_action = "omit", verbose = FALSE)
 #> # A tibble: 2 × 8
 #>   SPISE METS_IR prediabetes diabetes HOMA_CP   LAR    ASI TyG_index
 #>   <dbl>   <dbl>       <int>    <int>   <dbl> <dbl>  <dbl>     <dbl>
-#> 1  8.10     NA            1        0    12.2  1.25 0.133       8.67
-#> 2  5.79    318.           0        0    23.0  4    0.0417      9.33
+#> 1  6.50    37.8           1        0    12.2  1.25 0.133       8.67
+#> 2  4.64    46.5           0        0    23.0  4    0.0417      9.33
 # }
 ```

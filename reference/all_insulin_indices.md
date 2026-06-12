@@ -78,7 +78,7 @@ all_insulin_indices(df, normalize = "none", mode = "IS",
 #> # A tibble: 1 × 10
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1         -10       4       -41.6  37.4  0.146        0.00213         -0.107
+#> 1         -10       4       -2.31  2.08  0.337        0.00213         -0.107
 #> # ℹ 3 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>
 
 # \donttest{
@@ -97,7 +97,7 @@ all_insulin_indices(df, col_map = list(
 #> # A tibble: 1 × 41
 #>   Fasting_inv Raynaud HOMA_IR_inv  FIRI QUICKI Belfiore_basal Ig_ratio_basal
 #>         <dbl>   <dbl>       <dbl> <dbl>  <dbl>          <dbl>          <dbl>
-#> 1         -10       4       -41.6  37.4  0.146        0.00213         -0.107
+#> 1         -10       4       -2.31  2.08  0.337        0.00213         -0.107
 #> # ℹ 34 more variables: Isi_basal <dbl>, Bennett <dbl>, HOMA_IR_rev_inv <dbl>,
 #> #   Isi_120 <dbl>, Cederholm_index <dbl>, Gutt_index <dbl>, Avignon_Si0 <dbl>,
 #> #   Avignon_Si120 <dbl>, Avignon_Sim <dbl>, Modified_stumvoll <dbl>,

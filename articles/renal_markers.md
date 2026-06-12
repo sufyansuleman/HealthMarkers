@@ -156,8 +156,8 @@ renal_markers(
 #>   eGFR_cr eGFR_cys eGFR_combined BUN_Cr_ratio FE_Urea  NGAL  KIM1   NAG
 #>     <dbl>    <dbl>         <dbl>        <dbl>   <dbl> <dbl> <dbl> <dbl>
 #> 1   95.8      79.3          87.4         17.8    12.9    20    NA    NA
-#> 2   22.3      44.9          32.7         18.2    34.4    35    NA    NA
-#> 3    3.07    126.           22.1         11.7   375      15    NA    NA
+#> 2   22.3      44.9          31.4         18.2    34.4    35    NA    NA
+#> 3    3.07    126.           20.9         11.7   375      15    NA    NA
 #> # ℹ 3 more variables: Beta2Micro <dbl>, IL18 <dbl>, L_FABP <dbl>
 ```
 

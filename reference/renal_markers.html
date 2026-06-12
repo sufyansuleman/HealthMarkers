@@ -23,7 +23,7 @@ NGAL, KIM1, NAG, Beta2Micro, IL18, L_FABP: pass-through urinary injury markers (
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,8 +135,9 @@ Black-race multiplier (\(\times 1.159\)) retained. The 2021 race-free CKD-EPI
 equations (Inker et al., NEJM 2021) are not yet implemented; the <code>race</code> input
 is accepted for forward compatibility and used only for the 2009 race factor.
 <code>eGFR_cys</code> and <code>eGFR_combined</code> use Inker et al. (2012); note that
-<code>eGFR_combined</code> applies its own sex (\(\times 1.008\) female) and race
-(\(\times 1.145\) Black) multipliers, which differ from those of <code>eGFR_cr</code>.
+<code>eGFR_combined</code> uses its own creatinine alpha (\(-0.207\) male /
+\(-0.248\) female) and its own sex (\(\times 0.969\) female) and race
+(\(\times 1.08\) Black) multipliers, which differ from those of <code>eGFR_cr</code>.
 <code>NGAL</code>, <code>KIM1</code>, <code>NAG</code>, <code>Beta2Micro</code>, <code>IL18</code>, and <code>L_FABP</code> are
 <strong>pass-through</strong> columns — values are returned as-is with no formula applied.</p>
     </div>

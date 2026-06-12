@@ -118,9 +118,13 @@ Notes
 - Matsuda_AUC is a non-standard AUC-based variant; the original Matsuda
   index (Matsuda_ISI) uses time-point means, not AUCs.
 
-- Cederholm_index uses log(I0 + I120) as implemented (sum, not mean);
-  Gutt_index uses log((I0 + I120)/2) (mean). This mirrors published
-  implementations; the difference is a constant log(2) offset.
+- Cederholm_index uses glucose in mmol/L (raw G0/G120), as defined by
+  Cederholm & Wibell (1990); the formula's \*180 term is itself the
+  mmol/L-\>mg conversion, so glucose must NOT be pre-converted to mg/dL.
+  Gutt_index, by contrast, is defined in mg/dL (no \*180 term) and so
+  uses the converted glucose. Cederholm uses log(I0 + I120) (sum) while
+  Gutt uses log((I0 + I120)/2) (mean), mirroring published
+  implementations.
 
 - Ifc_inv and HIRI_inv are derived composite proxies not attributed to a
   single formula publication; treat as research tools.
@@ -223,7 +227,7 @@ ogtt_is(
 #> # A tibble: 1 × 14
 #>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim
 #>     <dbl>           <dbl>      <dbl>       <dbl>         <dbl>       <dbl>
-#> 1    10.8            1.10       2.67        9.62          10.2        9.93
+#> 1    10.8            35.8       2.67        9.62          10.2        9.93
 #> # ℹ 8 more variables: Modified_stumvoll <dbl>, Stumvoll_Demographics <dbl>,
 #> #   Matsuda_AUC <dbl>, Matsuda_ISI <dbl>, BigttSi <dbl>, Ifc_inv <dbl>,
 #> #   HIRI_inv <dbl>, Belfiore_isi_gly <dbl>

@@ -75,29 +75,31 @@ This function preserves prior behavior by default:
 
 - No capping or out-of-range checks are applied.
 
-Units (no automatic conversion):
+Units:
 
 - age: years; sex: 1 = male, 2 = female
 
 - eGFR: mL/min/1.73 m^2
 
-- UACR: mg/g (albumin-to-creatinine ratio)
+- UACR: mg/g (albumin-to-creatinine ratio); converted internally to
+  mg/mmol (/ 8.84) for the equation, which is defined in mg/mmol.
 
 Details
 
-- Prognostic index:
-  `PI = 0.220 x log(age) + (-0.556) x log(eGFR) + 0.451 x log(UACR) + 0.391 x (male)`
-  where male = 1 if sex == 1, else 0.
+- 4-variable KFRE (Tangri 2011), non-North-American recalibration:
+  `PI = -0.2201*(age/10 - 7.036) + 0.2467*(male - 0.5642) - 0.5567*(eGFR/5 - 7.222) + 0.4510*(ln(ACR_mmol) - 5.137)`
+  where male = 1 if sex == 1 else 0, and `ACR_mmol = UACR[mg/g] / 8.84`.
 
-- Baseline survival: S0(2y) = 0.934, S0(5y) = 0.881 (Tangri 2011).
+- Baseline survival (non-North-American): S0(2y) = 0.9832, S0(5y) =
+  0.9365.
 
 - Risks: KFRE_t = 1 - (S0_t ^ exp(PI)).
 
 - The 2016 JAMA study provides a large, multinational validation of the
   KFRE in humans.
 
-- This implementation computes the original 4-variable linear predictor
-  and does not apply recalibration or alternative coefficient sets.
+- Uses the non-North-American recalibration; the North-American original
+  uses different baseline-survival constants.
 
 ## References
 
@@ -140,8 +142,8 @@ kidney_failure_risk(
 #> # A tibble: 2 × 2
 #>   KFRE_2yr KFRE_5yr
 #>      <dbl>    <dbl>
-#> 1    0.329    0.523
-#> 2    0.536    0.759
+#> 1  0.00381   0.0147
+#> 2  0.0599    0.213 
 
 # With verbose output
 # \donttest{
@@ -159,7 +161,7 @@ kidney_failure_risk(
 #> # A tibble: 2 × 2
 #>   KFRE_2yr KFRE_5yr
 #>      <dbl>    <dbl>
-#> 1    0.329    0.523
-#> 2    0.536    0.759
+#> 1  0.00381   0.0147
+#> 2  0.0599    0.213 
 # }
 ```

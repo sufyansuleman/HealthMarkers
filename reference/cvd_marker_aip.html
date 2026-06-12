@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,6 +76,16 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with columns model = "AIP" and value.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Note on units: AIP is defined by Dobiasova (2004) with TG and HDL_c in
+mmol/L, and its published risk strata assume mmol/L. AIP is NOT
+scale-invariant (TG and HDL-c convert with different factors), so mg/dL
+inputs shift AIP by about +0.36. This wrapper follows the mg/dL convention
+used by the other <code>cvd_*</code> calculators; supply mmol/L (and divide intent
+accordingly) if you need values comparable to the original strata. See
+<code><a href="atherogenic_indices.html">atherogenic_indices()</a></code> for the mmol/L implementation.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

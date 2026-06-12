@@ -17,7 +17,7 @@ CRI_II: Castelli Risk Index II = LDL_c / HDL_c
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,11 +93,14 @@ in <code>data</code> (e.g. <code>id</code>, <code>IID</code>, <code>participant_
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Behavior:</p><ul><li><p>Required keys: TG, HDL_c. Optional: TC, LDL_c.</p></li>
+    <p>Units (package convention): TG, HDL_c, TC, LDL_c in mmol/L.</p><ul><li><p>AIP (Dobiasova 2004) is defined with TG and HDL_c in mmol/L and is NOT
+scale-invariant: TG and HDL-c convert to mg/dL with different factors
+(88.57 vs 38.67), so mg/dL inputs shift AIP by +log10(88.57/38.67) approx
++0.36 and invalidate the published risk strata. Provide mmol/L.</p></li>
+<li><p>CRI_I (TC/HDL_c) and CRI_II (LDL_c/HDL_c) are ratios of cholesterol
+fractions and ARE scale-invariant (identical in mg/dL or mmol/L).</p></li>
+</ul><p>Behavior:</p><ul><li><p>Required keys: TG, HDL_c. Optional: TC, LDL_c.</p></li>
 <li><p>NA policy via <code>na_action</code>: "keep" (default), "omit" (drop rows with any NA in used lipids), "error".</p></li>
-<li><p>Extreme screening via <code>check_extreme</code> and <code>extreme_action</code> ("warn","cap","error","ignore","NA").
-Default bounds (mg/dL) used only for screening: TG (0, 10000), HDL_c (0, 1000), LDL_c (0, 10000), TC (0, 10000).
-Note: All indices are unitless ratios; units cancel in computations.</p></li>
 <li><p>Emits progress via <code>hm_inform()</code> when <code>verbose = TRUE</code> or when package option enables logs.</p></li>
 </ul></div>
     <div class="section level2">
@@ -117,11 +120,12 @@ Castelli WP, Doyle JT, Gordon T, et al. (1977).
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  TG <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">40</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  TC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">220</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">150</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Units: mmol/L (TG, HDL_c, TC, LDL_c)</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  TG <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.7</span>, <span class="fl">2.3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.3</span>, <span class="fl">1.0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  TC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.2</span>, <span class="fl">5.7</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.1</span>, <span class="fl">3.9</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>TG <span class="op">=</span> <span class="st">"TG"</span>, HDL_c <span class="op">=</span> <span class="st">"HDL_c"</span>, TC <span class="op">=</span> <span class="st">"TC"</span>, LDL_c <span class="op">=</span> <span class="st">"LDL_c"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">atherogenic_indices</span><span class="op">(</span><span class="va">df</span>, col_map <span class="op">=</span> <span class="va">cm</span><span class="op">)</span></span></span>
@@ -139,8 +143,8 @@ Castelli WP, Doyle JT, Gordon T, et al. (1977).
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     AIP CRI_I CRI_II</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 0.477   4     2.4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 0.699   5.5   3.75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 0.117   4     2.38</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 0.362   5.7   3.9 </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

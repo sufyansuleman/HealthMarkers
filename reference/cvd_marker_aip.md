@@ -45,6 +45,18 @@ cvd_marker_aip(
 
 A tibble with columns model = "AIP" and value.
 
+## Details
+
+Note on units: AIP is defined by Dobiasova (2004) with TG and HDL_c in
+mmol/L, and its published risk strata assume mmol/L. AIP is NOT
+scale-invariant (TG and HDL-c convert with different factors), so mg/dL
+inputs shift AIP by about +0.36. This wrapper follows the mg/dL
+convention used by the other `cvd_*` calculators; supply mmol/L (and
+divide intent accordingly) if you need values comparable to the original
+strata. See
+[`atherogenic_indices()`](https://sufyansuleman.github.io/HealthMarkers/reference/atherogenic_indices.md)
+for the mmol/L implementation.
+
 ## References
 
 Dobiášová M (2004). “Atherogenic Index of Plasma (AIP)

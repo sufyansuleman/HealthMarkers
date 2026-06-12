@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">HealthMarkers</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,46 @@
       <small>Source: <a href="https://github.com/sufyansuleman/HealthMarkers/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.4" id="healthmarkers-014">HealthMarkers 0.1.4<a class="anchor" aria-label="anchor" href="#healthmarkers-014"></a></h2>
+<div class="section level3">
+<h3 id="formula--unit-audit-0-1-4">Formula &amp; unit audit<a class="anchor" aria-label="anchor" href="#formula--unit-audit-0-1-4"></a></h3>
+<p>This release follows a systematic, script-by-script audit of every marker-calculation function in the package, checking each formula and its unit handling against the original publication. The supporting/utility scripts were also confirmed to apply no hidden unit conversions (column inference maps names only; the global pre-computation helper keeps variables in their canonical units). The fixes below correct genuine formula/unit bugs; the great majority of functions were verified correct and unchanged.</p>
+<div class="section level4">
+<h4 id="bug-fixes--insulin-sensitivity-indices-0-1-4">Bug fixes — insulin sensitivity indices<a class="anchor" aria-label="anchor" href="#bug-fixes--insulin-sensitivity-indices-0-1-4"></a></h4>
+<ul><li><p><strong><code><a href="../reference/fasting_is.html">fasting_is()</a></code> — <code>HOMA_IR_inv</code>.</strong> HOMA-IR (Matthews et al. 1985) is defined with glucose in mmol/L (divisor 22.5). The previous code applied the mg/dL conversion (<code>*18</code>) while keeping the 22.5 divisor, yielding values 18x too large. Now uses raw mmol/L glucose. <code>HOMA_IR_rev_inv</code> (mg/dL convention, <code>/405</code>) already produced the correct value and is unchanged; the two columns are now equal, as intended.</p></li>
+<li><p><strong><code><a href="../reference/fasting_is.html">fasting_is()</a></code> — <code>FIRI</code>.</strong> The Fasting Insulin Resistance Index (Duncan et al. 1995) is defined with glucose in mmol/L (divisor 25). Now uses raw mmol/L glucose instead of the mg/dL-converted value (previously 18x too large).</p></li>
+<li>
+<p><strong><code><a href="../reference/fasting_is.html">fasting_is()</a></code> — <code>QUICKI</code>.</strong> Now uses <code>log10</code> (as defined by Katz et al.</p>
+<ol start="2000" style="list-style-type: decimal"><li>instead of natural log. Glucose (mg/dL) and insulin (muU/mL) units were already correct.</li>
+</ol></li>
+<li><p><strong><code><a href="../reference/ogtt_is.html">ogtt_is()</a></code> — <code>Cederholm_index</code>.</strong> Cederholm &amp; Wibell (1990) is defined with glucose in mmol/L; the formula’s <code>*180</code> term is itself the mmol/L-&gt;mg conversion. The previous code pre-converted glucose to mg/dL (<code>*18</code>), causing a double conversion and a non-linear distortion of the index. Now uses raw mmol/L glucose. <code>Gutt_index</code> (defined in mg/dL, no <code>*180</code> term) is unchanged and correct.</p></li>
+</ul></div>
+<div class="section level4">
+<h4 id="bug-fixes--other-markers-0-1-4">Bug fixes — other markers<a class="anchor" aria-label="anchor" href="#bug-fixes--other-markers-0-1-4"></a></h4>
+<ul><li><p><strong><code><a href="../reference/glycemic_markers.html">glycemic_markers()</a></code> — <code>SPISE</code> and <code>METS_IR</code>.</strong> Both indices are defined for inputs in <strong>mg/dL</strong> (SPISE: Paulmichl 2016; METS-IR: Bello-Gaytan 2018) and carry validated cut-offs in those units. The previous code fed raw mmol/L values, giving systematically wrong (non-constant) results. Now converts HDL-c (<code>*38.67</code>), TG (<code>*88.57</code>) and glucose (<code>*18</code>) to mg/dL internally. <code>TyG_index</code> was already correct.</p></li>
+<li><p><strong><code><a href="../reference/liver_fat_markers.html">liver_fat_markers()</a></code> — <code>NAFLD_LFS</code>.</strong> The NAFLD Liver Fat Score (Kotronen et al. 2009) codes type-2 diabetes as <strong>yes = 2 / no = 0</strong>, so the diabetic contribution is <code>0.45 * 2 = 0.90</code>. The previous code used a 0/1 indicator, giving half the intended contribution for people with diabetes. Fixed.</p></li>
+<li><p><strong><code><a href="../reference/renal_markers.html">renal_markers()</a></code> — <code>eGFR_combined</code>.</strong> The combined creatinine–cystatin C CKD-EPI equation (Inker et al. 2012) uses its own creatinine <code>alpha</code> (-0.207 male / -0.248 female) and its own female (<code>x0.969</code>) and Black (<code>x1.08</code>) multipliers. The previous code reused the creatinine-only <code>alpha</code> (-0.411 / -0.329) and incorrect multipliers (<code>1.008</code>, <code>1.145</code>). All three corrected. <code>eGFR_cr</code> (2009) and <code>eGFR_cys</code> (2012) were already correct.</p></li>
+<li><p><strong><code><a href="../reference/ckd_stage.html">ckd_stage()</a></code> — <code>KDIGO_risk</code>.</strong> Two cells of the KDIGO 2012 risk heatmap were mis-mapped: G1/G2 + A3 now returns <strong>High</strong> (was “Moderate”), and G3a + A3 now returns <strong>Very High</strong> (was “High”). GFR and albuminuria stage cut-offs were already correct.</p></li>
+<li><p><strong><code><a href="../reference/kidney_failure_risk.html">kidney_failure_risk()</a></code> — KFRE.</strong> The 4-variable Kidney Failure Risk Equation (Tangri et al. 2011) was reimplemented correctly. The previous linear predictor used log-transformed age and eGFR (the equation uses <code>age/10</code> and <code>eGFR/5</code> linearly), the wrong sign on age, no covariate centring, an incorrect sex coefficient, and baseline-survival constants matching no published calibration. Now uses the non-North-American calibration: <code>PI = -0.2201*(age/10 - 7.036) + 0.2467*(male - 0.5642) - 0.5567*(eGFR/5 - 7.222) + 0.4510*(ln(ACR_mmol) - 5.137)</code>, <code>S0(2y) = 0.9832</code>, <code>S0(5y) = 0.9365</code>. UACR continues to be supplied in mg/g and is converted internally to mg/mmol (<code>/8.84</code>).</p></li>
+<li><p><strong><code><a href="../reference/obesity_indices.html">obesity_indices()</a></code> — <code>BRI</code>.</strong> The Body Roundness Index (Thomas et al. 2013) eccentricity ratio is <code>WC / (pi * height)</code>; the previous code used <code>WC / (2*pi * height)</code> (half the correct value), which produced near-zero or negative BRI for normal adults. Fixed.</p></li>
+</ul></div>
+<div class="section level4">
+<h4 id="documentation-clarifications-0-1-4">Documentation clarifications<a class="anchor" aria-label="anchor" href="#documentation-clarifications-0-1-4"></a></h4>
+<ul><li>
+<strong><code><a href="../reference/atherogenic_indices.html">atherogenic_indices()</a></code> and <code><a href="../reference/cvd_marker_aip.html">cvd_marker_aip()</a></code> — AIP units.</strong> The Atherogenic Index of Plasma <code>log10(TG/HDL)</code> is not scale-invariant (TG and HDL-c convert to mg/dL with different factors), and its published risk strata assume mmol/L. Documentation and the <code><a href="../reference/atherogenic_indices.html">atherogenic_indices()</a></code> example were corrected to mmol/L, with an explicit note that mg/dL inputs shift AIP by about +0.36. Formulas are unchanged.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="internal-0-1-4">Internal<a class="anchor" aria-label="anchor" href="#internal-0-1-4"></a></h4>
+<ul><li>
+<strong><code><a href="../reference/obesity_indices.html">obesity_indices()</a></code> — dplyr deprecation.</strong> Replaced the unit-normalization <code><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html" class="external-link">dplyr::case_when()</a></code> calls with scalar conversion factors. <code>weight_unit</code> and <code>height_unit</code> are scalar arguments, so the previous size-1 LHS / vector RHS pattern triggered a deprecation warning under dplyr &gt;= 1.2.0. Behaviour is unchanged.</li>
+</ul></div>
+<div class="section level4">
+<h4 id="metadata-0-1-4">Metadata<a class="anchor" aria-label="anchor" href="#metadata-0-1-4"></a></h4>
+<ul><li>Bumped <code>Version</code> to 0.1.4.</li>
+</ul></div>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.3" id="healthmarkers-013">HealthMarkers 0.1.3<a class="anchor" aria-label="anchor" href="#healthmarkers-013"></a></h2>
 <div class="section level3">

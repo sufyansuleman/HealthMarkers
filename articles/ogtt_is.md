@@ -96,7 +96,7 @@ ogtt_is(
 #> # A tibble: 1 × 14
 #>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim
 #>     <dbl>           <dbl>      <dbl>       <dbl>         <dbl>       <dbl>
-#> 1    10.8            1.10       2.67        9.62          10.2        9.93
+#> 1    10.8            35.8       2.67        9.62          10.2        9.93
 #> # ℹ 8 more variables: Modified_stumvoll <dbl>, Stumvoll_Demographics <dbl>,
 #> #   Matsuda_AUC <dbl>, Matsuda_ISI <dbl>, BigttSi <dbl>, Ifc_inv <dbl>,
 #> #   HIRI_inv <dbl>, Belfiore_isi_gly <dbl>
@@ -195,7 +195,7 @@ ogtt_is(
 #> # A tibble: 1 × 14
 #>   Isi_120 Cederholm_index Gutt_index Avignon_Si0 Avignon_Si120 Avignon_Sim
 #>     <dbl>           <dbl>      <dbl>       <dbl>         <dbl>       <dbl>
-#> 1    10.8            1.10       2.67        9.62          10.2        9.93
+#> 1    10.8            35.8       2.67        9.62          10.2        9.93
 #> # ℹ 8 more variables: Modified_stumvoll <dbl>, Stumvoll_Demographics <dbl>,
 #> #   Matsuda_AUC <dbl>, Matsuda_ISI <dbl>, BigttSi <dbl>, Ifc_inv <dbl>,
 #> #   HIRI_inv <dbl>, Belfiore_isi_gly <dbl>

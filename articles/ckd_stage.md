@@ -199,7 +199,7 @@ ckd_stage(
 #>   CKD_stage Albuminuria_stage KDIGO_risk
 #>   <fct>     <fct>             <fct>     
 #> 1 G1        A1                Low       
-#> 2 G3a       A3                High      
+#> 2 G3a       A3                Very High 
 #> 3 G4        NA                Very High
 
 options(old_opt)
