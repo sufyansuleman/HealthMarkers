@@ -149,7 +149,12 @@ debug/verbose messages on missingness; enable
 <code>verbose = TRUE</code> to see them.</li>
 <li>Unit handling: inputs are expected in mmol/L (glucose) and pmol/L
 (insulin); internally converted to mg/dL (*18) and muU/mL (/6) where
-formulas need them.</li>
+formulas need them. Not every index converts glucose:
+<code>Cederholm_index</code> (Cederholm &amp; Wibell 1990) uses raw
+mmol/L glucose — its <code>*180</code> term is itself the mmol/L-&gt;mg
+conversion, so glucose must not be pre-converted — whereas
+<code>Gutt_index</code> is defined in mg/dL and uses the converted
+value.</li>
 <li>Normalization (optional): applied via <code><a href="../reference/normalize_vec.html">normalize_vec()</a></code>;
 use “none” for raw interpretable values.</li>
 <li>Sex coding: expects 1 = male, 2 = female; 0 is treated as female

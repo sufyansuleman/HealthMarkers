@@ -119,6 +119,16 @@ runs for optional calculators.</p>
 <h2 id="lipid-markers-no-optional-packages">Lipid markers (no optional packages)<a class="anchor" aria-label="anchor" href="#lipid-markers-no-optional-packages"></a>
 </h2>
 <p>Compute AIP and LDL particle number (ApoB proxy).</p>
+<blockquote>
+<p><strong>AIP units.</strong> The Atherogenic Index of Plasma,
+<code>log10(TG / HDL_c)</code>, is defined for <strong>mmol/L</strong>
+(Dobiasova 2004) and is <em>not</em> scale-invariant — mg/dL inputs
+shift AIP by ~+0.36 and invalidate the published risk strata.
+<code><a href="../reference/cvd_marker_aip.html">cvd_marker_aip()</a></code> follows the mg/dL convention shared by the
+other <code>cvd_*</code> calculators, so for a clinically meaningful AIP
+supply TG and HDL_c in mmol/L (or use <a href="atherogenic_indices.html"><code>atherogenic_indices()</code></a>,
+the mmol/L implementation).</p>
+</blockquote>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aip_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cvd_risk.html">cvd_risk</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">sim_small</span>,</span>

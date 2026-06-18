@@ -158,7 +158,7 @@ head(select(ckd_stage(demo2, col_map = col_map, na_action = "keep"), Albuminuria
 ## Validation ideas
 
 - eGFR 92, UACR 10 -\> G1/A1, KDIGO risk Low.
-- eGFR 52, UACR 400 -\> G3a/A3, KDIGO risk High.
+- eGFR 52, UACR 400 -\> G3a/A3, KDIGO risk Very High.
 - eGFR 22, UACR missing -\> G4, Albuminuria NA, KDIGO risk Very High.
 
 ## Verbose diagnostics

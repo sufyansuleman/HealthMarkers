@@ -66,8 +66,13 @@
 <p>Compute atherogenic risk ratios from a lipid panel: - AIP = log10(TG
 / HDL_c) - Castelli Risk Index I (CRI_I) = TC / HDL_c - Castelli Risk
 Index II (CRI_II) = LDL_c / HDL_c</p>
-<p>All ratios are unitless; use consistent lipid units (mg/dL or
-mmol/L).</p>
+<p>The Castelli indices (CRI_I, CRI_II) are true scale-invariant ratios
+— identical in mg/dL or mmol/L. <strong>AIP is different:</strong>
+because TG and HDL-c convert to mg/dL with different factors (×88.57 vs
+×38.67), <code>log10(TG / HDL_c)</code> is <strong>not</strong>
+scale-invariant — mg/dL inputs shift AIP by about +0.36 and invalidate
+the published risk strata. AIP (Dobiasova 2004) is defined for
+<strong>mmol/L</strong>, so supply TG and HDL_c in mmol/L.</p>
 </div>
 <div class="section level2">
 <h2 id="when-to-use">When to use<a class="anchor" aria-label="anchor" href="#when-to-use"></a>
@@ -271,8 +276,9 @@ missing.</li>
 <h2 id="pitfalls-and-tips">Pitfalls and tips<a class="anchor" aria-label="anchor" href="#pitfalls-and-tips"></a>
 </h2>
 <ul>
-<li>Keep lipid units consistent; ratios are unitless but inputs must
-share units.</li>
+<li>CRI_I and CRI_II are scale-invariant ratios; AIP is not, so supply
+TG and HDL_c in mmol/L (mg/dL shifts AIP by ~+0.36 and breaks the
+published cut-offs).</li>
 <li>Mapping omissions for TG or HDL_c throw errors; missing TC/LDL_c
 just yield NA Castelli indices.</li>
 <li>Zero HDL_c produces NA ratios and a warning; address true zeros
@@ -285,8 +291,8 @@ lipids.</li>
 <h2 id="validation-ideas">Validation ideas<a class="anchor" aria-label="anchor" href="#validation-ideas"></a>
 </h2>
 <ul>
-<li>Spot-check AIP: if TG = 150 and HDL_c = 50, expected AIP = log10(3)
-~ 0.477.</li>
+<li>Spot-check AIP (mmol/L): if TG = 1.5 and HDL_c = 1.0, expected AIP =
+log10(1.5) ~ 0.176.</li>
 <li>CRI_I should decrease if HDL_c rises with other lipids unchanged;
 similar for CRI_II.</li>
 <li>Confirm that rows with NA in TG/HDL_c are dropped only when
@@ -319,10 +325,10 @@ active:</p>
 <code class="sourceCode R"><span><span class="va">old_opt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>healthmarkers.verbose <span class="op">=</span> <span class="st">"inform"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">df_v</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>  TG    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">150</span>, <span class="fl">200</span><span class="op">)</span>,</span>
-<span>  HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>,  <span class="fl">40</span><span class="op">)</span>,</span>
-<span>  TC    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">220</span><span class="op">)</span>,</span>
-<span>  LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">150</span><span class="op">)</span></span>
+<span>  TG    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.7</span>, <span class="fl">2.3</span><span class="op">)</span>,   <span class="co"># mmol/L</span></span>
+<span>  HDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.3</span>, <span class="fl">1.0</span><span class="op">)</span>,   <span class="co"># mmol/L</span></span>
+<span>  TC    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5.2</span>, <span class="fl">5.7</span><span class="op">)</span>,   <span class="co"># mmol/L</span></span>
+<span>  LDL_c <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.1</span>, <span class="fl">3.9</span><span class="op">)</span>    <span class="co"># mmol/L</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/atherogenic_indices.html">atherogenic_indices</a></span><span class="op">(</span></span>
 <span>  <span class="va">df_v</span>,</span>
@@ -343,8 +349,8 @@ active:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
 <span><span class="co">#&gt;     AIP CRI_I CRI_II</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.477   4     2.4 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0.699   5.5   3.75</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.117   4     2.38</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 0.362   5.7   3.9</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old_opt</span><span class="op">)</span></span></code></pre></div>
 <p>Reset with <code>options(healthmarkers.verbose = NULL)</code> or

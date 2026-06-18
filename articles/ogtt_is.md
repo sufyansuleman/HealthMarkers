@@ -42,7 +42,11 @@ insulin to muU/mL (/6) where specific formulas require it.
   messages on missingness; enable `verbose = TRUE` to see them.
 - Unit handling: inputs are expected in mmol/L (glucose) and pmol/L
   (insulin); internally converted to mg/dL (\*18) and muU/mL (/6) where
-  formulas need them.
+  formulas need them. Not every index converts glucose:
+  `Cederholm_index` (Cederholm & Wibell 1990) uses raw mmol/L glucose —
+  its `*180` term is itself the mmol/L-\>mg conversion, so glucose must
+  not be pre-converted — whereas `Gutt_index` is defined in mg/dL and
+  uses the converted value.
 - Normalization (optional): applied via
   [`normalize_vec()`](https://sufyansuleman.github.io/HealthMarkers/reference/normalize_vec.md);
   use “none” for raw interpretable values.

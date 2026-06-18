@@ -2,6 +2,8 @@
 
 ## HealthMarkers 0.1.4
 
+CRAN release: 2026-06-17
+
 ### Formula & unit audit
 
 This release follows a systematic, script-by-script audit of every

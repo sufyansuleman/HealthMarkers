@@ -22,8 +22,13 @@ packaged simulated data for runnable examples.
   `BMI` (kg/m^2).
 - Optional: `glucose`, `HbA1c`, `C_peptide`, `G0`, `I0`, `leptin`,
   `adiponectin`.
-- Unit notes: TyG converts TG to mg/dL (x88.57) and glucose to mg/dL
-  (x18); HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`.
+- Unit notes: supply `HDL_c`, `TG`, `glucose` in mmol/L. SPISE
+  (Paulmichl 2016) and METS_IR (Bello-Chavolla 2018) are defined for
+  mg/dL and convert internally — SPISE: HDL_c x38.67, TG x88.57;
+  METS_IR: glucose x18, TG x88.57, HDL_c x38.67. TyG converts TG
+  (x88.57) and glucose (x18). HOMA_CP uses
+  `(G0 * (C_peptide/6)) / 22.5`. Provide mmol/L inputs so these
+  conversions are correct.
 - `na_action`: `keep`/`ignore`/`warn` retain rows with NA outputs;
   `omit` drops rows with missing used inputs; `error` aborts.
 
@@ -115,7 +120,10 @@ relate adipokines to insulin; HbA1c flags populate
 - Optional if present/mapped: `glucose`, `HbA1c`, `C_peptide`, `G0`,
   `I0`, `leptin`, `adiponectin`. Auto-derived: `glucose` from `G0` (or
   vice versa) if one is absent.
-- TyG converts TG to mg/dL (88.57) and glucose to mg/dL (18) internally.
+- SPISE and METS_IR convert their inputs to mg/dL internally (SPISE:
+  HDL_c x38.67, TG x88.57; METS_IR: glucose x18, TG x88.57, HDL_c
+  x38.67); TyG converts TG (88.57) and glucose (18). Supply mmol/L so
+  the conversions are correct.
 - HOMA_CP uses `(G0 * (C_peptide/6)) / 22.5`; verify your units for
   C-peptide.
 - Missingness: `na_action` controls row handling

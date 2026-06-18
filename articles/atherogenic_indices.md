@@ -6,7 +6,12 @@ Compute atherogenic risk ratios from a lipid panel: - AIP = log10(TG /
 HDL_c) - Castelli Risk Index I (CRI_I) = TC / HDL_c - Castelli Risk
 Index II (CRI_II) = LDL_c / HDL_c
 
-All ratios are unitless; use consistent lipid units (mg/dL or mmol/L).
+The Castelli indices (CRI_I, CRI_II) are true scale-invariant ratios —
+identical in mg/dL or mmol/L. **AIP is different:** because TG and HDL-c
+convert to mg/dL with different factors (×88.57 vs ×38.67),
+`log10(TG / HDL_c)` is **not** scale-invariant — mg/dL inputs shift AIP
+by about +0.36 and invalidate the published risk strata. AIP (Dobiasova
+2004) is defined for **mmol/L**, so supply TG and HDL_c in mmol/L.
 
 ## When to use
 
@@ -200,8 +205,9 @@ head(select(atherogenic_indices(demo2, col_map = col_map), AIP, CRI_I, CRI_II))
 
 ## Pitfalls and tips
 
-- Keep lipid units consistent; ratios are unitless but inputs must share
-  units.
+- CRI_I and CRI_II are scale-invariant ratios; AIP is not, so supply TG
+  and HDL_c in mmol/L (mg/dL shifts AIP by ~+0.36 and breaks the
+  published cut-offs).
 - Mapping omissions for TG or HDL_c throw errors; missing TC/LDL_c just
   yield NA Castelli indices.
 - Zero HDL_c produces NA ratios and a warning; address true zeros before
@@ -211,8 +217,8 @@ head(select(atherogenic_indices(demo2, col_map = col_map), AIP, CRI_I, CRI_II))
 
 ## Validation ideas
 
-- Spot-check AIP: if TG = 150 and HDL_c = 50, expected AIP = log10(3) ~
-  0.477.
+- Spot-check AIP (mmol/L): if TG = 1.5 and HDL_c = 1.0, expected AIP =
+  log10(1.5) ~ 0.176.
 - CRI_I should decrease if HDL_c rises with other lipids unchanged;
   similar for CRI_II.
 - Confirm that rows with NA in TG/HDL_c are dropped only when na_action
@@ -238,10 +244,10 @@ Set `verbose = TRUE` to emit three structured messages per call:
 old_opt <- options(healthmarkers.verbose = "inform")
 
 df_v <- tibble::tibble(
-  TG    = c(150, 200),
-  HDL_c = c(50,  40),
-  TC    = c(200, 220),
-  LDL_c = c(120, 150)
+  TG    = c(1.7, 2.3),   # mmol/L
+  HDL_c = c(1.3, 1.0),   # mmol/L
+  TC    = c(5.2, 5.7),   # mmol/L
+  LDL_c = c(3.1, 3.9)    # mmol/L
 )
 atherogenic_indices(
   df_v,
@@ -262,8 +268,8 @@ atherogenic_indices(
 #> # A tibble: 2 × 3
 #>     AIP CRI_I CRI_II
 #>   <dbl> <dbl>  <dbl>
-#> 1 0.477   4     2.4 
-#> 2 0.699   5.5   3.75
+#> 1 0.117   4     2.38
+#> 2 0.362   5.7   3.9
 
 options(old_opt)
 ```

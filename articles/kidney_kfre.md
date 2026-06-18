@@ -5,7 +5,9 @@
 4-variable Kidney Failure Risk Equation (KFRE) for 2- and 5-year ESKD
 risk. Includes NA policies, high-missingness warnings, and verbose
 summaries. Units: age (years), sex coded 1=male/2=female, eGFR
-(mL/min/1.73 m^2), UACR (mg/g); no unit conversion is performed.
+(mL/min/1.73 m^2), UACR (mg/g). Supply UACR in mg/g; it is converted
+internally to mg/mmol (÷8.84) for the equation, which is defined in
+mg/mmol.
 
 ## Clinical context
 
@@ -208,7 +210,8 @@ dplyr::bind_cols(dplyr::select(sim_small, age, sex, eGFR, UACR), kfre_sim) |> he
 
 ## Tips
 
-- Check units before running (e.g., UACR mg/g vs mg/mmol); convert
-  upstream if needed.
+- Provide UACR in mg/g (the US convention); the function converts to
+  mg/mmol (÷8.84) internally. Do **not** pre-convert to mg/mmol, or it
+  will be double-converted.
 - Use `na_action = "error"` for strict QA; `warn` to surface high
   missingness while retaining rows.
