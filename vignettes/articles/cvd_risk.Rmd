@@ -37,6 +37,13 @@ sim_small <- dplyr::slice_head(sim, n = 30)
 ## Lipid markers (no optional packages)
 Compute AIP and LDL particle number (ApoB proxy).
 
+> **AIP units.** The Atherogenic Index of Plasma, `log10(TG / HDL_c)`, is defined
+> for **mmol/L** (Dobiasova 2004) and is *not* scale-invariant — mg/dL inputs
+> shift AIP by ~+0.36 and invalidate the published risk strata. `cvd_marker_aip()`
+> follows the mg/dL convention shared by the other `cvd_*` calculators, so for a
+> clinically meaningful AIP supply TG and HDL_c in mmol/L (or use
+> [`atherogenic_indices()`](atherogenic_indices.html), the mmol/L implementation).
+
 ```{r}
 aip_out <- cvd_risk(
   data = sim_small,

@@ -172,3 +172,19 @@ release time.
 
 **Doc-only clarifications:** atherogenic_indices (AIP mmol/L), cvd_marker_aip (AIP unit note).
 **Verified correct, no change:** ~30 other scripts (see entries above). Supporting/util scripts confirmed to do no hidden unit conversion.
+
+---
+
+## pkgdown article sync (post-0.1.4, follow-up)
+Roxygen re-verified against corrected code for all changed functions — `man/*.Rd`
+consistent (the 2 code-only fixes, obesity_indices/ckd_stage, embed no formula in
+roxygen, so nothing stale there).
+
+Articles in `vignettes/articles/` are live-code `.Rmd`; computed outputs refresh on
+render. Only hardcoded prose/examples needed editing:
+- `ckd_stage.Rmd` 🔧 validation example "G3a/A3 -> High" corrected to **Very High** (KDIGO fix).
+- `atherogenic_indices.Rmd` 🔧 removed "all ratios are unitless" claim (AIP is not scale-invariant); spot-check + verbose example data switched to mmol/L.
+- `glycemic_markers.Rmd` 🔧 unit notes now state SPISE & METS_IR convert HDL_c/TG/glucose to mg/dL internally (previously only TyG/HOMA_CP were noted).
+- `kidney_kfre.Rmd` 🔧 corrected "no unit conversion is performed" → UACR mg/g converted internally to mg/mmol (÷8.84); tips warn against pre-converting.
+- `cvd_risk.Rmd` 🔧 added AIP mmol/L caveat at the AIP section.
+- No change needed: fasting_is, ogtt_is, liver_fat_markers, renal_markers, obesity_indices (generic prose; values live-computed; changed constants not written out).
